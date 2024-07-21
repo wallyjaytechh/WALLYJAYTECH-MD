@@ -257,52 +257,66 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 
 
 # Install Manually 👇
+## Deploy on VPS or PC.
 ## `Requirements`
-* [Node.js](https://nodejs.org/en/)
-* [Git](https://git-scm.com/downloads)
-* [FFmpeg](https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2020-12-08-13-03/ffmpeg-n4.3.1-26-gca55240b8c-win64-gpl-4.3.zip)
-* [Libwebp](https://developers.google.com/speed/webp/download)
-* Any text editor
-## `Clone Repo & Installation dependencies`
-```bash
-git clone https://github.com/<your gitHub Username>/XLICON-V3-MD.git
-cd XLICON-V3-MD
+- You need to Install git,ffmpeg,curl,nodejs,yarn with pm2 
+   1. Install git ffmpeg curl 
+      ``` 
+       sudo apt -y update &&  sudo apt -y upgrade 
+       sudo apt -y install git ffmpeg curl
+      ``` 
+   2. Install nodejs  
+      ```   
+      sudo apt -y remove nodejs
+      curl -fsSl https://deb.nodesource.com/setup_lts.x | sudo bash - && sudo apt -y install nodejs
+      ```
+  
+   3. Install yarn
+      ```
+      curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - 
+      echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+      sudo apt -y update && sudo apt -y install yarn
+      ```  
+  
+   4. Install pm2
+      ```
+      sudo yarn global add pm2
+      ```
+  
+   5. Clone Repo and install required packages
+      ```
+      git clone https://github.com/lawaloyinkansola/WALLYJAYTECH-MD
+      cd WALLYJAYTECH-MD
+      yarn install --network-concurrency 1
+      ```
 
-npm start
-```
-## `For Termux/Ssh/Ubuntu`
-```bash
-apt update
-apt upgrade
-pkg update && pkg upgrade
-pkg install bash
-pkg install libwebp
-pkg install git -y
-pkg install nodejs -y 
-pkg install ffmpeg -y 
-pkg install wget
-pkg install imagemagick -y
-git clone https://github.com/<your gitHub Username>/XLICON-V3-MD
-cd XLICON-V3-MD
-yarn install
-npm start
-```
-## `For VPS`
-```bash
-apt install nodejs 
-apt install git 
-apt apt install ffmpeg 
-apt apt install libwebp 
-apt apt install imagrmagick
-apt install bash
-git clone https://github.com/<your gitHub Username>/XLICON-V3-MD
-cd XLICON-V3-MD
-npm start
-```
-## `For 24/7 Activation (Termux)`
-```bash
-npm i -g pm2 && pm2 start index.js && pm2 save && pm2 logs
-```
+   6. Create an env file for ENV. 
+      ```
+      touch config.env
+      nano config.env
+      ```
+      copy paste lines below.
+
+      ```
+      OWNER_NUMBER="2348144317152"
+      SESSION_ID = "SESSION_85_23_59_01_kjgfgfclhj"
+      THUMB_IMAGE = "https://telegra.ph/file/d5b1c3544fedc23e11a06.jpg"
+      OWNER_NAME = "Wallyjaytech"
+      PREFIX = .
+      WARN_COUNT = 3
+      DISABLE_PM = "false"
+      THEME= "WALLYJAYTECH"
+      MODE = "public"
+      ANTILINK_VALUES = "https://,chat.whatsapp.com"
+      
+      ```
+      ctrl + o and ctrl + x, To save and exit
+
+   7. start and stop bot
+ 
+      To start bot ``` npm start ```,
+      To stop bot ``` npm stop ```
+
 
 ## `Reminder`
    
