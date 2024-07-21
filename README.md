@@ -196,16 +196,15 @@ NOW Deploy👇
 ## `CREDITS` 
 <div><button id="boton" type="button">Baileys - By WhiskeySockets & adiwajshing</button></div>
 <a href="https://github.com/WhiskeySockets/Baileys"><img src="https://github.com/WhiskeySockets.png" width="150" height="150" alt="adiwajshing"/></a>
-<div><button id="boton" type="button">Base  - By CHEEMS BOTZ</button></div>
-<a href="https://github.com/DGXeon"><img src="https://github.com/DGXeon.png" width="150" height="150" alt="Xeon"/></a>
+
 
 
 ## 📛 `OWNER` 
 <a href="https://github.com/wallyjaytechh"><img src="https://github.com/wallyjaytechh.png" width="250" height="250" alt="Wally Jay"/></a>
   
-**XLICON-V3** - By `Dragiez`
+**WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
-`Development , Features Enhancement , Code Testing`
+`Development , Features Enhancement , Code Testing , Maintenance`
 
 -------
 
