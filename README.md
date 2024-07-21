@@ -11,10 +11,10 @@
 >WALLYJAYTECH-MD is based on :
 >- [WHATSAPP BOT] by [AJIBADE ADEWALE JOSEPH] (License: Apache License 2.0)
 >
-> :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/lawaloyinkansola)
+> :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/wallyjaytechh)
 </p>
 
-<h3 align="center"> <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD-PLUGINS">💉 EXTERNAL PLUGINS 💉</a></h3> 
+<h3 align="center"> <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD-PLUGINS">💉 EXTERNAL PLUGINS 💉</a></h3> 
 
 <h4 align="center"> ✔️ Fixed Heroku Ban! ✔️</h4> 
 
@@ -22,17 +22,17 @@
 [![WALLYJAYTECH](https://graph.org/file/21e984a94def2215b0215.jpg)](https://youtube.com/@wallyjaytechy)
 
 <p align="center">
-<a href="https://github.com/lawaloyinkansola"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github"></a>
+<a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github"></a>
 
 ### ℹ️ **About WALLYJAYTECH-MD**
-WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/lawaloyinkansola). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
+WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
 
 <p align="center"><img src="https://profile-counter.glitch.me/{WALLYJAYTECH-MD}/count.svg" alt="WALLY JAY TECH :: Visitor's Count" /></p>
 
 ### 📊 **Bot Statistics**
 <p align="center">
-<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay -cyan?v=103"></a>
-<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay -cyan?v=103"></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
 </p>
@@ -80,7 +80,7 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🛠️ `Installation Methods`
 1. Fork the repo
     <br>
-<a href='https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/fork' target="_blank"><img alt='Fork repo' src='https://img.shields.io/badge/Fork Repo-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
+<a href='https://github.com/wallyjaytechh/WALLYJAYTECH-MD/fork' target="_blank"><img alt='Fork repo' src='https://img.shields.io/badge/Fork Repo-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 
 2. Get Creds Json (SERVER 1)
     <br>
@@ -201,7 +201,7 @@ NOW Deploy👇
 
 
 ## 📛 `OWNER` 
-<a href="https://github.com/lawaloyinkansola"><img src="https://github.com/lawaloyinkansola.png" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://github.com/wallyjaytechh.png" width="250" height="250" alt="Wally Jay"/></a>
   
 **XLICON-V3** - By `Dragiez`
 <br>
@@ -263,7 +263,7 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
   
    5. Clone Repo and install required packages
       ```
-      git clone https://github.com/lawaloyinkansola/WALLYJAYTECH-MD
+      git clone https://github.com/wallyjaytechh/WALLYJAYTECH-MD
       cd WALLYJAYTECH-MD
       yarn install --network-concurrency 1
       ```
