@@ -28,9 +28,6 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 ### 📊 **Bot Statistics**
 <p align="center">
 <a href="https://github.com/lawaloyinkansola/followers"><img title="Followers" src="https://img.shields.io/github/followers/lawaloyinkansola?color=red&style=flat-square"></a>
-<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/lawaloyinkansola/WALLYJAYTECH-MD?color=blue&style=flat-square"></a>
-<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/lawaloyinkansola/WALLYJAYTECH-MD?color=red&style=flat-square"></a>
-<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/lawaloyinkansola/WALLYJAYTECH-MD?label=Watchers&color=blue&style=flat-square"></a>
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay.-red?v=103"></a>
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/lawaloyinkansola/WALLYJAYTECH-MD?style=flat-square&color=green"></a>
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%lawaloyinkansola%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%2300FF6D&title=hits&edge_flat=false"/></a>
