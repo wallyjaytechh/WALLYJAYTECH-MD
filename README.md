@@ -61,18 +61,18 @@ Help In Funding Any Amount To The Above Button, You Can Pay Through The Opay Acc
 Click On The Link To Donate ME  Generally All Countries...
 </p>
 
-## 🚀 `Bot Features`
-| Feature                          | Description                                             | Available    | Version    |
-| ---------------------------------| ------------------------------------------------------- | ------------ | ---------- |
-| Multi-Device Support             | Operate the bot on multiple devices simultaneously      | ✅           | 3.0        |
-| AI Chat Bot                      | Bot Can Reply To Questions                              | ✅           | 3.0        |
-| Downloader Commands              | Download various types of content from the internet     | ✅           | 3.0        |
-| Hidden NSFW Commands             | Access a range of NSFW commands hidden in the bot       | ✅           | 3.0        |
-| Logo Commands                    | Generate logos using specialized commands               | ✅           | 3.0        |
-| Anime Commands                   | Explore anime-related commands and features             | ✅           | 3.0        |
-| Bot Cantrol Commands             | Cantrol Bot Without Opening Deploy Platform             | ✅           | 3.0        |
-| Various Games                    | Enjoy a variety of games within the bot                 | ✅           | 3.0        |
-| Audio/Video Editor Commands      | Edit audio and video files with bot commands            | ✅           | 3.0        |
+## 🚀 `Bot Game Features`
+| Games                            | Description                                                       | Available    | Version    |
+| ---------------------------------| ----------------------------------------------------------------- | ------------ | ---------- |
+| Connect Four Game                | An interesting game to make your day                              | ✅           | 1.0        |
+| Tic Tac Toe                      | This classic game contributes to kids' skills                     | ✅           | 1.0        |
+| Number Guessing Game.            | A fun game that requires your smartness                           | ✅           | 1.0        |
+| Word chain Game.                 | A word game where you'll try to build as many chained words       | ✅           | 1.0        |
+| Hidden Card Game.                | Challenge with your buddy with card finding                       | ✅           | 1.0        |
+| Rolling Dice                     | Roll a dice and get the highest number to win                     | ✅           | 1.0        |
+| Character Guessing Game.         | Guess a name o a given characterand win the game                  | ✅           | 1.0        |
+| Capital of City Finding.         | State the correct capital of a given country correctly            | ✅           | 1.0        |
+
 
 ## 🛠️ `Installation Methods`
 1. Fork the repo
