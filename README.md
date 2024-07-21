@@ -31,12 +31,31 @@
   <img title="Whatsapp-Bot-Javascript" src="https://img.shields.io/badge/Javascript-363303?style=for-the-badge&logo=javascript&logoColor=cyan"></img>
 </p>
 
+<p align="center">
+  <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD"><b>WALLYJAYTECH-MD</b></a> Support Deploy On...
+</p>
+
+<p align="center">
+  <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/blob/main/temp/deploy-on-vps.md"><img src="https://img.shields.io/badge/self hosting-3d1513?style=for-the-badge&logo=serverless&logoColor=cyan"></a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=railway"><img src="https://img.shields.io/badge/railway-3e164f?style=for-the-badge&logo=railway&logoColor=cyan"></a>
+</p>
+<p align="center">
+  <a href="https://suhail-web01.vercel.app/deploy?platform=heroku"> <img src="https://img.shields.io/badge/heroku-9d7acc?style=for-the-badge&logo=heroku&logoColor=cyan"> </a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=repl"  > <img src="https://img.shields.io/badge/replit-253c99?style=for-the-badge&logo=replit&logoColor=cyan"> </a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=koyeb" > <img src="https://img.shields.io/badge/koyeb-033604?style=for-the-badge&logo=koyeb&logoColor=cyan">    </a>
+ <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-033604?style=for-the-badge&logo=glitch&logoColor=cyan"></a>
+</p>
+<p align="center">
+  <a href="https://youtu.be/3NdJb6_1cJM"><img src="https://img.shields.io/badge/CodeSpace-green?colorA=%23ff000&colorB=%23017e40&style=for-the-badge&logo=git&logoColor=white"></a>
+</p>
+<p align="center">Need help? please create an <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/issues">issue</a></p>
+
 ### ℹ️ **About WALLYJAYTECH-MD**
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
 
 <p align="center"><img src="https://profile-counter.glitch.me/{WALLYJAYTECH-MD}/count.svg" alt="WALLY JAY TECH :: Visitor's Count" /></p>
 
-### 📊 **Bot Statistics**
+### 📊 **Bot Statistics**D
 <p align="center">
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay -cyan?v=103"></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
