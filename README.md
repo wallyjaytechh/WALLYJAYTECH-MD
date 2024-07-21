@@ -18,7 +18,7 @@
 [![WALLYJAYTECH](https://graph.org/file/b373b90acd94cb2908739.jpg)](https://youtube.com/@wallyjaytechy)
 
 <p align="center">
-<a href="https://github.com/lawaloyinkansola"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-red.svg?style=for-the-badge&logo=github"></a>
+<a href="https://github.com/lawaloyinkansola"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-blue.svg?style=for-the-badge&logo=github"></a>
 
 ### ℹ️ **About WALLYJAYTECH-MD**
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/lawaloyinkansola). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
@@ -27,14 +27,14 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 
 ### 📊 **Bot Statistics**
 <p align="center">
-<a href="https://github.com/salmanytofficial/followers"><img title="Followers" src="https://img.shields.io/github/followers/salmanytofficial?color=red&style=flat-square"></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/salmanytofficial/XLICON-V3-MD?color=blue&style=flat-square"></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/salmanytofficial/XLICON-V3-MD?color=red&style=flat-square"></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/salmanytofficial/XLICON-V3-MD?label=Watchers&color=blue&style=flat-square"></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Salman%20Ser.-red?v=103"></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/salmanytofficial/XLICON-V3-MD?style=flat-square&color=green"></a>
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fsalmanytofficial%2FXLICON-V3-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%2300FF6D&title=hits&edge_flat=false"/></a>
-<a href="https://github.com/salmanytofficial/XLICON-V3-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"></a>&nbsp;&nbsp;
+<a href="https://github.com/lawaloyinkansola/followers"><img title="Followers" src="https://img.shields.io/github/followers/lawaloyinkansola?color=red&style=flat-square"></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/lawaloyinkansola/WALLYJAYTECH-MD?color=blue&style=flat-square"></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/lawaloyinkansola/WALLYJAYTECH-MD?color=red&style=flat-square"></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/lawaloyinkansola/WALLYJAYTECH-MD?label=Watchers&color=blue&style=flat-square"></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay.-red?v=103"></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/lawaloyinkansola/WALLYJAYTECH-MD?style=flat-square&color=green"></a>
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%lawaloyinkansola%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%2300FF6D&title=hits&edge_flat=false"/></a>
+<a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
 </p>
