@@ -24,6 +24,13 @@
 <p align="center">
 <a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github"></a>
 
+<p align="center"> WALLYJAYTECH-MD whatsapp bot uses
+  <a href="https://github.com/adiwajshing/Baileys">Multi-Device Baileys.</a>
+</p>
+<p align="center">
+  <img title="Whatsapp-Bot-Javascript" src="https://img.shields.io/badge/Javascript-363303?style=for-the-badge&logo=javascript&logoColor=cyan"></img>
+</p>
+
 ### ℹ️ **About WALLYJAYTECH-MD**
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
 
