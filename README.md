@@ -201,21 +201,7 @@ NOW Deploy👇
 
 
 ## 📛 `OWNER` 
-<a href="https://github.com/salmanytofficial"><img src="https://github.com/salmanytofficial.png" width="250" height="250" alt="Salman Ahmad"/></a>
-  
-**XLICON-V3** - By `salmanytofficial`
-<br>
-`Development , Maintainence , Bot Updates`
-
-## 🏷️ `Main Dev` 
-<a href="https://github.com/V-E-N-O-X"><img src="https://github.com/V-E-N-O-X.png" width="250" height="250" alt="VENOX"/></a>
-  
-**XLICON-V3** - By `Slahser Senpai`
-<br>
-`Development , Features Enhancement , Plugin Debbuging`
-
-## 🏷️ `Contributer` 
-<a href="https://github.com/dragiez"><img src="https://github.com/dragiez.png" width="250" height="250" alt="DRAGIEZ"/></a>
+<a href="https://github.com/lawaloyinkansola"><img src="https://github.com/lawaloyinkansola.png" width="250" height="250" alt="Wally Jay"/></a>
   
 **XLICON-V3** - By `Dragiez`
 <br>
