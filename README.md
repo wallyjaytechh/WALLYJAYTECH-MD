@@ -46,7 +46,7 @@
  <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
 </p>
 <p align="center">
-  <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-cyan?colorA=%cyan&colorB=%23017e40&style=for-the-badge&logo=git&logoColor=black"></a>
+  <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-cyan?colorA=%cyan&colorB=%cyan&style=for-the-badge&logo=git&logoColor=black"></a>
 </p>
 <p align="center">Need help? please create an <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/issues">issue</a></p>
 
