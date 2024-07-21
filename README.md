@@ -14,6 +14,10 @@
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/lawaloyinkansola)
 </p>
 
+<h3 align="center"> <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD-PLUGINS">🍫 EXTERNAL PLUGINS 🍫</a></h3> 
+
+<h4 align="center"> ✔️ Fixed Heroku Ban! ✔️</h4> 
+
 ## 🌟 `Bot Intro and Features`
 [![WALLYJAYTECH](https://graph.org/file/21e984a94def2215b0215.jpg)](https://youtube.com/@wallyjaytechy)
 
@@ -27,7 +31,6 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 
 ### 📊 **Bot Statistics**
 <p align="center">
-<a href="https://github.com/lawaloyinkansola?tab=followers"><img title="Followers" src="https://img.shields.io/github/followers/lawaloyinkansola?color=cyan&style=flat-square"></a>
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay -cyan?v=103"></a>
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
