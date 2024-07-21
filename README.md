@@ -8,10 +8,10 @@
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=25&pause=1000&color=F71D1D&width=435&lines=It's+WALLYJAYTECH-MD;Your+Most+Wanted+Wabot;A+Multi-Device+Whatsapp+Bot+;Developed+By+Wally+Jay+Tech;You're+Highly+Welcome...+%F0%9F%92%8F+)](https://git.io/typing-svg)
 <p align="center">
   
->XLICON-V3-MD is based on :
+>WALLYJAYTECH-MD is based on :
 >- [WHATSAPP BOT] by [AJIBADE ADEWALE JOSEPH] (License: Apache License 2.0)
 >
-> :unicorn: Don't forget to check out! :point_right: [Cheems V10](https://github.com/DGXeon)
+> :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/lawaloyinkansola)
 </p>
 
 ## 🌟 `Bot Intro and Features`
