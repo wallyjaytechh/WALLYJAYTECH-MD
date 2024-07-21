@@ -15,7 +15,7 @@
 </p>
 
 ## 🌟 `Bot Intro and Features`
-[![XLICON](https://i.ibb.co/sgdGM1P/XLICON-V3.jpg)](https://youtube.com/@s4salmanyt)
+[![WALLYJAYTECH]()](https://youtube.com/@wallyjaytechy)
 
 <p align="center">
 <a href="https://github.com/salmanytofficial"><img title="Author" src="https://img.shields.io/badge/CREATOR-SALMAN SER-black.svg?style=for-the-badge&logo=github"></a>
