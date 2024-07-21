@@ -28,7 +28,7 @@
   <a href="https://github.com/adiwajshing/Baileys">Multi-Device Baileys.</a>
 </p>
 <p align="center">
-  <img title="Whatsapp-Bot-Javascript" src="https://img.shields.io/badge/Javascript-363303?style=for-the-badge&logo=javascript&logoColor=cyan"></img>
+  <img title="Whatsapp-Bot-Javascript" src="https://img.shields.io/badge/Javascript-cyan?style=for-the-badge&logo=javascript&logoColor=black"></img>
 </p>
 
 <p align="center">
@@ -36,14 +36,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/blob/main/temp/deploy-on-vps.md"><img src="https://img.shields.io/badge/self hosting-3d1513?style=for-the-badge&logo=serverless&logoColor=cyan"></a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=railway"><img src="https://img.shields.io/badge/railway-3e164f?style=for-the-badge&logo=railway&logoColor=cyan"></a>
+  <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/blob/main/temp/deploy-on-vps.md"><img src="https://img.shields.io/badge/self hosting-cyan?style=for-the-badge&logo=serverless&logoColor=black"></a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=railway"><img src="https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black"></a>
 </p>
 <p align="center">
-  <a href="https://suhail-web01.vercel.app/deploy?platform=heroku"> <img src="https://img.shields.io/badge/heroku-blue?style=for-the-badge&logo=heroku&logoColor=cyan"> </a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=repl"  > <img src="https://img.shields.io/badge/replit-253c99?style=for-the-badge&logo=replit&logoColor=cyan"> </a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=koyeb" > <img src="https://img.shields.io/badge/koyeb-033604?style=for-the-badge&logo=koyeb&logoColor=cyan">    </a>
- <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-033604?style=for-the-badge&logo=glitch&logoColor=cyan"></a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=heroku"> <img src="https://img.shields.io/badge/heroku-cyan?style=for-the-badge&logo=heroku&logoColor=black"> </a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=repl"  > <img src="https://img.shields.io/badge/replit-cyan?style=for-the-badge&logo=replit&logoColor=black"> </a>
+  <a href="https://suhail-web01.vercel.app/deploy?platform=koyeb" > <img src="https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black">    </a>
+ <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
 </p>
 <p align="center">
   <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-green?colorA=%23ff000&colorB=%23017e40&style=for-the-badge&logo=git&logoColor=white"></a>
