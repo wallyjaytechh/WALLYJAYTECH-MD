@@ -29,6 +29,8 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 <p align="center">
 <a href="https://github.com/lawaloyinkansola/followers"><img title="Followers" src="https://img.shields.io/github/followers/lawaloyinkansola?color=cyan&style=flat-square"></a>
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD"><img title="Open Source" src="https://img.shields.io/badge/Author-Wally%20Jay -cyan?v=103"></a>
+  <a href="https://github.com/SuhailTechInfo/Suhail-Md/stargazers"> 
+     <img src="https://img.shields.io/github/stars/SuhailTechInfo/Suhail-Md?style=flat-square&logo=github&color=darkred">
 <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
