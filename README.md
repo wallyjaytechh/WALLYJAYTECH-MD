@@ -37,22 +37,22 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
   
 ####
 
-*XLICON-V3* - A Advanced Multi Device whatsapp bot Based on *CHEEMS V10*
+*WALLYJAYTECH-MD* - A Advanced Multi Device whatsapp bot Based on *WHATSAPP BOTS*
 -------
 
 ***
 
 ## ⭐ `Star This Repo`
-If you find XLICON-V3-MD helpful, consider giving it a star ⭐ to show your appreciation.
+If you find WALLYJAYTECH-MD helpful, consider giving it a star ⭐ to show your appreciation.
 
 Thanks to all contributors! 🚀
 
 ## 💲 ```Donate Me```
 
-- [`Buy ME A Coffee ☕ `](https://i.ibb.co/SBXWb1R/donate.jpg)
+- [`Buy ME A Coffee ☕ `](https://graph.org/file/60ae69be6b3ce87ddcbfb.jpg)
 
 <p align="left">
-Scan qr code from the above button, u can pay through Buy Me A Coffee...
+help in funding any amount to the above button, you can pay through the opay account ...
 </p>
 
 - [`Support Me On Patreon ☕ `](https://www.patreon.com/ahmmikun/membership)
