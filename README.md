@@ -14,7 +14,7 @@
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/lawaloyinkansola)
 </p>
 
-<h3 align="center"> <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD-PLUGINS">🍫 EXTERNAL PLUGINS 🍫</a></h3> 
+<h3 align="center"> <a href="https://github.com/lawaloyinkansola/WALLYJAYTECH-MD-PLUGINS">💉 EXTERNAL PLUGINS 💉</a></h3> 
 
 <h4 align="center"> ✔️ Fixed Heroku Ban! ✔️</h4> 
 
