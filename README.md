@@ -52,13 +52,13 @@ Thanks to all contributors! 🚀
 - [`Buy ME A Coffee ☕ `](https://graph.org/file/60ae69be6b3ce87ddcbfb.jpg)
 
 <p align="left">
-help in funding any amount to the above button, you can pay through the opay account ...
+Help In Funding Any Amount To The Above Button, You Can Pay Through The Opay Account ...
 </p>
 
-- [`Support Me On Patreon ☕ `](https://www.patreon.com/ahmmikun/membership)
+- [`Buy ME A Coffee ☕ `](https://www.buymeacoffee.com/wallyjaytech)
 
 <p align="left">
-Click On The Link To Donate ME...
+Click On The Link To Donate ME  Generally All Countries...
 </p>
 
 ## 🚀 `Bot Features`
