@@ -165,7 +165,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 9. If You don't have a account in Glitch. Create an account.
     <br>
-<a href='https://glitch.com/signup' target="_blank"><img alt='Glitch' src='https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black' width="96.35" height="28"/></a></p>
+<a href='https://glitch.com/signup' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black' width="96.35" height="28"/></a></p>
 
 10. Now Deploy
     <br>
@@ -185,7 +185,7 @@ Click On The Link To Donate ME  Generally All Countries...
 NOW Deploy👇
 <br>
 ## DEPLOY IN KOYEB    
-[![Deploy on Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/auth/signup)  
+<a href='https://suhail-web01.vercel.app/deploy?platform=koyeb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
