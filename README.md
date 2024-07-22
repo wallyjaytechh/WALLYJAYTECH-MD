@@ -165,11 +165,11 @@ Click On The Link To Donate ME  Generally All Countries...
 
 9. If You don't have a account in Glitch. Create an account.
     <br>
-<a href='https://glitch.com/signup' target="_blank"><img alt='Glitch' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
+<a href='https://glitch.com/signup' target="_blank"><img alt='Glitch' src='https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black' width="96.35" height="28"/></a></p>
 
 10. Now Deploy
     <br>
-<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=black&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
+<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black' width="96.35" height="28"/></a></p>
 
 #### DEPLOY TO RENDER
 
