@@ -114,7 +114,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 3. Get Creds Json (SERVER 2)
     <br>
-<a href='https://replit.com/@S4SalmanYt/XLICON-V3-PAIRING' target="_blank"><img alt='SESSION ID' src='https://img.shields.io/badge/Session_id_2-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=black'/></a>
+<a href='https://replit.com/@S4SalmanYt/XLICON-V3-PAIRING' target="_blank"><img alt='SESSION ID' src='https://img.shields.io/badge/Session_id_2-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
 
 
 ## 🚀 `Deployments`
@@ -145,7 +145,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Codespace. Create a account.
     <br>
-<a href='https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces' target="_blank"><img alt='Codespaces' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=visualstudiocode' width="96.35" height="28"/></a></p>
+<a href='https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=visualstudiocode' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
@@ -155,7 +155,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Railway. Create a account.
     <br>
-<a href='https://railway.app/login' target="_blank"><img alt='Railway' src='https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black' width="96.35" height="28"/></a></p>
+<a href='https://railway.app/login' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
@@ -175,7 +175,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Render. Create a account.
     <br>
-<a href='https://dashboard.render.com/register' target="_blank"><img alt='Render' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render' width="96.35" height="28"/></a></p>
+<a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
