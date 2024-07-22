@@ -145,11 +145,11 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Codespace. Create a account.
     <br>
-<a href='https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=visualstudiocode' width="96.35" height="28"/></a></p>
+<a href='https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
-<a href='https://github.com/codespaces/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=visualstudiocode' width="96.35" height="28"/></a></p>
+<a href='https://github.com/codespaces/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
 #### DEPLOY TO RAILWAY
 
@@ -175,11 +175,11 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Render. Create a account.
     <br>
-<a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render' width="96.35" height="28"/></a></p>
+<a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
-<a href='https://dashboard.render.com' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render' width="96.35" height="28"/></a></p>
+<a href='https://dashboard.render.com' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
 ## 🎇 `NEW DEPLOYMENT`
 NOW Deploy👇
