@@ -119,13 +119,13 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🚀 `Deployments`
 #### DEPLOY TO HEROKU 
 
-1. If You don't have a account in Heroku. Create a account.
+1. If You don't have an account in Heroku. Create a account.
     <br>
 <a href='https://signup.heroku.com/' target="_blank"><img alt='Heroku' src='https://img.shields.io/badge/-Create-cyan?style=for-the-badge&logo=heroku&logoColor=black'/></a>
 
 2. Now Deploy
     <br>
-<a href='https://xlcon-v3-deloy.vercel.app/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-cyan?style=for-the-badge&logo=heroku&logoColor=black'/></a>
+<a href='https://dashboard.heroku.com/new/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-cyan?style=for-the-badge&logo=heroku&logoColor=black'/></a>
 
 #### DEPLOY TO REPLIT
 
@@ -142,7 +142,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 #### DEPLOY TO CODESPACE
 
-1. If You don't have a account in Codespace. Create a account.
+1. If You don't have an account in Codespace. Create a account.
     <br>
 <a href='https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Fcodespaces' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
@@ -152,7 +152,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 #### DEPLOY TO RAILWAY
 
-1. If You don't have a account in Railway. Create a account.
+1. If You don't have an account in Railway. Create a account.
     <br>
 <a href='https://railway.app/login' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-cyan?style=for-the-badge&logo=railway&logoColor=black' width="96.35" height="28"/></a></p>
 
@@ -162,7 +162,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 #### DEPLOY TO GLITCH
 
-1. If You don't have a account in Glitch. Create an account.
+1. If You don't have an account in Glitch. Create an account.
     <br>
 <a href='https://glitch.com/signup' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-cyan?style=for-the-badge&logo=glitch&logoColor=black' width="96.35" height="28"/></a></p>
 
@@ -172,13 +172,13 @@ Click On The Link To Donate ME  Generally All Countries...
 
 #### DEPLOY TO RENDER
 
-1. If You don't have a account in Render. Create a account.
+1. If You don't have an account in Render. Create a account.
     <br>
 <a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
-<a href='https://dashboard.render.com' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
+<a href='https://dashboard.render.com/web/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
 ## 🎇 `NEW DEPLOYMENT`
 NOW Deploy👇
