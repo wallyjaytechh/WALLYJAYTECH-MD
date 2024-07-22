@@ -155,11 +155,11 @@ Click On The Link To Donate ME  Generally All Countries...
 
 1. If You don't have a account in Railway. Create a account.
     <br>
-<a href='https://railway.app/login' target="_blank"><img alt='Railway' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=railway' width="96.35" height="28"/></a></p>
+<a href='https://railway.app/login' target="_blank"><img alt='Railway' src='https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black' width="96.35" height="28"/></a></p>
 
 2. Now Deploy
     <br>
-<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=railway' width="96.35" height="28"/></a></p>
+<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=railway&logoColor=black' width="96.35" height="28"/></a></p>
 
 #### DEPLOY TO GLITCH
 
