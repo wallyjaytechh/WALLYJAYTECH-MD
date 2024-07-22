@@ -104,7 +104,7 @@ Click On The Link To Donate ME  Generally All Countries...
 
 ## 🛠️ `Installation Methods`
 1. Fork the repo
-    <br>
+    <br> 
 <a href='https://github.com/wallyjaytechh/WALLYJAYTECH-MD/fork' target="_blank"><img alt='Fork repo' src='https://img.shields.io/badge/Fork Repo-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 
 2. Get Creds Json (SERVER 1)
