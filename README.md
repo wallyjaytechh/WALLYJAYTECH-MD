@@ -22,7 +22,7 @@
 [![WALLYJAYTECH](https://graph.org/file/21e984a94def2215b0215.jpg)](https://youtube.com/@wallyjaytechy)
 
 <p align="center">
-<a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github"></a>
+<a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github&logoColor=cyan"></a>
 
 <p align="center"> WALLYJAYTECH-MD whatsapp bot uses
   <a href="https://github.com/adiwajshing/Baileys">Multi-Device Baileys.</a>
