@@ -1,22 +1,22 @@
-//*
- //  * @project_name : WALLYJAYTECH-MD
- //  * @author : wallyjaytechy
- //  * @youtube : https://www.youtube.com/@wallyjaytechy
-//   * @description : WALLYJAYTECH-V3 ,A Multi-functional whatsapp user bot.
-//*
-//* 
-//base by WALLYJAYTECH-MD
-//re-upload? recode? copy code? give credit ya :)
-//Instagram: wallyjaytechy
-//Telegram: t.me/wallyjaytechy
-//GitHub: @wallyjaytechy
-//WhatsApp: +2348144317152
-//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
-//   * Created By Github: Wally Jay Tech.
-//   * Credit To Wallyjaytech
-//   * © 2024 WALLYJAYTECH-MD.
-// ⛥┌┤
-// */
+#//*
+# //  * @project_name : WALLYJAYTECH-MD
+# //  * @author : wallyjaytechy
+# //  * @youtube : https://www.youtube.com/@wallyjaytechy
+#//   * @description : WALLYJAYTECH-V3 ,A Multi-functional whatsapp user bot.
+#//*
+#//* 
+#//base by WALLYJAYTECH-MD
+#//re-upload? recode? copy code? give credit ya :)
+#//Instagram: wallyjaytechy
+#//Telegram: t.me/wallyjaytechy
+#//GitHub: @wallyjaytechy
+#//WhatsApp: +2348144317152
+#//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+#//   * Created By Github: Wally Jay Tech.
+#//   * Credit To Wallyjaytech
+#//   * © 2024 WALLYJAYTECH-MD.
+#// ⛥┌┤
+#// */
 
 
  
