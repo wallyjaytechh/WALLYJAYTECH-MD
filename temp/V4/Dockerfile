@@ -34,7 +34,7 @@ CMD ["npm","start" ]
 # heroku.yml file data to run Container
 # build:
 #   docker:
-#       web: Suhail_Md
+#       web: Wallyjaytech_Md
 # run:
 #   web: npm start
  
