@@ -1,110 +1,139 @@
 {
-  "name": "WALLYJAYTECH-MD@1.0",
-  "description": "I am WALLYJAYTECH-MD Whatsapp Chuddy Buddy built in NodeJs to make experience better\n\t if Any Problem : www.youtube.com/wallyjaytechy",
-  "logo": https://graph.org/file/21e984a94def2215b0215.jpg",
-  "keywords": ["whatsappbot", "WALLYJAYTECHMD", "WALLYJAYTECH MD bot", "WALLYJAYTECH-MD, "SWALLYJAYTECHMDWhatsaooBot", "WALLYJAYTECHWaBot","WALLYJAYTECHMD","WALLYJAYTECH MD Whatsapp Bot","multi device"],
-  "success_url": "/wallyjaytech/",
-  "app_url": "/qr/",
-  "stack":"container",
+  "name": "wallyjaytech@1.0",
+  "description": "wallyjaytech multi-device wabot",
+  "keywords": ["noedjs"],
+  "success_url": "/",
   "env": {
-    "OWNER_NAME": {
-      "description": "Name for Bot Owner",    
-      "value": "Wally Jay Tech",
-      "required" :true
-    },   
-     
-    "CAN_WELCOME": {
-      "description": "put 'false' or 'true' to enable & disable WELCOME ",
-      "value": "true",
-      "required" :false
-    },
-     
-    "CAN_GOODBYE": {
-      "description": "put 'false' or 'true' to enable & disable GOODBYE ",
-      "value": "false",
-      "required" :false
-    },
-    "BOT_NAME": {
-      "description": " NAME FOR BOT",
-      "required" :false,    
-      "value": "WALLYJAYTECH-MD"
-    }, 
-    "TZ": {
-      "description": "Put TIME_ZONE according to your location",
-      "required" :false,    
-      "value": "Africa/Lagos"
-    },  
-    "FLUSH": {
-      "description": " Make it 'true' if bot connected but not responed (After deployement!)",
-      "required" :false,    
+    "ALWAYS_ONLINE": {
+      "description": "show bot number last seen as online",
+      "required": false,
       "value": "false"
     },
-    "WARN_COUNT": {
-      "description": " Warn count for users to kick/block when warn limit exceed!",
-      "required" :false,    
-      "value": "3"
-    },
-    "HEROKU_API_KEY": {
-      "description": "Put Your Heroku Api Key Here",
-      "value": "",
-      "required" :true 
-    },   
-    "HEROKU_APP_NAME": {
-      "description": "Put Your Heroku App Name Here",
-      "value": "",
-    "required" :true
-    }, 
-    "MSGS_IN_LOG": {
-      "description": "Fill the value -true- if you want to see Messages in logs.",
-      "required" :false,
+    "LOG_MSG": {
+      "description": "Show whatsapp msgs in log",
+      "required": false,
       "value": "false"
+    },
+    "SUDO": {
+      "description": "admin",
+      "required": false,
+      "value": ""
     },
     "PREFIX": {
-      "description": "Enter your desired prefix for bot. you can set `all | . | .!*`",
+      "description": "prefix, check for more",
+      "required": false,
       "value": "."
     },
-    "OWNER_NUMBER": {
-      "description": "The phone numbers of the users who you want to be admin for the bot (should be in international format without + and multiple numbers must be separated by a comma \",\")",
-      "value": "2348144317152"
-    },
     "SESSION_ID": {
-      "description": "put your SESSION_ID here.",
+      "description": "session id",
+      "required": true,
       "value": ""
-  
     },
-    "OPENAI_API_KEY": {
-      "description": "put your OPENAI api key here.Get it from beta.openai.com ",
-      "value": "",
-      "required" :false
-    }, 
-    "ELEVENLAB_API_KEY": {
-      "description": "Put your ElevenLab api key here for Aitts. Watch tutorial from https://youtu.be/HCDcdPtkwg4 ",
-      "value": "",
-      "required" :false
-    }, 
-    "REMOVE_BG_KEY": {
-      "description": "put your REMOVE BG KEY here.Get it from removeBg.com ",
-      "value": "",
-      "required" :false
+    "STICKER_PACKNAME": {
+      "description": "sticker pack info",
+      "required": false,
+      "value": "❤️,LyFE"
     },
-    "MODE": {
-      "description": "Worktype of your bot. Use public/private, if private then only bot number can use it. If public then everyone can use it.",
-      "value": "public"
+    "HEROKU_APP_NAME": {
+      "description": "Heroku app name, same as above entered.",
+      "required": true
     },
-    "PACK_NAME": {
-      "description": "Put Sticker Pack_Name.",
-      "value": "WALLYJAYTECH-MD",
-      "required": false 
+    "HEROKU_API_KEY": {
+      "description": "Heroku account api key, https://dashboard.heroku.com/account",
+      "required": true
     },
-    "PACK_AUTHER": {
-      "description": "Put Sticker Author_Name.",
-      "value": "Wally Jay Tech",
-      "required": false 
+    "RMBG_KEY": {
+      "description": "API key from remove.bg, required for plugin rmbg",
+      "required": false,
+      "value": "null"
+    },
+    "LANGUAG": {
+      "description": "Default Language for tts or trt",
+      "required": false,
+      "value": "en"
+    },
+    "WARN_LIMIT": {
+      "description": "Maximum number of wanings to a person.",
+      "required": false,
+      "value": "3"
+    },
+    "FORCE_LOGOUT": {
+      "description": "In Some scenario have to logout web, Only such case make this true and back to false after logout.",
+      "required": false,
+      "value": "false"
+    },
+    "DISABLE_BOT": {
+      "description": "Example : jid,jid,... where bot not works in both ways.",
+      "required": false,
+      "value": "null"
+    },
+    "ANTILINK_MSG": {
+      "description": "Message send when antilink and action is kick.",
+      "required": false,
+      "value": "_Antilink Detected &mention kicked_"
+    },
+    "ANTISPAM_MSG": {
+      "description": "Message send when antispam.",
+      "required": false,
+      "value": "_Antispam Detected &mention kicked_"
+    },
+    "ANTIWORDS_MSG": {
+      "description": "Message send when antiword.",
+      "required": false,
+      "value": "_Antiword Detected &mention kicked_"
+    },
+    "ANTIWORDS": {
+      "description": "words that not allowed in chats.",
+      "required": false,
+      "value": "word1,word2,word3"
+    },
+    "SS_TOKEN": {
+      "description": "token from https://app.screenshotapi.net/dashboard",
+      "required": false,
+      "value": ""
+    },
+    "REJECT_CALL": {
+      "description": "auto reject call, if set as true",
+      "required": false,
+      "value": "false"
+    },
+    "AUTO_STATUS_VIEW": {
+      "description": "view others status",
+      "required": false,
+      "value": "false"
+    },
+    "SEND_READ": {
+      "description": "send blue tick",
+      "required": false,
+      "value": "false"
+    },
+    "AJOIN": {
+      "description": "Accept Group join request(Group privacy)",
+      "required": false,
+      "value": "true"
+    },
+    "PERSONAL_MESSAGE": {
+      "description": "Send a Welcome message on personal chat",
+      "required": false,
+      "value": "null"
+    },
+    "DISABLE_START_MESSAGE": {
+      "description": "Disable start Message",
+      "required": false,
+      "value": "false"
     }
-  }, 
-  "addons": [{ "plan": "heroku-postgresql:essential-1" }],
-  "buildpacks": [
-    { "url": "https://github.com/heroku/heroku-buildpack-nodejs#latest" },
-    { "url": "https://github.com/carlosdommor/heroku-buildpack-ffmpeg-latest" }
-  ]
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:basic"
+    }
+  ],
+
+  "buildpacks": [{ "url": "https://github.com/heroku/heroku-buildpack-nodejs#latest" }],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
 }
