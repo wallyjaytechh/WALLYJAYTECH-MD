@@ -234,64 +234,84 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 
 # Install Manually 👇
 ## Deploy on VPS or PC.
-## `Requirements`
-- You need to Install git,ffmpeg,curl,nodejs,yarn with pm2 
-   1. Install git ffmpeg curl 
-      ``` 
-       sudo apt -y update &&  sudo apt -y upgrade 
-       sudo apt -y install git ffmpeg curl
-      ``` 
-   2. Install nodejs  
-      ```   
-      sudo apt -y remove nodejs
-      curl -fsSl https://deb.nodesource.com/setup_lts.x | sudo bash - && sudo apt -y install nodejs
-      ```
-  
-   3. Install yarn
-      ```
-      curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - 
-      echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-      sudo apt -y update && sudo apt -y install yarn
-      ```  
-  
-   4. Install pm2
-      ```
-      sudo yarn global add pm2
-      ```
-  
-   5. Clone Repo and install required packages
-      ```
-      git clone https://github.com/wallyjaytechh/WALLYJAYTECH-MD
-      cd WALLYJAYTECH-MD
-      yarn install --network-concurrency 1
-      ```
+## (Example here as in Ubuntu)
 
-   6. Create an env file for ENV. 
-      ```
-      touch config.env
-      nano config.env
-      ```
-      copy paste lines below.
+#### Install with Script
 
-      ```
-      OWNER_NUMBER="2348144317152"
-      SESSION_ID = "SESSION_85_23_59_01_kjgfgfclhj"
-      THUMB_IMAGE = "https://telegra.ph/file/d5b1c3544fedc23e11a06.jpg"
-      OWNER_NAME = "Wallyjaytech"
-      PREFIX = .
-      WARN_COUNT = 3
-      DISABLE_PM = "false"
-      THEME= "WALLYJAYTECH"
-      MODE = "public"
-      ANTILINK_VALUES = "https://,chat.whatsapp.com"
-      
-      ```
-      ctrl + o and ctrl + x, To save and exit
+- Run the following command:
+  ```sh
+  bash <(curl -fsSL http://bit.ly/43JqREw)
+  ```
 
-   7. start and stop bot
- 
-      To start bot ``` npm start ```,
-      To stop bot ``` npm stop ```
+#### Install without Script
+
+1. **Install Git, ffmpeg, and curl:**
+   ```sh
+   sudo apt -y update && sudo apt -y upgrade
+   sudo apt -y install git ffmpeg curl
+   ```
+
+2. **Install Node.js:**
+   ```sh
+   curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+   sudo -E bash nodesource_setup.sh
+   sudo apt-get install -y nodejs
+   ```
+
+3. **Install Yarn:**
+   ```sh
+   sudo npm install -g yarn
+   ```
+
+4. **Install pm2:**
+   ```sh
+   sudo yarn global add pm2
+   ```
+
+5. **Clone Repository and Install Packages:**
+   ```sh
+   git clone https://github.com/wallyjaytechh/WALLYJAYTECH-MD
+   cd WALLYJAYTECH-MD
+   yarn install
+   ```
+
+6. **Enter Environment Variables:**
+   ```sh
+   echo "SESSION_ID = Session_Id_you_Got_After_Scan_Dont_Add_This_Line_If_You_Can_Scan_From_Terminal_Itself
+   PREFIX = .
+   STICKER_PACKNAME = WALLYJAYTECH-MD
+   ALWAYS_ONLINE = false
+   RMBG_KEY = null
+   LANGUAG = en
+   WARN_LIMIT = 3
+   FORCE_LOGOUT = false
+   BRAINSHOP = 159501,6pq8dPiYt7PdqHz3
+   MAX_UPLOAD = 200
+   REJECT_CALL = true
+   SUDO = 2348144317152
+   TZ = Africa/Lagos
+   VPS = true
+   AUTO_STATUS_VIEW = true
+   SEND_READ = true
+   AJOIN = true
+   DISABLE_START_MESSAGE = false
+   PERSONAL_MESSAGE = null" > config.env
+   ```
+
+   - [Read More](https://github.com/wallyjaytechh/WALLYJAYTECH-MD/wiki/Environment_Variables)
+
+7. **Edit `config.env` Using Nano (if needed):**
+   - To save, press `Ctrl + O`, then press `Enter`, and to exit, press `Ctrl + X`.
+
+8. **Start and Stop the Bot:**
+   - To start the bot:
+     ```sh
+     pm2 start . --name botName --attach --time
+     ```
+   - To stop the bot:
+     ```sh
+     pm2 stop botName
+     ```
 
 
 ## `Reminder`
