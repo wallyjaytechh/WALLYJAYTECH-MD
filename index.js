@@ -1,16 +1,24 @@
-const bot = require(__dirname + '/lib/smd')
-const { VERSION } = require(__dirname + '/config')
+const { Client, logger } = require('./lib/client')
+const { DATABASE, VERSION } = require('./config')
+const { stopInstance } = require('./lib/pm2')
 
 const start = async () => {
-    Debug.info(`Wallyjaytech ${VERSION}`)
+  logger.info(`wallyjaytech ${VERSION}`)
   try {
+    await DATABASE.authenticate({ retry: { max: 3 } })
+  } catch (error) {
+    const databaseUrl = process.env.DATABASE_URL
+    logger.error({ msg: 'Unable to connect to the database', error: error.message, databaseUrl })
+    return stopInstance()
+  }
+  try {
+    logger.info('Database syncing...')
+    await DATABASE.sync()
+    const bot = new Client()
     await bot.init()
-    bot.logger.info('⏳ Database syncing!')
-    await bot.DATABASE.sync()
     await bot.connect()
   } catch (error) {
-    Debug.error(error);
-    start();
+    logger.error(error)
   }
 }
-start();
+start()
