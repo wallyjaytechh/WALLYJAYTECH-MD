@@ -1,5 +1,5 @@
 
-<img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-1000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
+<img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
 <br>
 <br>
 <img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
