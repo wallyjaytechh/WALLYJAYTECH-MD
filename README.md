@@ -47,7 +47,7 @@
   <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
   <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-cyan?style=for-the-badge&logo=codespace&logoColor=black"></a>
 </p>
-
+<p align="center">
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 
 ### ℹ️ **About WALLYJAYTECH-MD**
