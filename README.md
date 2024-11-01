@@ -14,11 +14,9 @@
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/wallyjaytechh)
 </p>
 
-<h3 align="center"> <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD-PLUGINS">💉 EXTERNAL PLUGINS 💉</a></h3> 
-
-<h4 align="center"> ✔️ Fixed Heroku Ban! ✔️</h4> 
 
 ## 🌟 `Bot Intro and Features`
+
 [![WALLYJAYTECH](https://graph.org/file/21e984a94def2215b0215.jpg)](https://youtube.com/@wallyjaytechy)
 
 <p align="center">
