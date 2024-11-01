@@ -51,6 +51,7 @@
 <img alt='Need help.... please create an' src='https://img.shields.io/badge/Need help.... please create an-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <a href='https://github.com/wallyjaytechh/WALLYJAYTECH-MD/issues' target="_blank"><img alt='issue' src='https://img.shields.io/badge/issue-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 
 <img alt='ℹ️ About WALLYJAYTECH-MD' src='https://img.shields.io/badge/ℹ️ About WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
+
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
 
 <p align="center"><img src="https://profile-counter.glitch.me/{WALLYJAYTECH-MD}/count.svg" alt="WALLY JAY TECH :: Visitor's Count" /></p>
