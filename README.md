@@ -1,4 +1,4 @@
-
+<img alt='Fork repo' src='https://img.shields.io/badge/Fork Repo-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 
 # `WALLYJAYTECH-MD`
 <br>
@@ -16,7 +16,7 @@
 >
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/wallyjaytechh)
 </p>
-<img alt='WALLY JAY TECH' src='https://img.shields.io/badge/Session_id-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
+
 
 ## 🌟 `Bot Intro and Features`
 
