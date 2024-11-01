@@ -205,13 +205,13 @@ NOW Deploy👇
 
 ## 📛 `OWNER` 
 <a href="https://github.com/wallyjaytechh"><img src="https://github.com/wallyjaytechh.png" width="250" height="250" alt="Wally Jay"/></a>
-
-## 📛 `OWNER GF`
-<a href="https://github.com/wallyjaytechh"><img src="https://github.com/wallyjaytechh.png" width="250" height="250" alt="Wally Jay"/></a>
   
 **WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
 `Developer , Features Enhancer , Code Tester , Maintenance`
+
+## 📛 `OWNER GF`
+<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/vXy48KM/photo-2024-11-01-16-34-39.jpg" width="250" height="250" alt="Wally Jay"/></a>
 
 -------
 
