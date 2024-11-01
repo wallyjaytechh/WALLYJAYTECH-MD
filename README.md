@@ -17,7 +17,7 @@
 </p>
 
 
-## 🌟 `Bot Intro and Features`
+<img alt='bot intro, setup and features' src='https://img.shields.io/badge/bot intro, setup and features-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 
    <a><img src='https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg'/></a>
 
