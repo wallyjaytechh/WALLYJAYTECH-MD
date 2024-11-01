@@ -10,7 +10,7 @@
 <img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
 <p align="center">
   
->WALLYJAYTECH-MD is based on :
+<img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> is based on :
 >- [WHATSAPP BOT] by [AJIBADE ADEWALE JOSEPH] (License: Apache License 2.0)
 >
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/wallyjaytechh)
