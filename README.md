@@ -224,7 +224,7 @@ NOW Deploy👇
 <br>
 
 ## 🌈 `Support Us`
-- **Mail Us:** [wallyjay123@gmail.com](mailto:wallyjay123@gmail.com)
+- **Mail Us:** <a href='mailto:wallyjay123@gmail.com' target="_blank"><img alt='click here' src='https://img.shields.io/badge/click here-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 - **Join Our Support Group:**
  <p align="center">
    
