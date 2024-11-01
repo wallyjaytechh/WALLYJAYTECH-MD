@@ -56,13 +56,13 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 
 ### 📊 **Bot Statistics**D
 <p align="center">
-<a href="https://github.com/paskito002/followers"><img title="Followers" src="https://img.shields.io/github/followers/paskito002?color=red&style=flat-square"></a>
-<a href="https://github.com/paskito002/ES_TEAMS-V2/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/paskito002/ES_TEAMS-V2?color=blue&style=flat-square"></a>
-<a href="https://github.com/paskito002/ES_TEAMS-V2/network/members"><img title="Forks" src="https://img.shields.io/github/forks/paskito002/ES_TEAMS-V2?color=red&style=flat-square"></a>
-<a href="https://github.com/paskito002/ES_TEAMS-V2/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/paskito002/ES_TEAMS-V2?label=Watchers&color=blue&style=flat-square"></a>
-<a href="https://github.com/paskito002/ES_TEAMS-V2/"><img title="Size" src="https://img.shields.io/github/repo-size/paskito002/ES_TEAMS-V2?style=flat-square&color=green"></a>
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fpaskito002%2FES_TEAMS-V2&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%2300FF6D&title=hits&edge_flat=false"/></a>
-<a href="https://github.com/paskito002/ES_TEAMS-V2/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"></a>&nbsp;&nbsp;
+<a href="https://github.com/wallyjaytechh/followers"><img title="Followers" src="https://img.shields.io/github/followers/wallyjaytechh?color=cyan&style=flat-square"></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/wallyjaytechh/WALLYJAYTECH-MD?color=cyan&style=flat-square"></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/wallyjaytechh/WALLYJAYTECH-MD?color=cyan&style=flat-square"></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/wallyjaytechh/WALLYJAYTECH-MD?label=Watchers&color=cyan&style=flat-square"></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/wallyjaytechh/WALLYJAYTECH-MD?style=flat-square&color=cyan"></a>
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fwallyjaytechh%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%cyan&title=hits&edge_flat=false"/></a>
+<a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
 </p>
