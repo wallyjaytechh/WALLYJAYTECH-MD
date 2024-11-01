@@ -2,7 +2,7 @@
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 <br>
 <br>
-<img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
+<img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%"> 
 <p align="center">
 
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=25&pause=1000&color=2ED8F7&background=56FBFF00&center=true&vCenter=true&width=500&height=60&lines=It's+WALLYJAYTECH-MD;Your+Most+Wanted+Wabot;A+Multi-Device+Whatsapp+Bot+;Developed+By+Wally+Jay+Tech;You're+Highly+Welcome...+%F0%9F%92%8F+)](https://git.io/typing-svg)
