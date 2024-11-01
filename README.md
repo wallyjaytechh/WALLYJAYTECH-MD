@@ -25,7 +25,7 @@
 <a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github&logoColor=cyan"></a>
 
 <img alt='WWALLYJAYTECH-MD whatsapp bot uses' src='https://img.shields.io/badge/WALLYJAYTECH-MD whatsapp bot uses-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
-  <a href="https://github.com/adiwajshing/Baileys">Multi-Device Baileys.</a><img alt='Multi-Device Baileys' src='https://img.shields.io/badge/Multi-Device Baileys-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
+  <a href="https://github.com/adiwajshing/Baileys"></a><img alt='Multi-Device Baileys' src='https://img.shields.io/badge/Multi-Device Baileys-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 </p>
 <p align="center">
   <img title="Whatsapp-Bot-Javascript" src="https://img.shields.io/badge/Javascript-cyan?style=for-the-badge&logo=javascript&logoColor=black"></img>
