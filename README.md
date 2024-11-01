@@ -218,6 +218,10 @@ NOW Deploy👇
 `Gentle Soul Gurl 😇`
 -------
 
+## 💑 `COULPLES`
+<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/z48pqBg/photo-2024-11-01-16-34-28.jpg" width="250" height="250" alt="Wally Jay"/></a>
+
+
 ## 🌈 `Support Us`
 - **Mail Us:** [wallyjay123@gmail.com](mailto:wallyjay123@gmail.com)
 - **Join Our Support Group:**
