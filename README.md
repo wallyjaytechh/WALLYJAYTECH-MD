@@ -47,7 +47,8 @@
   <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
   <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-cyan?style=for-the-badge&logo=codespace&logoColor=black"></a>
 </p>
-<p align="center">Need help? please create an <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/issues">issue</a></p>
+<p align="center">
+ <img alt='Need help? please create an' src='https://img.shields.io/badge/Need help? please create an-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 
 ### ℹ️ **About WALLYJAYTECH-MD**
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
