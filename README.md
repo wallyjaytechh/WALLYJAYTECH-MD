@@ -4,7 +4,7 @@
 <br>
 <br>
 
-
+<img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=25&pause=1000&color=2ED8F7&background=56FBFF00&center=true&vCenter=true&width=500&height=60&lines=It's+WALLYJAYTECH-MD;Your+Most+Wanted+Wabot;A+Multi-Device+Whatsapp+Bot+;Developed+By+Wally+Jay+Tech;You're+Highly+Welcome...+%F0%9F%92%8F+)](https://git.io/typing-svg)
 <p align="center">
   
@@ -59,7 +59,6 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/wallyjaytechh/WALLYJAYTECH-MD?color=cyan&style=flat-square"></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/wallyjaytechh/WALLYJAYTECH-MD?label=Watchers&color=cyan&style=flat-square"></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/wallyjaytechh/WALLYJAYTECH-MD?style=flat-square&color=cyan"></a>
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fwallyjaytechh%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%blue&title=hits&edge_flat=false"/></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
