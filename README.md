@@ -205,7 +205,7 @@ NOW Deploy👇
 
 
 ## 📛 `OWNER` 
-<a href="https://github.com/wallyjaytechh"><img src="https://github.com/wallyjaytechh.png" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/pW9SKJF/photo-2024-11-01-18-10-35.jpg" width="250" height="250" alt="Wally Jay"/></a>
   
 **WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
