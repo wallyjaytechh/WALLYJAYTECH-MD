@@ -13,7 +13,7 @@
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> is based on :
 >- [WHATSAPP BOT] by [AJIBADE ADEWALE JOSEPH] (License: Apache License 2.0)
 >
-> :unicorn: Don't forget to follow me! :point_right: <a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github&logoColor=cyan"></a>
+> :unicorn: Don't forget to follow me! :point_right: <a href="https://github.com/wallyjaytechh"><img alt='WALLY JAY TECH' src='https://img.shields.io/badge/WALLY JAY TECH-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 </p>
 
 
