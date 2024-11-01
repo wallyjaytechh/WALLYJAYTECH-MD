@@ -16,7 +16,7 @@
 >
 > :unicorn: Don't forget to follow me! :point_right: [WALLYJAYTECH](https://github.com/wallyjaytechh)
 </p>
-
+<img alt='SESSION ID' src='https://img.shields.io/badge/Session_id-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
 
 ## 🌟 `Bot Intro and Features`
 
@@ -116,7 +116,6 @@ Click On The Link To Donate ME  Generally All Countries...
     <br>
 <a href='https://xlicon-v3-web.onrender.com' target="_blank"><img alt='SESSION ID' src='https://img.shields.io/badge/Session_id-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
 
-<img alt='SESSION ID' src='https://img.shields.io/badge/Session_id-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
 3. Get Creds Json (SERVER 2)
     <br>
 <a href='https://replit.com/@S4SalmanYt/XLICON-V3-PAIRING' target="_blank"><img alt='SESSION ID' src='https://img.shields.io/badge/Session_id_2-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
