@@ -20,7 +20,7 @@
 
 ## 🌟 `Bot Intro and Features`
 
-   <a><img src='https://telegra.ph/file/fb739bbadffa71061521d.jpg'/></a>
+   <a><img src='https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg'/></a>
 
 <p align="center">
 <a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github&logoColor=cyan"></a>
