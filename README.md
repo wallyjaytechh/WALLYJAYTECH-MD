@@ -61,7 +61,7 @@ WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](htt
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/network/members"><img title="Forks" src="https://img.shields.io/github/forks/wallyjaytechh/WALLYJAYTECH-MD?color=cyan&style=flat-square"></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/wallyjaytechh/WALLYJAYTECH-MD?label=Watchers&color=cyan&style=flat-square"></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/"><img title="Size" src="https://img.shields.io/github/repo-size/wallyjaytechh/WALLYJAYTECH-MD?style=flat-square&color=cyan"></a>
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fwallyjaytechh%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%#00FFFF&title=hits&edge_flat=false"/></a>
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fwallyjaytechh%2FWALLYJAYTECH-MD&count_bg=%2379C83D&title_bg=%23555555&icon=probot.svg&icon_color=%00FFFF&title=hits&edge_flat=true"/></a>
 <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/graphs/commit-activity"><img height="20" src="https://img.shields.io/badge/Maintained%3F-yes-cyan.svg"></a>&nbsp;&nbsp;
 </p>
 <p align='center'>
