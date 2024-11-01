@@ -36,7 +36,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/wallyjaytechh/WALLYJAYTECH-MD/blob/main/temp/deploy-on-vps.md"><img src="https://img.shields.io/badge/self hosting-cyan?style=for-the-badge&logo=serverless&logoColor=black"></a>
+  <a href="https://game.evoshosting.com/"><img src="https://img.shields.io/badge/panel-cyan?style=for-the-badge&logo=serverless&logoColor=black"></a>
   <a href="https://suhail-web01.vercel.app/deploy?platform=railway"><img src="https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black"></a>
 </p>
 <p align="center">
