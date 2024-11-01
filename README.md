@@ -8,6 +8,9 @@
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=25&pause=1000&color=2ED8F7&background=56FBFF00&center=true&vCenter=true&width=500&height=60&lines=It's+WALLYJAYTECH-MD;Your+Most+Wanted+Wabot;A+Multi-Device+Whatsapp+Bot+;Developed+By+Wally+Jay+Tech;You're+Highly+Welcome...+%F0%9F%92%8F+)](https://git.io/typing-svg)
 
 <img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
+<div align="center">
+  <img src="https://spogit.vercel.app/api?theme=dark&rainbow=true&scan=true" alt="Widget with the current Spotify song"  />
+</div>
 <p align="center">
   
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <img alt='IS BASED ON:' src='https://img.shields.io/badge/IS BASED ON:-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
