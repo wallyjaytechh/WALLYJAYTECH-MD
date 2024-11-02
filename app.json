@@ -1,8 +1,8 @@
 {
-    "name": "Queen_Anita-V2",
+    "name": "WALLYJAYTECH-MD",
     "description": "Simple WhatsApp Bot",
-    "logo": "https://i.imgur.com/H4qeXwa.jpeg",
-    "keywords": ["DeeCeeXxx", "Anita-V2", "Queen_Anita"],
+    "logo": "https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg",
+    "keywords": ["WALLYJAYTECH-MD", "wallyjaytechh", "WALLYJAYTECH"],
     "success_url": "/",
     "stack": "container",
   
@@ -20,7 +20,7 @@
       },
       "USER_IMAGES": {
         "description": "Menu Images",
-        "value": "https://i.imgur.com/H4qeXwa.jpeg",
+        "value": "https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg",
         "required": false
       },
   
@@ -35,12 +35,12 @@
       },
       "THUMB_IMAGE": {
         "description": "Thumbnail",
-        "value": "https://i.imgur.com/H4qeXwa.jpeg"
+        "value": "https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg"
       },
       "BOT_NAME": {
         "description": " NAME FOR BOT",
         "required": false,
-        "value": "Queen_Anita-V2"
+        "value": "WALLYJAYTECH-MD"
       },
       "TZ": {
         "description": "Put TIME_ZONE according to your location",
@@ -103,7 +103,7 @@
       },
       "OWNER_NUMBER": {
         "description": "The phone numbers of the users who you want to be admin for the bot (should be in international format without + and multiple numbers must be separated by a comma \",\")",
-        "value": "2349066528353"
+        "value": "2348144317152"
       },
       "SESSION_ID": {
         "description": "put your SESSION_ID here.",
@@ -115,12 +115,12 @@
       },
       "PACK_NAME": {
         "description": "Put Sticker Pack_Name.",
-        "value": "Queen_Anita-V2",
+        "value": "WALLYJAYTECH-MD",
         "required": false
       },
       "PACK_AUTHER": {
         "description": "Put Sticker Author_Name.",
-        "value": "A N I T A",
+        "value": "WALLY JAY TECH",
         "required": false
       }  
   },
