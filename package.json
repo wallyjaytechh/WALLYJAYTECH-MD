@@ -24,7 +24,7 @@
       "anime-character-random": "latest",
       "aptoide-scraper": "^1.0.1",
       "async-g-i-s": "^1.4.0",
-      "axios": "^0.24.0",
+      "axios": "^1.7.7",
       "canvas": "^2.11.2",
       "cheerio": "^1.0.0-rc.10",
       "child_process": "^1.0.2",
