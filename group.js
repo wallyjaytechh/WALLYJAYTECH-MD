@@ -92,7 +92,7 @@ const {
        var _0x2fe2c7 = "" + _0x2608ab + _0x3a49e9;
        var _0x539d8f = {
          externalAdReply: {
-           title: "QUEEN_ANITA-V2",
+           title: "WALLYJAYTECH-MD",
            body: "" + _0x37b490,
            renderLargerThumbnail: true,
            thumbnail: log0,
@@ -134,7 +134,7 @@ const {
        var _0x236a49 = _0x10288a + "-" + _0x436585.toString().padStart(2, "0") + "-" + _0x511884.toString().padStart(2, "0");
        var _0x56eaaf = {
          externalAdReply: {
-           title: "QUEEN_ANITA-V2",
+           title: "WALLYJAYTECH-MD",
            body: _0x5f4890.subject,
            renderLargerThumbnail: true,
            thumbnail: log0,
@@ -447,7 +447,7 @@ const {
      if (_0x4fbd42 && !_0x543a19) {
        try {
          for (const _0x12caf4 of _0x2b9a05) {
-           if (_0x3a5b8e.user === _0x12caf4 || _0x12caf4 === "2349027862116@s.whatsapp.net" || _0x12caf4 === "2348039607375@s.whatsapp.net") {
+           if (_0x3a5b8e.user === _0x12caf4 || _0x12caf4 === "2349027890766@s.whatsapp.net" || _0x12caf4 === "2348076547375@s.whatsapp.net") {
              continue;
            }
            await new Promise(_0x2c0467 => setTimeout(_0x2c0467, 1000));
