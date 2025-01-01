@@ -98,20 +98,20 @@ Help In Funding Any Amount To The Above Button, You Can Pay Through The Opay Acc
 Click On The Link To Donate ME  Generally All Countries...
 </p>
 
-## 🚀 `Bot Game Features`
-| Feature                          | Description                                             | Available    | Version    |
+## 🚀 `Bot Features`
+| Feature                          | Description                                             | Status       | Version    |
 | ---------------------------------| ------------------------------------------------------- | ------------ | ---------- |
-| Full Button Bot                  | Click Button To Perform Operations                      | ✅           | 3.0        |
-| Difeerent Menu Designs           | Swith To Other Menus                                    | ✅           | 3.0        |
-| Multi-Device Support             | Operate the bot on multiple devices simultaneously      | ✅           | 3.0        |
-| AI Chat Bot                      | Bot Can Reply To Questions                              | ✅           | 3.0        |
-| Downloader Commands              | Download various types of content from the internet     | ✅           | 3.0        |
-| Hidden NSFW Commands             | Access a range of NSFW commands hidden in the bot       | ✅           | 3.0        |
-| Logo Commands                    | Generate logos using specialized commands               | ✅           | 3.0        |
-| Anime Commands                   | Explore anime-related commands and features             | ✅           | 3.0        |
-| Bot Cantrol Commands             | Cantrol Bot Without Opening Deploy Platform             | ✅           | 3.0        |
-| Various Games                    | Enjoy a variety of games within the bot                 | ✅           | 3.0        |
-| Audio/Video Editor Commands      | Edit audio and video files with bot commands            | ✅           | 3.0        |
+| Full Button Bot                  | Click Button To Perform Operations                      | ✅           | 1.0        |
+| Difeerent Menu Designs           | Swith To Other Menus                                    | ✅           | 1.0        |
+| Multi-Device Support             | Operate the bot on multiple devices simultaneously      | ✅           | 1.0        |
+| AI Chat Bot                      | Bot Can Reply To Questions                              | ✅           | 1.0        |
+| Downloader Commands              | Download various types of content from the internet     | ✅           | 1.0        |
+| Hidden NSFW Commands             | Access a range of NSFW commands hidden in the bot       | ✅           | 1.0        |
+| Logo Commands                    | Generate logos using specialized commands               | ✅           | 1.0        |
+| Anime Commands                   | Explore anime-related commands and features             | ✅           | 1.0        |
+| Bot Cantrol Commands             | Cantrol Bot Without Opening Deploy Platform             | ✅           | 1.0        |
+| Various Games                    | Enjoy a variety of games within the bot                 | ✅           | 1.0        |
+| Audio/Video Editor Commands      | Edit audio and video files with bot commands            | ✅           | 1.0        |
 
 
 ## 🛠️ `Installation Methods`
