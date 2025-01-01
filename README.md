@@ -213,6 +213,17 @@ Click On The Link To Donate ME  Generally All Countries...
     <br>
 <a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
 
+#### DEPLOY TO OKTETO
+
+5. If You don't have an account on Okteto. Create an account.
+    <br>
+<a href='https://www.okteto.com/pricing/?plan=SaaS' target="_blank"><img alt='Okteto' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
+
+6. Now Deploy
+    <br>
+<a href='https://cloud.okteto.com/login' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
+
+
 ## 🎇 `NEW DEPLOYMENT`
 NOW Deploy👇
 <br>
