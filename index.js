@@ -1,1 +1,253 @@
-const _0x37c7cb=_0x1562;(function(_0x4bfd57,_0x3e0b35){const _0x2e9f9c=_0x1562,_0x1bc02d=_0x4bfd57();while(!![]){try{const _0x32689e=-parseInt(_0x2e9f9c(0x1f7))/0x1+parseInt(_0x2e9f9c(0x1f1))/0x2+parseInt(_0x2e9f9c(0x1f2))/0x3+parseInt(_0x2e9f9c(0x1f0))/0x4+parseInt(_0x2e9f9c(0x1ed))/0x5+parseInt(_0x2e9f9c(0x1ee))/0x6*(-parseInt(_0x2e9f9c(0x1ec))/0x7)+parseInt(_0x2e9f9c(0x1f4))/0x8;if(_0x32689e===_0x3e0b35)break;else _0x1bc02d['push'](_0x1bc02d['shift']());}catch(_0x3a0802){_0x1bc02d['push'](_0x1bc02d['shift']());}}}(_0x3cb2,0x5c3f2));function hi(){console['log']('Hello\x20World!');}hi();function _0x3cb2(){const _0x4324a5=['4105722EIkngg','sync','1964772uPLCCJ','1477230VDFAyL','246774FjnTpj','info','2198856KgrYsF','init','/config','636385ESDTsi','error','DATABASE','7BYGfME','557955wHpUcT'];_0x3cb2=function(){return _0x4324a5;};return _0x3cb2();}function _0x1562(_0x461292,_0x2ee2db){const _0x3cb248=_0x3cb2();return _0x1562=function(_0x1562b2,_0x5ea28d){_0x1562b2=_0x1562b2-0x1ec;let _0x5c37cd=_0x3cb248[_0x1562b2];return _0x5c37cd;},_0x1562(_0x461292,_0x2ee2db);}const bot=require(__dirname+'/lib/amd'),{VERSION}=require(__dirname+_0x37c7cb(0x1f6)),start=async()=>{const _0x4b0e6b=_0x37c7cb;Debug[_0x4b0e6b(0x1f3)]('INSTALLING\x20WALLYJAYTECH-MD...');try{await bot[_0x4b0e6b(0x1f5)](),await bot[_0x4b0e6b(0x1f9)][_0x4b0e6b(0x1ef)](),await bot['connect']();}catch(_0x120425){Debug[_0x4b0e6b(0x1f8)](_0x120425),start();}};start();
+require('./settings');
+const fs = require('fs');
+const pino = require('pino');
+const { color } = require('./lib/color');
+const path = require('path');
+const axios = require('axios');
+const chalk = require('chalk');
+const readline = require('readline');
+const { File } = require('megajs');
+const FileType = require('file-type');
+const { exec } = require('child_process');
+const { Boom } = require('@hapi/boom');
+const NodeCache = require('node-cache');
+const PhoneNumber = require('awesome-phonenumber');
+const { default: makeWASocket, useMultiFileAuthState, Browsers, DisconnectReason, makeInMemoryStore, makeCacheableSignalKeyStore, proto, getAggregateVotesInPollMessage } = require('@whiskeysockets/baileys');
+
+let phoneNumber = "2348144317152";
+const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
+const useMobile = process.argv.includes("--mobile");
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
+const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+let owner = JSON.parse(fs.readFileSync('./src/owner.json'));
+
+global.api = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({ ...query, ...(apikeyqueryname ? { [apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name] } : {}) })) : '');
+
+const DataBase = require('./src/database');
+const database = new DataBase();
+(async () => {
+	const loadData = await database.read();
+	if (loadData && Object.keys(loadData).length === 0) {
+		global.db = {
+			sticker: {},
+			users: {},
+			groups: {},
+			database: {},
+			settings: {},
+			others: {},
+			...(loadData || {}),
+		};
+		await database.write(global.db);
+	} else {
+		global.db = loadData;
+	}
+	
+	setInterval(async () => {
+		if (global.db) await database.write(global.db);
+	}, 30000);
+})();
+
+const { GroupUpdate, GroupParticipantsUpdate, MessagesUpsert, Solving } = require('./src/message');
+const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif');
+const { isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/function');
+
+
+const sessionDir = path.join(__dirname, 'session');
+const credsPath = path.join(sessionDir, 'creds.json');
+
+async function sessionLoader() {
+  try {
+    // Ensure session directory exists
+    await fs.promises.mkdir(sessionDir, { recursive: true });
+
+    if (!fs.existsSync(credsPath)) {
+      if (!global.SESSION_ID) {
+      return console.log(color(`Session id and creds.json not found!!\n\nWait to enter your number`, 'red'));
+      }
+
+      const sessionData = global.SESSION_ID.split("WALLYJAYTECH~")[1];
+      const filer = File.fromURL(`https://mega.nz/file/${sessionData}`);
+
+      await new Promise((resolve, reject) => {
+        filer.download((err, data) => {
+          if (err) reject(err);
+          resolve(data);
+        });
+      })
+      .then(async (data) => {
+        await fs.promises.writeFile(credsPath, data);
+        console.log(color(`Session downloaded successfully, proceeding to start...`, 'green'));
+        await startXliconBot();
+      });
+    }
+  } catch (error) {
+    console.error('Error retrieving session:', error);
+  }
+}
+
+console.log(
+  chalk.cyan(`
+██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗ 
+██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗
+██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║
+██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║
+╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝
+ ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝ 
+                                                                                                                         
+  `)
+);
+
+console.log(chalk.white.bold(`${chalk.gray.bold("📃  Information :")}         
+✉️  Script : WALLYJAYTECH-MD
+✉️  Author : WALLY JAY TECH
+✉️  Gmail : wallyjay123@gmail.com
+✉️  Facebook : wallyjaytech
+
+${chalk.green.bold("OWNED BY WALLY JAY TECH")}\n`));
+
+async function startXliconBot() {
+    //------------------------------------------------------
+    let version = [2, 3000, 1015901307];
+    let isLatest = false;
+    
+    const { state, saveCreds } = await useMultiFileAuthState(`./session`);
+    const msgRetryCounterCache = new NodeCache();
+    
+    const XliconBotInc = makeWASocket({
+        logger: pino({ level: 'silent' }),
+        printQRInTerminal: !pairingCode,
+        browser: Browsers.windows('Firefox'),
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+        },
+        version, // Using specified version
+        markOnlineOnConnect: true,
+        generateHighQualityLinkPreview: true,
+        getMessage: async (key) => {
+            let jid = jidNormalizedUser(key.remoteJid);
+            let msg = await store.loadMessage(jid, key.id);
+            return msg?.message || "";
+        },
+        msgRetryCounterCache,
+        defaultQueryTimeoutMs: undefined,
+    });
+   
+    store.bind(XliconBotInc.ev);
+
+    if (pairingCode && !XliconBotInc.authState.creds.registered) {
+        if (useMobile) throw new Error('Cannot use pairing code with mobile API');
+
+        let phoneNumber;
+        phoneNumber = await question('Please enter your number starting with country code like 234:\n');
+        phoneNumber = phoneNumber.trim();
+
+        setTimeout(async () => {
+            const code = await XliconBotInc.requestPairingCode(phoneNumber);
+            console.log(chalk.black(chalk.bgGreen(`🎁  Pairing Code : ${code}`)));
+        }, 3000);
+    }
+
+    store.bind(XliconBotInc.ev);
+    await Solving(XliconBotInc, store);
+    XliconBotInc.ev.on('creds.update', saveCreds);
+    XliconBotInc.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect, receivedPendingNotifications } = update;
+        if (connection === 'close') {
+            const reason = new Boom(lastDisconnect?.error)?.output.statusCode;
+            if (reason === DisconnectReason.connectionLost) {
+                console.log('Connection to Server Lost, Attempting to Reconnect...');
+                startXliconBot();
+            } else if (reason === DisconnectReason.connectionClosed) {
+                console.log('Connection closed, Attempting to Reconnect...');
+                startXliconBot();
+            } else if (reason === DisconnectReason.restartRequired) {
+                console.log('Restart Required...');
+                startXliconBot();
+            } else if (reason === DisconnectReason.timedOut) {
+                console.log('Connection Timed Out, Attempting to Reconnect...');
+                startXliconBot();
+            } else if (reason === DisconnectReason.badSession) {
+                console.log('Delete Session and Scan again...');
+                process.exit(1);
+            } else if (reason === DisconnectReason.connectionReplaced) {
+                console.log('Close current Session first...');
+                XliconBotInc.logout();
+            } else if (reason === DisconnectReason.loggedOut) {
+                console.log('Scan again and Run...');
+            } else if (reason === DisconnectReason.Multidevicemismatch) {
+                console.log('Scan again...');
+            } else {
+                XliconBotInc.end(`Unknown DisconnectReason : ${reason}|${connection}`);
+            }
+        }
+        if (connection == 'open') {
+            console.log('Connected to : ' + JSON.stringify(XliconBotInc.user, null, 2));
+        } else if (receivedPendingNotifications == 'true') {
+            console.log('Please wait About 1 Minute...');
+        }
+    });
+    
+    XliconBotInc.ev.on('contacts.update', (update) => {
+        for (let contact of update) {
+            let id = XliconBotInc.decodeJid(contact.id);
+            if (store && store.contacts) store.contacts[id] = { id, name: contact.notify };
+        }
+    });
+    
+    XliconBotInc.ev.on('call', async (call) => {
+        let botNumber = await XliconBotInc.decodeJid(XliconBotInc.user.id);
+        let anticall = global.db.settings[botNumber].anticall;
+        if (anticall) {
+            for (let id of call) {
+                if (id.status === 'offer') {
+                    let msg = await XliconBotInc.sendMessage(id.from, { text: `Currently, We Cannot Receive Calls ${id.isVideo ? 'Video' : 'Voice'}.\nIf @${id.from.split('@')[0]} Needs Help, Please Contact Owner :)`, mentions: [id.from] });
+                    await XliconBotInc.sendContact(id.from, global.owner, msg);
+                    await XliconBotInc.rejectCall(id.id, id.from);
+                }
+            }
+        }
+    });
+    
+    XliconBotInc.ev.on('groups.update', async (update) => {
+        await GroupUpdate(XliconBotInc, update, store);
+    });
+    
+    XliconBotInc.ev.on('group-participants.update', async (update) => {
+        await GroupParticipantsUpdate(XliconBotInc, update);
+    });
+    
+    XliconBotInc.ev.on('messages.upsert', async (message) => {
+        await MessagesUpsert(XliconBotInc, message, store);
+    });
+    return XliconBotInc;
+}
+
+async function initStart() {
+    if (fs.existsSync(credsPath)) {
+        console.log(color("Creds.json exists, proceeding to start...", 'yellow'));
+await startXliconBot();
+} else {
+         const sessionCheck = await sessionLoader();
+        if (sessionCheck) {
+            console.log("Session downloaded successfully, proceeding to start... .");
+await startXliconBot();
+    } else {
+     if (!fs.existsSync(credsPath)) {
+    if(!global.SESSION_ID) {
+            console.log(color("Please wait for a few seconds to enter your number!", 'red'));
+await startXliconBot();
+        }
+    }
+  }
+ }
+} 
+initStart();
+let file = require.resolve(__filename);
+fs.watchFile(file, () => {
+    fs.unwatchFile(file);
+    console.log(chalk.redBright(`Update ${__filename}`));
+    delete require.cache[file];
+    require(file);
+});
