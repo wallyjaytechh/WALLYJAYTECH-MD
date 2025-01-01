@@ -1,23 +1,23 @@
-FROM node:lts-buster
+FROM node:lts
 
-RUN apt-get update && \
-  apt-get install -y \
-  ffmpeg \
-  imagemagick \
-  webp && \
-  apt-get upgrade -y && \
-  npm i pm2 -g && \
-  rm -rf /var/lib/apt/lists/*
-  
-RUN gitclone https://github.com/wallyjaytechh/WALLYJAYTECH-MD
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg imagemagick webp && apt-get clean
 
+# Set working directory
+WORKDIR /app
 
-COPY package.json .
-RUN npm install pm2 -g
-RUN npm install --legacy-peer-deps
+# Copy package files
+COPY package*.json ./
 
+# Install dependencies
+RUN npm install && npm cache clean --force
+RUN npm install -g pm2
+
+# Copy application code
 COPY . .
 
-EXPOSE 3000
+# Set environment
+ENV NODE_ENV production
 
-CMD ["npm","start" ]
+# Run command
+CMD ["npm", "run", "start"]
