@@ -287,6 +287,21 @@ NOW Deploy👇
 ## 🔒 `Reminder`
 Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 
+## `Panel Support`
+```bash
+1. Fork Repository
+2. If already forked then sync fork repository
+3. Click on code and click download as zip
+4. Then upload script zip file to panel
+5. Unarchieve the zip file you uploaded to panel
+6. Open bot folder and move all filea to container by (../)
+7. Now run bot
+8. After 1-2min it show enter number [if you have session id already in the settings.js then no need]
+9. Enter number it will show pair code
+10. Enter pair code in linked device in whatsapp
+11. Bot Connect done now use bot 
+ 
+```
 
 
 
