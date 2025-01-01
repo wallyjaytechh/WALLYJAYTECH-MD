@@ -126,10 +126,7 @@ Click On The Link To Donate ME  Generally All Countries...
 3. Get Creds Json (SERVER 2)
     <br>
 <a href='https://replit.com/github/wallyjaytechh/WALLYJAYTECH-MD-QR' target="_blank"><img alt='SESSION ID' src='https://img.shields.io/badge/Session_id_2-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>
-
-4. Get Mongodb_URI (OPTIONAL)
-    <br>
-<a href='https://www.mongodb.com' target="_blank"><img alt='Mongodb_URI' src='https://img.shields.io/badge/Mongodb_URI-100000?style=for-the-badge&logo=scan&logoColor=black&labelColor=cyan&color=cyan'/></a>    
+  
 
 
 ## 🚀 `Deployments`
