@@ -236,6 +236,12 @@ NOW Deploy👇
 <div><button id="boton" type="button">Baileys - By WhiskeySockets & adiwajshing</button></div>
 <a href="https://github.com/WhiskeySockets/Baileys"><img src="https://github.com/WhiskeySockets.png" width="150" height="150" alt="adiwajshing"/></a>
 
+<a href="https://github.com/salmanytofficial"><img src="https://github.com/salmanytofficial.png" width="250" height="250" alt="Salman Ahmad"/></a>
+  
+**IN RESPECT** - To `salmanytofficial`
+<br>
+`Development , Maintainence , Bot Updates`
+
 
 
 ## 📛 `OWNER` 
