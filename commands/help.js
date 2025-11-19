@@ -4,147 +4,176 @@ const path = require('path');
 
 async function helpCommand(sock, chatId, message) {
     const helpMessage = `
-╔═══════════════════╗
-   *🤖 ${settings.botName || 'KnightBot-MD'}*  
-   Version: *${settings.version || '3.0.0'}*
-   by ${settings.botOwner || 'Mr Unique Hacker'}
-   YT : ${global.ytch}
+╔❖🔹*WALLYJAYTECH-MD MENU*🔹❖
+║
+║   *🤖 BotName: ${settings.botName || 'WALLYJAYTECH-MD'}*  
+║   *🧠 Version: ${settings.version || '1.0.0'}*
+║   *👤 BotOwner: ${settings.botOwner || 'Wally Jay Tech'}*
+║   *📺 YT Channel: ${global.ytch}*
+║   *🕹 Mode: ${settings.commandMode}*
+║   *📞 OwnerNumber: ${settings.ownerNumber}*
+║
 ╚═══════════════════╝
 
-*Available Commands:*
+*⬇️ ALL COMMANDS ⬇️*
 
 ╔═══════════════════╗
-🌐 *General Commands*:
-║ ➤ .help or .menu
-║ ➤ .ping
-║ ➤ .alive
-║ ➤ .tts <text>
-║ ➤ .owner
-║ ➤ .joke
-║ ➤ .quote
-║ ➤ .fact
-║ ➤ .weather <city>
-║ ➤ .news
-║ ➤ .attp <text>
-║ ➤ .lyrics <song_title>
-║ ➤ .8ball <question>
-║ ➤ .groupinfo
-║ ➤ .staff or .admins 
-║ ➤ .vv
-║ ➤ .trt <text> <lang>
-║ ➤ .ss <link>
-║ ➤ .jid
-║ ➤ .url
+║
+║ *🌐GENERAL CMDS🌐*
+║
+║ 🔸 .help or .menu
+║ 🔸 .ping
+║ 🔸 .alive
+║ 🔸 .tts <text>
+║ 🔸 .owner
+║ 🔸 .joke
+║ 🔸 .quote
+║ 🔸 .fact
+║ 🔸 .weather <city>
+║ 🔸 .news
+║ 🔸 .attp <text>
+║ 🔸 .lyrics <song_title>
+║ 🔸 .8ball <question>
+║ 🔸 .groupinfo
+║ 🔸 .admins 
+║ 🔸 .vv
+║ 🔸 .trt <text> <lang>
+║ 🔸 .ss <link>
+║ 🔸 .jid
+║ 🔸 .url
+║
 ╚═══════════════════╝ 
 
 ╔═══════════════════╗
-👮‍♂️ *Admin Commands*:
-║ ➤ .ban @user
-║ ➤ .promote @user
-║ ➤ .demote @user
-║ ➤ .mute <minutes>
-║ ➤ .unmute
-║ ➤ .delete or .del
-║ ➤ .kick @user
-║ ➤ .warnings @user
-║ ➤ .warn @user
-║ ➤ .antilink
-║ ➤ .antibadword
-║ ➤ .clear
-║ ➤ .tag <message>
-║ ➤ .tagall
-║ ➤ .tagnotadmin
-║ ➤ .hidetag <message>
-║ ➤ .chatbot
-║ ➤ .resetlink
-║ ➤ .antitag <on/off>
-║ ➤ .welcome <on/off>
-║ ➤ .goodbye <on/off>
-║ ➤ .setgdesc <description>
-║ ➤ .setgname <new name>
-║ ➤ .setgpp (reply to image)
+║
+║ *👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦*
+║
+║ 🔹 .ban @user
+║ 🔹 .unban @user
+║ 🔹 .promote @user
+║ 🔹 .demote @user
+║ 🔹 .mute <minutes>
+║ 🔹 .unmute
+║ 🔹 .delete
+║ 🔹 .kick @user
+║ 🔹 .warnings @user
+║ 🔹 .warn @user
+║ 🔹 .antilink
+║ 🔹 .antibadword
+║ 🔹 .clear
+║ 🔹 .tag <message>
+║ 🔹 .tagall
+║ 🔹 .tagnotadmin
+║ 🔹 .hidetag <message>
+║ 🔹 .chatbot
+║ 🔹 .resetlink
+║ 🔹 .antitag <on/off>
+║ 🔹 .welcome <on/off>
+║ 🔹 .goodbye <on/off>
+║ 🔹 .setgdesc <description>
+║ 🔹 .setgname <new name>
+║ 🔹 .setgpp (reply to image)
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
-🔒 *Owner Commands*:
-║ ➤ .mode <public/private>
-║ ➤ .clearsession
-║ ➤ .antidelete
-║ ➤ .cleartmp
-║ ➤ .update
-║ ➤ .settings
-║ ➤ .setpp <reply to image>
-║ ➤ .autoreact <on/off>
-║ ➤ .autostatus <on/off>
-║ ➤ .autostatus react <on/off>
-║ ➤ .autotyping <on/off>
-║ ➤ .autoread <on/off>
-║ ➤ .anticall <on/off>
-║ ➤ .pmblocker <on/off/status>
-║ ➤ .pmblocker setmsg <text>
-║ ➤ .setmention <reply to msg>
-║ ➤ .mention <on/off>
+║
+║  *🔒OWNER CMDS🔒*
+║
+║ 🔺 .mode <public/private>
+║ 🔺 .clearsession
+║ 🔺 .antidelete
+║ 🔺 .cleartmp
+║ 🔺 .update
+║ 🔺 .settings
+║ 🔺 .setpp <reply to image>
+║ 🔺 .autoreact <on/off>
+║ 🔺 .autostatus <on/off>
+║ 🔺 .autostatus react <on/off>
+║ 🔺 .autotyping <on/off>
+║ 🔺 .autoread <on/off>
+║ 🔺 .anticall <on/off>
+║ 🔺 .pmblocker <on/off/status>
+║ 🔺 .pmblocker setmsg <text>
+║ 🔺 .setmention <reply to msg>
+║ 🔺 .mention <on/off>
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
-🎨 *Image/Sticker Commands*:
-║ ➤ .blur <image>
-║ ➤ .simage <reply to sticker>
-║ ➤ .sticker <reply to image>
-║ ➤ .removebg
-║ ➤ .remini
-║ ➤ .crop <reply to image>
-║ ➤ .tgsticker <Link>
-║ ➤ .meme
-║ ➤ .take <packname> 
-║ ➤ .emojimix <emj1>+<emj2>
-║ ➤ .igs <insta link>
-║ ➤ .igsc <insta link>
+║
+║ *🎨STICKER CMDS🎨*
+║
+║ 🔻 .blur <image>
+║ 🔻 .simage <reply to sticker>
+║ 🔻 .sticker <reply to image>
+║ 🔻 .removebg
+║ 🔻 .remini
+║ 🔻 .crop <reply to image>
+║ 🔻 .tgsticker <Link>
+║ 🔻 .meme
+║ 🔻 .take <packname> 
+║ 🔻 .emojimix <emj1>+<emj2>
+║ 🔻 .igs <insta link>
+║ 🔻 .igsc <insta link>
+║
 ╚═══════════════════╝  
 
 ╔═══════════════════╗
-🖼️ *Pies Commands*:
-║ ➤ .pies <country>
-║ ➤ .china 
-║ ➤ .indonesia 
-║ ➤ .japan 
-║ ➤ .korea 
-║ ➤ .hijab
+║
+║  *🖼️PIES CMDS🖼️*
+║
+║ ▫️ .pies <country>
+║ ▫️ .china 
+║ ▫️ .indonesia 
+║ ▫️ .japan 
+║ ▫️ .korea 
+║ ▫️ .hijab
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
-🎮 *Game Commands*:
-║ ➤ .tictactoe @user
-║ ➤ .hangman
-║ ➤ .guess <letter>
-║ ➤ .trivia
-║ ➤ .answer <answer>
-║ ➤ .truth
-║ ➤ .dare
+║
+║  *🎮GAME CMDS🎮*
+║
+║ ◾️ .tictactoe @user
+║ ◾️ .hangman
+║ ◾️ .guess <letter for hangman>
+║ ◾️ .trivia
+║ ◾️ .answer <answer for trivia>
+║ ◾️ .truth
+║ ◾️ .dare
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
-🤖 *AI Commands*:
-║ ➤ .gpt <question>
-║ ➤ .gemini <question>
-║ ➤ .imagine <prompt>
-║ ➤ .flux <prompt>
-║ ➤ .sora <prompt>
+║
+║   *🧠AI CMDS🧠*
+║
+║ ♦️ .gpt <question>
+║ ♦️ .gemini <question>
+║ ♦️ .imagine <prompt>
+║ ♦️ .flux <prompt>
+║ ♦️ .sora <prompt>
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
-🎯 *Fun Commands*:
-║ ➤ .compliment @user
-║ ➤ .insult @user
-║ ➤ .flirt 
-║ ➤ .shayari
-║ ➤ .goodnight
-║ ➤ .roseday
-║ ➤ .character @user
-║ ➤ .wasted @user
-║ ➤ .ship @user
-║ ➤ .simp @user
-║ ➤ .stupid @user [text]
+║
+║  *😁FUN CMDS😁*
+║
+║ 🟢 .compliment @user
+║ 🟢 .insult @user
+║ 🟢 .flirt 
+║ 🟢 .shayari
+║ 🟢 .goodnight
+║ 🟢 .roseday
+║ 🟢 .character @user
+║ 🟢 .wasted @user
+║ 🟢 .ship @user
+║ 🟢 .simp @user
+║ 🟢 .stupid @user [text]
+║
 ╚═══════════════════╝
 
 ╔═══════════════════╗
