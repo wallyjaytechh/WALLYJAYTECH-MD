@@ -1,253 +1,429 @@
-require('./settings');
-const fs = require('fs');
-const pino = require('pino');
-const { color } = require('./lib/color');
-const path = require('path');
-const axios = require('axios');
-const chalk = require('chalk');
-const readline = require('readline');
-const { File } = require('megajs');
-const FileType = require('file-type');
-const { exec } = require('child_process');
-const { Boom } = require('@hapi/boom');
-const NodeCache = require('node-cache');
-const PhoneNumber = require('awesome-phonenumber');
-const { default: makeWASocket, useMultiFileAuthState, Browsers, DisconnectReason, makeInMemoryStore, makeCacheableSignalKeyStore, proto, getAggregateVotesInPollMessage } = require('@whiskeysockets/baileys');
-
-let phoneNumber = "2348144317152";
-const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
-const useMobile = process.argv.includes("--mobile");
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
-let owner = JSON.parse(fs.readFileSync('./src/owner.json'));
-
-global.api = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({ ...query, ...(apikeyqueryname ? { [apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name] } : {}) })) : '');
-
-const DataBase = require('./src/database');
-const database = new DataBase();
-(async () => {
-	const loadData = await database.read();
-	if (loadData && Object.keys(loadData).length === 0) {
-		global.db = {
-			sticker: {},
-			users: {},
-			groups: {},
-			database: {},
-			settings: {},
-			others: {},
-			...(loadData || {}),
-		};
-		await database.write(global.db);
-	} else {
-		global.db = loadData;
-	}
-	
-	setInterval(async () => {
-		if (global.db) await database.write(global.db);
-	}, 30000);
-})();
-
-const { GroupUpdate, GroupParticipantsUpdate, MessagesUpsert, Solving } = require('./src/message');
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif');
-const { isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/function');
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//                                                                                                                                                            //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
+//                                                                                                                                                            //
+//                                                                  𝐕 : 1.0.0                                                                                 //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
+//                                                                                                                                                            //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//*
+//  * @project_name : WALLYJAYTECH-MD
+//  * @author : wallyjaytech
+//  * @youtube : https://www.youtube.com/@wallyjaytechy
+//  * @description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//*
+//*
+//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
+//Instagram: wallyjaytech
+//Telegram: t.me/svenanjafrieda
+//GitHub: @wallyjaytechh
+//WhatsApp: +2348144317152
+//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+//   * Created By Github: wallyjaytechh.
+//   * Credit To ally jay tech
+//   * © 2025 WALLYJAYTECH-MD.
+// ⛥┌┤
+// */
 
 
-const sessionDir = path.join(__dirname, 'session');
-const credsPath = path.join(sessionDir, 'creds.json');
+require('./settings')
+const { Boom } = require('@hapi/boom')
+const fs = require('fs')
+const chalk = require('chalk')
+const FileType = require('file-type')
+const path = require('path')
+const axios = require('axios')
+const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
+const PhoneNumber = require('awesome-phonenumber')
+const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    fetchLatestBaileysVersion,
+    generateForwardMessageContent,
+    prepareWAMessageMedia,
+    generateWAMessageFromContent,
+    generateMessageID,
+    downloadContentFromMessage,
+    jidDecode,
+    proto,
+    jidNormalizedUser,
+    makeCacheableSignalKeyStore,
+    delay
+} = require("@whiskeysockets/baileys")
+const NodeCache = require("node-cache")
+// Using a lightweight persisted store instead of makeInMemoryStore (compat across versions)
+const pino = require("pino")
+const readline = require("readline")
+const { parsePhoneNumber } = require("libphonenumber-js")
+const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics')
+const { rmSync, existsSync } = require('fs')
+const { join } = require('path')
 
-async function sessionLoader() {
-  try {
-    // Ensure session directory exists
-    await fs.promises.mkdir(sessionDir, { recursive: true });
+// Import lightweight store
+const store = require('./lib/lightweight_store')
 
-    if (!fs.existsSync(credsPath)) {
-      if (!global.SESSION_ID) {
-      return console.log(color(`Session id and creds.json not found!!\n\nWait to enter your number`, 'red'));
-      }
+// Initialize store
+store.readFromFile()
+const settings = require('./settings')
+setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
-      const sessionData = global.SESSION_ID.split("WALLYJAYTECH~")[1];
-      const filer = File.fromURL(`https://mega.nz/file/${sessionData}`);
-
-      await new Promise((resolve, reject) => {
-        filer.download((err, data) => {
-          if (err) reject(err);
-          resolve(data);
-        });
-      })
-      .then(async (data) => {
-        await fs.promises.writeFile(credsPath, data);
-        console.log(color(`Session downloaded successfully, proceeding to start...`, 'green'));
-        await startXliconBot();
-      });
+// Memory optimization - Force garbage collection if available
+setInterval(() => {
+    if (global.gc) {
+        global.gc()
+        console.log('🧹 Garbage collection completed')
     }
-  } catch (error) {
-    console.error('Error retrieving session:', error);
-  }
+}, 60_000) // every 1 minute
+
+// Memory monitoring - Restart if RAM gets too high
+setInterval(() => {
+    const used = process.memoryUsage().rss / 1024 / 1024
+    if (used > 400) {
+        console.log('⚠️ RAM too high (>400MB), restarting bot...')
+        process.exit(1) // Panel will auto-restart
+    }
+}, 30_000) // check every 30 seconds
+
+let phoneNumber = "911234567890"
+let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
+
+global.botname = "KNIGHT BOT"
+global.themeemoji = "•"
+const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
+const useMobile = process.argv.includes("--mobile")
+
+// Only create readline interface if we're in an interactive environment
+const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null
+const question = (text) => {
+    if (rl) {
+        return new Promise((resolve) => rl.question(text, resolve))
+    } else {
+        // In non-interactive environment, use ownerNumber from settings
+        return Promise.resolve(settings.ownerNumber || phoneNumber)
+    }
 }
 
-console.log(
-  chalk.cyan(`
-██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗ 
-██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗
-██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║
-██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║
-╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝
- ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝ 
-                                                                                                                         
-  `)
-);
 
-console.log(chalk.white.bold(`${chalk.gray.bold("📃  Information :")}         
-✉️  Script : WALLYJAYTECH-MD
-✉️  Author : WALLY JAY TECH
-✉️  Gmail : wallyjay123@gmail.com
-✉️  Facebook : wallyjaytech
+async function startXeonBotInc() {
+    try {
+        let { version, isLatest } = await fetchLatestBaileysVersion()
+        const { state, saveCreds } = await useMultiFileAuthState(`./session`)
+        const msgRetryCounterCache = new NodeCache()
 
-${chalk.green.bold("OWNED BY WALLY JAY TECH")}\n`));
+        const XeonBotInc = makeWASocket({
+            version,
+            logger: pino({ level: 'silent' }),
+            printQRInTerminal: !pairingCode,
+            browser: ["Ubuntu", "Chrome", "20.0.04"],
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+            },
+            markOnlineOnConnect: true,
+            generateHighQualityLinkPreview: true,
+            syncFullHistory: false,
+            getMessage: async (key) => {
+                let jid = jidNormalizedUser(key.remoteJid)
+                let msg = await store.loadMessage(jid, key.id)
+                return msg?.message || ""
+            },
+            msgRetryCounterCache,
+            defaultQueryTimeoutMs: 60000,
+            connectTimeoutMs: 60000,
+            keepAliveIntervalMs: 10000,
+        })
 
-async function startXliconBot() {
-    //------------------------------------------------------
-    let version = [2, 3000, 1015901307];
-    let isLatest = false;
-    
-    const { state, saveCreds } = await useMultiFileAuthState(`./session`);
-    const msgRetryCounterCache = new NodeCache();
-    
-    const XliconBotInc = makeWASocket({
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: !pairingCode,
-        browser: Browsers.windows('Firefox'),
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
-        },
-        version, // Using specified version
-        markOnlineOnConnect: true,
-        generateHighQualityLinkPreview: true,
-        getMessage: async (key) => {
-            let jid = jidNormalizedUser(key.remoteJid);
-            let msg = await store.loadMessage(jid, key.id);
-            return msg?.message || "";
-        },
-        msgRetryCounterCache,
-        defaultQueryTimeoutMs: undefined,
-    });
-   
-    store.bind(XliconBotInc.ev);
+        // Save credentials when they update
+        XeonBotInc.ev.on('creds.update', saveCreds)
 
-    if (pairingCode && !XliconBotInc.authState.creds.registered) {
-        if (useMobile) throw new Error('Cannot use pairing code with mobile API');
+    store.bind(XeonBotInc.ev)
 
-        let phoneNumber;
-        phoneNumber = await question('Please enter your number starting with country code like 234:\n');
-        phoneNumber = phoneNumber.trim();
-
-        setTimeout(async () => {
-            const code = await XliconBotInc.requestPairingCode(phoneNumber);
-            console.log(chalk.black(chalk.bgGreen(`🎁  Pairing Code : ${code}`)));
-        }, 3000);
-    }
-
-    store.bind(XliconBotInc.ev);
-    await Solving(XliconBotInc, store);
-    XliconBotInc.ev.on('creds.update', saveCreds);
-    XliconBotInc.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, receivedPendingNotifications } = update;
-        if (connection === 'close') {
-            const reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-            if (reason === DisconnectReason.connectionLost) {
-                console.log('Connection to Server Lost, Attempting to Reconnect...');
-                startXliconBot();
-            } else if (reason === DisconnectReason.connectionClosed) {
-                console.log('Connection closed, Attempting to Reconnect...');
-                startXliconBot();
-            } else if (reason === DisconnectReason.restartRequired) {
-                console.log('Restart Required...');
-                startXliconBot();
-            } else if (reason === DisconnectReason.timedOut) {
-                console.log('Connection Timed Out, Attempting to Reconnect...');
-                startXliconBot();
-            } else if (reason === DisconnectReason.badSession) {
-                console.log('Delete Session and Scan again...');
-                process.exit(1);
-            } else if (reason === DisconnectReason.connectionReplaced) {
-                console.log('Close current Session first...');
-                XliconBotInc.logout();
-            } else if (reason === DisconnectReason.loggedOut) {
-                console.log('Scan again and Run...');
-            } else if (reason === DisconnectReason.Multidevicemismatch) {
-                console.log('Scan again...');
-            } else {
-                XliconBotInc.end(`Unknown DisconnectReason : ${reason}|${connection}`);
+    // Message handling
+    XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
+        try {
+            const mek = chatUpdate.messages[0]
+            if (!mek.message) return
+            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+                await handleStatus(XeonBotInc, chatUpdate);
+                return;
             }
-        }
-        if (connection == 'open') {
-            console.log('Connected to : ' + JSON.stringify(XliconBotInc.user, null, 2));
-        } else if (receivedPendingNotifications == 'true') {
-            console.log('Please wait About 1 Minute...');
-        }
-    });
-    
-    XliconBotInc.ev.on('contacts.update', (update) => {
-        for (let contact of update) {
-            let id = XliconBotInc.decodeJid(contact.id);
-            if (store && store.contacts) store.contacts[id] = { id, name: contact.notify };
-        }
-    });
-    
-    XliconBotInc.ev.on('call', async (call) => {
-        let botNumber = await XliconBotInc.decodeJid(XliconBotInc.user.id);
-        let anticall = global.db.settings[botNumber].anticall;
-        if (anticall) {
-            for (let id of call) {
-                if (id.status === 'offer') {
-                    let msg = await XliconBotInc.sendMessage(id.from, { text: `Currently, We Cannot Receive Calls ${id.isVideo ? 'Video' : 'Voice'}.\nIf @${id.from.split('@')[0]} Needs Help, Please Contact Owner :)`, mentions: [id.from] });
-                    await XliconBotInc.sendContact(id.from, global.owner, msg);
-                    await XliconBotInc.rejectCall(id.id, id.from);
+            // In private mode, only block non-group messages (allow groups for moderation)
+            // Note: XeonBotInc.public is not synced, so we check mode in main.js instead
+            // This check is kept for backward compatibility but mainly blocks DMs
+            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
+                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
+                if (!isGroup) return // Block DMs in private mode, but allow group messages
+            }
+            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
+
+            // Clear message retry cache to prevent memory bloat
+            if (XeonBotInc?.msgRetryCounterCache) {
+                XeonBotInc.msgRetryCounterCache.clear()
+            }
+
+            try {
+                await handleMessages(XeonBotInc, chatUpdate, true)
+            } catch (err) {
+                console.error("Error in handleMessages:", err)
+                // Only try to send error message if we have a valid chatId
+                if (mek.key && mek.key.remoteJid) {
+                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                        text: '❌ An error occurred while processing your message.',
+                        contextInfo: {
+                            forwardingScore: 1,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363161513685998@newsletter',
+                                newsletterName: 'KnightBot MD',
+                                serverMessageId: -1
+                            }
+                        }
+                    }).catch(console.error);
                 }
             }
+        } catch (err) {
+            console.error("Error in messages.upsert:", err)
+        }
+    })
+
+    // Add these event handlers for better functionality
+    XeonBotInc.decodeJid = (jid) => {
+        if (!jid) return jid
+        if (/:\d+@/gi.test(jid)) {
+            let decode = jidDecode(jid) || {}
+            return decode.user && decode.server && decode.user + '@' + decode.server || jid
+        } else return jid
+    }
+
+    XeonBotInc.ev.on('contacts.update', update => {
+        for (let contact of update) {
+            let id = XeonBotInc.decodeJid(contact.id)
+            if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
+        }
+    })
+
+    XeonBotInc.getName = (jid, withoutContact = false) => {
+        id = XeonBotInc.decodeJid(jid)
+        withoutContact = XeonBotInc.withoutContact || withoutContact
+        let v
+        if (id.endsWith("@g.us")) return new Promise(async (resolve) => {
+            v = store.contacts[id] || {}
+            if (!(v.name || v.subject)) v = XeonBotInc.groupMetadata(id) || {}
+            resolve(v.name || v.subject || PhoneNumber('+' + id.replace('@s.whatsapp.net', '')).getNumber('international'))
+        })
+        else v = id === '0@s.whatsapp.net' ? {
+            id,
+            name: 'WhatsApp'
+        } : id === XeonBotInc.decodeJid(XeonBotInc.user.id) ?
+            XeonBotInc.user :
+            (store.contacts[id] || {})
+        return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
+    }
+
+    XeonBotInc.public = true
+
+    XeonBotInc.serializeM = (m) => smsg(XeonBotInc, m, store)
+
+    // Handle pairing code
+    if (pairingCode && !XeonBotInc.authState.creds.registered) {
+        if (useMobile) throw new Error('Cannot use pairing code with mobile api')
+
+        let phoneNumber
+        if (!!global.phoneNumber) {
+            phoneNumber = global.phoneNumber
+        } else {
+            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFormat: 6281376552730 (without + or spaces) : `)))
+        }
+
+        // Clean the phone number - remove any non-digit characters
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+        // Validate the phone number using awesome-phonenumber
+        const pn = require('awesome-phonenumber');
+        if (!pn('+' + phoneNumber).isValid()) {
+            console.log(chalk.red('Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces.'));
+            process.exit(1);
+        }
+
+        setTimeout(async () => {
+            try {
+                let code = await XeonBotInc.requestPairingCode(phoneNumber)
+                code = code?.match(/.{1,4}/g)?.join("-") || code
+                console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
+                console.log(chalk.yellow(`\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap "Link a Device"\n4. Enter the code shown above`))
+            } catch (error) {
+                console.error('Error requesting pairing code:', error)
+                console.log(chalk.red('Failed to get pairing code. Please check your phone number and try again.'))
+            }
+        }, 3000)
+    }
+
+    // Connection handling
+    XeonBotInc.ev.on('connection.update', async (s) => {
+        const { connection, lastDisconnect, qr } = s
+        
+        if (qr) {
+            console.log(chalk.yellow('📱 QR Code generated. Please scan with WhatsApp.'))
+        }
+        
+        if (connection === 'connecting') {
+            console.log(chalk.yellow('🔄 Connecting to WhatsApp...'))
+        }
+        
+        if (connection == "open") {
+            console.log(chalk.magenta(` `))
+            console.log(chalk.yellow(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
+
+            try {
+                const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
+                await XeonBotInc.sendMessage(botNumber, {
+                    text: `🤖 Bot Connected Successfully!\n\n⏰ Time: ${new Date().toLocaleString()}\n✅ Status: Online and Ready!\n\n✅Make sure to join below channel`,
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363161513685998@newsletter',
+                            newsletterName: 'KnightBot MD',
+                            serverMessageId: -1
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error sending connection message:', error.message)
+            }
+
+            await delay(1999)
+            console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'KNIGHT BOT'} ]`)}\n\n`))
+            console.log(chalk.cyan(`< ================================================== >`))
+            console.log(chalk.magenta(`\n${global.themeemoji || '•'} YT CHANNEL: MR UNIQUE HACKER`))
+            console.log(chalk.magenta(`${global.themeemoji || '•'} GITHUB: mrunqiuehacker`))
+            console.log(chalk.magenta(`${global.themeemoji || '•'} WA NUMBER: ${owner}`))
+            console.log(chalk.magenta(`${global.themeemoji || '•'} CREDIT: MR UNIQUE HACKER`))
+            console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected Successfully! ✅`))
+            console.log(chalk.blue(`Bot Version: ${settings.version}`))
+        }
+        
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
+            const statusCode = lastDisconnect?.error?.output?.statusCode
+            
+            console.log(chalk.red(`Connection closed due to ${lastDisconnect?.error}, reconnecting ${shouldReconnect}`))
+            
+            if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                try {
+                    rmSync('./session', { recursive: true, force: true })
+                    console.log(chalk.yellow('Session folder deleted. Please re-authenticate.'))
+                } catch (error) {
+                    console.error('Error deleting session:', error)
+                }
+                console.log(chalk.red('Session logged out. Please re-authenticate.'))
+            }
+            
+            if (shouldReconnect) {
+                console.log(chalk.yellow('Reconnecting...'))
+                await delay(5000)
+                startXeonBotInc()
+            }
+        }
+    })
+
+    // Track recently-notified callers to avoid spamming messages
+    const antiCallNotified = new Set();
+
+    // Anticall handler: block callers when enabled
+    XeonBotInc.ev.on('call', async (calls) => {
+        try {
+            const { readState: readAnticallState } = require('./commands/anticall');
+            const state = readAnticallState();
+            if (!state.enabled) return;
+            for (const call of calls) {
+                const callerJid = call.from || call.peerJid || call.chatId;
+                if (!callerJid) continue;
+                try {
+                    // First: attempt to reject the call if supported
+                    try {
+                        if (typeof XeonBotInc.rejectCall === 'function' && call.id) {
+                            await XeonBotInc.rejectCall(call.id, callerJid);
+                        } else if (typeof XeonBotInc.sendCallOfferAck === 'function' && call.id) {
+                            await XeonBotInc.sendCallOfferAck(call.id, callerJid, 'reject');
+                        }
+                    } catch {}
+
+                    // Notify the caller only once within a short window
+                    if (!antiCallNotified.has(callerJid)) {
+                        antiCallNotified.add(callerJid);
+                        setTimeout(() => antiCallNotified.delete(callerJid), 60000);
+                        await XeonBotInc.sendMessage(callerJid, { text: '📵 Anticall is enabled. Your call was rejected and you will be blocked.' });
+                    }
+                } catch {}
+                // Then: block after a short delay to ensure rejection and message are processed
+                setTimeout(async () => {
+                    try { await XeonBotInc.updateBlockStatus(callerJid, 'block'); } catch {}
+                }, 800);
+            }
+        } catch (e) {
+            // ignore
         }
     });
-    
-    XliconBotInc.ev.on('groups.update', async (update) => {
-        await GroupUpdate(XliconBotInc, update, store);
+
+    XeonBotInc.ev.on('group-participants.update', async (update) => {
+        await handleGroupParticipantUpdate(XeonBotInc, update);
     });
-    
-    XliconBotInc.ev.on('group-participants.update', async (update) => {
-        await GroupParticipantsUpdate(XliconBotInc, update);
+
+    XeonBotInc.ev.on('messages.upsert', async (m) => {
+        if (m.messages[0].key && m.messages[0].key.remoteJid === 'status@broadcast') {
+            await handleStatus(XeonBotInc, m);
+        }
     });
-    
-    XliconBotInc.ev.on('messages.upsert', async (message) => {
-        await MessagesUpsert(XliconBotInc, message, store);
+
+    XeonBotInc.ev.on('status.update', async (status) => {
+        await handleStatus(XeonBotInc, status);
     });
-    return XliconBotInc;
+
+    XeonBotInc.ev.on('messages.reaction', async (status) => {
+        await handleStatus(XeonBotInc, status);
+    });
+
+    return XeonBotInc
+    } catch (error) {
+        console.error('Error in startXeonBotInc:', error)
+        await delay(5000)
+        startXeonBotInc()
+    }
 }
 
-async function initStart() {
-    if (fs.existsSync(credsPath)) {
-        console.log(color("Creds.json exists, proceeding to start...", 'yellow'));
-await startXliconBot();
-} else {
-         const sessionCheck = await sessionLoader();
-        if (sessionCheck) {
-            console.log("Session downloaded successfully, proceeding to start... .");
-await startXliconBot();
-    } else {
-     if (!fs.existsSync(credsPath)) {
-    if(!global.SESSION_ID) {
-            console.log(color("Please wait for a few seconds to enter your number!", 'red'));
-await startXliconBot();
-        }
-    }
-  }
- }
-} 
-initStart();
-let file = require.resolve(__filename);
+
+// Start the bot with error handling
+startXeonBotInc().catch(error => {
+    console.error('Fatal error:', error)
+    process.exit(1)
+})
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err)
+})
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err)
+})
+
+let file = require.resolve(__filename)
 fs.watchFile(file, () => {
-    fs.unwatchFile(file);
-    console.log(chalk.redBright(`Update ${__filename}`));
-    delete require.cache[file];
-    require(file);
-});
+    fs.unwatchFile(file)
+    console.log(chalk.redBright(`Update ${__filename}`))
+    delete require.cache[file]
+    require(file)
+})
