@@ -17,16 +17,16 @@
 //                                                                                                                                                            //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 //*
-//  * @project_name : WALLYJAYTECH-MD
-//  * @author : wallyjaytech
-//  * @youtube : https://www.youtube.com/@wallyjaytechy
-//  * @description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//  * project_name : WALLYJAYTECH-MD
+//  * author : wallyjaytech
+//  * youtube : https://www.youtube.com/@wallyjaytechy
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
 //*
 //*
 //re-upload? recode? copy code? give credit to wallyjaytech 2025:)
 //Instagram: wallyjaytech
 //Telegram: t.me/wallyjaytech
-//GitHub: @wallyjaytechh
+//GitHub: wallyjaytechh
 //WhatsApp: +2348144317152
 //want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
 //   * Created By Github: wallyjaytechh.
