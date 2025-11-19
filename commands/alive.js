@@ -5,12 +5,23 @@ async function aliveCommand(sock, chatId, message) {
                        `*Version:* ${settings.version}\n` +
                        `*Status:* Online\n` +
                        `*Mode:* Public\n\n` +
-                       `*🌟 Features:*\n` +
-                       `• Group Management\n` +
-                       `• Antilink Protection\n` +
-                       `• Fun Commands\n` +
-                       `• And more!\n\n` +
-                       `Type *.menu* for full command list`;
+                       `*🌟 MENUS:*\n` +
+                       `• General Menu\n` +
+                       `• Group Menu\n` +
+                       `• Owner Menu\n` +
+                       `• Sticker Menu\n` +
+                       `• Pies Menu\n` +
+                       `• Game Menu\n` +   
+                       `• Ai Menu\n` +  
+                       `• Fun Menu\n` +
+                       `• Ephoto Menu\n` +
+                       `• Download Menu\n` +
+                       `• Misc Menu\n` +
+                       `• Anime Menu\n` +
+                       `• Github Menu\n` +            
+                       `• And Many more!\n\n` +
+                       `Type *.menu* for full command list\n\n`+
+                       `*Copyright wallyjaytech 2025*`;
 
         await sock.sendMessage(chatId, {
             text: message1,
@@ -18,8 +29,8 @@ async function aliveCommand(sock, chatId, message) {
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363161513685998@newsletter',
-                    newsletterName: 'KnightBot MD',
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
                     serverMessageId: -1
                 }
             }
