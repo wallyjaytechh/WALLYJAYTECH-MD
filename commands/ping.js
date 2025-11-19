@@ -35,8 +35,8 @@ async function pingCommand(sock, chatId, message) {
 ║  *⏱️ Uptime: ${uptimeFormatted}*
 ║  *🔖 Version: ${settings.version}*
 ║
-║   Copyright wallyjaytech 2025
-╚═══════════════════════════════╝`.trim();
+║   *Copyright wallyjaytech 2025*
+╚═══════════════════╝`.trim();
 
         // Reply to the original message with the bot info
         await sock.sendMessage(chatId, { text: botInfo},{ quoted: message });
