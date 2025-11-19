@@ -10,7 +10,6 @@ async function helpCommand(sock, chatId, message) {
 ║   *🧠 Version: ${settings.version || '1.0.0'}*
 ║   *👤 BotOwner: ${settings.botOwner || 'Wally Jay Tech'}*
 ║   *📺 YT Channel: ${global.ytch}*
-║   *🕹 Mode: ${settings.commandMode}*
 ║   *📞 OwnerNumber: ${settings.ownerNumber}*
 ║
 ╚═══════════════════╝
