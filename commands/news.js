@@ -7,7 +7,7 @@ module.exports = async function (sock, chatId) {
         const articles = response.data.articles.slice(0, 5); // Get top 5 articles
         let newsMessage = '📰 *Latest News*:\n\n';
         articles.forEach((article, index) => {
-            newsMessage += `${index + 1}. *${article.title}*\n${article.description}\n\n*Copyright wallyjaytech 2025*\n\n`;
+            newsMessage += `${index + 1}. *${article.title}*\n${article.description}\n\n`;
         });
         await sock.sendMessage(chatId, { text: newsMessage });
     } catch (error) {
