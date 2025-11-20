@@ -33,12 +33,9 @@ async function helpCommand(sock, chatId, message) {
 ║ 🔸.attp <text>
 ║ 🔸.lyrics <song_title>
 ║ 🔸.8ball <question>
-║ 🔸.groupinfo
-║ 🔸.admins 
 ║ 🔸.vv
 ║ 🔸.trt <text> <lang>
 ║ 🔸.ss <link>
-║ 🔸.jid
 ║ 🔸.url
 ║
 ╚═══════════════════╝ 
@@ -59,6 +56,9 @@ async function helpCommand(sock, chatId, message) {
 ║ 🔹.warn @user
 ║ 🔹.antilink
 ║ 🔹.antibadword
+║ 🔹.groupinfo
+║ 🔹.admins 
+║ 🔹.jid
 ║ 🔹.clear
 ║ 🔹.tag <message>
 ║ 🔹.tagall
