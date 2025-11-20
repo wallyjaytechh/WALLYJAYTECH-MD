@@ -584,7 +584,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (city) {
                     await weatherCommand(sock, chatId, message, city);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please specify a city, e.g., .weather London', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*⛈️Please specify a city, e.g., .weather Akungba⛈️*', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage === '.news':
