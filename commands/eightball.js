@@ -11,7 +11,7 @@ const eightBallResponses = [
 
 async function eightBallCommand(sock, chatId, question) {
     if (!question) {
-        await sock.sendMessage(chatId, { text: 'Please ask a question!' });
+        await sock.sendMessage(chatId, { text: '*🎱Please ask a question!🎱*' });
         return;
     }
 
