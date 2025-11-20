@@ -265,7 +265,7 @@ async function helpCommand(sock, chatId, message) {
 ║
 ╚═══════════════════╝
 
-Join our channel for updates:`;
+*⬇️Join our channel below for updates⬇️*`;
 
     try {
         const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
