@@ -3,7 +3,7 @@ async function aliveCommand(sock, chatId, message) {
     try {
         const message1 = `*🤖 WALLYJAYTECH-MD is Active! 🤖*\n\n` +
                        `*Version:* ${settings.version}\n` +
-                       `*Status:* Online\n` +
+                       `*Status:* Online\n\n` +
                        `*🌟 MENUS:*\n` +
                        `• General Menu\n` +
                        `• Group Menu\n` +
