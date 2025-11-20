@@ -49,7 +49,7 @@ function renderTextToPngWithFfmpeg(text) {
         const args = [
             '-y',
             '-f', 'lavfi',
-            '-i', 'color=c=#00000000:s=512x512',
+            '-i', 'color=c=#FFFF00:s=512x512',
             '-vf', `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=white:fontsize=56:borderw=2:bordercolor=yellow@0.6:x=(w-text_w)/2:y=(h-text_h)/2`,
             '-frames:v', '1',
             '-f', 'image2',
