@@ -1,22 +1,14 @@
-import axios from "axios"
-let handler = async (m, { args }) => {
-if (!args[0]) throw "*Give a place to search*"
-try {
-const response = axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${args}&units=metric&appid=060a6bcfa19809c2cd4d97a212b19273`)
-const res = await response
-const name = res.data.name
-const Country = res.data.sys.country
-const Weather = res.data.weather[0].description
-const Temperature = res.data.main.temp + "°C"
-const Minimum_Temperature = res.data.main.temp_min + "°C"
-const Maximum_Temperature = res.data.main.temp_max + "°C"
-const Humidity = res.data.main.humidity + "%"
-const Wind = res.data.wind.speed + "km/h"
-const wea = `ʜᴇʀᴇ ɪs ʏᴏᴜʀ ɢɪᴠᴇɴ ᴘʟᴀᴄᴇ ᴡᴇᴀᴛʜᴇʀ\n\n「 🌅 」ᴘʟᴀᴄᴇ: ${name}\n「 🗺️ 」ᴄᴏᴜɴᴛʀʏ: ${Country}\n「 🌤️ 」ᴠɪᴇᴡ: ${Weather}\n「 🌡️ 」 ᴛᴇᴍᴘᴇʀᴀᴛᴜʀᴇ: ${Temperature}\n「 💠 」 ᴍɪɴɪᴍᴜᴍ ᴛᴇᴍᴘᴇʀᴀᴛᴜʀᴇ: ${Minimum_Temperature}\n「 🔥 」 ᴍᴀxɪᴍᴜᴍ ᴛᴇᴍᴘᴇʀᴀᴛᴜʀᴇ: ${Maximum_Temperature}\n「 💦 」 ʜᴜᴍɪᴅɪᴛʏ: ${Humidity}\n「 🌬️ 」  ᴡɪɴᴅsᴘᴇᴇᴅ: ${Wind}\n`
-m.reply(wea)
-} catch {
-return "*ERROR*"}}
-handler.help = ['weather *<place>*']
-handler.tags = ['tools']
-handler.command = /^(climate|weather|mosam)$/i
-export default handler
+const axios = require('axios');
+
+module.exports = async function (sock, chatId, message, city) {
+    try {
+        const apiKey = '4902c0f2550f58298ad4146a92b65e10';  // Replace with your OpenWeather API Key
+        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        const weather = response.data;
+        const weatherText = `Weather in ${weather.name}: ${weather.weather[0].description}.\n\n Temperature: ${weather.main.temp}°C.`;
+        await sock.sendMessage(chatId, { text: weatherText }, { quoted: message }   );
+    } catch (error) {
+        console.error('Error fetching weather:', error);
+        await sock.sendMessage(chatId, { text: 'Sorry, I could not fetch the weather right now.' }, { quoted: message } );
+    }
+};
