@@ -4,7 +4,7 @@ const path = require('path');
 
 async function ttsCommand(sock, chatId, text, message, language = 'en') {
     if (!text) {
-        await sock.sendMessage(chatId, { text: 'Please provide the text for TTS conversion.' });
+        await sock.sendMessage(chatId, { text: '*🟡Please provide the text for TTS conversion🟡*.' });
         return;
     }
 
