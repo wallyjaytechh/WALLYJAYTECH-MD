@@ -97,12 +97,12 @@ function renderBlinkingVideoWithFfmpeg(text) {
         const drawBlue = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=blue:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(mod(t\,${cycle})\,0.1\,0.2)'`;
         const drawGreen = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=green:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='gte(mod(t\,${cycle})\,0.2)'`;
 
-        const filter = `${drawRed},${drawBlue},${drawGreen}`;
+        const filter = `${drawRed},${drawBlue},${drawGreen},${drawBlack},${drawPurple},${drawWhite},${drawCyan},${drawOrange}`;
 
         const args = [
             '-y',
             '-f', 'lavfi',
-            '-i', `color=c=black:s=512x512:d=${dur}:r=20`,
+            '-i', `color=c=yellow:s=512x512:d=${dur}:r=20`,
             '-vf', filter,
             '-c:v', 'libx264',
             '-pix_fmt', 'yuv420p',
