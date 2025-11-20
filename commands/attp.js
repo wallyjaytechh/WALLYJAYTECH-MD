@@ -93,11 +93,11 @@ function renderBlinkingVideoWithFfmpeg(text) {
         const cycle = 0.3;
         const dur = 1.8; // 6 cycles
 
-        const drawRed = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=red:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='lt(mod(t\,${cycle})\,0.1)'`;
-        const drawBlue = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=blue:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(mod(t\,${cycle})\,0.1\,0.2)'`;
-        const drawGreen = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=green:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='gte(mod(t\,${cycle})\,0.2)'`;
+        const drawRed = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=red:borderw=2:bordercolor=yellow@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='lt(mod(t\,${cycle})\,0.1)'`;
+        const drawCyan = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=cyan:borderw=2:bordercolor=yellow@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(mod(t\,${cycle})\,0.1\,0.2)'`;
+        const drawOrange = `drawtext=fontfile='${safeFontPath}':text='${safeText}':fontcolor=orange:borderw=2:bordercolor=yellow@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='gte(mod(t\,${cycle})\,0.2)'`;
 
-        const filter = `${drawRed},${drawBlue},${drawGreen},${drawBlack},${drawPurple},${drawWhite},${drawCyan},${drawOrange}`;
+        const filter = `${drawRed},${drawCyan},${drawOrange}`;
 
         const args = [
             '-y',
