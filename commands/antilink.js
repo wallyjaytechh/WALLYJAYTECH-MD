@@ -14,7 +14,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
         const action = args[0];
 
         if (!action) {
-            const usage = `*🔗 ANTILINK SETUP 🔗*\n\n*Usage:*\n\n*${prefix}antilink on*\n*${prefix}antilink | set delete | set kick | set warn*\n*${prefix}antilink off*\n\n*For example:*\n\n*${prefix}antilink set delete [this will only delete links from members]*\n\n*${prefix}antilink set kick [this will delete link(s) sent by member(s) & kick them out of the group*\n\n*${prefix}antilink set warn [this will warn member(s) that send link(s) to group and kick them out if warned thrice*\n\n*Copyright wallyjaytech 2025*`;
+            const usage = `*🔗 ANTILINK SETUP 🔗*\n\n*Usage:*\n\n*${prefix}antilink on*\n*${prefix}antilink | set delete | set kick | set warn*\n*${prefix}antilink off*\n\n*For example:*\n\n*${prefix}antilink set delete [this will only delete links from members]*\n\n*${prefix}antilink set kick [this will delete link(s) sent by member(s) & kick them out of the group]*\n\n*${prefix}antilink set warn [this will warn member(s) that send link(s) to group and kick them out if warned thrice]*\n\n*Copyright wallyjaytech 2025*`;
             await sock.sendMessage(chatId, { text: usage }, { quoted: message });
             return;
         }
