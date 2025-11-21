@@ -45,7 +45,7 @@ async function promoteCommand(sock, chatId, mentionedJids, message) {
         });
     } catch (error) {
         console.error('*Error in promote command:*', error);
-        await sock.sendMessage(chatId, { text: 'Failed to promote user(s)!'});
+        await sock.sendMessage(chatId, { text: '*🥹Failed to promote user(s)🥹!*'});
     }
 }
 
@@ -91,7 +91,7 @@ async function handlePromotionEvent(sock, groupId, participants, author) {
             mentions: mentionList
         });
     } catch (error) {
-        console.error('Error handling promotion event:', error);
+        console.error('*Error handling promotion event:*', error);
     }
 }
 
