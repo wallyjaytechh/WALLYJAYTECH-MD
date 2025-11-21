@@ -103,7 +103,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
     if (isTryingToKickBot) {
         await sock.sendMessage(chatId, { 
-            text: "*🤖I can't kick myself🤖*"
+            text: "*🤖Dude! Come on, you can't kick yourself🤖*"
         }, { quoted: message });
         return;
     }
