@@ -13,13 +13,15 @@ async function helpCommand(sock, chatId, message) {
 ║   *📞 OwnerNumber: ${settings.ownerNumber}*
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: ${settings.timezone}*
-║   *💻 Mode:  ${settings.commandMode}*
+║   *💻 Mode: ${settings.commandMode}*
+║   *⏱️ Uptime: ${uptimeFormatted}*
+║   *🚀 Ping: ${ping} ms*
 ║
 ╚═══════════════════╝
 
 *⬇️ ALL COMMANDS ⬇️*
 
-*╔═══════════════════╗*
+╔═══════════════════╗
 ║                        
 ║ *🌐GENERAL CMDS🌐*   
 ║                        
@@ -47,34 +49,34 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦*
 ║
-║ 🔹.ban @user
-║ 🔹.unban @user
-║ 🔹.promote @user
-║ 🔹.demote @user
-║ 🔹.mute <minutes>
-║ 🔹.unmute
-║ 🔹.delete
-║ 🔹.kick @user
-║ 🔹.warnings @user
-║ 🔹.warn @user
-║ 🔹.antilink
-║ 🔹.antibadword
-║ 🔹.groupinfo
-║ 🔹.admins 
-║ 🔹.jid
-║ 🔹.clear
-║ 🔹.tag <message>
-║ 🔹.tagall
-║ 🔹.tagnotadmin
-║ 🔹.hidetag <message>
-║ 🔹.chatbot
-║ 🔹.resetlink
-║ 🔹.antitag <on/off>
-║ 🔹.welcome <on/off>
-║ 🔹.goodbye <on/off>
-║ 🔹.setgdesc <description>
-║ 🔹.setgname <new name>
-║ 🔹.setgpp (reply to image)
+║ *🔹.ban @user*
+║ *🔹.unban @user*
+║ *🔹.promote @user*
+║ *🔹.demote @user*
+║ *🔹.mute <minutes>*
+║ *🔹.unmute*
+║ *🔹.delete*
+║ *🔹.kick @user*
+║ *🔹.warnings @user*
+║ *🔹.warn @user*
+║ *🔹.antilink*
+║ *🔹.antibadword*
+║ *🔹.groupinfo*
+║ *🔹.admins*
+║ *🔹.jid*
+║ *🔹.clear*
+║ *🔹.tag <message>*
+║ *🔹.tagall*
+║ *🔹.tagnotadmin*
+║ *🔹.hidetag <message>*
+║ *🔹.chatbot*
+║ *🔹.resetlink*
+║ *🔹.antitag <on/off>*
+║ *🔹.welcome <on/off>*
+║ *🔹.goodbye <on/off>*
+║ *🔹.setgdesc <description>*
+║ *🔹.setgname <new name>*
+║ *🔹.setgpp (reply to image)*
 ║
 ╚═══════════════════╝
 
@@ -82,23 +84,23 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║  *🔒OWNER CMDS🔒*
 ║
-║ 🔺.mode <public/private>
-║ 🔺.clearsession
-║ 🔺.antidelete
-║ 🔺.cleartmp
-║ 🔺.update
-║ 🔺.settings
-║ 🔺.setpp <reply to image>
-║ 🔺.autoreact <on/off>
-║ 🔺.autostatus <on/off>
-║ 🔺.autostatus react <on/off>
-║ 🔺.autotyping <on/off>
-║ 🔺.autoread <on/off>
-║ 🔺.anticall <on/off>
-║ 🔺.pmblocker <on/off/status>
-║ 🔺.pmblocker setmsg <text>
-║ 🔺.setmention <reply to msg>
-║ 🔺.mention <on/off>
+║ *🔺.mode <public/private>*
+║ *🔺.clearsession*
+║ *🔺.antidelete*
+║ *🔺.cleartmp*
+║ *🔺.update*
+║ *🔺.settings*
+║ *🔺.setpp <reply to image>*
+║ *🔺.autoreact <on/off>*
+║ *🔺.autostatus <on/off>*
+║ *🔺.autostatus react <on/off>*
+║ *🔺.autotyping <on/off>*
+║ *🔺.autoread <on/off>*
+║ *🔺.anticall <on/off>*
+║ *🔺.pmblocker <on/off/status>*
+║ *🔺.pmblocker setmsg <text>*
+║ *🔺.setmention <reply to msg>*
+║ *🔺.mention <on/off>*
 ║
 ╚═══════════════════╝
 
@@ -106,18 +108,18 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *🎨STICKER CMDS🎨*
 ║
-║ 🔻.blur <image>
-║ 🔻.simage <reply to sticker>
-║ 🔻.sticker <reply to image>
-║ 🔻.removebg
-║ 🔻.remini
-║ 🔻.crop <reply to image>
-║ 🔻.tgsticker <Link>
-║ 🔻.meme
-║ 🔻.take <packname> 
-║ 🔻.emojimix <emj1>+<emj2>
-║ 🔻.igs <insta link>
-║ 🔻.igsc <insta link>
+║ *🔻.blur <image>*
+║ *🔻.simage <reply to sticker>*
+║ *🔻.sticker <reply to image>*
+║ *🔻.removebg*
+║ *🔻.remini*
+║ *🔻.crop <reply to image>*
+║ *🔻.tgsticker <Link>*
+║ *🔻.meme*
+║ *🔻.take <packname>*
+║ *🔻.emojimix <emj1>+<emj2>*
+║ *🔻.igs <insta link>*
+║ *🔻.igsc <insta link>*
 ║
 ╚═══════════════════╝  
 
@@ -125,12 +127,12 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║  *🖼️PIES CMDS🖼️*
 ║
-║ ▫️.pies <country>
-║ ▫️.china 
-║ ▫️.indonesia 
-║ ▫️.japan 
-║ ▫️.korea 
-║ ▫️.hijab
+║ *▫️.pies <country>*
+║ *▫️.china*
+║ *▫️.indonesia*
+║ *▫️.japan*
+║ *▫️.korea*
+║ *▫️.hijab*
 ║
 ╚═══════════════════╝
 
@@ -138,13 +140,13 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║  *🎮GAME CMDS🎮*
 ║
-║ ◾️.tictactoe @user
-║ ◾️.hangman
-║ ◾️.guess <letter for hangman>
-║ ◾️.trivia
-║ ◾️.answer <answer for trivia>
-║ ◾️.truth
-║ ◾️.dare
+║ *◾️.tictactoe @user*
+║ *◾️.hangman*
+║ *◾️.guess <letter for hangman>*
+║ *◾️.trivia*
+║ *◾️.answer <answer for trivia>*
+║ *◾️.truth*
+║ *◾️.dare*
 ║
 ╚═══════════════════╝
 
@@ -152,11 +154,11 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║   *🧠AI CMDS🧠*
 ║
-║ ♦️.gpt <question>
-║ ♦️.gemini <question>
-║ ♦️.imagine <prompt>
-║ ♦️.flux <prompt>
-║ ♦️.sora <prompt>
+║ *♦️.gpt <question>*
+║ *♦️.gemini <question>*
+║ *♦️.imagine <prompt>*
+║ *♦️.flux <prompt>*
+║ *♦️.sora <prompt>*
 ║
 ╚═══════════════════╝
 
@@ -164,17 +166,17 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║  *😁FUN CMDS😁*
 ║
-║ 🟢.compliment @user
-║ 🟢.insult @user
-║ 🟢.flirt 
-║ 🟢.shayari
-║ 🟢.goodnight
-║ 🟢.roseday
-║ 🟢.character @user
-║ 🟢.wasted @user
-║ 🟢.ship @user
-║ 🟢.simp @user
-║ 🟢.stupid @user [text]
+║ *🟢.compliment @user*
+║ *🟢.insult @user*
+║ *🟢.flirt*
+║ *🟢.shayari*
+║ *🟢.goodnight*
+║ *🟢.roseday*
+║ *🟢.character @user*
+║ *🟢.wasted @user*
+║ *🟢.ship @user*
+║ *🟢.simp @user*
+║ *🟢.stupid @user <text>*
 ║
 ╚═══════════════════╝
 
@@ -182,24 +184,24 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *🔤EPHOTO CMDS🔤*
 ║
-║ 🔴.metallic <text>
-║ 🔴.ice <text>
-║ 🔴.snow <text>
-║ 🔴.impressive <text>
-║ 🔴.matrix <text>
-║ 🔴.light <text>
-║ 🔴.neon <text>
-║ 🔴.devil <text>
-║ 🔴.purple <text>
-║ 🔴.thunder <text>
-║ 🔴.leaves <text>
-║ 🔴.1917 <text>
-║ 🔴.arena <text>
-║ 🔴.hacker <text>
-║ 🔴.sand <text>
-║ 🔴.blackpink <text>
-║ 🔴.glitch <text>
-║ 🔴.fire <text>
+║ *🔴.metallic <text>*
+║ *🔴.ice <text>*
+║ *🔴.snow <text>*
+║ *🔴.impressive <text>*
+║ *🔴.matrix <text>*
+║ *🔴.light <text>*
+║ *🔴.neon <text>*
+║ *🔴.devil <text>*
+║ *🔴.purple <text>*
+║ *🔴.thunder <text>*
+║ *🔴.leaves <text>*
+║ *🔴.1917 <text>*
+║ *🔴.arena <text>*
+║ *🔴.hacker <text>*
+║ *🔴.sand <text>*
+║ *🔴.blackpink <text>*
+║ *🔴.glitch <text>*
+║ *🔴.fire <text>*
 ║
 ╚═══════════════════╝
 
@@ -207,14 +209,14 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *📥DOWNLOAD CMDS📥*
 ║
-║ 🟠.play <song_name>
-║ 🟠.song <song_name>
-║ 🟠.spotify <query>
-║ 🟠.instagram <link>
-║ 🟠.facebook <link>
-║ 🟠.tiktok <link>
-║ 🟠.video <song name>
-║ 🟠.ytmp4 <Link>
+║ *🟠.play <song_name>*
+║ *🟠.song <song_name>*
+║ *🟠.spotify <query>*
+║ *🟠.instagram <link>*
+║ *🟠.facebook <link>*
+║ *🟠.tiktok <link>*
+║ *🟠.video <song name>*
+║ *🟠.ytmp4 <Link>*
 ║
 ╚═══════════════════╝
 
@@ -222,22 +224,22 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *🧩MISC CMDS🧩*
 ║
-║ 🟡.heart
-║ 🟡.horny
-║ 🟡.circle
-║ 🟡.lgbt
-║ 🟡.lolice
-║ 🟡.its-so-stupid
-║ 🟡.namecard 
-║ 🟡.oogway
-║ 🟡.tweet
-║ 🟡.ytcomment 
-║ 🟡.comrade 
-║ 🟡.gay 
-║ 🟡.glass 
-║ 🟡.jail 
-║ 🟡.passed 
-║ 🟡.triggered
+║ *🟡.heart*
+║ *🟡.horny*
+║ *🟡.circle*
+║ *🟡.lgbt*
+║ *🟡.lolice*
+║ *🟡.its-so-stupid*
+║ *🟡.namecard*
+║ *🟡.oogway*
+║ *🟡.tweet*
+║ *🟡.ytcomment*
+║ *🟡.comrade*
+║ *🟡.gay* 
+║ *🟡.glass* 
+║ *🟡.jail*
+║ *🟡.passed*
+║ *🟡.triggered*
 ║
 ╚═══════════════════╝
 
@@ -245,14 +247,14 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║  *🦹‍♀️ANIME CMDS🦹‍♀️*
 ║
-║ 🟣.nom 
-║ 🟣.poke 
-║ 🟣.cry 
-║ 🟣.kiss 
-║ 🟣.pat 
-║ 🟣.hug 
-║ 🟣.wink 
-║ 🟣.facepalm 
+║ *🟣.nom* 
+║ *🟣.poke* 
+║ *🟣.cry* 
+║ *🟣.kiss*
+║ *🟣.pat* 
+║ *🟣.hug*
+║ *🟣.wink*
+║ *🟣.facepalm*
 ║
 ╚═══════════════════╝
 
@@ -260,11 +262,11 @@ async function helpCommand(sock, chatId, message) {
 ║                   
 ║ *💻GITHUB CMDS💻*
 ║
-║ 🔵.git
-║ 🔵.github
-║ 🔵.sc
-║ 🔵.script
-║ 🔵.repo
+║ *🔵.git*
+║ *🔵.github*
+║ *🔵.sc*
+║ *🔵.script*
+║ *🔵.repo*
 ║
 ╚═══════════════════╝
 
