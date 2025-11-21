@@ -67,14 +67,14 @@ async function banCommand(sock, chatId, message) {
             });
         } else {
             await sock.sendMessage(chatId, { 
-                text: `*${userToBan.split('@')[0]} is already banned!*`,
+                text: `*🥹${userToBan.split('@')[0]} is already banned!🥹*`,
                 mentions: [userToBan],
                 ...channelInfo 
             });
         }
     } catch (error) {
         console.error('Error in ban command:', error);
-        await sock.sendMessage(chatId, { text: '*Failed to ban user!*', ...channelInfo });
+        await sock.sendMessage(chatId, { text: '*🥹Failed to ban user!🥹*', ...channelInfo });
     }
 }
 
