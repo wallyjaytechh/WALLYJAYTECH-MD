@@ -18,7 +18,7 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, mes
     const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
     if (!isBotAdmin) {
-        await sock.sendMessage(chatId, { text: 'Please make the bot an admin first.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*Please make the bot an admin first.*' }, { quoted: message });
         return;
     }
 
@@ -43,7 +43,7 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, mes
             const filePath = await downloadMediaMessage(replyMessage.imageMessage, 'image');
             messageContent = {
                 image: { url: filePath },
-                caption: messageText || replyMessage.imageMessage.caption || '',
+                caption: messageText || replyMessage.imageMessage.caption || '*Copyright wallyjaytech 2025*',
                 mentions: mentionedJidList
             };
         }
@@ -52,7 +52,7 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, mes
             const filePath = await downloadMediaMessage(replyMessage.videoMessage, 'video');
             messageContent = {
                 video: { url: filePath },
-                caption: messageText || replyMessage.videoMessage.caption || '',
+                caption: messageText || replyMessage.videoMessage.caption || '*Copyright wallyjaytech 2025*',
                 mentions: mentionedJidList
             };
         }
@@ -69,7 +69,7 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, mes
             messageContent = {
                 document: { url: filePath },
                 fileName: replyMessage.documentMessage.fileName,
-                caption: messageText || '',
+                caption: messageText || '*Copyright wallyjaytech 2025*',
                 mentions: mentionedJidList
             };
         }
@@ -79,7 +79,7 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, mes
         }
     } else {
         await sock.sendMessage(chatId, {
-            text: messageText || "Tagged message",
+            text: messageText || "*Tagged message*",
             mentions: mentionedJidList
         });
     }
