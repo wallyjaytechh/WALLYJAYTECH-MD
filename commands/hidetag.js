@@ -18,12 +18,12 @@ async function hideTagCommand(sock, chatId, senderId, messageText, replyMessage,
     const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
     if (!isBotAdmin) {
-        await sock.sendMessage(chatId, { text: 'Please make the bot an admin first.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*Please make the bot an admin first.*' }, { quoted: message });
         return;
     }
 
     if (!isSenderAdmin) {
-        await sock.sendMessage(chatId, { text: 'Only admins can use the .hidetag command.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*Only admins can use the .hidetag command.*' }, { quoted: message });
         return;
     }
 
@@ -35,22 +35,22 @@ async function hideTagCommand(sock, chatId, senderId, messageText, replyMessage,
         let content = {};
         if (replyMessage.imageMessage) {
             const filePath = await downloadMediaMessage(replyMessage.imageMessage, 'image');
-            content = { image: { url: filePath }, caption: messageText || replyMessage.imageMessage.caption || '', mentions: nonAdmins };
+            content = { image: { url: filePath }, caption: messageText || replyMessage.imageMessage.caption || '*Copyright wallyjaytech 2025*', mentions: nonAdmins };
         } else if (replyMessage.videoMessage) {
             const filePath = await downloadMediaMessage(replyMessage.videoMessage, 'video');
-            content = { video: { url: filePath }, caption: messageText || replyMessage.videoMessage.caption || '', mentions: nonAdmins };
+            content = { video: { url: filePath }, caption: messageText || replyMessage.videoMessage.caption || '*Copyright wallyjaytech 2025*', mentions: nonAdmins };
         } else if (replyMessage.conversation || replyMessage.extendedTextMessage) {
             content = { text: replyMessage.conversation || replyMessage.extendedTextMessage.text, mentions: nonAdmins };
         } else if (replyMessage.documentMessage) {
             const filePath = await downloadMediaMessage(replyMessage.documentMessage, 'document');
-            content = { document: { url: filePath }, fileName: replyMessage.documentMessage.fileName, caption: messageText || '', mentions: nonAdmins };
+            content = { document: { url: filePath }, fileName: replyMessage.documentMessage.fileName, caption: messageText || '*Copyright wallyjaytech 2025*', mentions: nonAdmins };
         }
 
         if (Object.keys(content).length > 0) {
             await sock.sendMessage(chatId, content);
         }
     } else {
-        await sock.sendMessage(chatId, { text: messageText || 'Tagged members (excluding admins).', mentions: nonAdmins });
+        await sock.sendMessage(chatId, { text: messageText || '*Tagged members (excluding admins).*', mentions: nonAdmins });
     }
 }
 
