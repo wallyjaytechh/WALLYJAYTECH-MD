@@ -468,7 +468,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (!action) {
                     const currentMode = data.isPublic ? 'public' : 'private';
                     await sock.sendMessage(chatId, {
-                        text: `Current bot mode: *${currentMode}*\n\nUsage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only`,
+                        text: `*Your Current Bot Mode: ${currentMode}*\n\n*Usage: .mode public/private*\n\n*Example:*\n\n*.mode public - Allow everyone to use bot*\n\n*.mode private - Restrict to owner only*\n\n*Copyright wallyjaytech 2025*`,
                         ...channelInfo
                     }, { quoted: message });
                     return;
