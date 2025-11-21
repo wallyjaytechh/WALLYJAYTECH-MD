@@ -8,7 +8,7 @@ async function groupInfoCommand(sock, chatId, msg) {
         try {
             pp = await sock.profilePictureUrl(chatId, 'image');
         } catch {
-            pp = 'https://i.imgur.com/2wzGhpF.jpeg'; // Default image
+            pp = 'https://h.uguu.se/ArKOAoTK.jpg'; // Default image
         }
 
         // Get admins from participants
@@ -22,18 +22,18 @@ async function groupInfoCommand(sock, chatId, msg) {
         // Create info text
         const text = `
 ┌──「 *INFO GROUP* 」
-▢ *♻️ID:*
-   • ${groupMetadata.id}
-▢ *🔖NAME* : 
+🟢 *♻️ID:*
+• ${groupMetadata.id}
+🔴 *🔖NAME* : 
 • ${groupMetadata.subject}
-▢ *👥Members* :
+🟠 *👥Members* :
 • ${participants.length}
-▢ *🤿Group Owner:*
+🟡 *🤿Group Owner:*
 • @${owner.split('@')[0]}
-▢ *🕵🏻‍♂️Admins:*
+🟣 *🕵🏻‍♂️Admins:*
 ${listAdmin}
 
-▢ *📌Description* :
+🔵 *📌Description* :
    • ${groupMetadata.desc?.toString() || 'No description'}
 `.trim();
 
@@ -46,7 +46,7 @@ ${listAdmin}
 
     } catch (error) {
         console.error('Error in groupinfo command:', error);
-        await sock.sendMessage(chatId, { text: 'Failed to get group info!' });
+        await sock.sendMessage(chatId, { text: '*📌Failed to get group info!📌*' });
     }
 }
 
