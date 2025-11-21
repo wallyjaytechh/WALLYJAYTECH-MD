@@ -14,7 +14,6 @@ async function helpCommand(sock, chatId, message) {
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: ${settings.timezone}*
 ║   *💻 Mode: ${settings.commandMode}*
-📅 ᴅᴀᴛᴇ      : ${素晴座素晴HECTOR素晴座素晴素晴座素晴HECTOR素晴座素晴dq[素晴座素晴HECTOR素晴座素晴素晴座素晴HECTOR素晴座素晴qw(0xac)]}*
 ║
 ╚═══════════════════╝
 
