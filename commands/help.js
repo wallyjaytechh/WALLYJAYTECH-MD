@@ -6,15 +6,15 @@ async function helpCommand(sock, chatId, message) {
     const helpMessage = `
 ╔❖🔹*WALLYJAYTECH-MD MENU*🔹❖
 ║
-║   *🤖 BotName: ${settings.botName || 'WALLYJAYTECH-MD'}*  
-║   *🧠 Version: ${settings.version || '1.0.0'}*
-║   *👤 BotOwner: ${settings.botOwner || 'Wally Jay Tech'}*
-║   *📺 YT Channel: ${global.ytch}*
-║   *📞 OwnerNumber: ${settings.ownerNumber}*
+║   *🤖 BotName: [ ${settings.botName || 'WALLYJAYTECH-MD'} ]*  
+║   *🧠 Version: [ ${settings.version || '1.0.0'} ]*
+║   *👤 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]*
+║   *📺 YT Channel: [ ${global.ytch} ]*
+║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${settings.prefix} ]*
-║   *🌍 TimeZone: ${settings.timezone}*
-║   *💻 Mode: ${settings.commandMode}*
-║   *📅 Date: ${new Date().toLocaleString()}*
+║   *🌍 TimeZone: [ ${settings.timezone} ]*
+║   *💻 Mode: [ ${settings.commandMode} ]*
+║   *📅 Date: [ ${new Date().toLocaleString()} ]*
 ║
 ╚═══════════════════╝
 
