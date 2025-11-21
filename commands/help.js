@@ -12,6 +12,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: ${global.ytch}*
 ║   *📞 OwnerNumber: ${settings.ownerNumber}*
 ║   *📥 Prefix: ${settings.prefix}*
+║   *🌍 TimeZone ${settings.timezone}*
 ║
 ╚═══════════════════╝
 
