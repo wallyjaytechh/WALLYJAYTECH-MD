@@ -13,32 +13,33 @@ async function helpCommand(sock, chatId, message) {
 ║   *📞 OwnerNumber: ${settings.ownerNumber}*
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: ${settings.timezone}*
+║   *💻 Mode:  ${settings.commandMode}*
 ║
 ╚═══════════════════╝
 
 *⬇️ ALL COMMANDS ⬇️*
 
-╔═══════════════════╗
+*╔═══════════════════╗*
 ║                        
 ║ *🌐GENERAL CMDS🌐*   
 ║                        
-║ 🔸.help or .menu       
-║ 🔸.ping                
-║ 🔸.alive               
-║ 🔸.tts <text>          
-║ 🔸.owner               
-║ 🔸.joke                
-║ 🔸.quote               
-║ 🔸.fact                
-║ 🔸.weather <city>      
-║ 🔸.news                
-║ 🔸.attp <text>         
-║ 🔸.lyrics <songtitle>  
-║ 🔸.8ball <question>    
-║ 🔸.vv                  
-║ 🔸.trt <text> <lang>  
-║ 🔸.ss <link>          
-║ 🔸.url                 
+║ *🔸.help or .menu*      
+║ *🔸.ping*            
+║ *🔸.alive*              
+║ *🔸.tts <text>*          
+║ *🔸.owner*               
+║ *🔸.joke*                
+║ *🔸.quote*               
+║ *🔸.fact*                
+║ *🔸.weather <city>*      
+║ *🔸.news*                
+║ *🔸.attp <text>*         
+║ *🔸.lyrics <songtitle>*
+║ *🔸.8ball <question>*    
+║ *🔸.vv*                  
+║ *🔸.trt <text> <lang>*  
+║ *🔸.ss <link>*          
+║ *🔸.url*                 
 ║                       
 ╚═══════════════════╝ 
 
