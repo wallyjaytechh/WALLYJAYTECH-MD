@@ -14,8 +14,6 @@ async function helpCommand(sock, chatId, message) {
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: ${settings.timezone}*
 ║   *💻 Mode: ${settings.commandMode}*
-║   *⏱️ Uptime: ${uptimeFormatted}*
-║   *🚀 Ping: ${ping} ms*
 ║
 ╚═══════════════════╝
 
