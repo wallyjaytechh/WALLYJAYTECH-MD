@@ -11,6 +11,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *👤 BotOwner: ${settings.botOwner || 'Wally Jay Tech'}*
 ║   *📺 YT Channel: ${global.ytch}*
 ║   *📞 OwnerNumber: ${settings.ownerNumber}*
+║   *📥 Prefix: ${settings.prefix}*
 ║
 ╚═══════════════════╝
 
