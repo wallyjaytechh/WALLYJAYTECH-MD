@@ -275,7 +275,7 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
 
         if (!response) {
             await sock.sendMessage(chatId, { 
-                text: "*Hmm, let me think about that... 🤔\nI'm having trouble processing your request right now.*",
+                text: "*Hmm, let me think about that... 🤔*\n*I'm having trouble processing your request right now.*",
                 quoted: message
             });
             return;
