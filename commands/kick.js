@@ -27,7 +27,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
     
     if (usersToKick.length === 0) {
         await sock.sendMessage(chatId, { 
-            text: '*😁Please mention the user(s) or reply to their message to kick their as outta the group😁!*'
+            text: '*😁Please mention the user(s) or reply to their message to kick their ass(es) outta the group😁!*'
         }, { quoted: message });
         return;
     }
