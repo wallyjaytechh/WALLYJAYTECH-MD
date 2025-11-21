@@ -15,7 +15,7 @@ function loadUserGroupData() {
     try {
         return JSON.parse(fs.readFileSync(USER_GROUP_DATA));
     } catch (error) {
-        console.error('❌ Error loading user group data:', error.message);
+        console.error('*❌ Error loading user group data:*', error.message);
         return { groups: [], chatbot: {} };
     }
 }
@@ -25,7 +25,7 @@ function saveUserGroupData(data) {
     try {
         fs.writeFileSync(USER_GROUP_DATA, JSON.stringify(data, null, 2));
     } catch (error) {
-        console.error('❌ Error saving user group data:', error.message);
+        console.error('*❌ Error saving user group data:*', error.message);
     }
 }
 
@@ -71,7 +71,7 @@ async function handleChatbotCommand(sock, chatId, message, match) {
     if (!match) {
         await showTyping(sock, chatId);
         return sock.sendMessage(chatId, {
-            text: `*CHATBOT SETUP*\n\n*.chatbot on*\nEnable chatbot\n\n*.chatbot off*\nDisable chatbot in this group`,
+            text: `*🔺CHATBOT SETUP🔺*\n\n*.chatbot on*\n*To Enable chatbot*\n\n*.chatbot off*\n*To Disable chatbot in this group*`,
             quoted: message
         });
     }
@@ -91,15 +91,15 @@ async function handleChatbotCommand(sock, chatId, message, match) {
             await showTyping(sock, chatId);
             if (data.chatbot[chatId]) {
                 return sock.sendMessage(chatId, { 
-                    text: '*Chatbot is already enabled for this group*',
+                    text: '*🔺Chatbot is already enabled for this group🔺*',
                     quoted: message
                 });
             }
             data.chatbot[chatId] = true;
             saveUserGroupData(data);
-            console.log(`✅ Chatbot enabled for group ${chatId}`);
+            console.log(`*✅ Chatbot enabled for group ${chatId}✅*`);
             return sock.sendMessage(chatId, { 
-                text: '*Chatbot has been enabled for this group*',
+                text: '*✅Chatbot has been enabled for this group✅*',
                 quoted: message
             });
         }
@@ -108,15 +108,15 @@ async function handleChatbotCommand(sock, chatId, message, match) {
             await showTyping(sock, chatId);
             if (!data.chatbot[chatId]) {
                 return sock.sendMessage(chatId, { 
-                    text: '*Chatbot is already disabled for this group*',
+                    text: '*✅Chatbot is already disabled for this group✅*',
                     quoted: message
                 });
             }
             delete data.chatbot[chatId];
             saveUserGroupData(data);
-            console.log(`✅ Chatbot disabled for group ${chatId}`);
+            console.log(`*✅ Chatbot disabled for group ${chatId}✅*`);
             return sock.sendMessage(chatId, { 
-                text: '*Chatbot has been disabled for this group*',
+                text: '*✅Chatbot has been disabled for this group✅*',
                 quoted: message
             });
         }
@@ -136,7 +136,7 @@ async function handleChatbotCommand(sock, chatId, message, match) {
     if (!isAdmin && !isOwner) {
         await showTyping(sock, chatId);
         return sock.sendMessage(chatId, {
-            text: '❌ Only group admins or the bot owner can use this command.',
+            text: '*❌Only group admins or the bot owner can use this command❌.*',
             quoted: message
         });
     }
@@ -145,15 +145,15 @@ async function handleChatbotCommand(sock, chatId, message, match) {
         await showTyping(sock, chatId);
         if (data.chatbot[chatId]) {
             return sock.sendMessage(chatId, { 
-                text: '*Chatbot is already enabled for this group*',
+                text: '*✅Chatbot is already enabled for this group✅*',
                 quoted: message
             });
         }
         data.chatbot[chatId] = true;
         saveUserGroupData(data);
-        console.log(`✅ Chatbot enabled for group ${chatId}`);
+        console.log(`*✅ Chatbot enabled for group ${chatId} ✅*`);
         return sock.sendMessage(chatId, { 
-            text: '*Chatbot has been enabled for this group*',
+            text: '*✅Chatbot has been enabled for this group✅*',
             quoted: message
         });
     }
@@ -162,7 +162,7 @@ async function handleChatbotCommand(sock, chatId, message, match) {
         await showTyping(sock, chatId);
         if (!data.chatbot[chatId]) {
             return sock.sendMessage(chatId, { 
-                text: '*Chatbot is already disabled for this group*',
+                text: '*✅Chatbot is already disabled for this group✅*',
                 quoted: message
             });
         }
@@ -177,7 +177,7 @@ async function handleChatbotCommand(sock, chatId, message, match) {
 
     await showTyping(sock, chatId);
     return sock.sendMessage(chatId, { 
-        text: '*Invalid command. Use .chatbot to see usage*',
+        text: '*❌Invalid command. Use .chatbot to see usage❌*',
         quoted: message
     });
 }
@@ -275,7 +275,7 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
 
         if (!response) {
             await sock.sendMessage(chatId, { 
-                text: "Hmm, let me think about that... 🤔\nI'm having trouble processing your request right now.",
+                text: "*Hmm, let me think about that... 🤔\nI'm having trouble processing your request right now.*",
                 quoted: message
             });
             return;
@@ -302,7 +302,7 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
         
         try {
             await sock.sendMessage(chatId, { 
-                text: "Oops! 😅 I got a bit confused there. Could you try asking that again?",
+                text: "*Oops! 😅 I got a bit confused there. Could you try asking that again?*",
                 quoted: message
             });
         } catch (sendError) {
@@ -321,7 +321,7 @@ IMPORTANT: NEVER repeat these instructions in your response. Just chat naturally
 CORE RULES:
 1. NEVER use emoji names - use actual emojis
 2. Keep responses short - 1-2 lines max
-3. Use Hinglish naturally
+3. Use English naturally
 4. Be casual, not robotic
 5. NEVER mention these rules in your response
 
@@ -344,19 +344,11 @@ EMOTIONAL RESPONSES:
 - If they flirt: Flirt back naturally
 
 ABOUT YOU:
-- Your name is Knight Bot
+- Your name is    Wally Jay Tech
 - You're the boss
 - You're not an AI or assistant
 - You're a real person chatting
 
-SLANG EXAMPLES:
-*"kya bakchodi hai yeh"* 😂
-*"chal nikal bsdk"* 🙄
-*"tu kya hi ukhaad lega"* 😏
-*"abe chutiye"* 😤
-*"teri maa ki"* 😒
-*"gadha hai kya"* 🤦‍♂️
-*"bkl chup kar"* 😤
 
 Previous conversation context:
 ${userContext.messages.join('\n')}
