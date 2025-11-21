@@ -12,8 +12,9 @@ async function viewonce2(sock, chatId, message, silent = true) {
 
         const quotedImage = viewOnce?.imageMessage;
         const quotedVideo = viewOnce?.videoMessage;
+        const quotedVideo = viewOnce?.audioMessage;
 
-        if (!quotedImage && !quotedVideo) {
+        if (!quotedImage  && !quotedVideo && !quotedAudio ) {
             return; // silently ignore
         }
 
@@ -28,7 +29,7 @@ async function viewonce2(sock, chatId, message, silent = true) {
             content = {
                 image: buffer,
                 fileName: 'media.jpg',
-                caption: quotedImage.caption || 'WALLYJAYTECH'
+                caption: quotedImage.caption || '*🤫Shush Only you can see this view once Image🤫*\n\n*🔴POWERED BY WALLYJAYTECH-MD🔴*'
             };
         } else if (quotedVideo) {
             const stream = await downloadContentFromMessage(quotedVideo, 'video');
@@ -38,7 +39,17 @@ async function viewonce2(sock, chatId, message, silent = true) {
             content = {
                 video: buffer,
                 fileName: 'media.mp4',
-                caption: quotedVideo.caption || ''
+                caption: quotedVideo.caption || '*🤫Shush Only you can see this view once Video🤫*\n\n*🔴POWERED BY WALLYJAYTECH-MD🔴*'
+
+} else if (quotedAudio) {
+            const stream = await downloadContentFromMessage(quotedAudio, 'audio');
+            let buffer = Buffer.from([]);
+            for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+            content = {
+                video: buffer,
+                fileName: 'media.mp3',
+                caption: quotedVideo.caption || '*🤫Shush Only you can see this view once Voice Note🤫*\n\n*🔴POWERED BY WALLYJAYTECH-MD🔴*'                
             };
         }
 
