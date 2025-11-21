@@ -5,7 +5,7 @@ const isAdmin = require('../lib/isAdmin');
 async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message) {
     try {
         if (!isSenderAdmin) {
-            await sock.sendMessage(chatId, { text: '*For Group Admins Only!*' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*🔵For Group Admins Only!🔵*' }, { quoted: message });
             return;
         }
 
@@ -14,7 +14,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
         const action = args[0];
 
         if (!action) {
-            const usage = `\`\`\`ANTILINK SETUP\n\n${prefix}antilink on\n${prefix}antilink set delete | kick | warn\n${prefix}antilink off\n\`\`\``;
+            const usage = `*🔗 ANTILINK SETUP 🔗*\n\n*Usage:*\n\n*${prefix}antilink on*\n*${prefix}antilink | set delete | set kick | set warn*\n*${prefix}antilink off*\n\n*For example:*\n\n*${prefix}antilink set delete [this will only delete links from members]*\n\n*${prefix}antilink set kick [this will delete link(s) sent by member(s) & kick them out of the group*\n\n*${prefix}antilink set warn [this will warn member(s) that send link(s) to group and kick them out if warned thrice*\n\n*Copyright wallyjaytech 2025*`;
             await sock.sendMessage(chatId, { text: usage }, { quoted: message });
             return;
         }
@@ -67,7 +67,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                 break;
 
             default:
-                await sock.sendMessage(chatId, { text: `*_Use ${prefix}antilink for usage._*` });
+                await sock.sendMessage(chatId, { text: `*🔵Use ${prefix}antilink for usage🔵.*` });
         }
     } catch (error) {
         console.error('Error in antilink command:', error);
@@ -79,8 +79,8 @@ async function handleLinkDetection(sock, chatId, message, userMessage, senderId)
     const antilinkSetting = getAntilinkSetting(chatId);
     if (antilinkSetting === 'off') return;
 
-    console.log(`Antilink Setting for ${chatId}: ${antilinkSetting}`);
-    console.log(`Checking message for links: ${userMessage}`);
+    console.log(`*🔵Antilink Setting for ${chatId}: ${antilinkSetting}🔵*`);
+    console.log(`*🔵Checking message for links: ${userMessage}🔵*`);
     
     // Log the full message object to diagnose message structure
     console.log("Full message object: ", JSON.stringify(message, null, 2));
@@ -101,9 +101,9 @@ async function handleLinkDetection(sock, chatId, message, userMessage, senderId)
 
     // Detect WhatsApp Group links
     if (antilinkSetting === 'whatsappGroup') {
-        console.log('WhatsApp group link protection is enabled.');
+        console.log('*🔵WhatsApp group link protection is enabled🔵.*');
         if (linkPatterns.whatsappGroup.test(userMessage)) {
-            console.log('Detected a WhatsApp group link!');
+            console.log('*🔵Detected a WhatsApp group link!🔵*');
             shouldDelete = true;
         }
     } else if (antilinkSetting === 'whatsappChannel' && linkPatterns.whatsappChannel.test(userMessage)) {
@@ -124,13 +124,13 @@ async function handleLinkDetection(sock, chatId, message, userMessage, senderId)
             await sock.sendMessage(chatId, {
                 delete: { remoteJid: chatId, fromMe: false, id: quotedMessageId, participant: quotedParticipant },
             });
-            console.log(`Message with ID ${quotedMessageId} deleted successfully.`);
+            console.log(`*🔵Message with ID ${quotedMessageId} deleted successfully.🔵*`);
         } catch (error) {
             console.error('*🔵Failed to delete message:🔵*', error);
         }
 
         const mentionedJidList = [senderId];
-        await sock.sendMessage(chatId, { text: `Warning! @${senderId.split('@')[0]}, posting links is not allowed.`, mentions: mentionedJidList });
+        await sock.sendMessage(chatId, { text: `*🔵Warning! @${senderId.split('@')[0]}, posting links is not allowed🔵.*`, mentions: mentionedJidList });
     } else {
         console.log('*🔵No link detected or protection not enabled for this type of link🔵.*');
     }
