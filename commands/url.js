@@ -54,7 +54,7 @@ async function urlCommand(sock, chatId, message) {
         if (!media) media = await getQuotedMediaBufferAndExt(message);
 
         if (!media) {
-            await sock.sendMessage(chatId, { text: 'Send or reply to a media (image, video, audio, sticker, document) to get a URL.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*🔗Send or reply to a media (image, video, audio, sticker, document) to get a URL🔗.*' }, { quoted: message });
             return;
         }
 
