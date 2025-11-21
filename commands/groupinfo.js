@@ -24,12 +24,16 @@ async function groupInfoCommand(sock, chatId, msg) {
 ┌──「 *INFO GROUP* 」
 🟢 *♻️ID:*
 • ${groupMetadata.id}
+
 🔴 *🔖NAME* : 
 • ${groupMetadata.subject}
+
 🟠 *👥Members* :
 • ${participants.length}
+
 🟡 *🤿Group Owner:*
 • @${owner.split('@')[0]}
+
 🟣 *🕵🏻‍♂️Admins:*
 ${listAdmin}
 
