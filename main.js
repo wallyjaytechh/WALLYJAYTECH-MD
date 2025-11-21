@@ -41,6 +41,7 @@ const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./comman
 
 // Command imports
 const tagAllCommand = require('./commands/tagall');
+const deepseekCommand = require('./commands/deepseek');
 const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
 const { promoteCommand } = require('./commands/promote');
@@ -945,6 +946,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await tiktokCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.gpt') || userMessage.startsWith('.gemini'):
+                await aiCommand(sock, chatId, message);
+                break;
+            case userMessage.startsWith('.deepseek') || userMessage.startsWith('.dpsk'):
                 await aiCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.translate') || userMessage.startsWith('.trt'):
