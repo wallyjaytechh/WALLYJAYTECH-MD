@@ -3,7 +3,7 @@ const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 /**
  * View-once bypass that can run fully silent if silent===true (no error or confirmation sent).
  */
-async function viewonce2(sock, chatId, message, silent = false) {
+async function viewonce2(sock, chatId, message, silent = true) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         const viewOnce = quoted?.viewOnceMessageV2?.message 
@@ -28,7 +28,7 @@ async function viewonce2(sock, chatId, message, silent = false) {
             content = {
                 image: buffer,
                 fileName: 'media.jpg',
-                caption: quotedImage.caption || ''
+                caption: quotedImage.caption || 'WALLYJAYTECH'
             };
         } else if (quotedVideo) {
             const stream = await downloadContentFromMessage(quotedVideo, 'video');
