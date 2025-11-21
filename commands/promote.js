@@ -16,7 +16,7 @@ async function promoteCommand(sock, chatId, mentionedJids, message) {
     // If no user found through either method
     if (userToPromote.length === 0) {
         await sock.sendMessage(chatId, { 
-            text: 'Please mention the user or reply to their message to promote!'
+            text: '*🦹‍♀️Please mention the user or reply to their message to promote🦹‍♀️!*'
         });
         return;
     }
@@ -37,13 +37,14 @@ async function promoteCommand(sock, chatId, mentionedJids, message) {
             `👥 *Promoted User${userToPromote.length > 1 ? 's' : ''}:*\n` +
             `${usernames.map(name => `• ${name}`).join('\n')}\n\n` +
             `👑 *Promoted By:* @${promoterJid.split('@')[0]}\n\n` +
-            `📅 *Date:* ${new Date().toLocaleString()}`;
+            `📅 *Date:* ${new Date().toLocaleString()}\n\n` +
+            `*Copyright wallyjaytech 2025*`;
         await sock.sendMessage(chatId, { 
             text: promotionMessage,
             mentions: [...userToPromote, promoterJid]
         });
     } catch (error) {
-        console.error('Error in promote command:', error);
+        console.error('*Error in promote command:*', error);
         await sock.sendMessage(chatId, { text: 'Failed to promote user(s)!'});
     }
 }
@@ -82,7 +83,8 @@ async function handlePromotionEvent(sock, groupId, participants, author) {
             `👥 *Promoted User${participants.length > 1 ? 's' : ''}:*\n` +
             `${promotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
             `👑 *Promoted By:* ${promotedBy}\n\n` +
-            `📅 *Date:* ${new Date().toLocaleString()}`;
+            `📅 *Date:* ${new Date().toLocaleString()}\n\n` +
+            `*Copyright wallyjaytech 2025*`;       
         
         await sock.sendMessage(groupId, {
             text: promotionMessage,
