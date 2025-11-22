@@ -12,7 +12,7 @@ async function spotifyCommand(sock, chatId, message) {
         const query = rawText.slice(used.length).trim();
 
         if (!query) {
-            await sock.sendMessage(chatId, { text: 'Usage: .spotify <song/artist/keywords>\nExample: .spotify con calma' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*Usage: .spotify <song/artist/keywords>\nExample: .spotify con calma*' }, { quoted: message });
             return;
         }
 
@@ -26,11 +26,11 @@ async function spotifyCommand(sock, chatId, message) {
         const r = data.result;
         const audioUrl = r.audio;
         if (!audioUrl) {
-            await sock.sendMessage(chatId, { text: 'No downloadable audio found for this query.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*No downloadable audio found for this query.*' }, { quoted: message });
             return;
         }
 
-        const caption = `🎵 ${r.title || r.name || 'Unknown Title'}\n👤 ${r.artist || ''}\n⏱ ${r.duration || ''}\n🔗 ${r.url || ''}`.trim();
+        const caption = `*🎵 ${r.title || r.name || 'Unknown Title'}*\n*👤 ${r.artist || ''}*\n*⏱ ${r.duration || ''}*\n*🔗 ${r.url || ''}*\n\n*Copyright wallyjaytech 2025*`.trim();
 
          // Send cover and info as a follow-up (optional)
          if (r.thumbnails) {
@@ -48,7 +48,7 @@ async function spotifyCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('[SPOTIFY] error:', error?.message || error);
-        await sock.sendMessage(chatId, { text: 'Failed to fetch Spotify audio. Try another query later.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*Failed to fetch Spotify audio. Try another query later.*' }, { quoted: message });
     }
 }
 
