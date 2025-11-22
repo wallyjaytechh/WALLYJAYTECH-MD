@@ -57,6 +57,7 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔹.delete*
 ║ *🔹.kick @user*
 ║ *🔹.ship*
+║ *🔹.stupid @user <text>*
 ║ *🔹.warnings @user*
 ║ *🔹.warn @user*
 ║ *🔹.antilink*
@@ -175,7 +176,6 @@ async function helpCommand(sock, chatId, message) {
 ║ *🟢.character @user*
 ║ *🟢.wasted @user*
 ║ *🟢.simp @user*
-║ *🟢.stupid @user <text>*
 ║
 ╚═══════════════════╝
 
