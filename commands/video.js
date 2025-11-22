@@ -67,7 +67,7 @@ async function videoCommand(sock, chatId, message) {
             // Search YouTube for the video
             const { videos } = await yts(searchQuery);
             if (!videos || videos.length === 0) {
-                await sock.sendMessage(chatId, { text: 'No videos found!' }, { quoted: message });
+                await sock.sendMessage(chatId, { text: '*No videos found!*' }, { quoted: message });
                 return;
             }
             videoUrl = videos[0].url;
@@ -83,7 +83,7 @@ async function videoCommand(sock, chatId, message) {
             if (thumb) {
                 await sock.sendMessage(chatId, {
                     image: { url: thumb },
-                    caption: `*${captionTitle}*\nDownloading...`
+                    caption: `*${captionTitle}*\n\n*Downloading...*`
                 }, { quoted: message });
             }
         } catch (e) { console.error('[VIDEO] thumb error:', e?.message || e); }
@@ -109,7 +109,7 @@ async function videoCommand(sock, chatId, message) {
             video: { url: videoData.download },
             mimetype: 'video/mp4',
             fileName: `${videoData.title || videoTitle || 'video'}.mp4`,
-            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n> *DOWNLOADED BY WALLYJAYTECH-MD`
+            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n*DOWNLOADED BY WALLYJAYTECH-MD*`
         }, { quoted: message });
 
 
