@@ -49,7 +49,7 @@ async function handleHeart(sock, chatId, message) {
         await sock.sendMessage(chatId, { image: Buffer.from(response.data) }, { quoted: message });
     } catch (error) {
         console.error('Error in misc heart:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to create heart image. Try again later.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*❌ Failed to create heart image. Try again later.*' }, { quoted: message });
     }
 }
 
@@ -92,10 +92,10 @@ async function miscCommand(sock, chatId, message, args) {
                 await simpleAvatarOnly('tonikawa');
                 break;
 
-            case 'its-so-stupid': {
+            case 'stupid': {
                 const dog = rest.join(' ').trim();
                 if (!dog) {
-                    await sock.sendMessage(chatId, { text: 'Usage: .misc its-so-stupid <text>' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .stupid <text>*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -110,7 +110,7 @@ async function miscCommand(sock, chatId, message, args) {
                 const joined = rest.join(' ');
                 const [username, birthday, description] = joined.split('|').map(s => (s || '').trim());
                 if (!username || !birthday) {
-                    await sock.sendMessage(chatId, { text: 'Usage: .misc namecard username|birthday|description(optional)' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .namecard username|birthday|description(optional)\n\n*Explanation: use your command prefix [,.etc] then followed by namecard follow by |26/03/2004 then follow by |description you like make sure you always use this | to separate birthday & description*\n\n*For example: .namecard wallyjaytech |26/03/2004 |tech guy*\n\n*Copyright wallyjaytech 2025*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -127,7 +127,7 @@ async function miscCommand(sock, chatId, message, args) {
             case 'oogway2': {
                 const quote = rest.join(' ').trim();
                 if (!quote) {
-                    await sock.sendMessage(chatId, { text: `Usage: .misc ${sub} <quote>` }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: `*Usage: .${sub} <give quote>*` }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -142,7 +142,7 @@ async function miscCommand(sock, chatId, message, args) {
                 const joined = rest.join(' ');
                 const [displayname, username, comment, theme] = joined.split('|').map(s => (s || '').trim());
                 if (!displayname || !username || !comment) {
-                    await sock.sendMessage(chatId, { text: 'Usage: .misc tweet displayname|username|comment|theme(optional light/dark)' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'Usage: .tweet displayname|username|comment|theme(optional light/dark)' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
