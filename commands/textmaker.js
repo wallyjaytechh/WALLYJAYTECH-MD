@@ -44,8 +44,8 @@ async function textmakerCommand(sock, chatId, message, q, type) {
                 case 'metallic':
                     result = await mumaker.ephoto("https://en.ephoto360.com/impressive-decorative-3d-metal-text-effect-798.html", text);
                     break;
-                case 'halloween':
-                    result = await mumaker.ephoto("https://en.ephoto360.com/halloween-fire-text-effect-online-369.html", text);
+                case 'balloon':
+                    result = await mumaker.ephoto("https://en.ephoto360.com/beautiful-3d-foil-balloon-effects-for-holidays-and-birthday-803.html", text);
                     break;                    
                 case 'ice':
                     result = await mumaker.ephoto("https://en.ephoto360.com/ice-text-effect-online-101.html", text);
