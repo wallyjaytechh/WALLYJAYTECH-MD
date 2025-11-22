@@ -42,7 +42,7 @@ module.exports = {
                     imageUrl = url;
                 } else {
                     return sock.sendMessage(chatId, { 
-                        text: '❌ Invalid URL provided.\n\nUsage: `.removebg https://example.com/image.jpg`' 
+                        text: '*❌ Invalid URL provided.*\n\n*Usage:*\n\n*.removebg https://example.com/image.jpg*' 
                     }, { quoted: message });
                 }
             } else {
@@ -51,7 +51,7 @@ module.exports = {
                 
                 if (!imageUrl) {
                     return sock.sendMessage(chatId, { 
-                        text: '📸 *Remove Background Command*\n\nUsage:\n• `.removebg <image_url>`\n• Reply to an image with `.removebg`\n• Send image with `.removebg`\n\nExample: `.removebg https://example.com/image.jpg`' 
+                        text: '📸 *Remove Background Command*\n\n*Usage:*\n\n• `.removebg <image_url>`\n\n• *Reply to an image with* `.removebg`\n\n• *Send image with* `.removebg`\n\n*Example:*\n\n`.removebg https://example.com/image.jpg`' 
                     }, { quoted: message });
                 }
             }
