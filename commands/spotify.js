@@ -12,7 +12,7 @@ async function spotifyCommand(sock, chatId, message) {
         const query = rawText.slice(used.length).trim();
 
         if (!query) {
-            await sock.sendMessage(chatId, { text: '*Usage: .spotify <song/artist/keywords>\nExample: .spotify con calma*' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*Usage: .spotify <song/artist/keywords>*\n\n*Example: .spotify con calma*' }, { quoted: message });
             return;
         }
 
