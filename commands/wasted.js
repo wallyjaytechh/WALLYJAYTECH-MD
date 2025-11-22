@@ -39,7 +39,7 @@ async function wastedCommand(sock, chatId, message) {
         // Send the wasted image
         await sock.sendMessage(chatId, {
             image: Buffer.from(wastedResponse.data),
-            caption: `⚰️ *Wasted* : ${userToWaste.split('@')[0]} 💀\n\n*Rest in pieces!     no peace for the wicked💀*`,
+            caption: `⚰️ *Wasted* : ${userToWaste.split('@')[0]} 💀\n\n*⚰️Rest in pieces!     no peace for the wicked💀*`,
             mentions: [userToWaste],
             ...channelInfo
         });
