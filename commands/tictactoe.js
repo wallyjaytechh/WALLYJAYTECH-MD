@@ -180,7 +180,7 @@ ${arr.slice(6).join('')}
 ➡️ Player ❎: @${room.game.playerX.split('@')[0]}
 ➡️ Player ⭕: @${room.game.playerO.split('@')[0]}
 
-${!winner && !isTie ? '*• Type a number (1-9) to make your move*\n\n*• Type *surrender* to give up*' : ''}
+${!winner && !isTie ? '*• Type a number (1-9) to make your move*\n\n*• Type surrender to give up*' : ''}
 `;
 
         const mentions = [
