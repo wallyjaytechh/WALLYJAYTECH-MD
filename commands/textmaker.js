@@ -7,7 +7,10 @@ async function textmakerCommand(sock, chatId, message, q, type) {
         switch (type) {
             case 'metallic':
                 usageErrorText = "Example: .metallic Hector";
-                break;
+                break
+            case 'balloon':
+                usageErrorText = "Example: .balloon Hector";
+                break;                  
             case 'ice':
                 usageErrorText = "Example: .ice Hector";
                 break;
@@ -82,6 +85,9 @@ async function textmakerCommand(sock, chatId, message, q, type) {
             case 'metallic':
                 specificUrl = `${ephotoBaseUrl}/impressive-decorative-3d-metal-text-effect-798.html`;
                 break;
+            case 'balloon':
+                specificUrl = `${ephotoBaseUrl}/beautiful-3d-foil-balloon-effects-for-holidays-and-birthday-803.html`;
+                break;              
             case 'ice':
                 specificUrl = `${ephotoBaseUrl}/ice-text-effect-online-101.html`;
                 break;
