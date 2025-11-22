@@ -46,8 +46,8 @@ async function sendAnimu(sock, chatId, message, type) {
 
         const json = {
             'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-            'sticker-pack-name': 'Anime Stickers',
-            'emojis': ['🎌']
+            'sticker-pack-name': 'WALLYJAYTECH-MD',
+            'emojis': ['♦️']
         };
         const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
         const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8');
@@ -110,7 +110,7 @@ async function sendAnimu(sock, chatId, message, type) {
 
     await sock.sendMessage(
         chatId,
-        { text: '❌ Failed to fetch animu.' },
+        { text: '*❌ Failed to fetch anime.*' },
         { quoted: message }
     );
 }
@@ -129,22 +129,22 @@ async function animeCommand(sock, chatId, message, args) {
             try {
                 const res = await axios.get(ANIMU_BASE);
                 const apiTypes = res.data && res.data.types ? res.data.types.map(s => s.replace('/animu/', '')).join(', ') : supported.join(', ');
-                await sock.sendMessage(chatId, { text: `Usage: .animu <type>\nTypes: ${apiTypes}` }, { quoted: message });
+                await sock.sendMessage(chatId, { text: `*Usage: .animu <type>\nTypes: ${apiTypes}*` }, { quoted: message });
             } catch {
-                await sock.sendMessage(chatId, { text: `Usage: .animu <type>\nTypes: ${supported.join(', ')}` }, { quoted: message });
+                await sock.sendMessage(chatId, { text: `*Usage: .animu <type>\nTypes: ${supported.join(', ')}*` }, { quoted: message });
             }
             return;
         }
 
         if (!supported.includes(sub)) {
-            await sock.sendMessage(chatId, { text: `❌ Unsupported type: ${sub}. Try one of: ${supported.join(', ')}` }, { quoted: message });
+            await sock.sendMessage(chatId, { text: `*❌ Unsupported type: ${sub}. Try one of: ${supported.join(', ')}*` }, { quoted: message });
             return;
         }
 
         await sendAnimu(sock, chatId, message, sub);
     } catch (err) {
         console.error('Error in animu command:', err);
-        await sock.sendMessage(chatId, { text: '❌ An error occurred while fetching animu.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*❌ An error occurred while fetching anime.*' }, { quoted: message });
     }
 }
 
