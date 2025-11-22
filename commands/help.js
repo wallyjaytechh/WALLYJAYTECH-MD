@@ -271,7 +271,7 @@ async function helpCommand(sock, chatId, message) {
 ║
 ╚═══════════════════╝
 
-  🟡 *Copyright wallyjaytech 2025* 🟡
+    🟡 *Copyright wallyjaytech 2025* 🟡
 
 *⬇️Join our channel below for updates⬇️*`;
 
