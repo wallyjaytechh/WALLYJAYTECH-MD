@@ -228,6 +228,7 @@ async function helpCommand(sock, chatId, message) {
 ║ *🟡.circle*
 ║ *🟡.lgbt*
 ║ *🟡.lolice*
+║ *🟡.tonikawa*
 ║ *🟡.its-so-stupid*
 ║ *🟡.namecard*
 ║ *🟡.oogway*
