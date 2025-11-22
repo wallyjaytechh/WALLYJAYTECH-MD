@@ -15,7 +15,7 @@ async function wastedCommand(sock, chatId, message) {
     
     if (!userToWaste) {
         await sock.sendMessage(chatId, { 
-            text: 'Please mention someone or reply to their message to waste them!', 
+            text: '*Please mention someone or reply to their message to waste them!*', 
             ...channelInfo 
         }, { quoted: message });
         return;
@@ -39,7 +39,7 @@ async function wastedCommand(sock, chatId, message) {
         // Send the wasted image
         await sock.sendMessage(chatId, {
             image: Buffer.from(wastedResponse.data),
-            caption: `⚰️ *Wasted* : ${userToWaste.split('@')[0]} 💀\n\nRest in pieces!`,
+            caption: `⚰️ *Wasted* : ${userToWaste.split('@')[0]} 💀\n\n*Rest in pieces!     no peace for the wicked💀*`,
             mentions: [userToWaste],
             ...channelInfo
         });
@@ -47,7 +47,7 @@ async function wastedCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Error in wasted command:', error);
         await sock.sendMessage(chatId, { 
-            text: 'Failed to create wasted image! Try again later.',
+            text: '*Failed to create wasted image! Try again later.*',
             ...channelInfo 
         }, { quoted: message });
     }
