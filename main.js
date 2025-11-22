@@ -193,7 +193,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         // Handle button responses
         if (message.message?.buttonsResponseMessage) {
             const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
-            const buttonId = message.key.remoteJid;
+            const chatId = message.key.remoteJid;
   
             if (buttonId === 'channel') {
                 await sock.sendMessage(chatId, { 
