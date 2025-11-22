@@ -35,14 +35,14 @@ async function stupidCommand(sock, chatId, quotedMsg, mentionedJid, sender, args
         // Send the image with caption
         await sock.sendMessage(chatId, {
             image: imageBuffer,
-            caption: `*@${who.split('@')[0]}*`,
+            caption: `*Comrade 🙄@${who.split('@')[0]}*`,
             mentions: [who]
         });
 
     } catch (error) {
         console.error('Error in stupid command:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Sorry, I couldn\'t generate the stupid card. Please try again later!'
+            text: '*❌ Sorry, I couldn\'t generate the stupid card. Please try again later!*'
         });
     }
 }
