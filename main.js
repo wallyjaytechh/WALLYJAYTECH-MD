@@ -193,8 +193,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         // Handle button responses
         if (message.message?.buttonsResponseMessage) {
             const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
+            const buttonId = message.key.remoteJid;
   
-            
             if (buttonId === 'channel') {
                 await sock.sendMessage(chatId, { 
                     text: '📢 *Join our Channel:*\nhttps://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I' 
