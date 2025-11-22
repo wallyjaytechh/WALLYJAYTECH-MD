@@ -19,7 +19,7 @@ async function startTrivia(sock, chatId) {
         };
 
         sock.sendMessage(chatId, {
-            text: `*⏰ Trivia Time! ⏰*\n\n*▫️ Question: ${triviaGames[chatId].question} ▫️*\n\n*◾️ Options: ◾️*\n\n*${triviaGames[chatId].options.join('\n')}*`
+            text: `*⏰ Trivia Time! ⏰*\n\n*▫️ Question: ${triviaGames[chatId].question} ▫️*\n\n*◾️ Options: ◾️*\n\n${triviaGames[chatId].options.join('\n')}`
         });
     } catch (error) {
         sock.sendMessage(chatId, { text: '*Error fetching trivia question. Try again later.*' });
