@@ -375,7 +375,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (quotedMessage?.stickerMessage) {
                     await simageCommand(sock, quotedMessage, chatId);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please reply to a sticker with the .simage command to convert it.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Please reply to a sticker with the .simage command to convert it.*', ...channelInfo }, { quoted: message });
                 }
                 commandExecuted = true;
                 break;
