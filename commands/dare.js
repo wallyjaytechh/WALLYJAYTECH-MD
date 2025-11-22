@@ -2,17 +2,13 @@ const fetch = require('node-fetch');
 
 async function dareCommand(sock, chatId, message) {
     try {
-        const shizokeys = 'shizo';
-        const res = await fetch(`https://shizoapi.onrender.com/api/texts/dare?apikey=${shizokeys}`);
+        const res = await fetch(`https://truth-dare-api.officialhectormanuel.workers.dev/?type=dare`);
         
-        if (!res.ok) {
-            throw await res.text();
-        }
+        if (!res.ok) throw await res.text();
         
         const json = await res.json();
-        const dareMessage = json.result;
+        const dareMessage = json?.game?.question || "Couldn't fetch a dare right now.";
 
-        // Send the dare message
         await sock.sendMessage(chatId, { text: dareMessage }, { quoted: message });
     } catch (error) {
         console.error('Error in dare command:', error);
