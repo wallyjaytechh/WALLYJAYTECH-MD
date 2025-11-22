@@ -26,7 +26,7 @@ async function piesCommand(sock, chatId, message, args) {
 		const imageBuffer = await fetchPiesImageBuffer(sub);
 		await sock.sendMessage(
 			chatId,
-			{ image: imageBuffer, caption: `pies: ${sub}` },
+			{ image: imageBuffer, caption: `*pies: ${sub}*` },
 			{ quoted: message }
 		);
 	} catch (err) {
