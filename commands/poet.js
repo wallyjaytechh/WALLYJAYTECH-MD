@@ -1,9 +1,9 @@
 const fetch = require('node-fetch');
 const translate = require('translatte'); // Import the translator
 
-async function shayariCommand(sock, chatId, message) {
+async function poetCommand(sock, chatId, message) {
     try {
-        // 1. Get the original Shayari
+        // 1. Get the original poet
         const response = await fetch('https://shizoapi.onrender.com/api/texts/shayari?apikey=shizo');
         const data = await response.json();
         
@@ -12,12 +12,12 @@ async function shayariCommand(sock, chatId, message) {
         }
 
         // 2. Translate it to English
-        // 'shayari' is often poetic, so the translation might be literal
+        // 'poet' is often poetic, so the translation might be literal
         const translation = await translate(data.result, { to: 'en' });
         const englishShayari = translation.text;
 
         const buttons = [
-            { buttonId: '.shayari', buttonText: { displayText: 'Shayari 🪄' }, type: 1 },
+            { buttonId: '.poet', buttonText: { displayText: 'poet 🪄' }, type: 1 },
             { buttonId: '.roseday', buttonText: { displayText: '🌹 RoseDay' }, type: 1 }
         ];
 
@@ -29,11 +29,11 @@ async function shayariCommand(sock, chatId, message) {
         }, { quoted: message });
 
     } catch (error) {
-        console.error('Error in shayari command:', error);
+        console.error('Error in poet command:', error);
         await sock.sendMessage(chatId, { 
-            text: '*❌ Failed to fetch shayari. Please try again later.*', 
+            text: '*❌ Failed to fetch poet. Please try again later.*', 
         }, { quoted: message });
     }
 }
 
-module.exports = { shayariCommand };
+module.exports = { poetCommand };
