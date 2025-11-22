@@ -92,10 +92,10 @@ async function miscCommand(sock, chatId, message, args) {
                 await simpleAvatarOnly('tonikawa');
                 break;
 
-            case 'stupid': {
+            case 'its-so-stupid': {
                 const dog = rest.join(' ').trim();
                 if (!dog) {
-                    await sock.sendMessage(chatId, { text: '*Usage: .stupid <text>*' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .its-so-stupid <text>*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
