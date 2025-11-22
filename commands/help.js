@@ -168,7 +168,7 @@ async function helpCommand(sock, chatId, message) {
 ║ *🟢.compliment @user*
 ║ *🟢.insult @user*
 ║ *🟢.flirt*
-║ *🟢.shayari*
+║ *🟢.poet*
 ║ *🟢.goodnight*
 ║ *🟢.roseday*
 ║ *🟢.character @user*
