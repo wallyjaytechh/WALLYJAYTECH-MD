@@ -54,7 +54,7 @@ ${arr.slice(6).join('')}
 🔴 *Room ID: ${room.id}*
 🔵 *Rules:*
 
-• Make 3 rows of symbols vertically, horizontally or diagonally to win*
+• *Make 3 rows of symbols vertically, horizontally or diagonally to win*
 • *Type a number (1-9) to place your symbol*
 • *Type surrender to give up*
 `;
