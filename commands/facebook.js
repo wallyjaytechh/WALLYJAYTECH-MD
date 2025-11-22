@@ -159,7 +159,7 @@ async function facebookCommand(sock, chatId, message) {
 
         if (!fbvid) {
             return await sock.sendMessage(chatId, { 
-                text: '*❌ Failed to get video URL from Facebook.\n\n*Possible reasons:*\n\n*• Video is private or deleted*\n\n*• Link is invalid*\n\n*• Video is not available for download*\n\n*Please try a different Facebook video link.*'
+                text: '*❌ Failed to get video URL from Facebook.*\n\n*Possible reasons:*\n\n*• Video is private or deleted*\n\n*• Link is invalid*\n\n*• Video is not available for download*\n\n*Please try a different Facebook video link.*'
             }, { quoted: message });
         }
 
