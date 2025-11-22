@@ -53,7 +53,7 @@ async function videoCommand(sock, chatId, message) {
         
         
         if (!searchQuery) {
-            await sock.sendMessage(chatId, { text: '*What video do you want to download?*\n\n*Usage:*\n\n.video <give video query>\n\n*OR*\n\n*.video <youtube video link or short link*' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*What video do you want to download?*\n\n*Usage:*\n\n*.video <give video song query>*\n\n*OR*\n\n*.video <youtube video link or short link*' }, { quoted: message });
             return;
         }
 
