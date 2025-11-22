@@ -208,8 +208,8 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *📥DOWNLOAD CMDS📥*
 ║
-║ *🟠.play <song_name>*
-║ *🟠.song <song_name>*
+║ *🟠.play <song name>*
+║ *🟠.song <song name>*
 ║ *🟠.spotify <query>*
 ║ *🟠.instagram <link>*
 ║ *🟠.facebook <link>*
