@@ -53,7 +53,7 @@ async function videoCommand(sock, chatId, message) {
         
         
         if (!searchQuery) {
-            await sock.sendMessage(chatId, { text: 'What video do you want to download?' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*What video do you want to download?*' }, { quoted: message });
             return;
         }
 
@@ -92,7 +92,7 @@ async function videoCommand(sock, chatId, message) {
         // Validate YouTube URL
         let urls = videoUrl.match(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch\?v=|v\/|embed\/|shorts\/|playlist\?list=)?)([a-zA-Z0-9_-]{11})/gi);
         if (!urls) {
-            await sock.sendMessage(chatId, { text: 'This is not a valid YouTube link!' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: '*This is not a valid YouTube link!*' }, { quoted: message });
             return;
         }
 
@@ -109,7 +109,7 @@ async function videoCommand(sock, chatId, message) {
             video: { url: videoData.download },
             mimetype: 'video/mp4',
             fileName: `${videoData.title || videoTitle || 'video'}.mp4`,
-            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n> *_Downloaded by Knight Bot MD_*`
+            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n> *DOWNLOADED BY WALLYJAYTECH-MD`
         }, { quoted: message });
 
 
