@@ -68,9 +68,7 @@ async function miscCommand(sock, chatId, message, args) {
         switch (sub) {
             case 'heart':
                 await simpleAvatarOnly('heart');
-                    await sock.sendMessage(chatId, {
-            react: { text: '🔄', key: message.key };
-                            break;
+               break;
             case 'horny':
                 await simpleAvatarOnly('horny');
                 break;
