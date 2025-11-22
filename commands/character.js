@@ -34,8 +34,9 @@ async function characterCommand(sock, chatId, message) {
             "Intelligent", "Creative", "Determined", "Ambitious", "Caring", 
             "crazy", "stupid", "foolish", "horny", "lazy",
             "Charismatic", "Confident", "Empathetic", "Energetic", "Friendly",
-            "stealing", "hatred", "betrayal", "sex", "abusively",
+            "stealing", "hatred", "betrayal", "sex", "abusive",
             "Generous", "Honest", "Humorous", "Imaginative", "Independent",
+            "fighting", "humility", "cursing", "playful", "dependent",
             "Intuitive", "Kind", "Logical", "Loyal", "Optimistic",
             "Passionate", "Patient", "Persistent", "Reliable", "Resourceful",
             "Sincere", "Thoughtful", "Understanding", "Versatile", "Wise"
