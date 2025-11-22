@@ -125,7 +125,7 @@ const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
 const { goodnightCommand } = require('./commands/goodnight');
-const { shayariCommand } = require('./commands/shayari');
+const { poetCommand } = require('./commands/poet');
 const { rosedayCommand } = require('./commands/roseday');
 const imagineCommand = require('./commands/imagine');
 const videoCommand = require('./commands/video');
@@ -964,8 +964,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.goodnight' || userMessage === '.lovenight' || userMessage === '.gn':
                 await goodnightCommand(sock, chatId, message);
                 break;
-            case userMessage === '.shayari' || userMessage === '.shayri':
-                await shayariCommand(sock, chatId, message);
+            case userMessage === '.poet' || userMessage === '.poetry':
+                await poetCommand(sock, chatId, message);
                 break;
             case userMessage === '.roseday':
                 await rosedayCommand(sock, chatId, message);
