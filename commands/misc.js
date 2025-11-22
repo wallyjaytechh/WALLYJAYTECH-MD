@@ -69,7 +69,7 @@ async function miscCommand(sock, chatId, message, args) {
             case 'heart':
                 await simpleAvatarOnly('heart');
                     await sock.sendMessage(chatId, {
-            react: { text: '🔄', key: message.key }
+            react: { text: '🔄', key: message.key };
                             break;
             case 'horny':
                 await simpleAvatarOnly('horny');
