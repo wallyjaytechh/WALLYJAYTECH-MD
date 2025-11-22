@@ -67,7 +67,7 @@ async function instagramCommand(sock, chatId, message) {
         
         if (!isValidUrl) {
             return await sock.sendMessage(chatId, { 
-                text: "That is not a valid Instagram link. Please provide a valid Instagram post, reel, or video link."
+                text: "*Please provide a valid Instagram post, reel, or video link.*"
             });
         }
 
@@ -79,7 +79,7 @@ async function instagramCommand(sock, chatId, message) {
         
         if (!downloadData || !downloadData.data || downloadData.data.length === 0) {
             return await sock.sendMessage(chatId, { 
-                text: "❌ No media found at the provided link. The post might be private or the link is invalid."
+                text: "*❌ No media found at the provided link. The post might be private or the link is invalid.*"
             });
         }
 
@@ -93,7 +93,7 @@ async function instagramCommand(sock, chatId, message) {
         
         if (mediaToDownload.length === 0) {
             return await sock.sendMessage(chatId, { 
-                text: "❌ No valid media found to download. This might be a private post or the scraper failed."
+                text: "*❌ No valid media found to download. This might be a private post or the scraper failed.*"
             });
         }
 
@@ -113,12 +113,12 @@ async function instagramCommand(sock, chatId, message) {
                     await sock.sendMessage(chatId, {
                         video: { url: mediaUrl },
                         mimetype: "video/mp4",
-                        caption: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗𝗘𝗗 𝗕𝗬 𝗞𝗡𝗜𝗚𝗛𝗧-𝗕𝗢𝗧"
+                        caption: "*DOWNLOADED BY WALLYJAYTECH-MD*"
                     }, { quoted: message });
                 } else {
                     await sock.sendMessage(chatId, {
                         image: { url: mediaUrl },
-                        caption: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗𝗘𝗗 𝗕𝗬 𝗞𝗡𝗜𝗚𝗛𝗧-𝗕𝗢𝗧"
+                        caption: "*DOWNLOADED BY WALLYJAYTECH-MD*"
                     }, { quoted: message });
                 }
                 
@@ -136,7 +136,7 @@ async function instagramCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Error in Instagram command:', error);
         await sock.sendMessage(chatId, { 
-            text: "❌ An error occurred while processing the Instagram request. Please try again."
+            text: "*❌ An error occurred while processing the Instagram request. Please try again.*"
         });
     }
 }
