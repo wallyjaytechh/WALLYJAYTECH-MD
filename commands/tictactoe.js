@@ -11,7 +11,7 @@ async function tictactoeCommand(sock, chatId, senderId, text) {
             [room.game.playerX, room.game.playerO].includes(senderId)
         )) {
             await sock.sendMessage(chatId, { 
-                text: '❌ You are still in a game. Type *surrender* to quit.' 
+                text: '*❌ You are still in a game. Type surrender to quit.*' 
             });
             return;
         }
@@ -45,17 +45,18 @@ async function tictactoeCommand(sock, chatId, senderId, text) {
             const str = `
 🎮 *TicTacToe Game Started!*
 
-Waiting for @${room.game.currentTurn.split('@')[0]} to play...
+*Waiting for @${room.game.currentTurn.split('@')[0]} to play...*
 
 ${arr.slice(0, 3).join('')}
 ${arr.slice(3, 6).join('')}
 ${arr.slice(6).join('')}
 
-▢ *Room ID:* ${room.id}
-▢ *Rules:*
-• Make 3 rows of symbols vertically, horizontally or diagonally to win
-• Type a number (1-9) to place your symbol
-• Type *surrender* to give up
+🔴 *Room ID: ${room.id}*
+🔵 *Rules:*
+
+• Make 3 rows of symbols vertically, horizontally or diagonally to win*
+• *Type a number (1-9) to place your symbol*
+• *Type surrender to give up*
 `;
 
             // Send message only once to the group
@@ -77,7 +78,7 @@ ${arr.slice(6).join('')}
             if (text) room.name = text;
 
             await sock.sendMessage(chatId, { 
-                text: `⏳ *Waiting for opponent*\nType *.ttt ${text || ''}* to join!`
+                text: `⏳ *Waiting for opponent*\n\n*Type .ttt ${text || ''} to join!*`
             });
 
             games[room.id] = room;
@@ -86,7 +87,7 @@ ${arr.slice(6).join('')}
     } catch (error) {
         console.error('Error in tictactoe command:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Error starting game. Please try again.' 
+            text: '*❌ Error starting game. Please try again.*' 
         });
     }
 }
@@ -109,7 +110,7 @@ async function handleTicTacToeMove(sock, chatId, senderId, text) {
         // Allow surrender at any time, not just during player's turn
         if (senderId !== room.game.currentTurn && !isSurrender) {
             await sock.sendMessage(chatId, { 
-                text: '❌ Not your turn!' 
+                text: '*❌ Not your turn!*' 
             });
             return;
         }
@@ -121,7 +122,7 @@ async function handleTicTacToeMove(sock, chatId, senderId, text) {
 
         if (!ok) {
             await sock.sendMessage(chatId, { 
-                text: '❌ Invalid move! That position is already taken.' 
+                text: '*❌ Invalid move! That position is already taken.*' 
             });
             return;
         }
@@ -149,7 +150,7 @@ async function handleTicTacToeMove(sock, chatId, senderId, text) {
             
             // Send a surrender message
             await sock.sendMessage(chatId, { 
-                text: `🏳️ @${senderId.split('@')[0]} has surrendered! @${winner.split('@')[0]} wins the game!`,
+                text: `*🏳️ @${senderId.split('@')[0]} has surrendered! @${winner.split('@')[0]} wins the game!*`,
                 mentions: [senderId, winner]
             });
             
@@ -160,11 +161,11 @@ async function handleTicTacToeMove(sock, chatId, senderId, text) {
 
         let gameStatus;
         if (winner) {
-            gameStatus = `🎉 @${winner.split('@')[0]} wins the game!`;
+            gameStatus = `*🎉 @${winner.split('@')[0]} wins the game!*`;
         } else if (isTie) {
-            gameStatus = `🤝 Game ended in a draw!`;
+            gameStatus = `*🤝 Game ended in a draw!*`;
         } else {
-            gameStatus = `🎲 Turn: @${room.game.currentTurn.split('@')[0]} (${senderId === room.game.playerX ? '❎' : '⭕'})`;
+            gameStatus = `*🎲 Turn: @${room.game.currentTurn.split('@')[0]} (${senderId === room.game.playerX ? '❎' : '⭕'})*`;
         }
 
         const str = `
@@ -176,10 +177,10 @@ ${arr.slice(0, 3).join('')}
 ${arr.slice(3, 6).join('')}
 ${arr.slice(6).join('')}
 
-▢ Player ❎: @${room.game.playerX.split('@')[0]}
-▢ Player ⭕: @${room.game.playerO.split('@')[0]}
+➡️ Player ❎: @${room.game.playerX.split('@')[0]}
+➡️ Player ⭕: @${room.game.playerO.split('@')[0]}
 
-${!winner && !isTie ? '• Type a number (1-9) to make your move\n• Type *surrender* to give up' : ''}
+${!winner && !isTie ? '*• Type a number (1-9) to make your move*\n\n*• Type *surrender* to give up*' : ''}
 `;
 
         const mentions = [
