@@ -95,7 +95,7 @@ async function miscCommand(sock, chatId, message, args) {
             case 'its-so-stupid': {
                 const dog = rest.join(' ').trim();
                 if (!dog) {
-                    await sock.sendMessage(chatId, { text: '*Usage: .its-so-stupid <text>*' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .its-so-stupid <target name>*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -110,7 +110,7 @@ async function miscCommand(sock, chatId, message, args) {
                 const joined = rest.join(' ');
                 const [username, birthday, description] = joined.split('|').map(s => (s || '').trim());
                 if (!username || !birthday) {
-                    await sock.sendMessage(chatId, { text: '*Usage: .namecard username|birthday|description(optional)\n\n*Explanation: use your command prefix [,.etc] then followed by namecard follow by |26/03/2004 then follow by |description you like make sure you always use this | to separate birthday & description*\n\n*For example: .namecard wallyjaytech |26/03/2004 |tech guy*\n\n*Copyright wallyjaytech 2025*' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .namecard username|birthday|description(optional)*\n\n*Explanation: use your command prefix [,.etc] then followed by namecard follow by |26/03/2004 then follow by |description you like make sure you always use this | to separate birthday & description*\n\n*For example: .namecard wallyjaytech |26/03/2004 |tech guy*\n\n*Copyright wallyjaytech 2025*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -138,11 +138,11 @@ async function miscCommand(sock, chatId, message, args) {
             }
 
             case 'tweet': {
-                // .misc tweet displayname|username|comment|theme(optional: light/dark)
+                // .tweet displayname|username|comment|theme(optional: light/dark)
                 const joined = rest.join(' ');
                 const [displayname, username, comment, theme] = joined.split('|').map(s => (s || '').trim());
                 if (!displayname || !username || !comment) {
-                    await sock.sendMessage(chatId, { text: 'Usage: .tweet displayname|username|comment|theme(optional light/dark)' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .tweet displayname|username|comment|theme(optional light/dark)*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -159,7 +159,7 @@ async function miscCommand(sock, chatId, message, args) {
                 const joined = rest.join(' ');
                 const [username, comment] = joined.split('|').map(s => (s || '').trim());
                 if (!username || !comment) {
-                    await sock.sendMessage(chatId, { text: 'Usage: .misc youtube-comment username|comment' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*Usage: .ytcomment username|comment*' }, { quoted: message });
                     return;
                 }
                 const avatarUrl = await getQuotedOrOwnImageUrl(sock, message);
@@ -190,7 +190,7 @@ async function miscCommand(sock, chatId, message, args) {
         }
     } catch (error) {
         console.error('Error in misc command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to generate image. Check your parameters and try again.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '*❌ Failed to generate image. Check your parameters and try again.*' }, { quoted: message });
     }
 }
 
