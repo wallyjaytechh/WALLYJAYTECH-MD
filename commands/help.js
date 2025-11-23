@@ -40,7 +40,8 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔸.vv*                  
 ║ *🔸.trt <text> <lang>*  
 ║ *🔸.ss <link>*          
-║ *🔸.url*                 
+║ *🔸.url*        
+║ *🔸.getjid*    
 ║                       
 ╚═══════════════════╝ 
 
