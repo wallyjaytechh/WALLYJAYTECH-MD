@@ -81,7 +81,7 @@ const { eightBallCommand } = require('./commands/eightball');
 const { lyricsCommand } = require('./commands/lyrics');
 const { dareCommand } = require('./commands/dare');
 const { truthCommand } = require('./commands/truth');
-const { clearCommand } = require('./commands/clear');
+const clearCommand = require('./commands/clear');
 const pingCommand = require('./commands/ping');
 const aliveCommand = require('./commands/alive');
 const blurCommand = require('./commands/img-blur');
@@ -667,7 +667,7 @@ case userMessage.startsWith('.getjid @'):
                 await truthCommand(sock, chatId, message);
                 break;
             case userMessage === '.clear':
-                if (isGroup) await clearCommand(sock, chatId);
+                await clearCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.promote'):
                 const mentionedJidListPromote = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
