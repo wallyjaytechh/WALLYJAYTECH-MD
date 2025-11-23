@@ -821,7 +821,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await stickerTelegramCommand(sock, chatId, message);
                 break;
 
-            case userMessage === '.vv':
+            case userMessage('.vv'):
                 await viewOnceCommand(sock, chatId, message);
                 break;
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
