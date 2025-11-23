@@ -8,6 +8,15 @@ await sock.sendPresenceUpdate('composing', chatId);
 // Get group metadata
 const groupMetadata = await sock.groupMetadata(chatId);
 
+// Get group profile picture
+let groupProfilePic = null;
+try {
+groupProfilePic = await sock.profilePictureUrl(chatId, 'image');
+} catch (picError) {
+console.error('Error fetching group profile picture:', picError);
+groupProfilePic = null;
+}
+
 // Get group participants - FIXED METHOD NAME
 let groupMembers;
 try {
@@ -67,6 +76,7 @@ const groupInfo = `
 *🆔 Group ID:* ${chatId}
 *👥 Total Members:* ${totalMembers}
 *📅 Created:* ${formattedDate}
+*🖼️ Profile Picture:* ${groupProfilePic ? '✅ Available' : '❌ No profile picture'}
 
 *👑 Super Admins:* ${superAdminCount}
 *⚡ Admins:* ${regularAdminCount}
@@ -85,7 +95,24 @@ ${recentActivity}
 *🔗 Group Link:* ${groupMetadata.inviteCode ? `https://chat.whatsapp.com/${groupMetadata.inviteCode}` : 'Not available'}
 `.trim();
 
-// Send group info
+// Send group info with profile picture if available
+if (groupProfilePic) {
+// Send message with image and caption
+await sock.sendMessage(chatId, {
+image: { url: groupProfilePic },
+caption: groupInfo,
+contextInfo: {
+forwardingScore: 1,
+isForwarded: true,
+forwardedNewsletterMessageInfo: {
+newsletterJid: '120363420618370733@newsletter',
+newsletterName: 'WALLYJAYTECH-MD BOTS',
+serverMessageId: -1
+}
+}
+}, { quoted: message });
+} else {
+// Send text-only message
 await sock.sendMessage(chatId, {
 text: groupInfo,
 contextInfo: {
@@ -98,6 +125,7 @@ serverMessageId: -1
 }
 }
 }, { quoted: message });
+}
 
 // Send additional member breakdown if not too large and we have members data
 if (groupMembers.length > 0 && groupMembers.length <= 50) {
