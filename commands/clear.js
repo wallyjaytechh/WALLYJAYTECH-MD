@@ -1,15 +1,46 @@
-async function clearCommand(sock, chatId) {
+async function clearCommand(sock, chatId, message) {
     try {
-        const message = await sock.sendMessage(chatId, { text: '*Clearing bot messages...*' });
-        const messageKey = message.key; // Get the key of the message the bot just sent
-        
-        // Now delete the bot's message
-        await sock.sendMessage(chatId, { delete: messageKey });
-        
+        // Use chatModify to clear the chat
+        await sock.chatModify(
+            { 
+                delete: true, 
+                lastMessages: [{ 
+                    key: message.key, 
+                    messageTimestamp: message.messageTimestamp 
+                }] 
+            }, 
+            chatId
+        );
+
+        // Send confirmation
+        await sock.sendMessage(chatId, {
+            text: '✅ Chat cleared successfully!',
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        });
+
     } catch (error) {
-        console.error('Error clearing messages:', error);
-        await sock.sendMessage(chatId, { text: '*An error occurred while clearing messages.*' });
+        console.error('Error in clear command:', error);
+        await sock.sendMessage(chatId, {
+            text: '❌ Failed to clear chat',
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        });
     }
 }
 
-module.exports = { clearCommand };
+module.exports = clearCommand;
