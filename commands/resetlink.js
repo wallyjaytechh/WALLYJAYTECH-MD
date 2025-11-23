@@ -2,7 +2,7 @@ async function resetlinkCommand(sock, chatId, senderId) {
     try {
         // Reset the group invite link
         const newInviteCode = await sock.groupRevokeInvite(chatId);
-        const newInviteLink = https://chat.whatsapp.com/${newInviteCode};
+        const newInviteLink = `https://chat.whatsapp.com/${newInviteCode}`;
 
         await sock.sendMessage(chatId, {
             text: ✅ *Group Link Reset Successfully!*\n\n🔗 *New Group Invite Link:*\n${newInviteLink}\n\n*Share this new link with members.*\n\n*Note:* The old link no longer works.,
