@@ -41,9 +41,17 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔸.trt <text> <lang>*  
 ║ *🔸.ss <link>*          
 ║ *🔸.url*        
-║ *🔸.getjid*    
+║ *🔸.getjid* 
 ║                       
 ╚═══════════════════╝ 
+
+╔═══════════════════╗
+║
+║ *📩WHATSAPP CMDS📩*
+║
+║ *🟤.clear*
+║
+╚═══════════════════╝
 
 ╔═══════════════════╗
 ║
@@ -66,7 +74,6 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔹.groupinfo*
 ║ *🔹.admins*
 ║ *🔹.jid*
-║ *🔹.clear*
 ║ *🔹.tag <message>*
 ║ *🔹.tagall*
 ║ *🔹.tagnotadmin*
