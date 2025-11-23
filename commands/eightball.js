@@ -27,7 +27,7 @@ async function eightBallCommand(sock, chatId, question) {
         const answer = responses[Math.floor(Math.random() * responses.length)];
 
         await sock.sendMessage(chatId, { 
-            text: `🎱 *8-BALL SAYS:*\n\n*Q:* ${question}\n*A:* ${answer}\n\n*Powered by WALLYJAYTECH-MD*` 
+            text: `🎱 *8-BALL SAYS:*\n\n*Q: ${question}*\n*A:* ${answer}\n\n*Powered by WALLYJAYTECH-MD*` 
         });
 
     } catch (error) {
