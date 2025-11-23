@@ -43,9 +43,9 @@ newsMessage += `📝 Latest developments in global news\n\n`;
 newsMessage = generateDailyNews();
 }
 
-newsMessage += `📡 Source: BBC News\n`;
-newsMessage += `⏰ Updated: ${new Date().toLocaleString()}\n`;
-newsMessage += `_Powered by WALLYJAYTECH-MD_`;
+newsMessage += `*📡 Source: BBC News*\n\n`;
+newsMessage += `*⏰ Updated:* ${new Date().toLocaleString()}\n\n`;
+newsMessage += `*Powered by WALLYJAYTECH-MD*`;
 
 await sock.sendMessage(chatId, {
 text: newsMessage
