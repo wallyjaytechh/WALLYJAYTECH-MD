@@ -47,6 +47,7 @@ const { promoteCommand } = require('./commands/promote');
 const { demoteCommand } = require('./commands/demote');
 const muteCommand = require('./commands/mute');
 const unmuteCommand = require('./commands/unmute');
+const { getjidCommand, getMentionedJids } = require('./commands/getjid');
 const stickerCommand = require('./commands/sticker');
 const isAdmin = require('./lib/isAdmin');
 const warnCommand = require('./commands/warn');
@@ -576,6 +577,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
                 break;
+            case userMessage === '.getjid':
+    await getjidCommand(sock, chatId, message);
+    break;
+
+case userMessage.startsWith('.getjid @'):
+    await getMentionedJids(sock, chatId, message);
+    break;
             case userMessage === '.fact':
                 await factCommand(sock, chatId, message, message);
                 break;
