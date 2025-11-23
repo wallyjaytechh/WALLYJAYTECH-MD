@@ -28,7 +28,7 @@ async function weatherCommand(sock, chatId, message, city) {
 ☁️ Condition: ${weatherData.description}
 🌅 Time: ${new Date().toLocaleTimeString()}
 
-*Powered by WALLYJAYTECH-MD*`;
+Powered by WALLYJAYTECH-MD`;
 
         await sock.sendMessage(chatId, { 
             text: weatherMessage 
