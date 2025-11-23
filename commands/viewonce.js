@@ -10,7 +10,7 @@ async function viewOnceCommand(sock, chatId, message) {
         
         if (!quotedMessage) {
             return await sock.sendMessage(chatId, { 
-                text: '📸 *View Once Revealer* 🔓\n\n❌ Reply to a view-once message with .vv' 
+                text: '📸 *View Once Revealer* 🔓\n\n*❌ Reply to a view-once message with* .vv' 
             }, { quoted: message });
         }
 
@@ -21,7 +21,7 @@ async function viewOnceCommand(sock, chatId, message) {
 
         if (!isViewOnce) {
             return await sock.sendMessage(chatId, { 
-                text: '❌ This is not a view-once message!' 
+                text: '❌ *This is not a view-once message!*' 
             }, { quoted: message });
         }
 
@@ -45,7 +45,7 @@ async function viewOnceCommand(sock, chatId, message) {
             
             mediaMessage = {
                 image: buffer,
-                caption: `📸 *View Once Image Revealed!* 🔓\n\nFrom: ${message.key.remoteJid}\nTime: ${new Date().toLocaleString()}\n_Powered by WALLYJAYTECH-MD_`
+                caption: `📸 *View Once Image Revealed!* 🔓\n\n*From:* ${message.key.remoteJid}\n\n*Time:* ${new Date().toLocaleString()}\n\n*Powered by WALLYJAYTECH-MD*`
             };
         } 
         else if (viewOnceContent.message?.videoMessage) {
@@ -56,7 +56,7 @@ async function viewOnceCommand(sock, chatId, message) {
             
             mediaMessage = {
                 video: buffer,
-                caption: `🎥 *View Once Video Revealed!* 🔓\n\nFrom: ${message.key.remoteJid}\nTime: ${new Date().toLocaleString()}\n_Powered by WALLYJAYTECH-MD_`
+                caption: `🎥 *View Once Video Revealed!* 🔓\n\n*From:* ${message.key.remoteJid}\n*Time:* ${new Date().toLocaleString()}\n\n*Powered by WALLYJAYTECH-MD*`
             };
         }
         else if (viewOnceContent.message?.audioMessage) {
@@ -69,12 +69,12 @@ async function viewOnceCommand(sock, chatId, message) {
                 audio: buffer,
                 ptt: audioMsg.ptt === true,
                 mimetype: audioMsg.mimetype,
-                caption: `🎵 *View Once Voice Revealed!* 🔓\n\nFrom: ${message.key.remoteJid}\nTime: ${new Date().toLocaleString()}\n_Powered by WALLYJAYTECH-MD_`
+                caption: `🎵 *View Once Voice Revealed!* 🔓\n\n*From:* ${message.key.remoteJid}\n\n*Time:* ${new Date().toLocaleString()}\n\n*Powered by WALLYJAYTECH-MD*`
             };
         }
         else {
             return await sock.sendMessage(chatId, { 
-                text: '❌ Unsupported view-once type!' 
+                text: '*❌ Unsupported view-once type!*' 
             }, { quoted: message });
         }
 
@@ -102,7 +102,7 @@ async function viewOnceCommand(sock, chatId, message) {
                 
                 // Send confirmation in original chat
                 await sock.sendMessage(chatId, { 
-                    text: '✅ *View-once media sent to owner DM!* 🔒\n\nOnly the bot owner can see it.' 
+                    text: '✅ *View-once media sent to owner DM!* 🔒\n\n*Only the bot owner can see it.*' 
                 }, { quoted: message });
                 break;
 
@@ -126,14 +126,14 @@ async function viewOnceCommand(sock, chatId, message) {
 
             default:
                 return await sock.sendMessage(chatId, { 
-                    text: '❌ *Invalid option!*\n\nUse: .vv, .vv dm, or .vv silent' 
+                    text: '❌ *Invalid option!*\n\n*Use:* .vv, .vv dm, *or* .vv silent' 
                 }, { quoted: message });
         }
 
     } catch (error) {
         console.error('ViewOnce Error:', error);
         
-        let errorMsg = `❌ *Recovery failed!*\n\nError: ${error.message}`;
+        let errorMsg = `❌ *Recovery failed!*\n\n*Error:* ${error.message}`;
         
         if (error.message.includes('not-authorized') || error.message.includes('401')) {
             errorMsg += '\n\n💡 *Owner DM Issue:* Make sure the bot is in your contacts!';
