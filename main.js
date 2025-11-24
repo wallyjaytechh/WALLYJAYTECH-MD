@@ -125,7 +125,7 @@ const aiCommand = require('./commands/ai');
 const urlCommand = require('./commands/url');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
-const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
+const { addCommandReaction, handleAreactCommand, handleAutoreact } = require('./lib/reactions');
 const { goodnightCommand } = require('./commands/goodnight');
 const { poetCommand } = require('./commands/poet');
 const { rosedayCommand } = require('./commands/roseday');
@@ -180,7 +180,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (message.message) {
             storeMessage(sock, message);
         }
-
+// Handle autoreact for ALL messages
+await handleAutoreact(sock, message);
         // Handle message revocation
         if (message.message?.protocolMessage?.type === 0) {
             await handleMessageRevocation(sock, message);
