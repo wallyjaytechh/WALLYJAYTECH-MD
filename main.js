@@ -112,6 +112,7 @@ const stickerTelegramCommand = require('./commands/stickertelegram');
 const textmakerCommand = require('./commands/textmaker');
 const { handleAntideleteCommand, handleMessageRevocation, storeMessage } = require('./commands/antidelete');
 const clearTmpCommand = require('./commands/cleartmp');
+const tempfileCommand = require('./commands/tempfile');
 const setProfilePicture = require('./commands/setpp');
 const { setGroupDescription, setGroupName, setGroupPhoto } = require('./commands/groupmanage');
 const instagramCommand = require('./commands/instagram');
@@ -323,7 +324,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
         // List of owner commands
-        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker'];
+        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.tempfile', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -429,6 +430,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.warnings'):
                 const mentionedJidListWarnings = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await warningsCommand(sock, chatId, mentionedJidListWarnings);
+                break;
+            case userMessage === '.tempfile':
+               await tempfileCommand(sock, chatId, message);
+                 commandExecuted = true;
                 break;
             case userMessage.startsWith('.warn'):
                 const mentionedJidListWarn = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
