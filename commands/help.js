@@ -120,7 +120,7 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║ *🔻.blur <image>*
 ║ *🔻.simage <reply to sticker>*
-║ *🔻.sticker <reply to image>*
+║ *🔻.sticker <reply to img or vid>*
 ║ *🔻.removebg*
 ║ *🔻.remini*
 ║ *🔻.crop <reply to image>*
