@@ -96,6 +96,7 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔺.mode <public/private>*
 ║ *🔺.clearsession*
 ║ *🔺.antidelete*
+║ *🔺.tempfile*
 ║ *🔺.cleartmp*
 ║ *🔺.update*
 ║ *🔺.settings*
