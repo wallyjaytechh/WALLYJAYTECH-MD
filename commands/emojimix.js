@@ -2,6 +2,9 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
+const webp = require('node-webpmux');
+const crypto = require('crypto');
+const settings = require('../settings');
 
 async function emojimixCommand(sock, chatId, msg) {
     try {
@@ -12,18 +15,28 @@ async function emojimixCommand(sock, chatId, msg) {
         const args = text.split(' ').slice(1);
         
         if (!args[0]) {
-            await sock.sendMessage(chatId, { text: '🎴 Example: .emojimix 😎+🥰' });
+            await sock.sendMessage(chatId, { 
+                text: '🎴 *EMOJI MIXER*\n\n*Usage:* .emojimix 😊+😂\n*Example:* .emojimix 😎+❤️' 
+            });
             return;
         }
 
         if (!text.includes('+')) {
             await sock.sendMessage(chatId, { 
-                text: '✳️ Separate the emoji with a *+* sign\n\n📌 Example: \n*.emojimix* 😎+🥰' 
+                text: '⚡ *EMOJI MIXER*\n\nPlease separate emojis with a *+* symbol\n\n*Format:* .emojimix [emoji1]+[emoji2]\n*Example:* .emojimix 😊+😂' 
             });
             return;
         }
 
         let [emoji1, emoji2] = args[0].split('+').map(e => e.trim());
+
+        // Validate emojis
+        if (!emoji1 || !emoji2) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ *INVALID INPUT*\n\nPlease provide two valid emojis separated by +\n\n*Example:* .emojimix 😎+🥰' 
+            });
+            return;
+        }
 
         // Using Tenor API endpoint
         const url = `https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`;
@@ -33,7 +46,7 @@ async function emojimixCommand(sock, chatId, msg) {
 
         if (!data.results || data.results.length === 0) {
             await sock.sendMessage(chatId, { 
-                text: '❌ These emojis cannot be mixed! Try different ones.' 
+                text: '❌ *EMOJI COMBINATION ERROR*\n\nThese emojis cannot be mixed. Try different combinations.\n\n*Working Examples:*\n• 😂+😊\n• ❤️+🔥\n• 🎉+✨' 
             });
             return;
         }
@@ -76,12 +89,38 @@ async function emojimixCommand(sock, chatId, msg) {
         }
 
         // Read the WebP file
-        const stickerBuffer = fs.readFileSync(outputFile);
+        let webpBuffer = fs.readFileSync(outputFile);
 
-        // Send the sticker
+        // Add metadata using webpmux
+        const img = new webp.Image();
+        await img.load(webpBuffer);
+
+        // Create metadata with packname
+        const json = {
+            'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
+            'sticker-pack-name': settings.packname || 'WALLYJAYTECH-MD',
+            'sticker-pack-publisher': settings.author || 'Wally Jay',
+            'emojis': [emoji1, emoji2]
+        };
+
+        // Create exif buffer
+        const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
+        const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8');
+        const exif = Buffer.concat([exifAttr, jsonBuffer]);
+        exif.writeUIntLE(jsonBuffer.length, 14, 4);
+
+        // Set the exif data
+        img.exif = exif;
+
+        // Get the final buffer with metadata
+        const finalBuffer = await img.save(null);
+
+        // Send the sticker with professional context
         await sock.sendMessage(chatId, { 
-            sticker: stickerBuffer 
-        }, { quoted: msg });
+            sticker: finalBuffer 
+        }, { 
+            quoted: msg 
+        });
 
         // Cleanup temp files
         try {
@@ -94,9 +133,11 @@ async function emojimixCommand(sock, chatId, msg) {
     } catch (error) {
         console.error('Error in emojimix command:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Failed to mix emojis! Make sure you\'re using valid emojis.\n\nExample: .emojimix 😎+🥰' 
+            text: '❌ *PROCESSING ERROR*\n\nFailed to create emoji mix. Please ensure:\n• You\'re using valid emoji combinations\n• Stable internet connection\n• Try popular combinations\n\n*Working Examples:*\n.emojimix 😂+😊\n.emojimix ❤️+🔥\n.emojimix 🎉+✨' 
+        }, { 
+            quoted: msg 
         });
     }
 }
 
-module.exports = emojimixCommand; 
+module.exports = emojimixCommand;
