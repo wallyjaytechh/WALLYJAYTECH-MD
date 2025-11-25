@@ -50,6 +50,11 @@ const settings = {
   description: "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
   version: "1.0.0",
   updateZipUrl: "https://github.com/wallyjaytechh/WALLYJAYTECH-MD/archive/refs/heads/main.zip",
+  removeBgApi: {
+    enabled: true,
+    apiKey: "dyrbNSNtMf1CE84he61DR7Wx", // Your remove.bg API key That's currently mine it expire anytime remember to put yours if expired just go to remove.bg site sign up and get your api key 
+    apiUrl: "https://api.remove.bg/v1.0/removebg"
+  }
 };
 
 module.exports = settings;
