@@ -58,10 +58,10 @@ async function textmakerCommand(sock, chatId, message, q, type) {
                 usageErrorText = "*Example: .glitch Wally Jay*";
                 break;
             case 'fire':
-                usageErrorText = "*Example: .fire Wally Jay*";
+                *usageErrorText = "Example: .fire Wally Jay*";
                 break;
             default:
-                usageErrorText = "*Invalid text generator type.*";
+                *usageErrorText = "Invalid text generator type.*";
         }
 
         const text = q.split(' ').slice(1).join(' ');
