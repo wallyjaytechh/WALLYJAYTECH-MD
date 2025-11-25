@@ -32,7 +32,7 @@ async function memeCommand(sock, chatId, message) {
             caption += `🚨 *NSFW Content*\n`;
         }
 
-        caption += `\n*© Powered by meme-api.com*`;
+        caption += `\n*© Powered byWALLYJAYTECH-MD*`;
 
         // Send the meme image with caption
         await sock.sendMessage(chatId, {
@@ -83,10 +83,43 @@ async function nsfwMemeCommand(sock, chatId, message, subreddit = '') {
         // Popular NSFW meme subreddits
         const nsfwSubreddits = [
             'nsfwmemes',
-            'dankmemes', // sometimes has NSFW
-            'edgymemes',
-            'darkmemes',
-            'offensivememes'
+                    'Nigeria',
+            'Naija',
+            'NigerianMemes',
+            'NigerianFluency',
+            'africanmemes',
+            'Africa',
+            'Nairobi',
+            'Ghana',
+            'SouthAfrica',
+            'Kenya',
+            'Uganda',
+            'Tanzania',
+            'AfricanHistory',
+            'AfricanMusic',
+            'Nollywood',
+            'Afrobeats',
+            'AfricanArt',
+            'BlackPeopleTwitter',
+            'AfricanFuturism',
+            'AfricanArchitecture',
+            'AfricanCuisine',
+            'AfricanFashion',
+            'AfricanLiterature',
+            'AfricanPhilosophy',
+            'AfricanSpirituality',
+            'AfricanWildlife',
+            'Diaspora',
+            'PanAfrican',
+            'BlackLivesMatter',
+            'BlackCulture',
+            'BlackCreators',
+            'BlackMentalHealth',
+            'BlackAstrology',
+            'BlackParents',
+            'BlackLadies',
+            'BlackFellas',
+            'BlackTwitter'
         ];
 
         const targetSubreddit = subreddit || nsfwSubreddits[Math.floor(Math.random() * nsfwSubreddits.length)];
