@@ -4,7 +4,7 @@ const path = require('path');
 
 async function helpCommand(sock, chatId, message) {
     const helpMessage = `
-╔❖🔹*WALLYJAYTECH-MD MENU*🔹❖
+╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
 ║   *🤖 BotName: [ ${settings.botName || 'WALLYJAYTECH-MD'} ]*  
 ║   *🧠 Version: [ ${settings.version || '1.0.0'} ]*
