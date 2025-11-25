@@ -7,61 +7,61 @@ async function textmakerCommand(sock, chatId, message, q, type) {
         let usageErrorText;
         switch (type) {
             case 'metallic':
-                 usageErrorText = "*Example: .metallic Wally Jay*";
+                 usageErrorText = "Example: .metallic Wally Jay";
                 break              
             case 'ice':
-                usageErrorText = "*Example: .ice Wally Jay*";
+                usageErrorText = "Example: .ice Wally Jay";
                 break;
             case 'snow':
-                usageErrorText = "*Example: .snow Wally Jay**";
+                usageErrorText = "Example: .snow Wally Jay";
                 break;
             case 'impressive':
-                usageErrorText = "*Example: .impressive Wally Jay*";
+                usageErrorText = "Example: .impressive Wally Jay";
                 break;
             case 'matrix':
-                usageErrorText = "8Example: .matrix Wally Jay*";
+                usageErrorText = "Example: .matrix Wally Jay";
                 break;
             case 'light':
-                usageErrorText = "*Example: .light Wally Jay*";
+                usageErrorText = "Example: .light Wally Jay";
                 break;
             case 'neon':
-                usageErrorText = "*Example: .neon Wally Jay*";
+                usageErrorText = "Example: .neon Wally Jay";
                 break;
             case 'devil':
-                usageErrorText = "Example: .devil Wally Jay*";
+                usageErrorText = "Example: .devil Wally Jay";
                 break;
             case 'purple':
-                usageErrorText = "*Example: .purple Wally Jay*";
+                usageErrorText = "Example: .purple Wally Jay";
                 break;
             case 'thunder':
-                usageErrorText = "8Example: .thunder Wally Jay*";
+                usageErrorText = "Example: .thunder Wally Jay";
                 break;
             case 'leaves':
-                usageErrorText = "*Example: .leaves Wally Jay*";
+                usageErrorText = "Example: .leaves Wally Jay";
                 break;
             case '1917':
-                usageErrorText = "*Example: .1917 Wally Jay*";
+                usageErrorText = "Example: .1917 Wally Jay";
                 break;
             case 'arena':
-                usageErrorText = "*Example: .arena Wally Jay*";
+                usageErrorText = "Example: .arena Wally Jay";
                 break;
             case 'hacker':
-                usageErrorText = "*Example: .hacker Wally Jay*";
+                usageErrorText = "Example: .hacker Wally Jay";
                 break;
             case 'sand':
-                usageErrorText = "*Example: .sand Wally Jay*";
+                usageErrorText = "Example: .sand Wally Jay";
                 break;
             case 'blackpink':
-                usageErrorText = "*Example: .blackpink Wally Jay*";
+                usageErrorText = "Example: .blackpink Wally Jay";
                 break;
             case 'glitch':
-                usageErrorText = "*Example: .glitch Wally Jay*";
+                usageErrorText = "Example: .glitch Wally Jay";
                 break;
             case 'fire':
-                *usageErrorText = "Example: .fire Wally Jay*";
+                usageErrorText = "Example: .fire Wally Jay";
                 break;
             default:
-                *usageErrorText = "Invalid text generator type.*";
+                usageErrorText = "Invalid text generator type.";
         }
 
         const text = q.split(' ').slice(1).join(' ');
