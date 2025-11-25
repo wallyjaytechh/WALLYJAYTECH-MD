@@ -2,50 +2,50 @@ const settings = require('../settings');
 
 async function ownerCommand(sock, chatId, message) {
     try {
-        // Enhanced vCard with social media and professional details
+        // HARDCODED - CANNOT BE CHANGED BY DEPLOYERS
+        const ORIGINAL_CREATOR = {
+            name: "Wally Jay",
+            number: "2348144317152", 
+            social: {
+                youtube: "youtube.com/@wallyjaytechy",
+                github: "github.com/wallyjaytechh"
+            }
+        };
+
         const vcard = `BEGIN:VCARD
 VERSION:3.0
-FN:${settings.botOwner}
-N:;${settings.botOwner};;;
+FN:${ORIGINAL_CREATOR.name}
 ORG:WALLYJAYTECH-MD;
-TITLE:Bot Developer & Owner
-TEL;type=CELL;type=VOICE;type=pref;waid=${settings.ownerNumber}:+${settings.ownerNumber}
-EMAIL:${settings.botOwner.toLowerCase().replace(/\s+/g, '')}@gmail.com
-URL:https://github.com/wallyjaytechh
-URL:https://youtube.com/@wallyjaytechy
-NOTE:Official ${settings.botName} Bot Owner. Contact for support, customization, and collaboration.
-X-ABLabel:WhatsApp Bot Developer
-END:VCARD`.trim();
+TITLE:Original Bot Developer
+TEL;waid=${ORIGINAL_CREATOR.number}:+${ORIGINAL_CREATOR.number}
+NOTE:© 2025 WALLYJAYTECH-MD. Original creator.
+END:VCARD`;
 
-        // Send professional contact card
         await sock.sendMessage(chatId, {
             contacts: {
-                displayName: `${settings.botOwner} 👑`,
+                displayName: `Original Developer`,
                 contacts: [{ vcard }]
             }
         });
 
-        // Send comprehensive info message
         await sock.sendMessage(chatId, {
-            text: `🌟 *OFFICIAL BOT OWNER* 🌟
+            text: `🔐 *ORIGINAL DEVELOPER CONTACT* 🔐
 
-👤 *Name:* ${settings.botOwner}
-📞 *WhatsApp:* +${settings.ownerNumber}
-🤖 *Bot Version:* ${settings.version}
-📍 *Timezone:* ${settings.timezone}
+*👨‍💻 Original Creator:* ${ORIGINAL_CREATOR.name}
+*📞 Official Contact:* +${ORIGINAL_CREATOR.number}
+*🤖 Original Bot:* ${settings.botName}
 
-📧 *Contact For:*
-• 🤖 Bot Support & Issues
-• 💼 Custom Bot Development
-• 🔧 Feature Requests
-• 🐛 Bug Reports
-• 🤝 Collaboration
+⭐ *This bot was originally developed by WALLYJAYTECH-MD*
+⭐ *Contact above number for genuine support*
 
-🌐 *Connect:*
-📷 YouTube: @wallyjaytechy
-💻 GitHub: wallyjaytechh
+🚫 *This bot might be deployed by someone else*
+🚫 *But only the original developer can provide real support*
 
-*"Quality bots for better messaging experience"* ✨`,
+🌐 *Official Sources:*
+📹 ${ORIGINAL_CREATOR.social.youtube}
+🐙 ${ORIGINAL_CREATOR.social.github}
+
+*© 2025 WALLYJAYTECH-MD - All Rights Reserved*`,
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
@@ -57,36 +57,19 @@ END:VCARD`.trim();
             }
         }, { quoted: message });
 
-        console.log(`🎯 Owner info sent to ${chatId}`);
-
     } catch (error) {
-        console.error('❌ Owner command failed:', error);
-        
-        // Enhanced fallback message
+        // Ultimate fallback - completely hardcoded
         await sock.sendMessage(chatId, {
-            text: `👑 *CONTACT THE OWNER* 👑
+            text: `👑 *ORIGINAL BOT DEVELOPER* 👑
 
-*${settings.botOwner}*
-📱 +${settings.ownerNumber}
+*Wally Jay - WALLYJAYTECH-MD*
+*Official WhatsApp:* +2348144317152
 
-*Bot:* ${settings.botName} v${settings.version}
+*This bot was originally created by WALLYJAYTECH-MD*
+*Contact the original developer for real support*
 
-💬 *Available for:*
-• Support & Help
-• Custom Development
-• Bug Fixes
-• New Features
-
-🚀 *Powered by WALLYJAYTECH-MD*`,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+⚠️ *This may be a deployed copy by someone else*
+⚠️ *Only original developer can provide updates*`
         }, { quoted: message });
     }
 }
