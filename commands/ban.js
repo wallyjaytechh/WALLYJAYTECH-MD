@@ -2,29 +2,20 @@ const fs = require('fs');
 const { channelInfo } = require('../lib/messageConfig');
 const isAdmin = require('../lib/isAdmin');
 const { isSudo } = require('../lib/index');
+const isOwnerOrSudo = require('../lib/isOwner');
 
 async function banCommand(sock, chatId, message) {
-    // Restrict in groups to admins; in private to owner/sudo
-    const isGroup = chatId.endsWith('@g.us');
-    if (isGroup) {
-        const senderId = message.key.participant || message.key.remoteJid;
-        const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
-        if (!isBotAdmin) {
-            await sock.sendMessage(chatId, { text: '*🟠Please make the bot an admin to use .ban🟠*', ...channelInfo }, { quoted: message });
-            return;
-        }
-        if (!isSenderAdmin && !message.key.fromMe) {
-            await sock.sendMessage(chatId, { text: '*🟠Only group admins can use .ban🟠*', ...channelInfo }, { quoted: message });
-            return;
-        }
-    } else {
-        const senderId = message.key.participant || message.key.remoteJid;
-        const senderIsSudo = await isSudo(senderId);
-        if (!message.key.fromMe && !senderIsSudo) {
-            await sock.sendMessage(chatId, { text: '*🟠Only owner/sudo can use .ban in private chat🟠*', ...channelInfo }, { quoted: message });
-            return;
-        }
+    const senderId = message.key.participant || message.key.remoteJid;
+    const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
+    
+    // ONLY allow the owner (you) - block everyone else including sudo users
+    if (!message.key.fromMe && !senderIsOwnerOrSudo) {
+        return await sock.sendMessage(chatId, { 
+            text: '*❌ This command is only available for the bot owner!*', 
+            ...channelInfo 
+        }, { quoted: message });
     }
+
     let userToBan;
     
     // Check for mentioned users
@@ -54,14 +45,14 @@ async function banCommand(sock, chatId, message) {
     } catch {}
 
     try {
-        // Add user to banned list
+        // Add user to banned list (global ban - works even if bot isn't admin)
         const bannedUsers = JSON.parse(fs.readFileSync('./data/banned.json'));
         if (!bannedUsers.includes(userToBan)) {
             bannedUsers.push(userToBan);
             fs.writeFileSync('./data/banned.json', JSON.stringify(bannedUsers, null, 2));
             
             await sock.sendMessage(chatId, { 
-                text: `*😁Successfully banned @${userToBan.split('@')[0]}!😁*`,
+                text: `*😁Successfully & globally banned @${userToBan.split('@')[0]}!😁*\n\n*Note:* User is banned from using the bot globally.`,
                 mentions: [userToBan],
                 ...channelInfo 
             });
