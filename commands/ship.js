@@ -20,7 +20,7 @@ async function shipCommand(sock, chatId, msg, groupMetadata) {
 
         // Create and send the ship message
         await sock.sendMessage(chatId, {
-            text: `*${formatMention(firstUser)} Wed❤️ ${formatMention(secondUser)}*\n\n*😁Happy married life Congratulations 💖🍻*\n\n*😁If you both are men then happy gay life😁*\n\n*😁If you both are women then happy lesbian marriage😁*\n\n*🥵And luckily if you both are man and woman then enjoy your honeymoon🥵*\n\n*🟡 Copyright wallyjaytech 2025 🟡*`,
+            text: `${formatMention(firstUser)} *Wed❤️* ${formatMention(secondUser)}\n\n*😁Happy married life Congratulations 💖🍻*\n\n*😁If you both are men then happy gay life😁*\n\n*😁If you both are women then happy lesbian marriage😁*\n\n*🥵And luckily if you both are man and woman then enjoy your honeymoon🥵*\n\n*🟡 Copyright wallyjaytech 2025 🟡*`,
             mentions: [firstUser, secondUser]
         });
 
