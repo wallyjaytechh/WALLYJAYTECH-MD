@@ -88,8 +88,7 @@ async function handleGroupJid(sock, chatId, message) {
         jidInfo += `🔧 Platform: ${os.platform()}\n\n`;
 
         jidInfo += `*💡 COMMANDS:*\n`;
-        jidInfo += `• Use .grtjid @mention to get user JID\n`;
-
+        jidInfo += `• Use .getjid @mention to get user JID\n`;
 
         // Send the enhanced JID information
         await sock.sendMessage(chatId, {
@@ -135,13 +134,13 @@ async function handlePrivateJid(sock, chatId, message) {
             Math.round(process.memoryUsage().rss / 1024 / 1024)
         ]);
 
-        // Create professional private chat info
+        // Create professional private chat info - ONLY STATUS LINE CHANGED
         const jidInfo = `*🔐 PRIVATE CHAT INFORMATION*\n\n` +
                        `*👤 YOUR ACCOUNT:*\n` +
                        `🆔 JID: ${senderId}\n` +
                        `📱 Platform: WhatsApp Mobile\n` +
                        `🖼️ Profile: ${userProfile ? '✅ Available' : '❌ Not set'}\n` +
-                       `📝 Status: ${userStatus?.status || 'Not set'}\n\n` +
+                       `📝 Status: 🔒 Restricted by WhatsApp API\n\n` +  // ONLY THIS LINE CHANGED
 
                        `*🤖 BOT SYSTEM:*\n` +
                        `🆔 Bot JID: ${sock.user?.id || 'Unknown'}\n` +
