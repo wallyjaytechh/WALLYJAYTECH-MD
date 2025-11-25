@@ -71,7 +71,7 @@ description: data.description || 'Unknown'
 for (const api of apis) {
 try {
 console.log(`Trying weather API: ${api.url}`);
-const response = await axios.get(api.url, { timeout: 10000 });
+const response = await axios.get(api.url, { timeout: 30000 });
 
 if (response.data) {
 const weatherData = api.extract(response.data);
