@@ -812,12 +812,12 @@ case userMessage.startsWith('.getjid @'):
                 await groupInfoCommand(sock, chatId, message);
                 break;
             case userMessage === '.resetlink' || userMessage === '.revoke' || userMessage === '.anularlink':
-                if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: '*This command can only be used in groups!*', ...channelInfo }, { quoted: message });
-                    return;
-                }
-                await resetlinkCommand(sock, chatId, senderId);
-                break;
+    if (!isGroup) {
+        await sock.sendMessage(chatId, { text: '*❌ This command can only be used in groups!*', ...channelInfo }, { quoted: message });
+        return;
+    }
+    await resetlinkCommand(sock, chatId, senderId, message); // Added message parameter
+    break;
             case userMessage === '.staff' || userMessage === '.admins' || userMessage === '.listadmin':
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups!*', ...channelInfo }, { quoted: message });
