@@ -1,31 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 const { channelInfo } = require('../lib/messageConfig');
-const isAdmin = require('../lib/isAdmin');
-const { isSudo } = require('../lib/index');
 
 async function unbanCommand(sock, chatId, message) {
-    // Restrict in groups to admins; in private to owner/sudo
-    const isGroup = chatId.endsWith('@g.us');
-    if (isGroup) {
-        const senderId = message.key.participant || message.key.remoteJid;
-        const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
-        if (!isBotAdmin) {
-            await sock.sendMessage(chatId, { text: '*🥹Please make the bot an admin to use .unban🥹*', ...channelInfo }, { quoted: message });
-            return;
-        }
-        if (!isSenderAdmin && !message.key.fromMe) {
-            await sock.sendMessage(chatId, { text: '*🟣Only group admins can use .unban🟣*', ...channelInfo }, { quoted: message });
-            return;
-        }
-    } else {
-        const senderId = message.key.participant || message.key.remoteJid;
-        const senderIsSudo = await isSudo(senderId);
-        if (!message.key.fromMe && !senderIsSudo) {
-            await sock.sendMessage(chatId, { text: '*🟣Only owner/sudo can use .unban in private chat🟣*', ...channelInfo }, { quoted: message });
-            return;
-        }
+    const senderId = message.key.participant || message.key.remoteJid;
+    
+    // Get owner information
+    const settings = require('../settings');
+    const ownerJid = `${settings.ownerNumber}@s.whatsapp.net`;
+    
+    // ONLY allow the actual owner (you) - block everyone including sudo
+    const isActuallyOwner = senderId === ownerJid || message.key.fromMe;
+    
+    if (!isActuallyOwner) {
+        return await sock.sendMessage(chatId, { 
+            text: '*❌ Unban command is exclusively for the bot owner only!*', 
+            ...channelInfo 
+        }, { quoted: message });
     }
+
     let userToUnban;
     
     // Check for mentioned users
@@ -53,7 +46,7 @@ async function unbanCommand(sock, chatId, message) {
             fs.writeFileSync('./data/banned.json', JSON.stringify(bannedUsers, null, 2));
             
             await sock.sendMessage(chatId, { 
-                text: `*🟣Successfully unbanned ${userToUnban.split('@')[0]}!🟣*`,
+                text: `*🟣Successfully unbanned @${userToUnban.split('@')[0]}!🟣*\n\n*Note:* User can now use the bot again globally.`,
                 mentions: [userToUnban],
                 ...channelInfo 
             });
@@ -70,4 +63,4 @@ async function unbanCommand(sock, chatId, message) {
     }
 }
 
-module.exports = unbanCommand; 
+module.exports = unbanCommand;
