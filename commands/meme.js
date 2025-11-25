@@ -32,7 +32,7 @@ async function memeCommand(sock, chatId, message) {
             caption += `🚨 *NSFW Content*\n`;
         }
 
-        caption += `\n*© Powered byWALLYJAYTECH-MD*`;
+        caption += `\n*© Powered by WALLYJAYTECH-MD*`;
 
         // Send the meme image with caption
         await sock.sendMessage(chatId, {
