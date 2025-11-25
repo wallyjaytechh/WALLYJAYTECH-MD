@@ -1,17 +1,20 @@
 const fs = require('fs');
 const { channelInfo } = require('../lib/messageConfig');
-const isAdmin = require('../lib/isAdmin');
-const { isSudo } = require('../lib/index');
 const isOwnerOrSudo = require('../lib/isOwner');
 
 async function banCommand(sock, chatId, message) {
     const senderId = message.key.participant || message.key.remoteJid;
-    const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
     
-    // ONLY allow the owner (you) - block everyone else including sudo users
-    if (!message.key.fromMe && !senderIsOwnerOrSudo) {
+    // Get owner information
+    const settings = require('../settings');
+    const ownerJid = `${settings.ownerNumber}@s.whatsapp.net`;
+    
+    // ONLY allow the actual owner (you) - block everyone including sudo
+    const isActuallyOwner = senderId === ownerJid || message.key.fromMe;
+    
+    if (!isActuallyOwner) {
         return await sock.sendMessage(chatId, { 
-            text: '*❌ This command is only available for the bot owner!*', 
+            text: '*❌ Ban command is exclusively for the bot owner only!*', 
             ...channelInfo 
         }, { quoted: message });
     }
@@ -32,6 +35,15 @@ async function banCommand(sock, chatId, message) {
             text: '*🟠Please mention the user or reply to their message to ban!🟠*', 
             ...channelInfo 
         });
+        return;
+    }
+
+    // PREVENT BANNING THE OWNER - CRITICAL PROTECTION
+    if (userToBan === ownerJid || userToBan === ownerJid.replace('@s.whatsapp.net', '@lid')) {
+        await sock.sendMessage(chatId, { 
+            text: '*🚫 CRITICAL ERROR: You cannot ban the bot owner! 🚫*', 
+            ...channelInfo 
+        }, { quoted: message });
         return;
     }
 
