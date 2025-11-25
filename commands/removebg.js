@@ -1,98 +1,110 @@
 const axios = require('axios');
+const FormData = require('form-data');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-const { uploadImage } = require('../lib/uploadImage');
+const settings = require('../settings');
 
-async function getQuotedOrOwnImageUrl(sock, message) {
-    // 1) Quoted image (highest priority)
-    const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-    if (quoted?.imageMessage) {
-        const stream = await downloadContentFromMessage(quoted.imageMessage, 'image');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        const buffer = Buffer.concat(chunks);
-        return await uploadImage(buffer);
+async function getImageBuffer(sock, message) {
+    try {
+        const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        if (quoted?.imageMessage) {
+            const stream = await downloadContentFromMessage(quoted.imageMessage, 'image');
+            const chunks = [];
+            for await (const chunk of stream) chunks.push(chunk);
+            return Buffer.concat(chunks);
+        }
+
+        if (message.message?.imageMessage) {
+            const stream = await downloadContentFromMessage(message.message.imageMessage, 'image');
+            const chunks = [];
+            for await (const chunk of stream) chunks.push(chunk);
+            return Buffer.concat(chunks);
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting image:', error);
+        return null;
     }
-
-    // 2) Image in the current message
-    if (message.message?.imageMessage) {
-        const stream = await downloadContentFromMessage(message.message.imageMessage, 'image');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        const buffer = Buffer.concat(chunks);
-        return await uploadImage(buffer);
-    }
-
-    return null;
 }
 
 module.exports = {
     name: 'removebg',
     alias: ['rmbg', 'nobg'],
-    category: 'general',
-    desc: 'Remove background from images',
+    category: 'tools',
+    desc: 'Remove background from images using remove.bg',
     async exec(sock, message, args) {
+        const chatId = message.key.remoteJid;
+        
         try {
-            const chatId = message.key.remoteJid;
-            let imageUrl = null;
-            
-            // Check if args contain a URL
-            if (args.length > 0) {
-                const url = args.join(' ');
-                if (isValidUrl(url)) {
-                    imageUrl = url;
-                } else {
-                    return sock.sendMessage(chatId, { 
-                        text: '❌ Invalid URL provided.\n\nUsage: `.removebg https://example.com/image.jpg`' 
-                    }, { quoted: message });
-                }
-            } else {
-                // Try to get image from message or quoted message
-                imageUrl = await getQuotedOrOwnImageUrl(sock, message);
-                
-                if (!imageUrl) {
-                    return sock.sendMessage(chatId, { 
-                        text: '📸 *Remove Background Command*\n\nUsage:\n• `.removebg <image_url>`\n• Reply to an image with `.removebg`\n• Send image with `.removebg`\n\nExample: `.removebg https://example.com/image.jpg`' 
-                    }, { quoted: message });
-                }
+            // Check if remove.bg is configured
+            if (!settings.removeBgApi?.apiKey || settings.removeBgApi.apiKey === "YOUR_API_KEY_HERE") {
+                return await sock.sendMessage(chatId, { 
+                    text: '❌ *Remove.BG Not Configured*\n\nPlease set your remove.bg API key in settings.js\n\nGet free API key from: https://www.remove.bg/api' 
+                }, { quoted: message });
             }
 
-        
-            // Call the remove background API
-            const apiUrl = `https://api.siputzx.my.id/api/iloveimg/removebg?image=${encodeURIComponent(imageUrl)}`;
+            const imageBuffer = await getImageBuffer(sock, message);
+            if (!imageBuffer) {
+                return await sock.sendMessage(chatId, { 
+                    text: '📸 *How to use Remove Background:*\n\n• Reply to an image with `.removebg`\n• Or send an image with `.removebg` as caption\n\n*Note:* Uses official remove.bg API for best quality' 
+                }, { quoted: message });
+            }
+
+            await sock.sendMessage(chatId, { 
+                text: '🔄 *Processing with Remove.BG...*\n\nUsing official API for high-quality background removal...' 
+            }, { quoted: message });
+
+            // Use official remove.bg API
+            const formData = new FormData();
+            formData.append('image_file', imageBuffer, {
+                filename: 'image.jpg',
+                contentType: 'image/jpeg'
+            });
+            formData.append('size', 'auto');
+
+            console.log('Sending to remove.bg API...');
             
-            const response = await axios.get(apiUrl, {
-                responseType: 'arraybuffer',
-                timeout: 30000, // 30 second timeout
+            const response = await axios({
+                method: 'POST',
+                url: settings.removeBgApi.apiUrl,
+                data: formData,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
+                    'X-Api-Key': settings.removeBgApi.apiKey,
+                    ...formData.getHeaders()
+                },
+                responseType: 'arraybuffer',
+                timeout: 60000
             });
 
-            if (response.status === 200 && response.data) {
-                // Send the processed image
+            if (response.status === 200 && response.data && response.data.length > 5000) {
                 await sock.sendMessage(chatId, {
                     image: response.data,
-                    caption: '✨ *Background removed successfully!*\n\n𝗣𝗥𝗢𝗖𝗘𝗦𝗦𝗘𝗗 𝗕𝗬 𝗞𝗡𝗜𝗚𝗛𝗧-𝗕𝗢𝗧'
+                    caption: '✨ *Background Removed Successfully!*\n\n✅ *Powered by Remove.BG Official API*\n🔄 *Processed by WALLYJAYTECH-MD*'
                 }, { quoted: message });
+                
+                console.log('✅ Remove.BG processing successful');
             } else {
-                throw new Error('Failed to process image');
+                throw new Error('Invalid response from remove.bg');
             }
 
         } catch (error) {
-            console.error('RemoveBG Error:', error.message);
+            console.error('Remove.BG Error:', error.message);
             
-            let errorMessage = '❌ Failed to remove background.';
+            let errorMessage = '❌ *Background Removal Failed*';
             
-            if (error.response?.status === 429) {
-                errorMessage = '⏰ Rate limit exceeded. Please try again later.';
+            if (error.response?.status === 402) {
+                errorMessage += '\n💳 *API Limit Reached*\nYour remove.bg credits have been exhausted.\nGet more at: https://www.remove.bg/pricing';
             } else if (error.response?.status === 400) {
-                errorMessage = '❌ Invalid image URL or format.';
-            } else if (error.response?.status === 500) {
-                errorMessage = '🔧 Server error. Please try again later.';
+                const errorData = JSON.parse(Buffer.from(error.response.data).toString());
+                errorMessage += `\n📷 *Image Error:* ${errorData.errors?.[0]?.title || 'Invalid image format'}`;
+            } else if (error.response?.status === 403) {
+                errorMessage += '\n🔑 *Invalid API Key*\nPlease check your remove.bg API key in settings.js';
+            } else if (error.response?.status === 429) {
+                errorMessage += '\n⏰ *Rate Limit Exceeded*\nPlease try again in a few minutes.';
             } else if (error.code === 'ECONNABORTED') {
-                errorMessage = '⏰ Request timeout. Please try again.';
-            } else if (error.message.includes('ENOTFOUND') || error.message.includes('ECONNREFUSED')) {
-                errorMessage = '🌐 Network error. Please check your connection.';
+                errorMessage += '\n⏰ *Request Timeout*\nThe image might be too large. Try a smaller image.';
+            } else {
+                errorMessage += '\n🔧 *Service Unavailable*\nPlease try again later.';
             }
             
             await sock.sendMessage(chatId, { 
@@ -101,13 +113,3 @@ module.exports = {
         }
     }
 };
-
-// Helper function to validate URL
-function isValidUrl(string) {
-    try {
-        new URL(string);
-        return true;
-    } catch (_) {
-        return false;
-    }
-}
