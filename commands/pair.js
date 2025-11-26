@@ -1,4 +1,4 @@
-const axios = require('axios');
+ const axios = require('axios');
 const { sleep } = require('../lib/myfunc');
 
 async function pairCommand(sock, chatId, message, q) {
