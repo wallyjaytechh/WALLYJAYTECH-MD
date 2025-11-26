@@ -573,3 +573,4 @@ async function sendMenuAudio(sock, chatId, message) {
 }
 
 module.exports = helpCommand;
+ 
