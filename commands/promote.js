@@ -1,4 +1,4 @@
-const { isAdmin } = require('../lib/isAdmin');
+ const { isAdmin } = require('../lib/isAdmin');
 
 // Function to handle manual promotions via command
 async function promoteCommand(sock, chatId, mentionedJids, message) {
