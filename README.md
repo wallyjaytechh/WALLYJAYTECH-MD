@@ -40,15 +40,15 @@
 </p>
 
 <p align="center">
-  <a href="https://game.evoshosting.com/"><img src="https://img.shields.io/badge/panel-cyan?style=for-the-badge&logo=serverless&logoColor=black"></a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=railway"><img src="https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black"></a>
+  <a href="https://katabump.com/en"><img src="https://img.shields.io/badge/panel-cyan?style=for-the-badge&logo=serverless&logoColor=black"></a>
+  <a href="https://railway.com"><img src="https://img.shields.io/badge/railway-cyan?style=for-the-badge&logo=railway&logoColor=black"></a>
 </p>
 <p align="center">
-  <a href="https://suhail-web01.vercel.app/deploy?platform=heroku"> <img src="https://img.shields.io/badge/heroku-cyan?style=for-the-badge&logo=heroku&logoColor=black"> </a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=repl"  > <img src="https://img.shields.io/badge/replit-cyan?style=for-the-badge&logo=replit&logoColor=black"> </a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=koyeb" > <img src="https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black">    </a>
+  <a href="https://www.heroku.com"> <img src="https://img.shields.io/badge/heroku-cyan?style=for-the-badge&logo=heroku&logoColor=black"> </a>
+  <a href="https://replit.com"  > <img src="https://img.shields.io/badge/replit-cyan?style=for-the-badge&logo=replit&logoColor=black"> </a>
+  <a href="https://www.koyeb.com" > <img src="https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black">    </a>
   <a href='https://dashboard.render.com' target="_blank"><img alt='render' src='https://img.shields.io/badge/render -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a>
-  <a href="https://suhail-web01.vercel.app/deploy?platform=glitch" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
+  <a href="https://glitch.com" > <img src="https://img.shields.io/badge/glitch-cyan?style=for-the-badge&logo=glitch&logoColor=black"></a>
   <a href="https://github.com/codespaces/new"><img src="https://img.shields.io/badge/CodeSpace-cyan?style=for-the-badge&logo=codespace&logoColor=black"></a>
 </p>
 <p align="center">
