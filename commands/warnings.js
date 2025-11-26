@@ -1,4 +1,4 @@
-const fs = require('fs');
+ const fs = require('fs');
 const path = require('path');
 
 const warningsFilePath = path.join(__dirname, '../data/warnings.json');
