@@ -1,4 +1,4 @@
-const fs = require('fs');
+ const fs = require('fs');
 
 // Path for antitag settings
 const ANTITAG_SETTINGS = './data/antitag_settings.json';
