@@ -1,4 +1,4 @@
-async function resetlinkCommand(sock, chatId, senderId, message) {
+ async function resetlinkCommand(sock, chatId, senderId, message) {
     try {
         // Check if sender is bot owner/sudo
         const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
