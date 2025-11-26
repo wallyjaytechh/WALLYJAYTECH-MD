@@ -2,6 +2,237 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 
+// Function to dynamically count all commands from main.js (with alias grouping)
+function countTotalCommands() {
+    try {
+        const mainJsPath = path.join(__dirname, '../main.js');
+        const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
+        
+        // Map to store command groups (main command -> aliases)
+        const commandGroups = new Map();
+        
+        // Pattern to find case blocks and see which commands point to the same function
+        const caseBlockPattern = /case\s+(?:userMessage\s*===?\s*['"`]\.([^'"`]+)['"`]|userMessage\s*\.startsWith\(\s*['"`]\.([^'"`]+)['"`]\s*\))[^}]+?await\s+(\w+Command)/gs;
+        
+        let match;
+        while ((match = caseBlockPattern.exec(mainJsContent)) !== null) {
+            const command = match[1] || match[2];
+            const commandFunction = match[3];
+            
+            if (command && commandFunction) {
+                if (!commandGroups.has(commandFunction)) {
+                    commandGroups.set(commandFunction, new Set());
+                }
+                commandGroups.get(commandFunction).add(command);
+            }
+        }
+
+        // Also look for multiple commands in single case statements (like .git, .github, etc.)
+        const multiCommandPattern = /case\s+userMessage\s*===?\s*['"`]\.(git|github|sc|script|repo)['"`]/g;
+        const gitCommands = new Set();
+        let multiMatch;
+        while ((multiMatch = multiCommandPattern.exec(mainJsContent)) !== null) {
+            gitCommands.add(multiMatch[1]);
+        }
+        if (gitCommands.size > 0) {
+            commandGroups.set('githubCommand', gitCommands);
+        }
+
+        // Count unique command functions (not individual aliases)
+        let uniqueCommandCount = 0;
+        
+        commandGroups.forEach((aliases, commandFunction) => {
+            console.log(`🔧 ${commandFunction}: ${Array.from(aliases).map(cmd => '.' + cmd).join(', ')}`);
+            uniqueCommandCount++; // Count each function once, regardless of aliases
+        });
+
+        console.log(`🔍 Detected ${uniqueCommandCount} unique commands from ${commandGroups.size} command groups`);
+
+        // If dynamic counting fails or gives unrealistic results, use fallback
+        if (uniqueCommandCount < 50 || uniqueCommandCount > 500) {
+            console.log('⚠️ Dynamic count seems off, using fallback');
+            return countCommandsFromHelpMenu();
+        }
+
+        return uniqueCommandCount;
+
+    } catch (error) {
+        console.error('Error dynamically counting commands:', error);
+        return countCommandsFromHelpMenu();
+    }
+}
+
+// Fallback function to count from help menu structure (grouping aliases)
+function countCommandsFromHelpMenu() {
+    // Group commands by their actual function (aliases count as one)
+    const commandGroups = {
+        // GENERAL CMDS - each line is one unique command
+        'help': ['help', 'menu', 'bot', 'list'],
+        'ping': ['ping'],
+        'alive': ['alive'],
+        'tts': ['tts'],
+        'owner': ['owner'],
+        'joke': ['joke'],
+        'quote': ['quote'],
+        'fact': ['fact'],
+        'weather': ['weather'],
+        'news': ['news'],
+        'attp': ['attp'],
+        'lyrics': ['lyrics'],
+        'eightBall': ['8ball'],
+        'viewOnce': ['vv'],
+        'translate': ['trt', 'translate'],
+        'screenshot': ['ss', 'ssweb', 'screenshot'],
+        'url': ['url', 'tourl'],
+        'getjid': ['getjid'],
+        
+        // WHATSAPP CMDS
+        'clear': ['clear'],
+        
+        // GROUP CMDS - each is one unique command
+        'ban': ['ban'],
+        'unban': ['unban'],
+        'promote': ['promote'],
+        'demote': ['demote'],
+        'mute': ['mute'],
+        'unmute': ['unmute'],
+        'delete': ['delete', 'del'],
+        'kick': ['kick'],
+        'ship': ['ship'],
+        'stupid': ['stupid', 'itssostupid', 'iss'],
+        'warnings': ['warnings'],
+        'warn': ['warn'],
+        'antilink': ['antilink'],
+        'antibadword': ['antibadword'],
+        'groupinfo': ['groupinfo', 'infogp', 'infogrupo'],
+        'staff': ['staff', 'admins', 'listadmin'],
+        'jid': ['jid'],
+        'tag': ['tag'],
+        'tagall': ['tagall'],
+        'tagnotadmin': ['tagnotadmin'],
+        'hidetag': ['hidetag'],
+        'chatbot': ['chatbot'],
+        'resetlink': ['resetlink', 'revoke', 'anularlink'],
+        'antitag': ['antitag'],
+        'welcome': ['welcome'],
+        'goodbye': ['goodbye'],
+        'setGroupDescription': ['setgdesc'],
+        'setGroupName': ['setgname'],
+        'setGroupPhoto': ['setgpp'],
+        
+        // OWNER CMDS
+        'mode': ['mode'],
+        'clearSession': ['clearsession', 'clearsesi'],
+        'antidelete': ['antidelete'],
+        'tempfile': ['tempfile'],
+        'clearTmp': ['cleartmp'],
+        'update': ['update'],
+        'sudo': ['sudo'],
+        'settings': ['settings'],
+        'setProfilePicture': ['setpp'],
+        'autoreact': ['autoreact', 'areact', 'autoreaction'],
+        'autostatus': ['autostatus'],
+        'autotyping': ['autotyping'],
+        'autoread': ['autoread'],
+        'anticall': ['anticall'],
+        'pmblocker': ['pmblocker'],
+        'setMention': ['setmention'],
+        'mention': ['mention'],
+        
+        // STICKER CMDS
+        'blur': ['blur'],
+        'simage': ['simage'],
+        'sticker': ['sticker', 's'],
+        'removebg': ['removebg', 'rmbg', 'nobg'],
+        'remini': ['remini', 'enhance', 'upscale'],
+        'stickercrop': ['crop'],
+        'stickerTelegram': ['tg', 'stickertelegram', 'tgsticker', 'telesticker'],
+        'meme': ['meme'],
+        'take': ['take', 'steal'],
+        'emojimix': ['emojimix', 'emix'],
+        'igs': ['igs'],
+        'igsc': ['igsc'],
+        
+        // PIES CMDS
+        'pies': ['pies'],
+        'china': ['china'],
+        'indonesia': ['indonesia'],
+        'japan': ['japan'],
+        'korea': ['korea'],
+        'hijab': ['hijab'],
+        
+        // GAME CMDS
+        'tictactoe': ['ttt', 'tictactoe'],
+        'hangman': ['hangman'],
+        'guess': ['guess'],
+        'trivia': ['trivia'],
+        'answer': ['answer'],
+        'truth': ['truth'],
+        'dare': ['dare'],
+        
+        // AI CMDS
+        'ai': ['gpt', 'gemini'],
+        'imagine': ['imagine', 'flux', 'dalle'],
+        'sora': ['sora'],
+        
+        // FUN CMDS
+        'compliment': ['compliment'],
+        'insult': ['insult'],
+        'flirt': ['flirt'],
+        'poet': ['poet', 'poetry'],
+        'goodnight': ['goodnight', 'lovenight', 'gn'],
+        'roseday': ['roseday'],
+        'character': ['character'],
+        'wasted': ['waste', 'wasted'],
+        'simp': ['simp'],
+        
+        // EPHOTO CMDS (all textmaker are one function with different styles)
+        'textmaker': [
+            'metallic', 'ice', 'snow', 'impressive', 'matrix', 'light', 'neon', 
+            'devil', 'purple', 'thunder', 'leaves', '1917', 'arena', 'hacker', 
+            'sand', 'blackpink', 'glitch', 'fire'
+        ],
+        
+        // DOWNLOAD CMDS
+        'play': ['play'],
+        'song': ['song', 'mp3', 'ytmp3'],
+        'spotify': ['spotify'],
+        'instagram': ['instagram', 'insta', 'ig'],
+        'facebook': ['fb', 'facebook'],
+        'tiktok': ['tiktok', 'tt'],
+        'video': ['video', 'ytmp4'],
+        
+        // MISC CMDS (all handled by miscCommand function)
+        'misc': [
+            'heart', 'horny', 'circle', 'lgbt', 'lolice', 'tonikawa', 
+            'its-so-stupid', 'namecard', 'oogway', 'oogway2', 'tweet', 
+            'ytcomment', 'comrade', 'gay', 'glass', 'jail', 'passed', 'triggered'
+        ],
+        
+        // ANIME CMDS (all handled by animeCommand function)
+        'anime': [
+            'nom', 'poke', 'cry', 'kiss', 'pat', 'hug', 'wink', 
+            'facepalm', 'face-palm', 'animuquote', 'quote', 'loli'
+        ],
+        
+        // GITHUB CMDS (all point to githubCommand)
+        'github': ['git', 'github', 'sc', 'script', 'repo']
+    };
+
+    // Count unique command functions (not individual aliases)
+    let uniqueCommandCount = 0;
+    
+    for (const commandFunction in commandGroups) {
+        const aliases = commandGroups[commandFunction];
+        console.log(`🔧 ${commandFunction}: ${aliases.map(cmd => '.' + cmd).join(', ')}`);
+        uniqueCommandCount++;
+    }
+
+    console.log(`📊 Total unique commands: ${uniqueCommandCount}`);
+    return uniqueCommandCount;
+}
+
+// Rest of the helpCommand function remains the same...
 async function helpCommand(sock, chatId, message) {
     // Get time based on settings timezone
     const getLocalizedTime = () => {
@@ -21,6 +252,9 @@ async function helpCommand(sock, chatId, message) {
             return new Date().toLocaleString();
         }
     };
+
+    // Get total commands count - NOW WITH ALIAS GROUPING
+    const totalCommands = countTotalCommands();
     
     const helpMessage = `
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
@@ -33,6 +267,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *💻 Mode: [ ${settings.commandMode} ]*
+║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 Date: [ ${getLocalizedTime()} ]*
 ║
 ╚═══════════════════╝
@@ -333,6 +568,7 @@ async function helpCommand(sock, chatId, message) {
         });
     }
 }
+
 
 // Function to send the menu
 async function sendMenu(sock, chatId, message, helpMessage) {
