@@ -1,4 +1,4 @@
-const settings = require('../settings');
+ const settings = require('../settings');
 const { isSudo } = require('../lib/index');
 const isOwnerOrSudo = require('../lib/isOwner');
 
