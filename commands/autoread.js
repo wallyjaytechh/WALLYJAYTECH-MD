@@ -1,4 +1,4 @@
-/**
+/** 
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Autoread Command - Automatically read all messages
  */
