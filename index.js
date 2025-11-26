@@ -320,39 +320,39 @@ async function startXeonBotInc() {
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                 await XeonBotInc.sendMessage(botNumber, {
-    text: `╔══════════════════════════════╗
-║        🤖 BOT ACTIVATED!        ║
-╠══════════════════════════════╣
-║  📅 Date: ${new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos' })}
+    text: `╔═══════════════════╗
+║   🤖 BOT ACTIVATED!   ║
+╠═══════════════════╣
+║  📅 ${new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos' })}
 ║  ✅ Status: ONLINE & READY
 ║  💻 Version: ${settings.version}
 ║  👤 Owner: ${settings.botOwner}
 ║  📞 Contact: ${settings.ownerNumber}
 ║  🌐 Prefix: ${settings.prefix}
-║  💡 150+ Commands Loaded
-╠══════════════════════════════╣
-║        🚀 GET STARTED         ║
-╠══════════════════════════════╣
-║  📖 Use .menu - View all commands
-║  ℹ️ Use .help - Bot guide
-║  👑 Use .owner - Contact owner
-║  🐛 Use .reportbug - Report issues
-║  ⚙️ Use .settings - Bot settings
-║  🔄 Use .update - Update bot
-║  📊 Use .ping - Check bot speed
-║  🔍 Use .mode - Check bot status
-╠══════════════════════════════╣
-║        📢 IMPORTANT           ║
-╠══════════════════════════════╣
-║  💬 Join our support group for help
-║  📺 Subscribe to our YouTube channel
-║  ⭐ Star our GitHub repository
-║  🔔 Turn on channel notifications
-║  📚 Read documentation carefully
-║  🛡️ Don't spam commands
+║  💡 ${getCommandCount()}+ Commands
+╠═══════════════════╣
+║   🚀 GET STARTED   ║
+╠═══════════════════╣
+║  📖 .menu - All commands
+║  ℹ️ .help - Bot guide
+║  👑 .owner - Contact
+║  🐛 .reportbug - Issues
+║  ⚙️ .settings - Settings
+║  🔄 .update - Update
+║  📊 .ping - Check speed
+║  🔍 .mode - Bot status
+╠═══════════════════╣
+║   📢 IMPORTANT    ║
+╠═══════════════════╣
+║  💬 Join support group
+║  📺 Subscribe YouTube
+║  ⭐ Star GitHub repo
+║  🔔 Channel notifications
+║  📚 Read documentation
+║  🛡️ No spam commands
 ║  ⚠️ Follow WhatsApp ToS
-╚══════════════════════════════╝
-    
+╚═══════════════════╝
+
 *🔗 Channel:* ${global.channelLink}
 *💬 Support:* https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1
 *📺 YouTube:* https://youtube.com/@wallyjaytechy
