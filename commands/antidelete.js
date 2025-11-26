@@ -1,4 +1,4 @@
- const fs = require('fs');
+  const fs = require('fs');
 const path = require('path');
 const { tmpdir } = require('os');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
