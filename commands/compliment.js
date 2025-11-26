@@ -1,4 +1,4 @@
-const compliments = [
+ const compliments = [
     "You're amazing just the way you are!",
     "You're really something special.",
     "You're even better than a unicorn because you're real.",
