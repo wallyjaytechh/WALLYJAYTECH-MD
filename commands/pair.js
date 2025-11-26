@@ -10,8 +10,8 @@ async function pairCommand(sock, chatId, message, q) {
                     forwardingScore: 1,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD',
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                         serverMessageId: -1
                     }
                 }
@@ -29,8 +29,8 @@ async function pairCommand(sock, chatId, message, q) {
                     forwardingScore: 1,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD',
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                         serverMessageId: -1
                     }
                 }
@@ -48,8 +48,8 @@ async function pairCommand(sock, chatId, message, q) {
                         forwardingScore: 1,
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363161513685998@newsletter',
-                            newsletterName: 'KnightBot MD',
+                            newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                             serverMessageId: -1
                         }
                     }
@@ -62,8 +62,8 @@ async function pairCommand(sock, chatId, message, q) {
                     forwardingScore: 1,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD',
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                         serverMessageId: -1
                     }
                 }
@@ -85,8 +85,8 @@ async function pairCommand(sock, chatId, message, q) {
                             forwardingScore: 1,
                             isForwarded: true,
                             forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363161513685998@newsletter',
-                                newsletterName: 'KnightBot MD',
+                                newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                                 serverMessageId: -1
                             }
                         }
@@ -106,8 +106,8 @@ async function pairCommand(sock, chatId, message, q) {
                         forwardingScore: 1,
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363161513685998@newsletter',
-                            newsletterName: 'KnightBot MD',
+                            newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                             serverMessageId: -1
                         }
                     }
@@ -122,8 +122,8 @@ async function pairCommand(sock, chatId, message, q) {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363161513685998@newsletter',
-                    newsletterName: 'KnightBot MD',
+                    newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
                     serverMessageId: -1
                 }
             }
