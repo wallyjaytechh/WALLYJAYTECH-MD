@@ -1,4 +1,4 @@
-const settings = require("../settings");
+ const settings = require("../settings");
 async function aliveCommand(sock, chatId, message) {
     try {
         const message1 = `*🤖 WALLYJAYTECH-MD is Active! 🤖*\n\n` +
