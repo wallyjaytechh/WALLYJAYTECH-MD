@@ -1,4 +1,4 @@
- const insults = [
+  const insults = [
     "You're like a cloud. When you disappear, it's a beautiful day!",
     "You bring everyone so much joy when you leave the room!",
     "I'd agree with you, but then we'd both be wrong.",
