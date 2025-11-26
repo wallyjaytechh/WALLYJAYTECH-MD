@@ -1,4 +1,4 @@
-const settings = require('../settings');
+ const settings = require('../settings');
 
 async function flirtCommand(sock, chatId, message) {
     try {
