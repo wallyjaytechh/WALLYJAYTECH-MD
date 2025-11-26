@@ -1,4 +1,4 @@
-const os = require('os');
+ const os = require('os');
 const process = require('process');
 
 async function getjidCommand(sock, chatId, message) {
