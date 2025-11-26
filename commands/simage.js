@@ -1,4 +1,4 @@
-const sharp = require('sharp');
+ const sharp = require('sharp');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 const fse = require('fs-extra');
