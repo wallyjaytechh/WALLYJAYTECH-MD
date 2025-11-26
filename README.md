@@ -22,7 +22,8 @@
 
    <a><img src='https://i.ibb.co/TLG3Mb4/photo-2024-11-01-16-00-22.jpg'/></a>
 <div align="center">
-  <img src="https://spogit.vercel.app/api?theme=dark&rainbow=true&scan=true" alt="Widget with the current Spotify song"  />
+  <img src="https://github-readme-stats.vercel.app/api?username=wallyjaytechh&show_icons=true&theme=dark" />
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=wallyjaytechh&layout=compact&theme=dark" />
 </div>
 <p align="center">
 <a href="https://github.com/wallyjaytechh"><img title="Author" src="https://img.shields.io/badge/CREATOR-WALLY JAY TECH-cyan.svg?style=for-the-badge&logo=github&logoColor=cyan"></a>
