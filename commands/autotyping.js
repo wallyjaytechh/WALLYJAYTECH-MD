@@ -1,4 +1,4 @@
-/**
+ /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Autotyping Command - Shows fake typing status
  */
