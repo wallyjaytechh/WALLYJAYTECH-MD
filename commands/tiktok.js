@@ -1,4 +1,4 @@
-const { ttdl } = require("ruhend-scraper");
+ const { ttdl } = require("ruhend-scraper");
 const axios = require('axios');
 
 // Store processed message IDs to prevent duplicates
