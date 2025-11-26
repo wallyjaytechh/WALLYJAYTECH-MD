@@ -1,4 +1,4 @@
-const { handleWelcome } = require('../lib/welcome');
+ const { handleWelcome } = require('../lib/welcome');
 const { isWelcomeOn, getWelcome } = require('../lib/index');
 const { channelInfo } = require('../lib/messageConfig');
 const fetch = require('node-fetch');
