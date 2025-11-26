@@ -50,7 +50,7 @@ function downloadFile(url, dest, visited = new Set()) {
             const client = useHttps ? require('https') : require('http');
             const req = client.get(url, {
                 headers: {
-                    'User-Agent': 'KnightBot-Updater/1.0',
+                    'User-Agent': 'WALLYJAYTECH-MD-Updater/1.0',
                     'Accept': '*/*'
                 }
             }, res => {
