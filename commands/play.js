@@ -1,4 +1,4 @@
-const yts = require('yt-search');
+ const yts = require('yt-search');
 const axios = require('axios');
 
 async function playCommand(sock, chatId, message) {
