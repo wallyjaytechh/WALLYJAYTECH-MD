@@ -286,38 +286,94 @@ async function helpCommand(sock, chatId, message) {
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
+        // Define media options - randomly choose between image and video
+        const mediaOptions = [
+            {
+                type: 'image',
+                path: path.join(__dirname, '../assets/bot_image.jpg'),
+                caption: helpMessage
+            },
+            {
+                type: 'video', 
+                path: path.join(__dirname, '../assets/menu_video.mp4'), // Add this video file
+                caption: helpMessage
+            }
+        ];
+
+        // Randomly select media type (50% image, 50% video)
+        const selectedMedia = mediaOptions[Math.floor(Math.random() * mediaOptions.length)];
         
-        if (fs.existsSync(imagePath)) {
-            const imageBuffer = fs.readFileSync(imagePath);
+        console.log(`🎲 Selected media type: ${selectedMedia.type}`);
+        
+        if (fs.existsSync(selectedMedia.path)) {
+            const mediaBuffer = fs.readFileSync(selectedMedia.path);
             
-            await sock.sendMessage(chatId, {
-                image: imageBuffer,
-                caption: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
+            if (selectedMedia.type === 'image') {
+                await sock.sendMessage(chatId, {
+                    image: mediaBuffer,
+                    caption: selectedMedia.caption,
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
                     }
-                }
-            },{ quoted: message });
+                }, { quoted: message });
+                console.log('✅ Menu sent as image');
+            } else if (selectedMedia.type === 'video') {
+                await sock.sendMessage(chatId, {
+                    video: mediaBuffer,
+                    caption: selectedMedia.caption,
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
+                    }
+                }, { quoted: message });
+                console.log('✅ Menu sent as video');
+            }
         } else {
-            console.error('Bot image not found at:', imagePath);
-            await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    } 
-                }
-            });
+            // If selected media doesn't exist, fallback to image
+            console.log(`❌ ${selectedMedia.type} not found, using image fallback`);
+            const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
+            
+            if (fs.existsSync(imagePath)) {
+                const imageBuffer = fs.readFileSync(imagePath);
+                await sock.sendMessage(chatId, {
+                    image: imageBuffer,
+                    caption: helpMessage,
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
+                    }
+                }, { quoted: message });
+            } else {
+                // Final fallback to text only
+                await sock.sendMessage(chatId, { 
+                    text: helpMessage,
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        } 
+                    }
+                });
+            }
         }
     } catch (error) {
         console.error('Error in help command:', error);
