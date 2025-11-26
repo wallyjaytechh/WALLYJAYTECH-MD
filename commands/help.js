@@ -3,6 +3,24 @@ const fs = require('fs');
 const path = require('path');
 
 async function helpCommand(sock, chatId, message) {
+    // Get time based on settings timezone
+    const getLocalizedTime = () => {
+        try {
+            return new Date().toLocaleString('en-US', {
+                timeZone: settings.timezone || 'Africa/Lagos',
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit', 
+                second: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch (error) {
+            // Fallback if timezone is invalid
+            return new Date().toLocaleString();
+        }
+    };
     const helpMessage = `
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
@@ -14,7 +32,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *💻 Mode: [ ${settings.commandMode} ]*
-║   *📅 Date: [ ${new Date().toLocaleString()} ]*
+║   *📅 Date: [ ${getLocalizedTime()} ]*
 ║
 ╚═══════════════════╝
 
