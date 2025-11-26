@@ -1,4 +1,4 @@
-const settings = require('../settings');
+ const settings = require('../settings');
 
 async function rosedayCommand(sock, chatId, message) {
     try {
