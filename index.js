@@ -323,7 +323,7 @@ async function startXeonBotInc() {
     text: `╔══════════════════════════════╗
 ║        🤖 BOT ACTIVATED!        ║
 ╠══════════════════════════════╣
-║  📅 ${new Date().toLocaleString()}
+║  📅 Date: ${new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos' })}
 ║  ✅ Status: ONLINE & READY
 ║  💻 Version: ${settings.version}
 ║  👤 Owner: ${settings.botOwner}
