@@ -1,4 +1,4 @@
-async function staffCommand(sock, chatId, msg) {
+ async function staffCommand(sock, chatId, msg) {
     try {
         // Show typing indicator
         await sock.sendPresenceUpdate('composing', chatId);
