@@ -1,4 +1,4 @@
-const axios = require('axios');
+ const axios = require('axios');
 const FormData = require('form-data');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const settings = require('../settings');
