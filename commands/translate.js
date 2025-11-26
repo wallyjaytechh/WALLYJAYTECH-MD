@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+ const fetch = require('node-fetch');
 
 async function handleTranslateCommand(sock, chatId, message, match) {
     try {
