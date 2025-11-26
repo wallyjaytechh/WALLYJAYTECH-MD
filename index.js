@@ -72,6 +72,35 @@ const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics'
 const { rmSync, existsSync } = require('fs')
 const { join } = require('path')
 
+
+
+function getCommandCount() {
+    try {
+        const mainJsPath = require('path').join(__dirname, 'main.js');
+        const mainJsContent = require('fs').readFileSync(mainJsPath, 'utf8');
+        
+        let commandCount = 0;
+        
+        // Count all case statements in main.js
+        const casePattern = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
+        
+        let match;
+        while ((match = casePattern.exec(mainJsContent)) !== null) {
+            if (match[2]) {
+                commandCount++;
+            }
+        }
+        
+        console.log(`🤖 Auto-detected ${commandCount} commands`);
+        return commandCount;
+        
+    } catch (error) {
+        console.error('Error counting commands:', error);
+        return 150; // Fallback number
+    }
+}
+
+
 // Import lightweight store
 const store = require('./lib/lightweight_store')
 
@@ -291,17 +320,55 @@ async function startXeonBotInc() {
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                 await XeonBotInc.sendMessage(botNumber, {
-                    text: `*🤖 WALLYJAYTECH-MD Connected Successfully!*\n\n*⏰ Time: ${new Date().toLocaleString()}*\n\n*✅ Status: Online and Ready!*\n\n*✅Make sure to join below channel*`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                });
+    text: `╔══════════════════════════════╗
+║        🤖 BOT ACTIVATED!        ║
+╠══════════════════════════════╣
+║  📅 ${new Date().toLocaleString()}
+║  ✅ Status: ONLINE & READY
+║  💻 Version: ${settings.version}
+║  👤 Owner: ${settings.botOwner}
+║  📞 Contact: ${settings.ownerNumber}
+║  🌐 Prefix: ${settings.prefix}
+║  💡 150+ Commands Loaded
+╠══════════════════════════════╣
+║        🚀 GET STARTED         ║
+╠══════════════════════════════╣
+║  📖 Use .menu - View all commands
+║  ℹ️ Use .help - Bot guide
+║  👑 Use .owner - Contact owner
+║  🐛 Use .reportbug - Report issues
+║  ⚙️ Use .settings - Bot settings
+║  🔄 Use .update - Update bot
+║  📊 Use .ping - Check bot speed
+║  🔍 Use .mode - Check bot status
+╠══════════════════════════════╣
+║        📢 IMPORTANT           ║
+╠══════════════════════════════╣
+║  💬 Join our support group for help
+║  📺 Subscribe to our YouTube channel
+║  ⭐ Star our GitHub repository
+║  🔔 Turn on channel notifications
+║  📚 Read documentation carefully
+║  🛡️ Don't spam commands
+║  ⚠️ Follow WhatsApp ToS
+╚══════════════════════════════╝
+    
+*🔗 Channel:* ${global.channelLink}
+*💬 Support:* https://chat.whatsapp.com/KWr561NJbHGGrT8YCSRibi
+*📺 YouTube:* https://youtube.com/@wallyjaytechy
+*💻 GitHub:* https://github.com/wallyjaytechh
+
+*🛠️ WALLYJAYTECH-MD - Professional WhatsApp Bot*`,
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+});
             } catch (error) {
                 console.error('Error sending connection message:', error.message)
             }
