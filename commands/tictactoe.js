@@ -1,4 +1,4 @@
-const TicTacToe = require('../lib/tictactoe');
+ const TicTacToe = require('../lib/tictactoe');
 
 // Store games globally
 const games = {};
