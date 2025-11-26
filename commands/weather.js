@@ -1,4 +1,4 @@
-const axios = require('axios');
+ const axios = require('axios');
 
 async function weatherCommand(sock, chatId, message, city) {
 try {
