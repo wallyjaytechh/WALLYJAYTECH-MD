@@ -1,4 +1,4 @@
-const axios = require('axios');
+ const axios = require('axios');
 const { channelInfo } = require('../lib/messageConfig');
 
 async function wastedCommand(sock, chatId, message) {
