@@ -57,7 +57,6 @@
 
 WALLYJAYTECH-MD is a Cool Multi-Device WhatsApp bot developed by [Wally Jay](https://github.com/wallyjaytechh). It offers a wide range of extraordinary features, making it an advanced and user-friendly bot for various purposes.
 
-<p align="center"><img src="https://profile-counter.glitch.me/{WALLYJAYTECH-MD}/count.svg" alt="WALLY JAY TECH :: Visitor's Count" /></p>
 
 ### 📊 **Bot Statistics**D
 <p align="center">
