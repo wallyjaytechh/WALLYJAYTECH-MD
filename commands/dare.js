@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+ const fetch = require('node-fetch');
 
 async function dareCommand(sock, chatId, message) {
     try {
