@@ -354,7 +354,7 @@ async function startXeonBotInc() {
 ╚══════════════════════════════╝
     
 *🔗 Channel:* ${global.channelLink}
-*💬 Support:* https://chat.whatsapp.com/KWr561NJbHGGrT8YCSRibi
+*💬 Support:* https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1
 *📺 YouTube:* https://youtube.com/@wallyjaytechy
 *💻 GitHub:* https://github.com/wallyjaytechh
 
