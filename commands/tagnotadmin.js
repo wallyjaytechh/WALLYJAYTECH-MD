@@ -1,4 +1,4 @@
-const isAdmin = require('../lib/isAdmin');
+ const isAdmin = require('../lib/isAdmin');
 
 async function tagNotAdminCommand(sock, chatId, senderId, message) {
     try {
