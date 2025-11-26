@@ -100,8 +100,8 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🚀 `Bot Features`
 | Feature                          | Description                                             | Status       | Version    |
 | ---------------------------------| ------------------------------------------------------- | ------------ | ---------- |
-| Full Button Bot                  | Click Button To Perform Operations                      | ✅           | 1.0        |
-| Difeerent Menu Designs           | Swith To Other Menus                                    | ✅           | 1.0        |
+| Easy deployments                 | the deployment of the bot is easy and faster            | ✅           | 1.0        |
+| Up to 500 plus cmds              | it has so many amazing features                         | ✅           | 1.0        |
 | Multi-Device Support             | Operate the bot on multiple devices simultaneously      | ✅           | 1.0        |
 | AI Chat Bot                      | Bot Can Reply To Questions                              | ✅           | 1.0        |
 | Downloader Commands              | Download various types of content from the internet     | ✅           | 1.0        |
