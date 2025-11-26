@@ -21,6 +21,7 @@ async function helpCommand(sock, chatId, message) {
             return new Date().toLocaleString();
         }
     };
+    
     const helpMessage = `
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
@@ -304,6 +305,38 @@ async function helpCommand(sock, chatId, message) {
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
+        // 1. Send menu first (with all commands)
+        const menuSent = await sendMenu(sock, chatId, message, helpMessage);
+        
+        if (menuSent) {
+            // 2. Add a small delay before audio
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 3. Send audio LAST
+            await sendMenuAudio(sock, chatId, message);
+        }
+
+    } catch (error) {
+        console.error('Error in help command:', error);
+        // Fallback to text only if everything fails
+        await sock.sendMessage(chatId, { 
+            text: helpMessage,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        });
+    }
+}
+
+// Function to send the menu
+async function sendMenu(sock, chatId, message, helpMessage) {
+    try {
         // Define media options - randomly choose between image and video
         const mediaOptions = [
             {
@@ -313,7 +346,7 @@ async function helpCommand(sock, chatId, message) {
             },
             {
                 type: 'video', 
-                path: path.join(__dirname, '../assets/menu_video.mp4'), // Add this video file
+                path: path.join(__dirname, '../assets/menu_video.mp4'),
                 caption: helpMessage
             }
         ];
@@ -341,6 +374,7 @@ async function helpCommand(sock, chatId, message) {
                     }
                 }, { quoted: message });
                 console.log('✅ Menu sent as image');
+                return true;
             } else if (selectedMedia.type === 'video') {
                 await sock.sendMessage(chatId, {
                     video: mediaBuffer,
@@ -356,6 +390,7 @@ async function helpCommand(sock, chatId, message) {
                     }
                 }, { quoted: message });
                 console.log('✅ Menu sent as video');
+                return true;
             }
         } else {
             // If selected media doesn't exist, fallback to image
@@ -377,6 +412,7 @@ async function helpCommand(sock, chatId, message) {
                         }
                     }
                 }, { quoted: message });
+                return true;
             } else {
                 // Final fallback to text only
                 await sock.sendMessage(chatId, { 
@@ -391,11 +427,35 @@ async function helpCommand(sock, chatId, message) {
                         } 
                     }
                 });
+                return true;
             }
         }
     } catch (error) {
-        console.error('Error in help command:', error);
-        await sock.sendMessage(chatId, { text: helpMessage });
+        console.error('Error sending menu:', error);
+        return false;
+    }
+}
+
+// Function to send menu audio (LAST)
+async function sendMenuAudio(sock, chatId, message) {
+    try {
+        const audioPath = path.join(__dirname, '../assets/menu_audio.mp3');
+        if (fs.existsSync(audioPath)) {
+            const audioBuffer = fs.readFileSync(audioPath);
+            await sock.sendMessage(chatId, {
+                audio: audioBuffer,
+                mimetype: 'audio/mpeg',
+                ptt: false
+            }, { quoted: message });
+            console.log('🎵 Menu audio sent LAST');
+            return true;
+        } else {
+            console.log('❌ Menu audio not found, skipping audio');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error sending audio:', error);
+        return false;
     }
 }
 
