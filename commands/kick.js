@@ -1,4 +1,4 @@
-const isAdmin = require('../lib/isAdmin');
+ const isAdmin = require('../lib/isAdmin');
 
 async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
     const isOwner = message.key.fromMe;
