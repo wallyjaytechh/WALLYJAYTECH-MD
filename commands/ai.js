@@ -1,4 +1,4 @@
-const axios = require('axios');
+ const axios = require('axios');
 const fetch = require('node-fetch');
 
 async function aiCommand(sock, chatId, message) {
