@@ -99,6 +99,7 @@ async function helpCommand(sock, chatId, message) {
 ║ *🔺.tempfile*
 ║ *🔺.cleartmp*
 ║ *🔺.update*
+║ *🔺.sudo
 ║ *🔺.settings*
 ║ *🔺.setpp <reply to image>*
 ║ *🔺.autoreact <on/off>*
