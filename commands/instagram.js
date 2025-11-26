@@ -1,4 +1,4 @@
-const { igdl } = require("ruhend-scraper");
+ const { igdl } = require("ruhend-scraper");
 
 // Store processed message IDs to prevent duplicates
 const processedMessages = new Set();
