@@ -1,4 +1,4 @@
-async function eightBallCommand(sock, chatId, question) {
+ async function eightBallCommand(sock, chatId, question) {
     try {
         if (!question) {
             return await sock.sendMessage(chatId, { 
