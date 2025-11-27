@@ -412,6 +412,7 @@ async function helpCommand(sock, chatId, message) {
     🟡 *Copyright wallyjaytech 2025* 🟡
 
 *📊 Total Commands: ${totalCommands}*
+
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
