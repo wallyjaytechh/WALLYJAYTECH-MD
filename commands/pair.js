@@ -5,7 +5,7 @@ async function pairCommand(sock, chatId, message, q) {
     try {
         if (!q) {
             return await sock.sendMessage(chatId, {
-                text: "Please provide valid WhatsApp number\nExample: .pair 91702395XXXX",
+                text: "Please provide valid WhatsApp number\nExample: .pair 23482557637XX",
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
