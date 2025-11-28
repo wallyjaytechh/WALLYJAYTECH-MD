@@ -1,23 +1,17 @@
 {
   "name": "WALLYJAYTECH-MD",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:latest",
   "features": {
     "ghcr.io/devcontainers/features/ffmpeg:1": {},
     "ghcr.io/devcontainers/features/imagemagick:1": {}
   },
+  "postCreateCommand": "npm install",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-vscode.vscode-json",
         "esbenp.prettier-vscode"
       ]
-    }
-  },
-  "postCreateCommand": "npm install",
-  "portsAttributes": {
-    "3000": {
-      "label": "Bot Status",
-      "onAutoForward": "silent"
     }
   }
 }
