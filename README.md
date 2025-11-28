@@ -125,29 +125,8 @@ Click On The Link To Donate ME  Generally All Countries...
 
 
 ## 🚀 `Deployments`
-#### DEPLOY TO HEROKU 
 
-1. If You don't have an account on Heroku. Create an account.
-    <br>
-<a href='https://signup.heroku.com/' target="_blank"><img alt='Heroku' src='https://img.shields.io/badge/-Create-cyan?style=for-the-badge&logo=heroku&logoColor=black'/></a>
-
-2. Now Deploy
-    <br>
-<a href='https://dashboard.heroku.com/new/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-cyan?style=for-the-badge&logo=heroku&logoColor=black'/></a>
-
-#### DEPLOY TO REPLIT
-
-1. If You don't have an account on Replit. Create an account.
-    <br>
-<a href='https://replit.com/signup' target="_blank"><img alt='Heroku' src='https://img.shields.io/badge/-Create-cyan?style=for-the-badge&logo=replit&logoColor=black'/></a>
-
-
-2. Now Deploy
-    <br>
-    <a href='https://repl.it/github/wallyjaytechh/WALLYJAYTECH-MD' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-cyan?style=for-the-badge&logo=replit&logoColor=black'/></a>
-
-
-
+q
 #### DEPLOY TO CODESPACE
 
 1. If You don't have an account on Codespace. Create an account.
