@@ -2,6 +2,19 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 
+// ADD THIS PLATFORM DETECTION FUNCTION
+function getDeploymentPlatform() {
+    if (process.env.RENDER) {
+        return 'Render.com 🚀';
+    } else if (process.env.CODESPACE_NAME) {
+        return 'GitHub Codespaces 💻';
+    } else if (process.env.PANEL_APP) {
+        return 'Panel ⚡';
+    } else {
+        return 'Local Machine 🖥️';
+    }
+}
+
 // Function to dynamically scan main.js and count ALL commands from switch cases
 function countTotalCommands() {
     try {
@@ -143,6 +156,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *💻 Mode: [ ${settings.commandMode} ]*
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 Date: [ ${getLocalizedTime()} ]*
+║   *📡 Deployed Platform: [ ${getDeploymentPlatform()} ]*
 ║
 ╚═══════════════════╝
 
