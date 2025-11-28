@@ -5,13 +5,13 @@ const path = require('path');
 // ADD THIS PLATFORM DETECTION FUNCTION
 function getDeploymentPlatform() {
     if (process.env.RENDER) {
-        return 'Render.com 🚀';
+        return 'Render';
     } else if (process.env.CODESPACE_NAME) {
-        return 'GitHub Codespaces 💻';
+        return 'Codespaces';
     } else if (process.env.PANEL_APP) {
-        return 'Panel ⚡';
+        return 'Panel';
     } else {
-        return 'Local Machine 🖥️';
+        return 'Local Machine';
     }
 }
 
