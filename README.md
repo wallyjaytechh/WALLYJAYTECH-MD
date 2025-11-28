@@ -1,4 +1,4 @@
-
+ 
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 <br>
 <br>
@@ -10,7 +10,6 @@
 <img src="https://i.imgur.com/dBaSKWF.gif" height="90" width="100%">
 
 <p align="center">
-
   
 <img alt='WALLYJAYTECH-MD' src='https://img.shields.io/badge/WALLYJAYTECH-MD-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <img alt='IS BASED ON:' src='https://img.shields.io/badge/IS BASED ON:-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
 >- <img alt='WHATSAPP BOT' src='https://img.shields.io/badge/WHATSAPP BOT-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <img alt='BY' src='https://img.shields.io/badge/BY-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <img alt='AJIBADE ADEWALE JOSEPH' src='https://img.shields.io/badge/AJIBADE ADEWALE JOSEPH-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a> <img alt='LICENSE:APACHE LICENSE 2.O' src='https://img.shields.io/badge/LICENSE:APACHE LICENSE 2.O-200?style=for-the-badge&logo=scan&logoColor=cyan&labelColor=black&color=cyan'/></a>
@@ -128,83 +127,43 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🚀 `Deployments`
 
 
-#### DEPLOY ON CODESPACE
+#### DEPLOY TO CODESPACE
 
 1. Click the button below to deploy easily and faster on codespace 
     <br> 
 <a href='https://github.com/codespaces/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
 
-#### DEPLOY ON RENDER
+#### DEPLOY TO RENDER
 
 1. If You don't have an account on Render. Create an account.
     <br>
 <a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
-2. Now Deploy
+2. Make sure that you've uploaded your creds.json file inside session folder before you deploy to render
     <br>
 <a href='https://dashboard.render.com/web/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
-#### DEPLOY TO COOLIFY
 
-11. If You don't have an account on Coolify. Create a account.
-    <br>
-<a href='https://app.coolify.io/register' target="_blank"><img alt='Coolify' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=C' width="96.35" height="28"/></a></p>
-
-12. Now Deploy
-    <br>
-<a href='https://coolify.io/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=C' width="96.35" height="28"/></a></p>
-
-#### DEPLOY TO MONGENIUS
-
-9. If You don't have an account on Mongenius. Create an account.
-    <br>
-<a href='https://studio.mogenius.com/user/registration' target="_blank"><img alt='Mongenius' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
-
-10. Now Deploy
-    <br>
-<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
-
-#### DEPLOY TO OKTETO
-
-5. If You don't have an account on Okteto. Create an account.
-    <br>
-<a href='https://www.okteto.com/pricing/?plan=SaaS' target="_blank"><img alt='Okteto' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
-
-6. Now Deploy
-    <br>
-<a href='https://cloud.okteto.com/login' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
-
-
-## 🎇 `NEW DEPLOYMENT`
-NOW Deploy👇
+## 🎇 `PANELS DEPLOYMENT`
+make sure to have a discord account setup first before using any panel method.
 <br>
-## DEPLOY IN KOYEB    
-<a href='https://suhail-web01.vercel.app/deploy?platform=koyeb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+## DEPLOY ON KATABUMB
+
+<a href='https://katabump.com/en/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
-## `CREDITS` 
-<div><button id="boton" type="button">Baileys - By WhiskeySockets & adiwajshing</button></div>
-<a href="https://github.com/WhiskeySockets/Baileys"><img src="https://github.com/WhiskeySockets.png" width="150" height="150" alt="adiwajshing"/></a>
-
-<a href="https://github.com/salmanytofficial"><img src="https://github.com/salmanytofficial.png" width="250" height="250" alt="Salman Ahmad"/></a>
-  
-**IN RESPECT** - To `salmanytofficial`
-<br>
-`Development , Maintainence , Bot Updates`
-
-
 
 ## 📛 `OWNER` 
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/pW9SKJF/photo-2024-11-01-18-10-35.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://o.uguu.se/lwtBosfb.jpg" width="250" height="250" alt="Wally Jay"/></a>
   
 **WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
 `Developer , Features Enhancer , Code Tester , Maintenance`
 
 ## 📛 `OWNER GF`
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/vXy48KM/photo-2024-11-01-16-34-39.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://n.uguu.se/dLOfdDkE.jpg" width="250" height="250" alt="Wally Jay"/></a>
 
 **MISS BEAUTY** 
 <br>
@@ -212,19 +171,19 @@ NOW Deploy👇
 -------
 
 ## 💑 `COULPLES`
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/z48pqBg/photo-2024-11-01-16-34-28.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://h.uguu.se/EnHTxBsE.jpg" width="250" height="250" alt="Wally Jay"/></a>
 <br>
 
-## 🌈 `Support Us`
+## 🌈 `Contacts`
 - **Mail Us:** <a href='mailto:wallyjay123@gmail.com' target="_blank"><img alt='click here' src='https://img.shields.io/badge/click here-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 - **Join Our Support Group:**
  <p align="center">
    
   ## ``Support Group``
   
-- [`Support Group`](https://chat.whatsapp.com/FTuAbXCgwPLDt96BK7bm5P)
+- [`Support Group`](https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1)
 
-<a aria-label="Join our chats" href="https://wa.me/2348144317152?text=Hi!! Wallyjaytech Sir, I need Your Help" target="_blank">
+<a aria-label="Join our chats" href="https://wa.me/2348144317152?text=Hi!! Wally Jay Sir, I need Your Help" target="_blank">
     <img alt="whatsapp" src="https://img.shields.io/badge/Owner%20Whatsapp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" />
 </p>
 
@@ -248,94 +207,12 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 5. Unarchieve the zip file you uploaded to panel
 6. Open bot folder and move all filea to container by (../)
 7. Now run bot
-8. After 1-2min it show enter number [if you have session id already in the settings js file then no need]
+8. After 1-2min it show enter number [if you have creds.json  already in the session folder then no need of that]
 9. Enter number it will show pair code
-10. Enter pair code in linked device in whatsapp
-11. Bot Connect done now use bot 
+10. Enter pair code in linked device on whatsapp
+11. Bot Connect done now use .menu or any of the prefix you configure in the prefix env inside settings.js
  
 ```
-# Install Manually 👇
-## `Requirements`
-* [Node.js](https://nodejs.org/en/)
-* [Git](https://git-scm.com/downloads)
-* [FFmpeg](https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2020-12-08-13-03/ffmpeg-n4.3.1-26-gca55240b8c-win64-gpl-4.3.zip)
-* [Libwebp](https://developers.google.com/speed/webp/download)
-* Any text editor
-  
-## `Clone Repo & Installation dependencies`
-```bash
-git clone https://github.com/wallyjaytechh/WALLYJAYTECH-MD.git
-cd WALLYJAYTECH-MD
-npm start
-```
-
-## `For Ssh/Ubuntu/Linux`
-```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y bash
-sudo apt-get install -y libwebp
-sudo apt-get install -y git
-sudo apt-get install -y nodejs
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y wget
-sudo apt-get install -y imagemagick
-git clone https://github.com/<your-gitHub-Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm install
-npm start
-```
-
-## `For Termux`
-```bash
-apt update -y && apt upgrade -y && pkg update -y && pkg upgrade -y && pkg install bash -y && pkg install libwebp -y && pkg install git -y && pkg install nodejs -y && pkg install ffmpeg -y && pkg install wget -y && pkg install imagemagick -y && pkg install yarn && termux-setup-storage
-cd /sdcard
-cd bot folder name
-yarn install
-npm start
-```
-
-## `For 24/7 Activation Pm2 (Termux)`
-```bash
-npm i -g pm2 && pm2 start index.js && pm2 save && pm2 logs
-```
-
-## `For 24/7 Activation Re-Execution Pm2 (Termux)`
-```bash
-npm i -g pm2 && pm2 start index.js -f && pm2 save && pm2 logs
-```
-
-
-## `For Github Codespaces`
-```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y bash
-sudo apt-get install -y libwebp
-sudo apt-get install -y git
-sudo apt-get install -y nodejs
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y wget
-sudo apt-get install -y imagemagick
-git clone https://github.com/<your-gitHub-Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm install
-npm start
-```
-
-## `For VPS`
-```bash
-apt install nodejs 
-apt install git 
-apt apt install ffmpeg 
-apt apt install libwebp 
-apt apt install imagrmagick
-apt install bash
-git clone https://github.com/<your gitHub Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm start
-```
-
 
 ## `Reminder`
    
