@@ -150,7 +150,7 @@ make sure to have a discord account setup first before using any panel method.
 <br>
 ## DEPLOY ON KATABUMB
 
-<a href='https://dashboard.katabump.com/login' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+<a href='https://katabump.com/en/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
@@ -176,16 +176,16 @@ make sure to have a discord account setup first before using any panel method.
 <a href="https://github.com/wallyjaytechh"><img src="https://h.uguu.se/EnHTxBsE.jpg" width="250" height="250" alt="Wally Jay"/></a>
 <br>
 
-## 🌈 `Contact`
+## 🌈 `Contacts`
 - **Mail Us:** <a href='mailto:wallyjay123@gmail.com' target="_blank"><img alt='click here' src='https://img.shields.io/badge/click here-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 - **Join Our Support Group:**
  <p align="center">
    
   ## ``Support Group``
   
-- [`Support Group`](https://chat.whatsapp.com/FTuAbXCgwPLDt96BK7bm5P)
+- [`Support Group`](https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1)
 
-<a aria-label="Join our chats" href="https://wa.me/2348144317152?text=Hi!! Wallyjaytech Sir, I need Your Help" target="_blank">
+<a aria-label="Join our chats" href="https://wa.me/2348144317152?text=Hi!! Wally Jay Sir, I need Your Help" target="_blank">
     <img alt="whatsapp" src="https://img.shields.io/badge/Owner%20Whatsapp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" />
 </p>
 
@@ -209,10 +209,10 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 5. Unarchieve the zip file you uploaded to panel
 6. Open bot folder and move all filea to container by (../)
 7. Now run bot
-8. After 1-2min it show enter number [if you have session id already in the settings js file then no need]
+8. After 1-2min it show enter number [if you have creds.json  already in the session folder then no need of that]
 9. Enter number it will show pair code
-10. Enter pair code in linked device in whatsapp
-11. Bot Connect done now use bot 
+10. Enter pair code in linked device on whatsapp
+11. Bot Connect done now use .menu or any of the prefix you configure in the prefix env inside settings.js
  
 ```
 # Install Manually 👇
