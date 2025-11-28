@@ -151,6 +151,20 @@ global.author = settings.author;
 global.channelLink = "https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I";
 global.ytch = "WALLY JAY TECH";
 
+// ADD PLATFORM DETECTION HERE
+function getDeploymentPlatform() {
+    if (process.env.RENDER) {
+        return 'Render.com 🚀';
+    } else if (process.env.CODESPACE_NAME) {
+        return 'GitHub Codespaces 💻';
+    } else if (process.env.PANEL_APP) {
+        return 'Panel ⚡';
+    } else {
+        return 'Local Machine 🖥️';
+    }
+}
+
+global.deploymentPlatform = getDeploymentPlatform();
 // Add this near the top of main.js with other global configurations
 const channelInfo = {
     contextInfo: {
