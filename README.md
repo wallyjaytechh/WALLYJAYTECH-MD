@@ -140,7 +140,7 @@ Click On The Link To Donate ME  Generally All Countries...
     <br>
 <a href='https://dashboard.render.com/register' target="_blank"><img alt='CREATE' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
-2. Now Deploy
+2. Make sure that you've uploaded your creds.json file inside session folder before you deploy to render
     <br>
 <a href='https://dashboard.render.com/web/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
@@ -150,20 +150,22 @@ make sure to have a discord account setup first before using any panel method.
 <br>
 ## DEPLOY ON KATABUMB
 
-<a href='https://dashboard.katabump.com/dashboard/login?platform=katabumb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+<a href='https://dashboard.katabump.com/login' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
 
 ## 📛 `OWNER` 
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/pW9SKJF/photo-2024-11-01-18-10-35.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://o.uguu.se/lwtBosfb.jpg" width="250" height="250" alt="Wally Jay"/></a>
+                                            
+                                            " width="250" height="250" alt="Wally Jay"/></a>
   
 **WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
 `Developer , Features Enhancer , Code Tester , Maintenance`
 
 ## 📛 `OWNER GF`
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/vXy48KM/photo-2024-11-01-16-34-39.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://n.uguu.se/dLOfdDkE.jpg" width="250" height="250" alt="Wally Jay"/></a>
 
 **MISS BEAUTY** 
 <br>
@@ -171,10 +173,10 @@ make sure to have a discord account setup first before using any panel method.
 -------
 
 ## 💑 `COULPLES`
-<a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/z48pqBg/photo-2024-11-01-16-34-28.jpg" width="250" height="250" alt="Wally Jay"/></a>
+<a href="https://github.com/wallyjaytechh"><img src="https://h.uguu.se/EnHTxBsE.jpg" width="250" height="250" alt="Wally Jay"/></a>
 <br>
 
-## 🌈 `Support Us`
+## 🌈 `Contact`
 - **Mail Us:** <a href='mailto:wallyjay123@gmail.com' target="_blank"><img alt='click here' src='https://img.shields.io/badge/click here-100000?style=for-the-badge&logo=scan&logoColor=white&labelColor=black&color=cyan'/></a>
 - **Join Our Support Group:**
  <p align="center">
