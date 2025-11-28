@@ -157,8 +157,6 @@ make sure to have a discord account setup first before using any panel method.
 
 ## 📛 `OWNER` 
 <a href="https://github.com/wallyjaytechh"><img src="https://o.uguu.se/lwtBosfb.jpg" width="250" height="250" alt="Wally Jay"/></a>
-                                            
-                                            " width="250" height="250" alt="Wally Jay"/></a>
   
 **WALLYJAYTECH-MD** - By `Wally Jay`
 <br>
@@ -215,88 +213,6 @@ Misusing the bot may result in a ban from WhatsApp. Use at your own risk.
 11. Bot Connect done now use .menu or any of the prefix you configure in the prefix env inside settings.js
  
 ```
-# Install Manually 👇
-## `Requirements`
-* [Node.js](https://nodejs.org/en/)
-* [Git](https://git-scm.com/downloads)
-* [FFmpeg](https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2020-12-08-13-03/ffmpeg-n4.3.1-26-gca55240b8c-win64-gpl-4.3.zip)
-* [Libwebp](https://developers.google.com/speed/webp/download)
-* Any text editor
-  
-## `Clone Repo & Installation dependencies`
-```bash
-git clone https://github.com/wallyjaytechh/WALLYJAYTECH-MD.git
-cd WALLYJAYTECH-MD
-npm start
-```
-
-## `For Ssh/Ubuntu/Linux`
-```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y bash
-sudo apt-get install -y libwebp
-sudo apt-get install -y git
-sudo apt-get install -y nodejs
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y wget
-sudo apt-get install -y imagemagick
-git clone https://github.com/<your-gitHub-Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm install
-npm start
-```
-
-## `For Termux`
-```bash
-apt update -y && apt upgrade -y && pkg update -y && pkg upgrade -y && pkg install bash -y && pkg install libwebp -y && pkg install git -y && pkg install nodejs -y && pkg install ffmpeg -y && pkg install wget -y && pkg install imagemagick -y && pkg install yarn && termux-setup-storage
-cd /sdcard
-cd bot folder name
-yarn install
-npm start
-```
-
-## `For 24/7 Activation Pm2 (Termux)`
-```bash
-npm i -g pm2 && pm2 start index.js && pm2 save && pm2 logs
-```
-
-## `For 24/7 Activation Re-Execution Pm2 (Termux)`
-```bash
-npm i -g pm2 && pm2 start index.js -f && pm2 save && pm2 logs
-```
-
-
-## `For Github Codespaces`
-```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y bash
-sudo apt-get install -y libwebp
-sudo apt-get install -y git
-sudo apt-get install -y nodejs
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y wget
-sudo apt-get install -y imagemagick
-git clone https://github.com/<your-gitHub-Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm install
-npm start
-```
-
-## `For VPS`
-```bash
-apt install nodejs 
-apt install git 
-apt apt install ffmpeg 
-apt apt install libwebp 
-apt apt install imagrmagick
-apt install bash
-git clone https://github.com/<your gitHub Username>/WALLYJAYTECH-MD
-cd WALLYJAYTECH-MD
-npm start
-```
-
 
 ## `Reminder`
    
