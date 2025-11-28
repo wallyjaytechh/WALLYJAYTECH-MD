@@ -146,10 +146,9 @@ Click On The Link To Donate ME  Generally All Countries...
 
 
 ## 🎇 `PANELS DEPLOYMENT`
-NOW Deploy👇
 <br>
-## DEPLOY ON  
-<a href='https://suhail-web01.vercel.app/deploy?platform=koyeb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+## DEPLOY ON KATABUMB
+<a href="https://dashboard.katabump.com/dashboard/login?platform=katabumb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
