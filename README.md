@@ -127,14 +127,14 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🚀 `Deployments`
 
 
-#### DEPLOY ON CODESPACE
+#### DEPLOY TO CODESPACE
 
 1. Click the button below to deploy easily and faster on codespace 
     <br> 
 <a href='https://github.com/codespaces/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
 
-#### DEPLOY ON RENDER
+#### DEPLOY TO RENDER
 
 1. If You don't have an account on Render. Create an account.
     <br>
@@ -144,41 +144,11 @@ Click On The Link To Donate ME  Generally All Countries...
     <br>
 <a href='https://dashboard.render.com/web/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=render&logoColor=black' width="96.35" height="28"/></a></p>
 
-#### DEPLOY TO COOLIFY
 
-11. If You don't have an account on Coolify. Create a account.
-    <br>
-<a href='https://app.coolify.io/register' target="_blank"><img alt='Coolify' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=C' width="96.35" height="28"/></a></p>
-
-12. Now Deploy
-    <br>
-<a href='https://coolify.io/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=C' width="96.35" height="28"/></a></p>
-
-#### DEPLOY TO MONGENIUS
-
-9. If You don't have an account on Mongenius. Create an account.
-    <br>
-<a href='https://studio.mogenius.com/user/registration' target="_blank"><img alt='Mongenius' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
-
-10. Now Deploy
-    <br>
-<a href='https://railway.app/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=genius' width="96.35" height="28"/></a></p>
-
-#### DEPLOY TO OKTETO
-
-5. If You don't have an account on Okteto. Create an account.
-    <br>
-<a href='https://www.okteto.com/pricing/?plan=SaaS' target="_blank"><img alt='Okteto' src='https://img.shields.io/badge/CREATE-h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
-
-6. Now Deploy
-    <br>
-<a href='https://cloud.okteto.com/login' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=opera' width="96.35" height="28"/></a></p>
-
-
-## 🎇 `NEW DEPLOYMENT`
+## 🎇 `PANELS DEPLOYMENT`
 NOW Deploy👇
 <br>
-## DEPLOY IN KOYEB    
+## DEPLOY ON  
 <a href='https://suhail-web01.vercel.app/deploy?platform=koyeb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/koyeb-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
