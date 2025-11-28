@@ -149,7 +149,8 @@ Click On The Link To Donate ME  Generally All Countries...
 make sure to have a discord account setup first before using any panel method.
 <br>
 ## DEPLOY ON KATABUMB
-<a href="https://dashboard.katabump.com/dashboard/login?platform=katabumb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+
+<a href='https://dashboard.katabump.com/dashboard/login?platform=katabumb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
