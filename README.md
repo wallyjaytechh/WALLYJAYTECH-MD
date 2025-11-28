@@ -146,23 +146,13 @@ Click On The Link To Donate ME  Generally All Countries...
 
 
 ## 🎇 `PANELS DEPLOYMENT`
+make sure to have a discord account setup first before using any panel method.
 <br>
 ## DEPLOY ON KATABUMB
 <a href="https://dashboard.katabump.com/dashboard/login?platform=katabumb' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
 
 
    
-## `CREDITS` 
-<div><button id="boton" type="button">Baileys - By WhiskeySockets & adiwajshing</button></div>
-<a href="https://github.com/WhiskeySockets/Baileys"><img src="https://github.com/WhiskeySockets.png" width="150" height="150" alt="adiwajshing"/></a>
-
-<a href="https://github.com/salmanytofficial"><img src="https://github.com/salmanytofficial.png" width="250" height="250" alt="Salman Ahmad"/></a>
-  
-**IN RESPECT** - To `salmanytofficial`
-<br>
-`Development , Maintainence , Bot Updates`
-
-
 
 ## 📛 `OWNER` 
 <a href="https://github.com/wallyjaytechh"><img src="https://i.ibb.co/pW9SKJF/photo-2024-11-01-18-10-35.jpg" width="250" height="250" alt="Wally Jay"/></a>
