@@ -127,14 +127,14 @@ Click On The Link To Donate ME  Generally All Countries...
 ## 🚀 `Deployments`
 
 
-#### DEPLOY TO CODESPACE
+#### DEPLOY ON CODESPACE
 
-1. Click the button below to deploy easily and faster and codespace 
+1. Click the button below to deploy easily and faster on codespace 
     <br> 
 <a href='https://github.com/codespaces/new' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/DEPLOY -h?color=cyan&style=for-the-badge&logo=codespace' width="96.35" height="28"/></a></p>
 
 
-#### DEPLOY TO RENDER
+#### DEPLOY ON RENDER
 
 1. If You don't have an account on Render. Create an account.
     <br>
