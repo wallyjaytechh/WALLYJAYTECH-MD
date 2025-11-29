@@ -40,6 +40,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { execute: unavailableCommand, maintainUnavailablePresence: maintainUnavailable } = require('./commands/unavailable');
 const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
@@ -299,6 +300,14 @@ await handleAutoreact(sock, message);
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
+     // Maintain unavailable presence (every 2 minutes)
+setInterval(async () => {
+    try {
+        await maintainUnavailable(sock);
+    } catch (error) {
+        console.error('Unavailable presence error:', error);
+    }
+}, 120000); // Every 2 minutes
   // Live time bio update (every minute - safe frequency)
 setInterval(async () => {
     try {
@@ -798,6 +807,9 @@ case userMessage.startsWith('.getjid @'):
 
                 await antibadwordCommand(sock, chatId, message, senderId, isSenderAdmin);
                 break;
+          case userMessage.startsWith('.unavailable'):
+    await unavailableCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
             case userMessage.startsWith('.chatbot'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
