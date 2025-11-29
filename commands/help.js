@@ -341,6 +341,7 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}autoreact <on/off>*
 ║ *🔺${prefix}autostatus react <on/off>*
 ║ *🔺${prefix}autoread <on/off>*
+║ *🔺${prefix}antiforeign*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
