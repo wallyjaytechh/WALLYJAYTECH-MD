@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { leaveCommand } = require('./commands/leave');
 const { blockCommand, unblockCommand, handleBlockedUser } = require('./commands/block');
 const { pollCommand, voteCommand } = require('./commands/poll');
 const { joinCommand } = require('./commands/join');
@@ -807,6 +808,10 @@ case userMessage.startsWith('.getjid @'):
     await blockCommand(sock, chatId, message);
     commandExecuted = true;
     break;
+         case userMessage === '.leave':
+    await leaveCommand(sock, chatId, message);
+    commandExecuted = true;
+    break; 
 case userMessage.startsWith('.unblock'):
     await unblockCommand(sock, chatId, message);
     commandExecuted = true;
