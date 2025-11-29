@@ -15,6 +15,11 @@ function getDeploymentPlatform() {
     }
 }
 
+// 🔥 NEW: FUNCTION TO GET PREFIX FROM SETTINGS
+function getPrefix() {
+    return settings.prefix || '.'; // Use settings prefix, fallback to '.'
+}
+
 // 🔥 NEW: FUNCTION TO DETECT BOT MODE (PUBLIC/PRIVATE)
 function getBotMode() {
     try {
@@ -271,6 +276,9 @@ async function helpCommand(sock, chatId, message) {
     // 🔥 NEW: Get ACTUAL bot mode (public/private)
     const currentBotMode = getBotMode();
     
+    // 🔥 NEW: Get prefix from settings
+    const prefix = getPrefix();
+    
     // Get time based on settings timezone
     const getLocalizedTime = () => {
         try {
@@ -306,7 +314,7 @@ ${greeting.greeting}! Here's your menu:
 ║   *👑 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]*
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
-║   *📥 Prefix: [ ${settings.prefix} ]*
+║   *📥 Prefix: [ ${prefix} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -323,27 +331,27 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║  *🔒OWNER CMDS🔒*
 ║
-║ *🔺.autobio*
-║ *🔺.mode <public/private>*
-║ *🔺.unavailable*
-║ *🔺.clearsession*
-║ *🔺.antidelete*
-║ *🔺.tempfile*
-║ *🔺.cleartmp*
-║ *🔺.update*
-║ *🔺.sudo*
-║ *🔺.settings*
-║ *🔺.setpp <reply to image>*
-║ *🔺.autoreact <on/off>*
-║ *🔺.autostatus <on/off>*
-║ *🔺.autostatus react <on/off>*
-║ *🔺.autotyping <on/off>*
-║ *🔺.autoread <on/off>*
-║ *🔺.anticall <on/off>*
-║ *🔺.pmblocker <on/off/status>*
-║ *🔺.pmblocker setmsg <text>*
-║ *🔺.setmention <reply to msg>*
-║ *🔺.mention <on/off>*
+║ *🔺${prefix}autobio*
+║ *🔺${prefix}mode <public/private>*
+║ *🔺${prefix}unavailable*
+║ *🔺${prefix}clearsession*
+║ *🔺${prefix}antidelete*
+║ *🔺${prefix}tempfile*
+║ *🔺${prefix}cleartmp*
+║ *🔺${prefix}update*
+║ *🔺${prefix}sudo*
+║ *🔺${prefix}settings*
+║ *🔺${prefix}setpp <reply to image>*
+║ *🔺${prefix}autoreact <on/off>*
+║ *🔺${prefix}autostatus <on/off>*
+║ *🔺${prefix}autostatus react <on/off>*
+║ *🔺${prefix}autotyping <on/off>*
+║ *🔺${prefix}autoread <on/off>*
+║ *🔺${prefix}anticall <on/off>*
+║ *🔺${prefix}pmblocker <on/off/status>*
+║ *🔺${prefix}pmblocker setmsg <text>*
+║ *🔺${prefix}setmention <reply to msg>*
+║ *🔺${prefix}mention <on/off>*
 ║
 ╚═══════════════════╝
 
@@ -351,7 +359,7 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *📩WHATSAPP CMDS📩*
 ║
-║ *🟤.clear*
+║ *🟤${prefix}clear*
 ║
 ╚═══════════════════╝
 
@@ -359,36 +367,36 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦*
 ║
-║ *🔹.ban @user*
-║ *🔹.unban @user*
-║ *🔹.promote @user*
-║ *🔹.demote @user*
-║ *🔹.mute <minutes>*
-║ *🔹.unmute*
-║ *🔹.delete*
-║ *🔹.kick @user*
-║ *🔹.ship*
-║ *🔹.stupid @user <text>*
-║ *🔹.warnings @user*
-║ *🔹.warn @user*
-║ *🔹.antilink*
-║ *🔹.antibadword*
-║ *🔹.antibot*
-║ *🔹.groupinfo*
-║ *🔹.admins*
-║ *🔹.jid*
-║ *🔹.tag <message>*
-║ *🔹.tagall*
-║ *🔹.tagnotadmin*
-║ *🔹.hidetag <message>*
-║ *🔹.chatbot*
-║ *🔹.resetlink*
-║ *🔹.antitag <on/off>*
-║ *🔹.welcome <on/off>*
-║ *🔹.goodbye <on/off>*
-║ *🔹.setgdesc <description>*
-║ *🔹.setgname <new name>*
-║ *🔹.setgpp (reply to image)*
+║ *🔹${prefix}ban @user*
+║ *🔹${prefix}unban @user*
+║ *🔹${prefix}promote @user*
+║ *🔹${prefix}demote @user*
+║ *🔹${prefix}mute <minutes>*
+║ *🔹${prefix}unmute*
+║ *🔹${prefix}delete*
+║ *🔹${prefix}kick @user*
+║ *🔹${prefix}ship*
+║ *🔹${prefix}stupid @user <text>*
+║ *🔹${prefix}warnings @user*
+║ *🔹${prefix}warn @user*
+║ *🔹${prefix}antilink*
+║ *🔹${prefix}antibadword*
+║ *🔹${prefix}antibot*
+║ *🔹${prefix}groupinfo*
+║ *🔹${prefix}admins*
+║ *🔹${prefix}jid*
+║ *🔹${prefix}tag <message>*
+║ *🔹${prefix}tagall*
+║ *🔹${prefix}tagnotadmin*
+║ *🔹${prefix}hidetag <message>*
+║ *🔹${prefix}chatbot*
+║ *🔹${prefix}resetlink*
+║ *🔹${prefix}antitag <on/off>*
+║ *🔹${prefix}welcome <on/off>*
+║ *🔹${prefix}goodbye <on/off>*
+║ *🔹${prefix}setgdesc <description>*
+║ *🔹${prefix}setgname <new name>*
+║ *🔹${prefix}setgpp (reply to image)*
 ║
 ╚═══════════════════╝
 
@@ -396,18 +404,18 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *🎨STICKER CMDS🎨*
 ║
-║ *🔻.blur <image>*
-║ *🔻.simage <reply to sticker>*
-║ *🔻.sticker <reply to img or vid>*
-║ *🔻.removebg*
-║ *🔻.remini*
-║ *🔻.crop <reply to image>*
-║ *🔻.tgsticker <Link>*
-║ *🔻.meme*
-║ *🔻.take <packname>*
-║ *🔻.emojimix <emj1>+<emj2>*
-║ *🔻.igs <insta link>*
-║ *🔻.igsc <insta link>*
+║ *🔻${prefix}blur <image>*
+║ *🔻${prefix}simage <reply to sticker>*
+║ *🔻${prefix}sticker <reply to img or vid>*
+║ *🔻${prefix}removebg*
+║ *🔻${prefix}remini*
+║ *🔻${prefix}crop <reply to image>*
+║ *🔻${prefix}tgsticker <Link>*
+║ *🔻${prefix}meme*
+║ *🔻${prefix}take <packname>*
+║ *🔻${prefix}emojimix <emj1>+<emj2>*
+║ *🔻${prefix}igs <insta link>*
+║ *🔻${prefix}igsc <insta link>*
 ║
 ╚═══════════════════╝  
 
@@ -415,12 +423,12 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║  *🖼️PIES CMDS🖼️*
 ║
-║ *▫️.pies <country>*
-║ *▫️.china*
-║ *▫️.indonesia*
-║ *▫️.japan*
-║ *▫️.korea*
-║ *▫️.hijab*
+║ *▫️${prefix}pies <country>*
+║ *▫️${prefix}china*
+║ *▫️${prefix}indonesia*
+║ *▫️${prefix}japan*
+║ *▫️${prefix}korea*
+║ *▫️${prefix}hijab*
 ║
 ╚═══════════════════╝
 
@@ -428,17 +436,17 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║  *🎮GAME CMDS🎮*
 ║
-║ *◾️.tictactoe @user*
-║ *◾️.hangman*
-║ *◾️.guess <letter for hangman>*
-║ *◾️.trivia*
-║ *◾️.answer <answer for trivia>*
-║ *◾️.truth*
-║ *◾️.dare*
-║ *◾️.connect4 @user* 🔥 NEW
-║ *◾️.drop 1-7* 🔥 NEW
-║ *◾️.accept* 🔥 NEW
-║ *◾️.surrender* 🔥 NEW
+║ *◾️${prefix}tictactoe @user*
+║ *◾️${prefix}hangman*
+║ *◾️${prefix}guess <letter for hangman>*
+║ *◾️${prefix}trivia*
+║ *◾️${prefix}answer <answer for trivia>*
+║ *◾️${prefix}truth*
+║ *◾️${prefix}dare*
+║ *◾️${prefix}connect4 @user*
+║ *◾️${prefix}drop 1-7*
+║ *◾️${prefix}accept*
+║ *◾️${prefix}surrender*
 ║
 ╚═══════════════════╝
 
@@ -446,11 +454,11 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║   *🧠AI CMDS🧠*
 ║
-║ *♦️.gpt <question>*
-║ *♦️.gemini <question>*
-║ *♦️.imagine <prompt>*
-║ *♦️.flux <prompt>*
-║ *♦️.sora <prompt>*
+║ *♦️${prefix}gpt <question>*
+║ *♦️${prefix}gemini <question>*
+║ *♦️${prefix}imagine <prompt>*
+║ *♦️${prefix}flux <prompt>*
+║ *♦️${prefix}sora <prompt>*
 ║
 ╚═══════════════════╝
 
@@ -458,15 +466,15 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║  *😁FUN CMDS😁*
 ║
-║ *🟢.compliment @user*
-║ *🟢.insult @user*
-║ *🟢.flirt*
-║ *🟢.poet*
-║ *🟢.goodnight*
-║ *🟢.roseday*
-║ *🟢.character @user*
-║ *🟢.wasted @user*
-║ *🟢.simp @user*
+║ *🟢${prefix}compliment @user*
+║ *🟢${prefix}insult @user*
+║ *🟢${prefix}flirt*
+║ *🟢${prefix}poet*
+║ *🟢${prefix}goodnight*
+║ *🟢${prefix}roseday*
+║ *🟢${prefix}character @user*
+║ *🟢${prefix}wasted @user*
+║ *🟢${prefix}simp @user*
 ║
 ╚═══════════════════╝
 
@@ -474,24 +482,24 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *🔤EPHOTO CMDS🔤*
 ║
-║ *🔴.metallic <text>*
-║ *🔴.ice <text>*
-║ *🔴.snow <text>*
-║ *🔴.impressive <text>*
-║ *🔴.matrix <text>*
-║ *🔴.light <text>*
-║ *🔴.neon <text>*
-║ *🔴.devil <text>*
-║ *🔴.purple <text>*
-║ *🔴.thunder <text>*
-║ *🔴.leaves <text>*
-║ *🔴.1917 <text>*
-║ *🔴.arena <text>*
-║ *🔴.hacker <text>*
-║ *🔴.sand <text>*
-║ *🔴.blackpink <text>*
-║ *🔴.glitch <text>*
-║ *🔴.fire <text>*
+║ *🔴${prefix}metallic <text>*
+║ *🔴${prefix}ice <text>*
+║ *🔴${prefix}snow <text>*
+║ *🔴${prefix}impressive <text>*
+║ *🔴${prefix}matrix <text>*
+║ *🔴${prefix}light <text>*
+║ *🔴${prefix}neon <text>*
+║ *🔴${prefix}devil <text>*
+║ *🔴${prefix}purple <text>*
+║ *🔴${prefix}thunder <text>*
+║ *🔴${prefix}leaves <text>*
+║ *🔴${prefix}1917 <text>*
+║ *🔴${prefix}arena <text>*
+║ *🔴${prefix}hacker <text>*
+║ *🔴${prefix}sand <text>*
+║ *🔴${prefix}blackpink <text>*
+║ *🔴${prefix}glitch <text>*
+║ *🔴${prefix}fire <text>*
 ║
 ╚═══════════════════╝
 
@@ -499,14 +507,14 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *📥DOWNLOAD CMDS📥*
 ║
-║ *🟠.play <song name>*
-║ *🟠.song <song name>*
-║ *🟠.spotify <query>*
-║ *🟠.instagram <link>*
-║ *🟠.facebook <link>*
-║ *🟠.tiktok <link>*
-║ *🟠.video <song name>*
-║ *🟠.ytmp4 <Link>*
+║ *🟠${prefix}play <song name>*
+║ *🟠${prefix}song <song name>*
+║ *🟠${prefix}spotify <query>*
+║ *🟠${prefix}instagram <link>*
+║ *🟠${prefix}facebook <link>*
+║ *🟠${prefix}tiktok <link>*
+║ *🟠${prefix}video <song name>*
+║ *🟠${prefix}ytmp4 <Link>*
 ║
 ╚═══════════════════╝
 
@@ -514,24 +522,24 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *🧩MISC CMDS🧩*
 ║
-║ *🟡.heart*
-║ *🟡.horny*
-║ *🟡.circle*
-║ *🟡.lgbt*
-║ *🟡.lolice*
-║ *🟡.tonikawa*
-║ *🟡.its-so-stupid*
-║ *🟡.namecard*
-║ *🟡.oogway*
-║ *🟡.oogway2*
-║ *🟡.tweet*
-║ *🟡.ytcomment*
-║ *🟡.comrade*
-║ *🟡.gay* 
-║ *🟡.glass* 
-║ *🟡.jail*
-║ *🟡.passed*
-║ *🟡.triggered*
+║ *🟡${prefix}heart*
+║ *🟡${prefix}horny*
+║ *🟡${prefix}circle*
+║ *🟡${prefix}lgbt*
+║ *🟡${prefix}lolice*
+║ *🟡${prefix}tonikawa*
+║ *🟡${prefix}its-so-stupid*
+║ *🟡${prefix}namecard*
+║ *🟡${prefix}oogway*
+║ *🟡${prefix}oogway2*
+║ *🟡${prefix}tweet*
+║ *🟡${prefix}ytcomment*
+║ *🟡${prefix}comrade*
+║ *🟡${prefix}gay* 
+║ *🟡${prefix}glass* 
+║ *🟡${prefix}jail*
+║ *🟡${prefix}passed*
+║ *🟡${prefix}triggered*
 ║
 ╚═══════════════════╝
 
@@ -539,14 +547,14 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║  *🦹‍♀️ANIME CMDS🦹‍♀️*
 ║
-║ *🟣.nom* 
-║ *🟣.poke* 
-║ *🟣.cry* 
-║ *🟣.kiss*
-║ *🟣.pat* 
-║ *🟣.hug*
-║ *🟣.wink*
-║ *🟣.facepalm*
+║ *🟣${prefix}nom* 
+║ *🟣${prefix}poke* 
+║ *🟣${prefix}cry* 
+║ *🟣${prefix}kiss*
+║ *🟣${prefix}pat* 
+║ *🟣${prefix}hug*
+║ *🟣${prefix}wink*
+║ *🟣${prefix}facepalm*
 ║
 ╚═══════════════════╝
 
@@ -554,11 +562,11 @@ ${greeting.greeting}! Here's your menu:
 ║                   
 ║ *💻GITHUB CMDS💻*
 ║
-║ *🔵.git*
-║ *🔵.github*
-║ *🔵.sc*
-║ *🔵.script*
-║ *🔵.repo*
+║ *🔵${prefix}git*
+║ *🔵${prefix}github*
+║ *🔵${prefix}sc*
+║ *🔵${prefix}script*
+║ *🔵${prefix}repo*
 ║
 ╚═══════════════════╝
 
@@ -566,24 +574,24 @@ ${greeting.greeting}! Here's your menu:
 ║                        
 ║ *🌐GENERAL CMDS🌐*   
 ║                        
-║ *🔸.help or .menu*      
-║ *🔸.ping*            
-║ *🔸.alive*              
-║ *🔸.tts <text>*          
-║ *🔸.owner*               
-║ *🔸.joke*                
-║ *🔸.quote*               
-║ *🔸.fact*                
-║ *🔸.weather <city>*      
-║ *🔸.news*                
-║ *🔸.attp <text>*         
-║ *🔸.lyrics <songtitle>*
-║ *🔸.8ball <question>*    
-║ *🔸.vv*                  
-║ *🔸.trt <text> <lang>*  
-║ *🔸.ss <link>*          
-║ *🔸.url*        
-║ *🔸.getjid* 
+║ *🔸${prefix}help or ${prefix}menu*      
+║ *🔸${prefix}ping*            
+║ *🔸${prefix}alive*              
+║ *🔸${prefix}tts <text>*          
+║ *🔸${prefix}owner*               
+║ *🔸${prefix}joke*                
+║ *🔸${prefix}quote*               
+║ *🔸${prefix}fact*                
+║ *🔸${prefix}weather <city>*      
+║ *🔸${prefix}news*                
+║ *🔸${prefix}attp <text>*         
+║ *🔸${prefix}lyrics <songtitle>*
+║ *🔸${prefix}8ball <question>*    
+║ *🔸${prefix}vv*                  
+║ *🔸${prefix}trt <text> <lang>*  
+║ *🔸${prefix}ss <link>*          
+║ *🔸${prefix}url*        
+║ *🔸${prefix}getjid* 
 ║                       
 ╚═══════════════════╝ 
 
