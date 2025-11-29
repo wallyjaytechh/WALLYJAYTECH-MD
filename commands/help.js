@@ -15,6 +15,124 @@ function getDeploymentPlatform() {
     }
 }
 
+// 🔥 NEW: TIME-BASED GREETINGS FUNCTION
+function getTimeBasedGreeting() {
+    try {
+        const now = new Date();
+        const timezone = settings.timezone || 'Africa/Lagos';
+        
+        // Format time in the bot's timezone
+        const timeString = now.toLocaleString('en-US', {
+            timeZone: timezone,
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const hour = now.toLocaleString('en-US', {
+            timeZone: timezone,
+            hour12: false,
+            hour: '2-digit'
+        });
+        
+        const hourNum = parseInt(hour);
+        
+        if (hourNum >= 5 && hourNum < 12) {
+            return {
+                greeting: '🌅 Good Morning',
+                emoji: '🌅',
+                time: timeString,
+                message: 'Have a wonderful day ahead!'
+            };
+        } else if (hourNum >= 12 && hourNum < 17) {
+            return {
+                greeting: '☀️ Good Afternoon', 
+                emoji: '☀️',
+                time: timeString,
+                message: 'Hope you\'re having a great day!'
+            };
+        } else if (hourNum >= 17 && hourNum < 21) {
+            return {
+                greeting: '🌇 Good Evening',
+                emoji: '🌇',
+                time: timeString,
+                message: 'Hope you had a productive day!'
+            };
+        } else {
+            return {
+                greeting: '🌙 Good Night',
+                emoji: '🌙',
+                time: timeString,
+                message: 'Have a peaceful night!'
+            };
+        }
+    } catch (error) {
+        // Fallback if timezone detection fails
+        return {
+            greeting: '👋 Hello',
+            emoji: '👋',
+            time: new Date().toLocaleTimeString(),
+            message: 'Nice to see you!'
+        };
+    }
+}
+
+// 🔥 NEW: GET DAY OF WEEK WITH EMOJI
+function getDayWithEmoji() {
+    try {
+        const now = new Date();
+        const timezone = settings.timezone || 'Africa/Lagos';
+        
+        const day = now.toLocaleString('en-US', {
+            timeZone: timezone,
+            weekday: 'long'
+        });
+        
+        const dayEmojis = {
+            'Monday': '📅',
+            'Tuesday': '🔥',
+            'Wednesday': '🌎',
+            'Thursday': '🚀',
+            'Friday': '🎉',
+            'Saturday': '🌈',
+            'Sunday': '☀️'
+        };
+        
+        return {
+            day: day,
+            emoji: dayEmojis[day] || '📅'
+        };
+    } catch (error) {
+        return {
+            day: 'Today',
+            emoji: '📅'
+        };
+    }
+}
+
+// 🔥 NEW: FUNCTION TO GET USER NAME
+async function getUserName(sock, userId, message) {
+    try {
+        // Try to get the user's name from the message
+        const pushName = message.pushName || message.key?.pushName;
+        if (pushName) {
+            return pushName;
+        }
+        
+        // Try to get from sock (WhatsApp API)
+        const name = await sock.getName(userId);
+        if (name && name !== userId) {
+            return name;
+        }
+        
+        // Fallback: use the phone number without @s.whatsapp.net
+        return userId.split('@')[0] || 'User';
+    } catch (error) {
+        console.error('Error getting user name:', error);
+        return userId.split('@')[0] || 'User';
+    }
+}
+
 // Function to dynamically scan main.js and count ALL commands from switch cases
 function countTotalCommands() {
     try {
@@ -121,6 +239,14 @@ function extractSwitchCaseBlock(content) {
 }
 
 async function helpCommand(sock, chatId, message) {
+    // 🔥 NEW: Get user information
+    const senderId = message.key.participant || message.key.remoteJid;
+    const userName = await getUserName(sock, senderId, message);
+    
+    // 🔥 NEW: Get time-based greeting and day info
+    const greeting = getTimeBasedGreeting();
+    const dayInfo = getDayWithEmoji();
+    
     // Get time based on settings timezone
     const getLocalizedTime = () => {
         try {
@@ -144,18 +270,25 @@ async function helpCommand(sock, chatId, message) {
     const totalCommands = countTotalCommands();
     
     const helpMessage = `
+👋 *Hello @${userName}!* ${greeting.message}
+
+${greeting.greeting}! Here's your menu:
+
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
+║   *👤 User: [ @${userName} ]*
 ║   *🤖 BotName: [ ${settings.botName || 'WALLYJAYTECH-MD'} ]*  
 ║   *🧠 Version: [ ${settings.version || '1.0.0'} ]*
-║   *👤 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]*
+║   *👑 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]*
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${settings.prefix} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
+║   *⏰ Current Time: [ ${greeting.time} ]*
+║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
 ║   *💻 Mode: [ ${settings.commandMode} ]*
 ║   *📊 Total Commands: [ ${totalCommands} ]*
-║   *📅 Date: [ ${getLocalizedTime()} ]*
+║   *📅 Full Date: [ ${getLocalizedTime()} ]*
 ║   *📡 Deployed Platform: [ ${getDeploymentPlatform()} ]*
 ║
 ╚═══════════════════╝
@@ -300,6 +433,10 @@ async function helpCommand(sock, chatId, message) {
 ║ *◾️.answer <answer for trivia>*
 ║ *◾️.truth*
 ║ *◾️.dare*
+║ *◾️.connect4 @user* 🔥 NEW
+║ *◾️.drop 1-7* 🔥 NEW
+║ *◾️.accept* 🔥 NEW
+║ *◾️.surrender* 🔥 NEW
 ║
 ╚═══════════════════╝
 
@@ -427,11 +564,13 @@ async function helpCommand(sock, chatId, message) {
 
 *📊 Total Commands: ${totalCommands}*
 
+*${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*
+
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        // 1. Send menu first (with all commands)
-        const menuSent = await sendMenu(sock, chatId, message, helpMessage);
+        // 1. Send menu first (with all commands) - WITH MENTION
+        const menuSent = await sendMenu(sock, chatId, message, helpMessage, senderId);
         
         if (menuSent) {
             // 2. Add a small delay before audio
@@ -446,6 +585,7 @@ async function helpCommand(sock, chatId, message) {
         // Fallback to text only if everything fails
         await sock.sendMessage(chatId, { 
             text: helpMessage,
+            mentions: [senderId], // Mention the user
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
@@ -459,11 +599,8 @@ async function helpCommand(sock, chatId, message) {
     }
 }
 
-// ... keep the sendMenu and sendMenuAudio functions exactly as they were ...
-
-
-// Function to send the menu
-async function sendMenu(sock, chatId, message, helpMessage) {
+// 🔥 UPDATED: Function to send the menu WITH MENTION
+async function sendMenu(sock, chatId, message, helpMessage, userId) {
     try {
         // Define media options - randomly choose between image and video
         const mediaOptions = [
@@ -491,6 +628,7 @@ async function sendMenu(sock, chatId, message, helpMessage) {
                 await sock.sendMessage(chatId, {
                     image: mediaBuffer,
                     caption: selectedMedia.caption,
+                    mentions: [userId], // 🔥 MENTION THE USER
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -501,12 +639,13 @@ async function sendMenu(sock, chatId, message, helpMessage) {
                         }
                     }
                 }, { quoted: message });
-                console.log('✅ Menu sent as image');
+                console.log(`✅ Menu sent as image to @${userId.split('@')[0]}`);
                 return true;
             } else if (selectedMedia.type === 'video') {
                 await sock.sendMessage(chatId, {
                     video: mediaBuffer,
                     caption: selectedMedia.caption,
+                    mentions: [userId], // 🔥 MENTION THE USER
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -517,7 +656,7 @@ async function sendMenu(sock, chatId, message, helpMessage) {
                         }
                     }
                 }, { quoted: message });
-                console.log('✅ Menu sent as video');
+                console.log(`✅ Menu sent as video to @${userId.split('@')[0]}`);
                 return true;
             }
         } else {
@@ -530,6 +669,7 @@ async function sendMenu(sock, chatId, message, helpMessage) {
                 await sock.sendMessage(chatId, {
                     image: imageBuffer,
                     caption: helpMessage,
+                    mentions: [userId], // 🔥 MENTION THE USER
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -542,9 +682,10 @@ async function sendMenu(sock, chatId, message, helpMessage) {
                 }, { quoted: message });
                 return true;
             } else {
-                // Final fallback to text only
+                // Final fallback to text only WITH MENTION
                 await sock.sendMessage(chatId, { 
                     text: helpMessage,
+                    mentions: [userId], // 🔥 MENTION THE USER
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -588,4 +729,3 @@ async function sendMenuAudio(sock, chatId, message) {
 }
 
 module.exports = helpCommand;
- 
