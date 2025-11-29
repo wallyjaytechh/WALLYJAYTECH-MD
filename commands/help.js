@@ -2,7 +2,7 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 
-// ADD THIS PLATFORM DETECTION FUNCTION
+// Platform detection function
 function getDeploymentPlatform() {
     if (process.env.RENDER) {
         return 'Render';
@@ -15,12 +15,12 @@ function getDeploymentPlatform() {
     }
 }
 
-// 🔥 NEW: FUNCTION TO GET PREFIX FROM SETTINGS
+// Get prefix from settings
 function getPrefix() {
-    return settings.prefix || '.'; // Use settings prefix, fallback to '.'
+    return settings.prefix || '.';
 }
 
-// 🔥 NEW: FUNCTION TO DETECT BOT MODE (PUBLIC/PRIVATE)
+// Detect bot mode (public/private)
 function getBotMode() {
     try {
         const messageCountPath = path.join(__dirname, '../data/messageCount.json');
@@ -33,21 +33,19 @@ function getBotMode() {
             }
         }
         
-        // Fallback to settings
         return settings.commandMode === 'public' ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
     } catch (error) {
         console.error('Error detecting bot mode:', error);
-        return 'PUBLIC 🌐'; // Default fallback
+        return 'PUBLIC 🌐';
     }
 }
 
-// 🔥 NEW: TIME-BASED GREETINGS FUNCTION
+// Time-based greetings
 function getTimeBasedGreeting() {
     try {
         const now = new Date();
         const timezone = settings.timezone || 'Africa/Lagos';
         
-        // Format time in the bot's timezone
         const timeString = now.toLocaleString('en-US', {
             timeZone: timezone,
             hour12: true,
@@ -93,7 +91,6 @@ function getTimeBasedGreeting() {
             };
         }
     } catch (error) {
-        // Fallback if timezone detection fails
         return {
             greeting: '👋 Hello',
             emoji: '👋',
@@ -103,7 +100,7 @@ function getTimeBasedGreeting() {
     }
 }
 
-// 🔥 NEW: GET DAY OF WEEK WITH EMOJI
+// Get day of week with emoji
 function getDayWithEmoji() {
     try {
         const now = new Date();
@@ -136,22 +133,19 @@ function getDayWithEmoji() {
     }
 }
 
-// 🔥 NEW: FUNCTION TO GET USER NAME
+// Get user name
 async function getUserName(sock, userId, message) {
     try {
-        // Try to get the user's name from the message
         const pushName = message.pushName || message.key?.pushName;
         if (pushName) {
             return pushName;
         }
         
-        // Try to get from sock (WhatsApp API)
         const name = await sock.getName(userId);
         if (name && name !== userId) {
             return name;
         }
         
-        // Fallback: use the phone number without @s.whatsapp.net
         return userId.split('@')[0] || 'User';
     } catch (error) {
         console.error('Error getting user name:', error);
@@ -159,33 +153,108 @@ async function getUserName(sock, userId, message) {
     }
 }
 
-// Function to dynamically scan main.js and count ALL commands from switch cases
+// Track active users
+function getActiveUsersStats() {
+    try {
+        const activeUsersPath = path.join(__dirname, '../data/activeUsers.json');
+        
+        if (!fs.existsSync(activeUsersPath)) {
+            return {
+                active: 0,
+                total: 0,
+                platforms: {}
+            };
+        }
+        
+        const data = JSON.parse(fs.readFileSync(activeUsersPath, 'utf8'));
+        
+        const now = Date.now();
+        const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+        
+        const activeUsers = Object.values(data.users || {}).filter(user => 
+            user.lastActive > twentyFourHoursAgo
+        ).length;
+        
+        return {
+            active: activeUsers,
+            total: Object.keys(data.users || {}).length,
+            platforms: data.platforms || {}
+        };
+    } catch (error) {
+        console.error('Error getting active users stats:', error);
+        return {
+            active: 0,
+            total: 0,
+            platforms: {}
+        };
+    }
+}
+
+// Update user activity
+function updateUserActivity(userId, platform) {
+    try {
+        const activeUsersPath = path.join(__dirname, '../data/activeUsers.json');
+        let data = { users: {}, platforms: {} };
+        
+        if (fs.existsSync(activeUsersPath)) {
+            data = JSON.parse(fs.readFileSync(activeUsersPath, 'utf8'));
+        }
+        
+        data.users[userId] = {
+            lastActive: Date.now(),
+            firstSeen: data.users[userId]?.firstSeen || Date.now()
+        };
+        
+        if (platform) {
+            data.platforms[platform] = (data.platforms[platform] || 0) + 1;
+        }
+        
+        const dataDir = path.dirname(activeUsersPath);
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(activeUsersPath, JSON.stringify(data, null, 2));
+        
+    } catch (error) {
+        console.error('Error updating user activity:', error);
+    }
+}
+
+// Get platform emoji
+function getPlatformEmoji(platform) {
+    const platformEmojis = {
+        'Render': '☁️',
+        'Codespaces': '💻', 
+        'Panel': '🛠️',
+        'Local Machine': '🏠',
+        'Unknown': '❓'
+    };
+    return platformEmojis[platform] || '❓';
+}
+
+// Count total commands
 function countTotalCommands() {
     try {
         const mainJsPath = path.join(__dirname, '../main.js');
         
         if (!fs.existsSync(mainJsPath)) {
-            console.log('❌ main.js not found, using fallback count');
             return 157;
         }
         
         const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
         const commands = new Set();
         
-        // Extract the main switch case block
         const switchCaseBlock = extractSwitchCaseBlock(mainJsContent);
         
         if (!switchCaseBlock) {
-            console.log('❌ Could not find switch case block, using fallback');
             return 157;
         }
         
-        // Pattern to match ALL case statements in the switch block
         const casePattern = /case\s+(?:userMessage\s*===?\s*['"`]\.([^'"`]+)['"`]|userMessage\s*\.startsWith\(\s*['"`]\.([^'"`]+)['"`]\s*\)|userMessage\s*\.includes\(\s*['"`]\.([^'"`]+)['"`]\s*\)|userMessage\s*\.match\(\s*['"`]\.([^'"`]+)['"`]\s*\))/g;
         
         let match;
         while ((match = casePattern.exec(switchCaseBlock)) !== null) {
-            // Check all capture groups (1-4) for command matches
             for (let i = 1; i <= 4; i++) {
                 if (match[i] && match[i].trim()) {
                     const command = match[i].trim();
@@ -194,47 +263,19 @@ function countTotalCommands() {
             }
         }
         
-        // Also look for command arrays
-        const arrayPatterns = [
-            /adminCommands\s*=\s*\[([^\]]+)\]/g,
-            /ownerCommands\s*=\s*\[([^\]]+)\]/g,
-            /const\s+\w+Commands\s*=\s*\[([^\]]+)\]/g
-        ];
-        
-        arrayPatterns.forEach(pattern => {
-            let arrayMatch;
-            while ((arrayMatch = pattern.exec(mainJsContent)) !== null) {
-                if (arrayMatch[1]) {
-                    const arrayCommands = arrayMatch[1].split(',')
-                        .map(cmd => cmd.trim().replace(/['"`]/g, ''))
-                        .filter(cmd => cmd && cmd.startsWith('.'));
-                    
-                    arrayCommands.forEach(cmd => {
-                        const cleanCmd = cmd.replace(/^\./, '').trim();
-                        if (cleanCmd) commands.add(cleanCmd);
-                    });
-                }
-            }
-        });
-        
         const totalCount = commands.size;
-        console.log(`🔄 Dynamic scan found ${totalCount} commands in main.js`);
-        
-        // Log some commands for verification
-        const commandArray = Array.from(commands).sort();
-        console.log(`📋 Sample commands: ${commandArray.slice(0, 10).join(', ')}${commandArray.length > 10 ? '...' : ''}`);
+        console.log(`🔄 Dynamic scan found ${totalCount} commands`);
         
         return totalCount;
         
     } catch (error) {
-        console.error('❌ Error dynamically scanning commands:', error);
-        return 157; // Fallback count
+        console.error('Error counting commands:', error);
+        return 157;
     }
 }
 
-// Helper function to extract the main switch case block
+// Extract switch case block
 function extractSwitchCaseBlock(content) {
-    // Look for the main switch statement
     const switchStart = content.indexOf('switch (true) {');
     if (switchStart === -1) return null;
     
@@ -264,22 +305,20 @@ function extractSwitchCaseBlock(content) {
     return switchContent;
 }
 
+// Main help command
 async function helpCommand(sock, chatId, message) {
-    // 🔥 NEW: Get user information
     const senderId = message.key.participant || message.key.remoteJid;
     const userName = await getUserName(sock, senderId, message);
     
-    // 🔥 NEW: Get time-based greeting and day info
     const greeting = getTimeBasedGreeting();
     const dayInfo = getDayWithEmoji();
-    
-    // 🔥 NEW: Get ACTUAL bot mode (public/private)
     const currentBotMode = getBotMode();
-    
-    // 🔥 NEW: Get prefix from settings
     const prefix = getPrefix();
     
-    // Get time based on settings timezone
+    const userPlatform = getDeploymentPlatform();
+    updateUserActivity(senderId, userPlatform);
+    const userStats = getActiveUsersStats();
+    
     const getLocalizedTime = () => {
         try {
             return new Date().toLocaleString('en-US', {
@@ -293,13 +332,15 @@ async function helpCommand(sock, chatId, message) {
                 year: 'numeric'
             });
         } catch (error) {
-            // Fallback if timezone is invalid
             return new Date().toLocaleString();
         }
     };
 
-    // Get total commands count - DYNAMIC SCAN from main.js
     const totalCommands = countTotalCommands();
+    
+    const platformStatsText = Object.entries(userStats.platforms)
+        .map(([platform, count]) => `║     ${getPlatformEmoji(platform)} ${platform}: ${count}`)
+        .join('\n') || '║     📊 No data yet';
     
     const helpMessage = `
 👋 *Hello @${userName}!* ${greeting.message}
@@ -322,6 +363,10 @@ ${greeting.greeting}! Here's your menu:
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 FullDate: [ ${getLocalizedTime()} ]*
 ║   *📡 Deployed Platform: [ ${getDeploymentPlatform()} ]*
+║   *👥 Active Users (24h): [ ${userStats.active} ]*
+║   *📊 Total Users: [ ${userStats.total} ]*
+║   *🌐 Deployment Platforms:*
+${platformStatsText}
 ║
 ╚═══════════════════╝
 
@@ -420,7 +465,7 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔻${prefix}igs <insta link>*
 ║ *🔻${prefix}igsc <insta link>*
 ║
-╚═══════════════════╝  
+╚═══════════════════╝
 
 ╔═══════════════════╗
 ║
@@ -446,10 +491,6 @@ ${greeting.greeting}! Here's your menu:
 ║ *◾️${prefix}answer <answer for trivia>*
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
-║ *◾️${prefix}connect4 @user*
-║ *◾️${prefix}drop 1-7*
-║ *◾️${prefix}accept*
-║ *◾️${prefix}surrender*
 ║
 ╚═══════════════════╝
 
@@ -598,7 +639,6 @@ ${greeting.greeting}! Here's your menu:
 ║                       
 ╚═══════════════════╝ 
 
-
     🟡 *Copyright wallyjaytech 2025* 🟡
 
 *📊 Total Commands: ${totalCommands}*
@@ -608,23 +648,18 @@ ${greeting.greeting}! Here's your menu:
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        // 1. Send menu first (with all commands) - WITH MENTION
         const menuSent = await sendMenu(sock, chatId, message, helpMessage, senderId);
         
         if (menuSent) {
-            // 2. Add a small delay before audio
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // 3. Send audio LAST
             await sendMenuAudio(sock, chatId, message);
         }
 
     } catch (error) {
         console.error('Error in help command:', error);
-        // Fallback to text only if everything fails
         await sock.sendMessage(chatId, { 
             text: helpMessage,
-            mentions: [senderId], // Mention the user
+            mentions: [senderId],
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
@@ -638,10 +673,9 @@ ${greeting.greeting}! Here's your menu:
     }
 }
 
-// 🔥 UPDATED: Function to send the menu WITH MENTION
+// Send menu with media
 async function sendMenu(sock, chatId, message, helpMessage, userId) {
     try {
-        // Define media options - randomly choose between image and video
         const mediaOptions = [
             {
                 type: 'image',
@@ -655,7 +689,6 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
             }
         ];
 
-        // Randomly select media type (50% image, 50% video)
         const selectedMedia = mediaOptions[Math.floor(Math.random() * mediaOptions.length)];
         
         console.log(`🎲 Selected media type: ${selectedMedia.type}`);
@@ -667,7 +700,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                 await sock.sendMessage(chatId, {
                     image: mediaBuffer,
                     caption: selectedMedia.caption,
-                    mentions: [userId], // 🔥 MENTION THE USER
+                    mentions: [userId],
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -684,7 +717,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                 await sock.sendMessage(chatId, {
                     video: mediaBuffer,
                     caption: selectedMedia.caption,
-                    mentions: [userId], // 🔥 MENTION THE USER
+                    mentions: [userId],
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -699,44 +732,21 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                 return true;
             }
         } else {
-            // If selected media doesn't exist, fallback to image
-            console.log(`❌ ${selectedMedia.type} not found, using image fallback`);
-            const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
-            
-            if (fs.existsSync(imagePath)) {
-                const imageBuffer = fs.readFileSync(imagePath);
-                await sock.sendMessage(chatId, {
-                    image: imageBuffer,
-                    caption: helpMessage,
-                    mentions: [userId], // 🔥 MENTION THE USER
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }, { quoted: message });
-                return true;
-            } else {
-                // Final fallback to text only WITH MENTION
-                await sock.sendMessage(chatId, { 
-                    text: helpMessage,
-                    mentions: [userId], // 🔥 MENTION THE USER
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        } 
-                    }
-                });
-                return true;
-            }
+            console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
+            await sock.sendMessage(chatId, { 
+                text: helpMessage,
+                mentions: [userId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    } 
+                }
+            });
+            return true;
         }
     } catch (error) {
         console.error('Error sending menu:', error);
@@ -744,7 +754,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
     }
 }
 
-// Function to send menu audio (LAST)
+// Send menu audio
 async function sendMenuAudio(sock, chatId, message) {
     try {
         const audioPath = path.join(__dirname, '../assets/menu_audio.mp3');
@@ -755,7 +765,7 @@ async function sendMenuAudio(sock, chatId, message) {
                 mimetype: 'audio/mpeg',
                 ptt: false
             }, { quoted: message });
-            console.log('🎵 Menu audio sent LAST');
+            console.log('🎵 Menu audio sent');
             return true;
         } else {
             console.log('❌ Menu audio not found, skipping audio');
