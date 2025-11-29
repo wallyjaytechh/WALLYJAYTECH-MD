@@ -806,17 +806,19 @@ case userMessage.startsWith('.getjid @'):
                 }
                 break;
           case userMessage.startsWith('.getpp'):
+    // Check if mentioned someone or replying to get their PP
     let targetJid = null;
     
-    // Simple target detection logic
+    // Check for mentions
     const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
     if (mentionedJids.length > 0) {
         targetJid = mentionedJids[0];
     }
     
-    const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
-    if (quotedMessage && quotedMessage.participant) {
-        targetJid = quotedMessage.participant;
+    // Check if replying to a message to get that user's PP
+    const ppQuotedContext = message.message?.extendedTextMessage?.contextInfo;
+    if (ppQuotedContext && ppQuotedContext.participant) {
+        targetJid = ppQuotedContext.participant;
     }
     
     await getProfilePicture(sock, chatId, message, targetJid);
