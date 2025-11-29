@@ -370,6 +370,7 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔹.warn @user*
 ║ *🔹.antilink*
 ║ *🔹.antibadword*
+║ *🔹.antibot*
 ║ *🔹.groupinfo*
 ║ *🔹.admins*
 ║ *🔹.jid*
