@@ -7,7 +7,8 @@ const autobioData = {
     enabled: false,
     watermark: "WALLYJAYTECH-MD",
     lastUpdate: 0,
-    timezone: settings.timezone || 'Africa/Lagos' // Use same timezone as menu
+    timezone: settings.timezone || 'Africa/Lagos',
+    templateIndex: 0
 };
 
 // Load/save autobio data
@@ -21,6 +22,7 @@ function loadAutobioData() {
             autobioData.watermark = data.watermark || "WALLYJAYTECH-MD";
             autobioData.lastUpdate = data.lastUpdate || 0;
             autobioData.timezone = data.timezone || settings.timezone || 'Africa/Lagos';
+            autobioData.templateIndex = data.templateIndex || 0;
         }
     } catch (error) {
         console.error('❌ Error loading autobio data:', error);
@@ -33,7 +35,8 @@ function saveAutobioData() {
             enabled: autobioData.enabled,
             watermark: autobioData.watermark,
             lastUpdate: autobioData.lastUpdate,
-            timezone: autobioData.timezone
+            timezone: autobioData.timezone,
+            templateIndex: autobioData.templateIndex
         };
         
         // Ensure data directory exists
@@ -43,7 +46,6 @@ function saveAutobioData() {
         }
         
         fs.writeFileSync(AUTOBIO_FILE, JSON.stringify(data, null, 2));
-        console.log('✅ Autobio data saved');
     } catch (error) {
         console.error('❌ Error saving autobio data:', error);
     }
@@ -53,15 +55,15 @@ function saveAutobioData() {
 loadAutobioData();
 
 class SimpleAutoBio {
-    // Get current time with seconds IN YOUR TIMEZONE
+    // Get current time with seconds IN YOUR TIMEZONE (12-hour format)
     static getCurrentTime() {
         try {
             const now = new Date();
             
-            // Format in your timezone with seconds
+            // Format in your timezone with seconds (12-hour format)
             const timeString = now.toLocaleTimeString('en-US', {
                 timeZone: autobioData.timezone,
-                hour12: false,
+                hour12: true,
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
@@ -69,12 +71,15 @@ class SimpleAutoBio {
             
             return timeString;
         } catch (error) {
-            // Fallback to UTC if timezone fails
+            // Fallback to UTC if timezone fails (12-hour format)
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
+            let hours = now.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`;
+            return `${hours}:${minutes}:${seconds} ${ampm}`;
         }
     }
     
@@ -104,28 +109,22 @@ class SimpleAutoBio {
         }
     }
     
-    // Generate bio text
+    // Generate bio text with smooth sequential seconds
     static generateBio() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
         const watermark = autobioData.watermark;
         
-        // Choose from simple templates (rotate every minute)
+        // Simple templates (no rotation based on seconds)
         const templates = [
             `⏰ ${time} | ${watermark}`,
             `🕒 ${time} | ${watermark}`,
             `📱 ${time} | ${watermark}`,
-            `🤖 ${time} | ${watermark}`,
-            `${greeting} ${time} | ${watermark}`,
-            `⏳ ${time} | ${watermark}`,
-            `🚀 ${time} | ${watermark}`,
-            `💫 ${time} | ${watermark}`
+            `🤖 ${time} | ${watermark}`
         ];
         
-        // Rotate through templates based on seconds (changes every 8 seconds)
-        const seconds = new Date().getSeconds();
-        const templateIndex = Math.floor(seconds / 8) % templates.length;
-        return templates[templateIndex];
+        // Use current template index (changes only every minute, not every second)
+        return templates[autobioData.templateIndex];
     }
     
     // Update bio
@@ -141,11 +140,20 @@ class SimpleAutoBio {
             await sock.updateProfileStatus(finalBio);
             
             const now = Date.now();
-            if (now - autobioData.lastUpdate > 10000) { // Log only every 10 seconds to avoid spam
-                console.log(`✅ Bio updated: "${finalBio}"`);
-                autobioData.lastUpdate = now;
+            // Update template index every minute (not every second)
+            const currentMinute = new Date().getMinutes();
+            const previousMinute = autobioData.lastUpdate ? new Date(autobioData.lastUpdate).getMinutes() : -1;
+            
+            if (currentMinute !== previousMinute) {
+                autobioData.templateIndex = (autobioData.templateIndex + 1) % 4;
                 saveAutobioData();
             }
+            
+            if (now - autobioData.lastUpdate > 30000) { // Log only every 30 seconds to avoid spam
+                console.log(`✅ Bio updated: "${finalBio}"`);
+            }
+            
+            autobioData.lastUpdate = now;
             
         } catch (error) {
             console.error('❌ Error updating bio:', error);
@@ -183,10 +191,10 @@ module.exports = {
                     // Update bio immediately
                     await SimpleAutoBio.updateBio(sock);
                     
-                    const currentTime = SimpleAutoBio.getCurrentTime();
+                    const currentTimeOn = SimpleAutoBio.getCurrentTime();
                     
                     await sock.sendMessage(chatId, {
-                        text: `✅ *Live Time Bio ENABLED*\n\nYour bio will now show live time with seconds!\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTime}\n🏷️ Watermark: ${autobioData.watermark}\n\nBio updates every second with correct time!`
+                        text: `✅ *Live Time Bio ENABLED*\n\nYour bio will now show live time with seconds!\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTimeOn}\n🏷️ Watermark: ${autobioData.watermark}\n\nBio updates every second with smooth time!`
                     }, { quoted: message });
                     break;
                     
@@ -211,9 +219,9 @@ module.exports = {
                 case 'update':
                 case 'now':
                     await SimpleAutoBio.updateBio(sock);
-                    const currentTime = SimpleAutoBio.getCurrentTime();
+                    const currentTimeUpdate = SimpleAutoBio.getCurrentTime();
                     await sock.sendMessage(chatId, {
-                        text: `✅ *Bio Updated!*\n\nCurrent time: ${currentTime}\nYour bio has been updated.`
+                        text: `✅ *Bio Updated!*\n\nCurrent time: ${currentTimeUpdate}\nYour bio has been updated.`
                     }, { quoted: message });
                     break;
                     
@@ -254,8 +262,9 @@ module.exports = {
                             }, { quoted: message });
                         }
                     } else {
+                        const currentTimeZone = SimpleAutoBio.getCurrentTime();
                         await sock.sendMessage(chatId, {
-                            text: `🌍 *Current Timezone:* ${autobioData.timezone}\n⏰ Current Time: ${SimpleAutoBio.getCurrentTime()}\n\nTo change: .autobio timezone Africa/Lagos`
+                            text: `🌍 *Current Timezone:* ${autobioData.timezone}\n⏰ Current Time: ${currentTimeZone}\n\nTo change: .autobio timezone Africa/Lagos`
                         }, { quoted: message });
                     }
                     break;
@@ -265,21 +274,21 @@ module.exports = {
                     const status = autobioData.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
                     const lastUpdate = autobioData.lastUpdate ? 
                         new Date(autobioData.lastUpdate).toLocaleTimeString() : 'Never';
-                    const currentTime = SimpleAutoBio.getCurrentTime();
+                    const currentTimeStatus = SimpleAutoBio.getCurrentTime();
                     
                     await sock.sendMessage(chatId, {
-                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTime}\nWatermark: ${autobioData.watermark}\nLast Update: ${lastUpdate}\n\n*Commands:*\n• .autobio on/off - Enable/disable\n• .autobio update - Update now\n• .autobio watermark <text> - Change watermark\n• .autobio timezone <zone> - Change timezone\n• .autobio status - Show status`
+                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTimeStatus}\nWatermark: ${autobioData.watermark}\nTemplate: ${autobioData.templateIndex + 1}/4\nLast Update: ${lastUpdate}\n\n*Commands:*\n• .autobio on/off - Enable/disable\n• .autobio update - Update now\n• .autobio watermark <text> - Change watermark\n• .autobio timezone <zone> - Change timezone\n• .autobio status - Show status`
                     }, { quoted: message });
                     break;
                     
                 case 'demo':
                     // Show sample bios
-                    const currentTime = SimpleAutoBio.getCurrentTime();
+                    const currentTimeDemo = SimpleAutoBio.getCurrentTime();
                     const samples = [
-                        `⏰ ${currentTime} | ${autobioData.watermark}`,
-                        `🕒 ${currentTime} | ${autobioData.watermark}`,
-                        `📱 ${currentTime} | ${autobioData.watermark}`,
-                        `${SimpleAutoBio.getGreeting()} ${currentTime} | ${autobioData.watermark}`
+                        `⏰ ${currentTimeDemo} | ${autobioData.watermark}`,
+                        `🕒 ${currentTimeDemo} | ${autobioData.watermark}`,
+                        `📱 ${currentTimeDemo} | ${autobioData.watermark}`,
+                        `🤖 ${currentTimeDemo} | ${autobioData.watermark}`
                     ];
                     
                     await sock.sendMessage(chatId, {
@@ -288,9 +297,9 @@ module.exports = {
                     break;
                     
                 default:
-                    const currentTime = SimpleAutoBio.getCurrentTime();
+                    const currentTimeDefault = SimpleAutoBio.getCurrentTime();
                     await sock.sendMessage(chatId, {
-                        text: `⏰ *Live Time Bio*\n\nLive bio with seconds in your timezone!\n\n*Current Time:* ${currentTime}\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n\n*Usage:* .autobio <command>\n\n*Commands:*\n• on/off - Enable/disable live bio\n• update - Update bio immediately\n• watermark <text> - Set your watermark\n• timezone <zone> - Change timezone\n• status - Show system status\n• demo - Show sample formats\n\n*Current Status:* ${autobioData.enabled ? '🟢 Enabled' : '🔴 Disabled'}`
+                        text: `⏰ *Live Time Bio*\n\nLive bio with seconds in your timezone!\n\n*Current Time:* ${currentTimeDefault}\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n\n*Usage:* .autobio <command>\n\n*Commands:*\n• on/off - Enable/disable live bio\n• update - Update bio immediately\n• watermark <text> - Set your watermark\n• timezone <zone> - Change timezone\n• status - Show system status\n• demo - Show sample formats\n\n*Current Status:* ${autobioData.enabled ? '🟢 Enabled' : '🔴 Disabled'}`
                     }, { quoted: message });
                     break;
             }
