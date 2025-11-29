@@ -121,25 +121,29 @@ class SimpleAutoBio {
             `⏰ ${time} | ${watermark}`,
             `🕒 ${time} | ${watermark}`,
             `📱 ${time} | ${watermark}`,
-            `🤖 ${time} | ${watermark}`
+            `🤖 ${time} | ${watermark}`,
+            `🚀 ${time} | ${watermark}`,
+            `💫 ${time} | ${watermark}`,
+            `⭐ ${time} | ${watermark}`,
+            `🎯 ${time} | ${watermark}`
         ];
         
-        // Rotate template every 2 minutes to avoid being too repetitive
-        const currentMinute = Math.floor(Date.now() / 60000); // Get current minute
-        const templateIndex = currentMinute % templates.length;
+        // Rotate template every 5 minutes
+        const current5MinuteBlock = Math.floor(Date.now() / 300000); // 5 minutes in milliseconds
+        const templateIndex = current5MinuteBlock % templates.length;
         
         return templates[templateIndex];
     }
     
-    // Update bio with rate limiting
+    // Update bio with minute-by-minute rate limiting
     static async updateBio(sock) {
         if (!autobioData.enabled) return;
         
         const now = Date.now();
         const timeSinceLastUpdate = now - autobioData.lastUpdate;
         
-        // Rate limiting: Only update every 30 seconds to avoid WhatsApp blocks
-        if (timeSinceLastUpdate < 30000) { // 30 seconds
+        // Rate limiting: Only update every minute to avoid WhatsApp blocks
+        if (timeSinceLastUpdate < 60000) { // 1 minute
             return;
         }
         
@@ -162,8 +166,8 @@ class SimpleAutoBio {
             
             // If we hit rate limit, wait longer before next update
             if (error.message.includes('rate-overlimit') || error.data === 429) {
-                console.log('⚠️ Rate limit hit, waiting 2 minutes before next update');
-                autobioData.lastUpdate = now + 90000; // Wait 1.5 minutes
+                console.log('⚠️ Rate limit hit, waiting 5 minutes before next update');
+                autobioData.lastUpdate = now + 300000; // Wait 5 minutes
                 saveAutobioData();
             }
         }
@@ -172,7 +176,7 @@ class SimpleAutoBio {
 
 module.exports = {
     name: 'autobio',
-    description: 'Live time bio with seconds counting',
+    description: 'Live time bio with minute updates',
     
     async execute(sock, chatId, message, args) {
         try {
@@ -204,7 +208,7 @@ module.exports = {
                     const currentTimeOn = SimpleAutoBio.getCurrentTime();
                     
                     await sock.sendMessage(chatId, {
-                        text: `✅ *Live Time Bio ENABLED*\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTimeOn}\n🏷️ Watermark: ${autobioData.watermark}\n\n📱 *Rate Limited:* Updates every 30 seconds\n🔄 *Total Updates:* ${autobioData.updateCount}`
+                        text: `✅ *Live Time Bio ENABLED*\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTimeOn}\n🏷️ Watermark: ${autobioData.watermark}\n\n📱 *Update Frequency:* Every minute\n🔄 *Total Updates:* ${autobioData.updateCount}`
                     }, { quoted: message });
                     break;
                     
@@ -284,11 +288,11 @@ module.exports = {
                         new Date(autobioData.lastUpdate).toLocaleTimeString() : 'Never';
                     const currentTimeStatus = SimpleAutoBio.getCurrentTime();
                     const nextUpdate = autobioData.lastUpdate ? 
-                        `Next update in ${Math.max(0, Math.floor((30000 - (Date.now() - autobioData.lastUpdate)) / 1000))}s` : 
+                        `Next update in ${Math.max(0, Math.floor((60000 - (Date.now() - autobioData.lastUpdate)) / 1000))}s` : 
                         'Next update: Soon';
                     
                     await sock.sendMessage(chatId, {
-                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTimeStatus}\nWatermark: ${autobioData.watermark}\nLast Update: ${lastUpdate}\nTotal Updates: ${autobioData.updateCount}\n${nextUpdate}\n\n📱 *Rate Limit:* Every 30 seconds\n🔄 *Template Rotation:* Every 2 minutes`
+                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTimeStatus}\nWatermark: ${autobioData.watermark}\nLast Update: ${lastUpdate}\nTotal Updates: ${autobioData.updateCount}\n${nextUpdate}\n\n📱 *Update Frequency:* Every minute\n🔄 *Template Rotation:* Every 5 minutes`
                     }, { quoted: message });
                     break;
                     
@@ -298,18 +302,19 @@ module.exports = {
                         `⏰ ${currentTimeDemo} | ${autobioData.watermark}`,
                         `🕒 ${currentTimeDemo} | ${autobioData.watermark}`,
                         `📱 ${currentTimeDemo} | ${autobioData.watermark}`,
-                        `🤖 ${currentTimeDemo} | ${autobioData.watermark}`
+                        `🤖 ${currentTimeDemo} | ${autobioData.watermark}`,
+                        `🚀 ${currentTimeDemo} | ${autobioData.watermark}`
                     ];
                     
                     await sock.sendMessage(chatId, {
-                        text: `🎯 *Sample Bio Formats:*\n\n${samples.join('\n')}\n\n📱 *How it works:*\n• Updates every 30 seconds\n• Shows live seconds in "last updated"\n• Works on both iOS & Android\n• Timezone: ${autobioData.timezone}`
+                        text: `🎯 *Sample Bio Formats:*\n\n${samples.join('\n')}\n\n📱 *How it works:*\n• Updates every minute\n• Shows live time in "last updated"\n• Works on both iOS & Android\n• Timezone: ${autobioData.timezone}\n• Template rotates every 5 minutes`
                     }, { quoted: message });
                     break;
                     
                 default:
                     const currentTimeDefault = SimpleAutoBio.getCurrentTime();
                     await sock.sendMessage(chatId, {
-                        text: `⏰ *Live Time Bio*\n\n*Current Time:* ${currentTimeDefault}\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n*Total Updates:* ${autobioData.updateCount}\n\n📱 *Platforms:* iOS & Android\n🔄 *Updates:* Every 30 seconds (rate limited)\n\n*Commands:*\n• on/off - Enable/disable\n• update - Update now\n• watermark <text> - Change watermark\n• timezone <zone> - Change timezone\n• status - Show status\n• demo - Show info`
+                        text: `⏰ *Live Time Bio*\n\n*Current Time:* ${currentTimeDefault}\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n*Total Updates:* ${autobioData.updateCount}\n\n📱 *Platforms:* iOS & Android\n🔄 *Updates:* Every minute (safe frequency)\n\n*Commands:*\n• on/off - Enable/disable\n• update - Update now\n• watermark <text> - Change watermark\n• timezone <zone> - Change timezone\n• status - Show status\n• demo - Show info`
                     }, { quoted: message });
                     break;
             }
@@ -322,7 +327,7 @@ module.exports = {
         }
     },
     
-    // Function to be called every 30 seconds from main.js
+    // Function to be called every minute from main.js
     async updateBioIfNeeded(sock) {
         await SimpleAutoBio.updateBio(sock);
     }
