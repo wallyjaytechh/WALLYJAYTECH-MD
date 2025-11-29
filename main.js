@@ -43,7 +43,8 @@ const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./comman
 // Command imports
 const { getProfilePicture } = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
-const { blockCommand, unblockCommand, handleBlockedUser } = require('./commands/block');
+const blockCommand = require('./commands/block');
+const unblockCommand = require('./commands/unblock');
 const { pollCommand, voteCommand } = require('./commands/poll');
 const { joinCommand } = require('./commands/join');
 const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
