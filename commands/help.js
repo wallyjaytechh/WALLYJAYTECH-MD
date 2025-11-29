@@ -337,6 +337,7 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}autorecord*
 ║ *🔺${prefix}autotyping*
 ║ *🔺${prefix}autorecordtype*
+║ *🔺${prefix}autostatus <on/off>*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
@@ -346,7 +347,6 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}settings*
 ║ *🔺${prefix}setpp <reply to image>*
 ║ *🔺${prefix}autoreact <on/off>*
-║ *🔺${prefix}autostatus <on/off>*
 ║ *🔺${prefix}autostatus react <on/off>*
 ║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}anticall <on/off>*
