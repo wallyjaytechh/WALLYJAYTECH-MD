@@ -387,6 +387,8 @@ ${platformStatsText}
 ║ *🔺${prefix}autostatus react <on/off>*
 ║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}antiforeign*
+║ *🔺${prefix}join*
+║ *🔺${prefix}poll/${prefix}vote*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
