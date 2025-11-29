@@ -325,6 +325,7 @@ ${greeting.greeting}! Here's your menu:
 ║
 ║ *🔺.autobio*
 ║ *🔺.mode <public/private>*
+║ *🔺.unavailable*
 ║ *🔺.clearsession*
 ║ *🔺.antidelete*
 ║ *🔺.tempfile*
