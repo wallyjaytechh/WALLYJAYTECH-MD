@@ -1,93 +1,79 @@
-const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
 
-async function getProfilePicture(sock, chatId, message, targetJid = null) {
+async function getppCommand(sock, chatId, message) {
     try {
-        // Determine the target JID
-        const jidToGet = targetJid || chatId;
-        const isGroup = jidToGet.endsWith('@g.us');
-        
-        // Show typing indicator
         await sock.sendPresenceUpdate('composing', chatId);
         
-        let profilePictureUrl;
+        const isGroup = chatId.endsWith('@g.us');
         
-        if (isGroup) {
-            // Get group profile picture
-            try {
-                const groupMetadata = await sock.groupMetadata(jidToGet);
-                profilePictureUrl = await sock.profilePictureUrl(jidToGet, 'image');
-                
-                await sock.sendMessage(chatId, {
-                    text: `📷 *Group Profile Picture*\n\n🏷️ *Group:* ${groupMetadata.subject}\n👥 *Participants:* ${groupMetadata.participants.length}\n🆔 *Group JID:* ${jidToGet}`,
-                    ...global.channelInfo
-                }, { quoted: message });
-                
-            } catch (error) {
-                if (error.message.includes('404') || error.message.includes('not found')) {
-                    return await sock.sendMessage(chatId, {
-                        text: '❌ This group does not have a profile picture set.',
-                        ...global.channelInfo
-                    }, { quoted: message });
-                }
-                throw error;
-            }
-        } else {
-            // Get user profile picture
-            try {
-                profilePictureUrl = await sock.profilePictureUrl(jidToGet, 'image');
-                const contact = await sock.contact.getContact(jidToGet, sock);
-                const userName = contact?.name || contact?.pushname || 'User';
-                
-                await sock.sendMessage(chatId, {
-                    text: `📷 *Profile Picture*\n\n👤 *User:* ${userName}\n🆔 *JID:* ${jidToGet}`,
-                    ...global.channelInfo
-                }, { quoted: message });
-                
-            } catch (error) {
-                if (error.message.includes('404') || error.message.includes('not found')) {
-                    return await sock.sendMessage(chatId, {
-                        text: '❌ This user does not have a profile picture set.',
-                        ...global.channelInfo
-                    }, { quoted: message });
-                }
-                throw error;
-            }
-        }
+        // Get profile picture URL
+        const ppUrl = await sock.profilePictureUrl(chatId, 'image');
         
-        // Download and send the profile picture
-        if (profilePictureUrl) {
-            const response = await axios.get(profilePictureUrl, { responseType: 'arraybuffer' });
-            const imageBuffer = Buffer.from(response.data, 'binary');
-            
-            await sock.sendMessage(chatId, {
-                image: imageBuffer,
-                caption: `🖼️ ${isGroup ? 'Group' : 'User'} Profile Picture`,
-                ...global.channelInfo
+        if (!ppUrl) {
+            return await sock.sendMessage(chatId, {
+                text: '❌ No profile picture found for this chat.',
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
             }, { quoted: message });
         }
         
-    } catch (error) {
-        console.error('Error in getProfilePicture:', error);
+        // Download the image
+        const response = await axios.get(ppUrl, { responseType: 'arraybuffer' });
+        const imageBuffer = Buffer.from(response.data, 'binary');
         
-        let errorMessage = '❌ Failed to get profile picture. ';
+        // Send the image
+        await sock.sendMessage(chatId, {
+            image: imageBuffer,
+            caption: `📷 ${isGroup ? 'Group' : 'User'} Profile Picture`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        }, { quoted: message });
+        
+    } catch (error) {
+        console.error('Error in getpp command:', error);
         
         if (error.message.includes('404') || error.message.includes('not found')) {
-            errorMessage += 'No profile picture found.';
-        } else if (error.message.includes('401') || error.message.includes('unauthorized')) {
-            errorMessage += 'Access denied.';
+            await sock.sendMessage(chatId, {
+                text: '❌ No profile picture found for this chat.',
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            }, { quoted: message });
         } else {
-            errorMessage += 'Please try again later.';
+            await sock.sendMessage(chatId, {
+                text: '❌ Failed to get profile picture. Please try again.',
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            }, { quoted: message });
         }
-        
-        await sock.sendMessage(chatId, {
-            text: errorMessage,
-            ...global.channelInfo
-        }, { quoted: message });
     }
 }
 
-module.exports = {
-    getProfilePicture
-};
+module.exports = getppCommand;
