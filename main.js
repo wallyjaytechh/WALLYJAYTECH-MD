@@ -40,6 +40,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
 const { execute: unavailableCommand, maintainUnavailablePresence: maintainUnavailable } = require('./commands/unavailable');
 const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
@@ -339,6 +340,8 @@ if (await handleAntibotDetection(sock, chatId, message)) {
             // Show typing indicator if autotyping is enabled
             await handleAutotypingForMessage(sock, chatId, userMessage);
 
+         // Replace any existing autorecord line with:
+await handleAutorecordForMessage(sock, chatId, userMessage);
             if (isGroup) {
                 // Always run moderation features (antitag) regardless of mode
                 await handleTagDetection(sock, chatId, message, senderId);
@@ -790,6 +793,9 @@ case userMessage.startsWith('.getjid @'):
             case userMessage === '.repo':
                 await githubCommand(sock, chatId, message);
                 break;
+case userMessage.startsWith('.autorecord'):
+    await autorecordCommand(sock, chatId, message);
+    break;
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
