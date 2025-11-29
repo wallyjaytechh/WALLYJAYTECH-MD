@@ -261,8 +261,11 @@ if (!isGroup && !message.key.fromMe) {
     const wasBlocked = await handleAntiforeign(sock, chatId, message);
     if (wasBlocked) return; // Stop processing if blocked
 }
-        // Read bot mode once; don't
-      early-return so moderation can still run in private mode
+        // Only log command usage
+        if (userMessage.startsWith('.')) {
+            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        }
+        // Read bot mode once; don't early-return so moderation can still run in private mode
         let isPublic = true;
         try {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
@@ -281,12 +284,6 @@ if (!isGroup && !message.key.fromMe) {
                     ...channelInfo
                 });
             }
-            return;
-        }
-
-        // First check if it's a game move
-        if (/^[1-9]$/.test(userMessage) || userMessage.toLowerCase() === 'surrender') {
-            await handleTicTacToeMove(sock, chatId, senderId, userMessage);
             return;
         }
 
