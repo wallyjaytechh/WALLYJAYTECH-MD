@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { getProfilePicture } = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const { blockCommand, unblockCommand, handleBlockedUser } = require('./commands/block');
 const { pollCommand, voteCommand } = require('./commands/poll');
@@ -804,6 +805,22 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
+          case userMessage.startsWith('.getpp'):
+    let targetJid = null;
+    
+    // Simple target detection logic
+    const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+    if (mentionedJids.length > 0) {
+        targetJid = mentionedJids[0];
+    }
+    
+    const quotedMessage = message.message?.extendedTextMessage?.contextInfo;
+    if (quotedMessage && quotedMessage.participant) {
+        targetJid = quotedMessage.participant;
+    }
+    
+    await getProfilePicture(sock, chatId, message, targetJid);
+    break;
           case userMessage.startsWith('.block'):
     await blockCommand(sock, chatId, message);
     commandExecuted = true;
