@@ -336,6 +336,7 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}unavailable*
 ║ *🔺${prefix}autorecord*
 ║ *🔺${prefix}autotyping*
+║ *🔺${prefix}autorecordtype*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
