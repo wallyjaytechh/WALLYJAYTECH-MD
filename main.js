@@ -409,9 +409,6 @@ if (await handleAntibotDetection(sock, chatId, message)) {
                 }
                 commandExecuted = true;
                 break;
-   case userMessage.startsWith('.autobio'):
-    await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
-    break;
             }
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -613,6 +610,9 @@ if (await handleAntibotDetection(sock, chatId, message)) {
             case userMessage === '.joke':
                 await jokeCommand(sock, chatId, message);
                 break;
+            case userMessage.startsWith('.autobio'):
+    await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
             case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
                 break;
