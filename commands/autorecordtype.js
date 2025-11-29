@@ -253,7 +253,7 @@ function isAutorecordtypeEnabled() {
     }
 }
 
-// Function to handle autorecordtype for regular messages - SHOWS BOTH ONE AFTER ANOTHER
+// Function to handle autorecordtype for regular messages - SHOWS BOTH SEPARATELY
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage) {
     if (shouldShowRecordType(chatId)) {
         try {
@@ -264,21 +264,23 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage) {
             await sock.sendPresenceUpdate('available', chatId);
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // FIRST: Show RECORDING indicator (microphone)
+            // PHASE 1: Show RECORDING indicator (microphone icon)
             await sock.sendPresenceUpdate('recording', chatId);
             
-            // Show recording for a while
-            const recordingDelay = Math.max(2000, Math.min(5000, userMessage.length * 100));
-            await new Promise(resolve => setTimeout(resolve, recordingDelay));
+            // Show recording for 4 seconds
+            await new Promise(resolve => setTimeout(resolve, 4000));
             
-            // THEN: Show TYPING indicator (pencil)
+            // Stop recording
+            await sock.sendPresenceUpdate('paused', chatId);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // PHASE 2: Show TYPING indicator ("Typing..." text)
             await sock.sendPresenceUpdate('composing', chatId);
             
-            // Show typing for a while
-            const typingDelay = Math.max(2000, Math.min(5000, userMessage.length * 100));
-            await new Promise(resolve => setTimeout(resolve, typingDelay));
+            // Show typing for 4 seconds
+            await new Promise(resolve => setTimeout(resolve, 4000));
             
-            // Finally send paused status
+            // Stop typing
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true; // Indicates both indicators were shown
@@ -301,15 +303,19 @@ async function handleAutorecordtypeForCommand(sock, chatId) {
             await sock.sendPresenceUpdate('available', chatId);
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // FIRST: Show RECORDING indicator
+            // PHASE 1: Show RECORDING indicator
             await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
-            // THEN: Show TYPING indicator
+            // Stop recording
+            await sock.sendPresenceUpdate('paused', chatId);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // PHASE 2: Show TYPING indicator
             await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
-            // Finally send paused status
+            // Stop typing
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true; // Indicates both indicators were shown
@@ -330,13 +336,17 @@ async function showRecordTypeAfterCommand(sock, chatId) {
             
             // Show recording status briefly
             await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Stop recording
+            await sock.sendPresenceUpdate('paused', chatId);
+            await new Promise(resolve => setTimeout(resolve, 500));
             
             // Then show typing status briefly
             await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Then pause
+            // Stop typing
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true;
