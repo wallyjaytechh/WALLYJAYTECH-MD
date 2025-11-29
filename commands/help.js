@@ -338,6 +338,9 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}autotyping*
 ║ *🔺${prefix}autorecordtype*
 ║ *🔺${prefix}autostatus <on/off>*
+║ *🔺${prefix}autoreact <on/off>*
+║ *🔺${prefix}autostatus react <on/off>*
+║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
@@ -346,9 +349,6 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}sudo*
 ║ *🔺${prefix}settings*
 ║ *🔺${prefix}setpp <reply to image>*
-║ *🔺${prefix}autoreact <on/off>*
-║ *🔺${prefix}autostatus react <on/off>*
-║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}anticall <on/off>*
 ║ *🔺${prefix}pmblocker <on/off/status>*
 ║ *🔺${prefix}pmblocker setmsg <text>*
