@@ -807,7 +807,7 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
-          case userMessage === '.getpp':
+          case userMessage.startsWith('.getpp'):
     await getppCommand(sock, chatId, message);
     break;
           case userMessage.startsWith('.block'):
