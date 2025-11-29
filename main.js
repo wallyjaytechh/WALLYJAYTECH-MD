@@ -41,7 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { getProfilePicture } = require('./commands/getpp');
+const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const blockCommand = require('./commands/block');
 const unblockCommand = require('./commands/unblock');
@@ -807,23 +807,8 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
-          case userMessage.startsWith('.getpp'):
-    // Check if mentioned someone or replying to get their PP
-    let targetJid = null;
-    
-    // Check for mentions
-    const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-    if (mentionedJids.length > 0) {
-        targetJid = mentionedJids[0];
-    }
-    
-    // Check if replying to a message to get that user's PP
-    const ppQuotedContext = message.message?.extendedTextMessage?.contextInfo;
-    if (ppQuotedContext && ppQuotedContext.participant) {
-        targetJid = ppQuotedContext.participant;
-    }
-    
-    await getProfilePicture(sock, chatId, message, targetJid);
+          case userMessage === '.getpp':
+    await getppCommand(sock, chatId, message);
     break;
           case userMessage.startsWith('.block'):
     await blockCommand(sock, chatId, message);
