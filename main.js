@@ -806,13 +806,13 @@ case userMessage.startsWith('.getjid @'):
     await antiforeignCommand(sock, chatId, message);
     commandExecuted = true;
     break;
-case userMessage.startsWith('.autorecord'):
-    await autorecordCommand(sock, chatId, message);
-    break;         
-case userMessage.startsWith('.autorecordtype'):
+          case userMessage.startsWith('.autorecordtype'):
     await autorecordtypeCommand(sock, chatId, message);
     commandExecuted = true;
     break;
+case userMessage.startsWith('.autorecord'):
+    await autorecordCommand(sock, chatId, message);
+    break;         
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
