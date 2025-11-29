@@ -389,6 +389,10 @@ ${platformStatsText}
 ║ *🔺${prefix}antiforeign*
 ║ *🔺${prefix}join*
 ║ *🔺${prefix}poll/${prefix}vote*
+║ *🔺${prefix}block*
+║ *🔺${prefix}unblock*
+║ *🔺${prefix}getpp*
+║ *🔺${prefix}leave*
 ║ *🔺${prefix}clearsession*
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
