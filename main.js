@@ -198,6 +198,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         const message = messages[0];
         if (!message?.message) return;
+     const isGroup = chatId ? chatId.endsWith('@g.us') : false;
 
         // Handle autoread functionality
         await handleAutoread(sock, message);
@@ -221,7 +222,7 @@ await handleAutoreact(sock, message);
 
         chatId = message.key.remoteJid;
         const senderId = message.key.participant || message.key.remoteJid;
-        const isGroup = chatId.endsWith('@g.us');
+       
         const senderIsSudo = await isSudo(senderId);
         const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
 
