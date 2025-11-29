@@ -40,6 +40,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
@@ -298,6 +299,14 @@ await handleAutoreact(sock, message);
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
+     // Live time bio update (every 30 seconds for seconds update)
+setInterval(async () => {
+    try {
+        await updateAutoBio(sock);
+    } catch (error) {
+        console.error('AutoBio update error:', error);
+    }
+}, 30000); // Update every 30 seconds
 // AntiBot detection (add this before command processing)
 if (await handleAntibotDetection(sock, chatId, message)) {
     return; // Stop processing if bot detected
@@ -400,6 +409,9 @@ if (await handleAntibotDetection(sock, chatId, message)) {
                 }
                 commandExecuted = true;
                 break;
+   case userMessage.startsWith('.autobio'):
+    await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
             }
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
