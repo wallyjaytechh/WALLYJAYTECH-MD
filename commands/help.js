@@ -320,29 +320,31 @@ ${greeting.greeting}! Here's your menu:
 *⬇️ ALL COMMANDS ⬇️*
 
 ╔═══════════════════╗
-║                        
-║ *🌐GENERAL CMDS🌐*   
-║                        
-║ *🔸.help or .menu*      
-║ *🔸.ping*            
-║ *🔸.alive*              
-║ *🔸.tts <text>*          
-║ *🔸.owner*               
-║ *🔸.joke*                
-║ *🔸.quote*               
-║ *🔸.fact*                
-║ *🔸.weather <city>*      
-║ *🔸.news*                
-║ *🔸.attp <text>*         
-║ *🔸.lyrics <songtitle>*
-║ *🔸.8ball <question>*    
-║ *🔸.vv*                  
-║ *🔸.trt <text> <lang>*  
-║ *🔸.ss <link>*          
-║ *🔸.url*        
-║ *🔸.getjid* 
-║                       
-╚═══════════════════╝ 
+║
+║  *🔒OWNER CMDS🔒*
+║
+║ *🔺.autobio*
+║ *🔺.mode <public/private>*
+║ *🔺.clearsession*
+║ *🔺.antidelete*
+║ *🔺.tempfile*
+║ *🔺.cleartmp*
+║ *🔺.update*
+║ *🔺.sudo*
+║ *🔺.settings*
+║ *🔺.setpp <reply to image>*
+║ *🔺.autoreact <on/off>*
+║ *🔺.autostatus <on/off>*
+║ *🔺.autostatus react <on/off>*
+║ *🔺.autotyping <on/off>*
+║ *🔺.autoread <on/off>*
+║ *🔺.anticall <on/off>*
+║ *🔺.pmblocker <on/off/status>*
+║ *🔺.pmblocker setmsg <text>*
+║ *🔺.setmention <reply to msg>*
+║ *🔺.mention <on/off>*
+║
+╚═══════════════════╝
 
 ╔═══════════════════╗
 ║
@@ -386,32 +388,6 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔹.setgdesc <description>*
 ║ *🔹.setgname <new name>*
 ║ *🔹.setgpp (reply to image)*
-║
-╚═══════════════════╝
-
-╔═══════════════════╗
-║
-║  *🔒OWNER CMDS🔒*
-║
-║ *🔺.mode <public/private>*
-║ *🔺.clearsession*
-║ *🔺.antidelete*
-║ *🔺.tempfile*
-║ *🔺.cleartmp*
-║ *🔺.update*
-║ *🔺.sudo*
-║ *🔺.settings*
-║ *🔺.setpp <reply to image>*
-║ *🔺.autoreact <on/off>*
-║ *🔺.autostatus <on/off>*
-║ *🔺.autostatus react <on/off>*
-║ *🔺.autotyping <on/off>*
-║ *🔺.autoread <on/off>*
-║ *🔺.anticall <on/off>*
-║ *🔺.pmblocker <on/off/status>*
-║ *🔺.pmblocker setmsg <text>*
-║ *🔺.setmention <reply to msg>*
-║ *🔺.mention <on/off>*
 ║
 ╚═══════════════════╝
 
@@ -584,6 +560,32 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔵.repo*
 ║
 ╚═══════════════════╝
+
+╔═══════════════════╗
+║                        
+║ *🌐GENERAL CMDS🌐*   
+║                        
+║ *🔸.help or .menu*      
+║ *🔸.ping*            
+║ *🔸.alive*              
+║ *🔸.tts <text>*          
+║ *🔸.owner*               
+║ *🔸.joke*                
+║ *🔸.quote*               
+║ *🔸.fact*                
+║ *🔸.weather <city>*      
+║ *🔸.news*                
+║ *🔸.attp <text>*         
+║ *🔸.lyrics <songtitle>*
+║ *🔸.8ball <question>*    
+║ *🔸.vv*                  
+║ *🔸.trt <text> <lang>*  
+║ *🔸.ss <link>*          
+║ *🔸.url*        
+║ *🔸.getjid* 
+║                       
+╚═══════════════════╝ 
+
 
     🟡 *Copyright wallyjaytech 2025* 🟡
 
