@@ -15,6 +15,27 @@ function getDeploymentPlatform() {
     }
 }
 
+// 🔥 NEW: FUNCTION TO DETECT BOT MODE (PUBLIC/PRIVATE)
+function getBotMode() {
+    try {
+        const messageCountPath = path.join(__dirname, '../data/messageCount.json');
+        
+        if (fs.existsSync(messageCountPath)) {
+            const data = JSON.parse(fs.readFileSync(messageCountPath, 'utf8'));
+            
+            if (typeof data.isPublic === 'boolean') {
+                return data.isPublic ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
+            }
+        }
+        
+        // Fallback to settings
+        return settings.commandMode === 'public' ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
+    } catch (error) {
+        console.error('Error detecting bot mode:', error);
+        return 'PUBLIC 🌐'; // Default fallback
+    }
+}
+
 // 🔥 NEW: TIME-BASED GREETINGS FUNCTION
 function getTimeBasedGreeting() {
     try {
@@ -247,6 +268,9 @@ async function helpCommand(sock, chatId, message) {
     const greeting = getTimeBasedGreeting();
     const dayInfo = getDayWithEmoji();
     
+    // 🔥 NEW: Get ACTUAL bot mode (public/private)
+    const currentBotMode = getBotMode();
+    
     // Get time based on settings timezone
     const getLocalizedTime = () => {
         try {
@@ -286,9 +310,9 @@ ${greeting.greeting}! Here's your menu:
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
-║   *💻 Mode: [ ${settings.commandMode} ]*
+║   *💻 Bot Mode: [ ${currentBotMode} ]*
 ║   *📊 Total Commands: [ ${totalCommands} ]*
-║   *📅 Full Date: [ ${getLocalizedTime()} ]*
+║   *📅 FullDate: [ ${getLocalizedTime()} ]*
 ║   *📡 Deployed Platform: [ ${getDeploymentPlatform()} ]*
 ║
 ╚═══════════════════╝
