@@ -40,6 +40,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
@@ -297,7 +298,10 @@ await handleAutoreact(sock, message);
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
-
+// AntiBot detection (add this before command processing)
+if (await handleAntibotDetection(sock, chatId, message)) {
+    return; // Stop processing if bot detected
+}
         // PM blocker: block non-owner DMs when enabled (do not ban)
         if (!isGroup && !message.key.fromMe && !senderIsSudo) {
             try {
@@ -588,6 +592,9 @@ await handleAutoreact(sock, message);
                 }
                 await handleAntitagCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message);
                 break;
+          case userMessage.startsWith('.antibot'):
+    await antibotCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
             case userMessage === '.meme':
                 await memeCommand(sock, chatId, message);
                 break;
