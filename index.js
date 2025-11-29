@@ -316,6 +316,9 @@ async function startXeonBotInc() {
         if (connection == "open") {
             console.log(chalk.magenta(` `))
             console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
+            // Initialize unavailable system
+    const unavailableSystem = require('./commands/unavailable');
+    unavailableSystem.initialize(XeonBotInc);
 
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
