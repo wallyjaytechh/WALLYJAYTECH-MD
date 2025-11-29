@@ -1,6 +1,6 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Autorecordtype Command - Shows fake recording AND typing status (COMBINED)
+ * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  */
 
 const fs = require('fs');
@@ -57,7 +57,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             const modeText = getModeText(config.mode);
             
             await sock.sendMessage(chatId, {
-                text: `🎙️⌨️ *Auto-Record+Type Settings*\n\n📱 *Status:* ${status}\n🎯 *Mode:* ${modeText}\n\n*Commands:*\n• .autorecordtype on/off - Enable/disable\n• .autorecordtype mode all - Work everywhere\n• .autorecordtype mode dms - DMs only\n• .autorecordtype mode groups - Groups only\n• .autorecordtype status - Show current settings`,
+                text: `🎙️⌨️ *Autorecordtype Settings*\n\n📱 *Status:* ${status}\n🎯 *Mode:* ${modeText}\n\n*Controls both:*\n• Auto-typing (Typing...)\n• Auto-record (Recording icon)\n\n*Commands:*\n• .autorecordtype on/off - Enable/disable both\n• .autorecordtype mode all - Work everywhere\n• .autorecordtype mode dms - DMs only\n• .autorecordtype mode groups - Groups only\n• .autorecordtype status - Show current settings`,
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
@@ -76,8 +76,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
         if (action === 'on' || action === 'enable') {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            
+            // Enable both autotyping and autorecord
+            await enableBothFeatures();
+            
             await sock.sendMessage(chatId, {
-                text: `✅ *Auto-record+type enabled!*\n\nMode: ${getModeText(config.mode)}\n\nBot will now show recording AND typing indicators in ${getModeDescription(config.mode)}.`,
+                text: `✅ *Autorecordtype enabled!*\n\nMode: ${getModeText(config.mode)}\n\n✅ Auto-typing: ENABLED\n✅ Auto-record: ENABLED\n\nBoth typing and recording indicators are now active!`,
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
@@ -92,8 +96,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
         else if (action === 'off' || action === 'disable') {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            
+            // Disable both autotyping and autorecord
+            await disableBothFeatures();
+            
             await sock.sendMessage(chatId, {
-                text: '❌ *Auto-record+type disabled!*\n\nBot will no longer show recording and typing indicators.',
+                text: '❌ *Autorecordtype disabled!*\n\nBoth typing and recording indicators are now turned off.',
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
@@ -126,8 +134,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                
+                // Update both features with new mode
+                await updateBothFeaturesMode(mode);
+                
                 await sock.sendMessage(chatId, {
-                    text: `🎯 *Auto-record+type mode set to:* ${getModeText(mode)}\n\n${getModeDescription(mode)}`,
+                    text: `🎯 *Autorecordtype mode set to:* ${getModeText(mode)}\n\n${getModeDescription(mode)}`,
                     contextInfo: {
                         forwardingScore: 1,
                         isForwarded: true,
@@ -157,8 +169,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
             const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
             const modeText = getModeText(config.mode);
             
+            // Check current status of both features
+            const typingStatus = await getAutotypingStatus();
+            const recordStatus = await getAutorecordStatus();
+            
             await sock.sendMessage(chatId, {
-                text: `🎙️⌨️ *Auto-Record+Type Status*\n\n📱 *Status:* ${status}\n🎯 *Mode:* ${modeText}\n\n${getModeDescription(config.mode)}`,
+                text: `🎙️⌨️ *Autorecordtype Status*\n\n📱 *Master Status:* ${status}\n🎯 *Mode:* ${modeText}\n\n*Individual Status:*\n• Auto-typing: ${typingStatus}\n• Auto-record: ${recordStatus}\n\n${getModeDescription(config.mode)}`,
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
@@ -215,30 +231,101 @@ function getModeText(mode) {
 // Helper function to get mode description
 function getModeDescription(mode) {
     switch(mode) {
-        case 'all': return 'Recording AND typing indicators will show in both DMs and groups.';
-        case 'dms': return 'Recording AND typing indicators will show only in private messages.';
-        case 'groups': return 'Recording AND typing indicators will show only in group chats.';
-        default: return 'Recording AND typing indicators will show in both DMs and groups.';
+        case 'all': return 'Both typing and recording indicators will show in both DMs and groups.';
+        case 'dms': return 'Both typing and recording indicators will show only in private messages.';
+        case 'groups': return 'Both typing and recording indicators will show only in group chats.';
+        default: return 'Both typing and recording indicators will show in both DMs and groups.';
     }
 }
 
-// Function to check if autorecordtype should work in current chat
-function shouldShowRecordType(chatId) {
+// Enable both autotyping and autorecord
+async function enableBothFeatures() {
     try {
-        const config = initConfig();
-        if (!config.enabled) return false;
+        // Enable autotyping
+        const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+        let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
+        autotypingConfig.enabled = true;
+        fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         
-        const isGroup = chatId.endsWith('@g.us');
+        // Enable autorecord
+        const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+        let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
+        autorecordConfig.enabled = true;
+        fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
         
-        switch(config.mode) {
-            case 'all': return true;
-            case 'dms': return !isGroup;
-            case 'groups': return isGroup;
-            default: return true;
-        }
+        console.log('✅ Both autotyping and autorecord enabled');
+        return true;
     } catch (error) {
-        console.error('Error checking autorecordtype status:', error);
+        console.error('Error enabling both features:', error);
         return false;
+    }
+}
+
+// Disable both autotyping and autorecord
+async function disableBothFeatures() {
+    try {
+        // Disable autotyping
+        const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+        let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
+        autotypingConfig.enabled = false;
+        fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
+        
+        // Disable autorecord
+        const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+        let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
+        autorecordConfig.enabled = false;
+        fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
+        
+        console.log('❌ Both autotyping and autorecord disabled');
+        return true;
+    } catch (error) {
+        console.error('Error disabling both features:', error);
+        return false;
+    }
+}
+
+// Update mode for both features
+async function updateBothFeaturesMode(mode) {
+    try {
+        // Update autotyping mode
+        const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+        let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
+        autotypingConfig.mode = mode;
+        fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
+        
+        // Update autorecord mode
+        const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+        let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
+        autorecordConfig.mode = mode;
+        fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
+        
+        console.log(`🎯 Both features mode updated to: ${mode}`);
+        return true;
+    } catch (error) {
+        console.error('Error updating both features mode:', error);
+        return false;
+    }
+}
+
+// Get current status of autotyping
+async function getAutotypingStatus() {
+    try {
+        const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+        const autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
+        return autotypingConfig.enabled ? '✅ Enabled' : '❌ Disabled';
+    } catch (error) {
+        return '❓ Unknown';
+    }
+}
+
+// Get current status of autorecord
+async function getAutorecordStatus() {
+    try {
+        const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+        const autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
+        return autorecordConfig.enabled ? '✅ Enabled' : '❌ Disabled';
+    } catch (error) {
+        return '❓ Unknown';
     }
 }
 
@@ -253,134 +340,7 @@ function isAutorecordtypeEnabled() {
     }
 }
 
-// COMBINED FUNCTION: Shows recording THEN typing (like your autotyping.js)
-async function handleAutorecordtypeForMessage(sock, chatId, userMessage) {
-    if (shouldShowRecordType(chatId)) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // PHASE 1: Show RECORDING indicator (microphone icon)
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Show recording based on message length (like autotyping.js)
-            const recordingDelay = Math.max(2000, Math.min(5000, userMessage.length * 100));
-            await new Promise(resolve => setTimeout(resolve, recordingDelay));
-            
-            // Stop recording
-            await sock.sendPresenceUpdate('paused', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // PHASE 2: Show TYPING indicator ("Typing..." text) - EXACTLY LIKE AUTOTYPING.JS
-            await sock.sendPresenceUpdate('composing', chatId);
-            
-            // Simulate typing time based on message length with increased minimum time (like autotyping.js)
-            const typingDelay = Math.max(3000, Math.min(8000, userMessage.length * 150));
-            await new Promise(resolve => setTimeout(resolve, typingDelay));
-            
-            // Send composing again to ensure it stays visible (like autotyping.js)
-            await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates both indicators were shown
-        } catch (error) {
-            console.error('❌ Error sending record+type indicators:', error);
-            return false;
-        }
-    }
-    return false; // Autorecordtype is disabled for this chat type
-}
-
-// Function to handle autorecordtype for commands
-async function handleAutorecordtypeForCommand(sock, chatId) {
-    if (shouldShowRecordType(chatId)) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Show RECORDING indicator
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Stop recording
-            await sock.sendPresenceUpdate('paused', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Show TYPING indicator (like autotyping.js)
-            await sock.sendPresenceUpdate('composing', chatId);
-            
-            // Keep typing indicator active for commands with increased duration (like autotyping.js)
-            const commandTypingDelay = 3000;
-            await new Promise(resolve => setTimeout(resolve, commandTypingDelay));
-            
-            // Send composing again to ensure it stays visible (like autotyping.js)
-            await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates both indicators were shown
-        } catch (error) {
-            console.error('❌ Error sending command record+type indicators:', error);
-            return false;
-        }
-    }
-    return false; // Autorecordtype is disabled for this chat type
-}
-
-// Function to show record+type status AFTER command execution
-async function showRecordTypeAfterCommand(sock, chatId) {
-    if (shouldShowRecordType(chatId)) {
-        try {
-            // This function runs after the command has been executed and response sent
-            // So we just need to show a brief recording then typing indicator
-            
-            // Subscribe to presence updates
-            await sock.presenceSubscribe(chatId);
-            
-            // Show recording status briefly
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Stop recording
-            await sock.sendPresenceUpdate('paused', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Then show typing status briefly (like autotyping.js)
-            await sock.sendPresenceUpdate('composing', chatId);
-            
-            // Keep typing visible for a short time
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Then pause
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Error sending post-command record+type indicators:', error);
-            return false;
-        }
-    }
-    return false; // Autorecordtype is disabled for this chat type
-}
-
 module.exports = {
     autorecordtypeCommand,
-    isAutorecordtypeEnabled,
-    shouldShowRecordType,
-    handleAutorecordtypeForMessage,
-    handleAutorecordtypeForCommand,
-    showRecordTypeAfterCommand
+    isAutorecordtypeEnabled
 };
