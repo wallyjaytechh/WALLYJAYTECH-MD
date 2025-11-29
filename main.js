@@ -808,7 +808,8 @@ case userMessage.startsWith('.getjid @'):
                 await antibadwordCommand(sock, chatId, message, senderId, isSenderAdmin);
                 break;
           case userMessage.startsWith('.unavailable'):
-    await unavailableCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    const unavailableCmd = require('./commands/unavailable');
+    await unavailableCmd.execute(sock, chatId, message, userMessage.split(' ').slice(1));
     break;
             case userMessage.startsWith('.chatbot'):
                 if (!isGroup) {
