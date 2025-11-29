@@ -299,14 +299,14 @@ await handleAutoreact(sock, message);
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
-     // Live time bio update (every 30 seconds for seconds update)
+  // Live time bio update (every minute - safe frequency)
 setInterval(async () => {
     try {
         await updateAutoBio(sock);
     } catch (error) {
         console.error('AutoBio update error:', error);
     }
-}, 30000); // Update every 30 seconds
+}, 60000); // Update every minute (60000ms)
 // AntiBot detection (add this before command processing)
 if (await handleAntibotDetection(sock, chatId, message)) {
     return; // Stop processing if bot detected
