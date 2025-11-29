@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
 const { autorecordtypeCommand, isAutorecordtypeEnabled, handleAutorecordtypeForMessage, handleAutorecordtypeForCommand, showRecordTypeAfterCommand } = require('./commands/autorecordtype');
 const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
 const { execute: unavailableCommand, maintainUnavailablePresence: maintainUnavailable } = require('./commands/unavailable');
@@ -255,7 +256,13 @@ await handleAutoreact(sock, message);
         if (userMessage.startsWith('.')) {
             console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
         }
-        // Read bot mode once; don't early-return so moderation can still run in private mode
+     // Handle antiforeign blocking (check before processing messages)
+if (!isGroup && !message.key.fromMe) {
+    const wasBlocked = await handleAntiforeign(sock, chatId, message);
+    if (wasBlocked) return; // Stop processing if blocked
+}
+        // Read bot mode once; don't
+      early-return so moderation can still run in private mode
         let isPublic = true;
         try {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
@@ -345,10 +352,12 @@ if (await handleAntibotDetection(sock, chatId, message)) {
          // Replace any existing autorecord line with:
 await handleAutorecordForMessage(sock, chatId, userMessage);
          await handleAutorecordtypeForMessage(sock, chatId, userMessage);
+         
             if (isGroup) {
                 // Always run moderation features (antitag) regardless of mode
                 await handleTagDetection(sock, chatId, message, senderId);
                 await handleMentionDetection(sock, chatId, message);
+            
                 
                 // Only run chatbot in public mode or for owner/sudo
                 if (isPublic || isOwnerOrSudoCheck) {
@@ -796,6 +805,10 @@ case userMessage.startsWith('.getjid @'):
             case userMessage === '.repo':
                 await githubCommand(sock, chatId, message);
                 break;
+          case userMessage.startsWith('.antiforeign'):
+    await antiforeignCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
 case userMessage.startsWith('.autorecord'):
     await autorecordCommand(sock, chatId, message);
     break;         
