@@ -43,6 +43,23 @@ async function blockCommand(sock, chatId, message) {
             }, { quoted: message });
         }
 
+        // Prevent blocking the bot itself
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        if (targetJid === botJid) {
+            return await sock.sendMessage(chatId, {
+                text: '❌ You cannot block the bot itself!',
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            }, { quoted: message });
+        }
+
         // Block the user on WhatsApp
         await sock.updateBlockStatus(targetJid, 'block');
         
