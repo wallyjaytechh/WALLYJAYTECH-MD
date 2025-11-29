@@ -17,10 +17,13 @@ async function getppCommand(sock, chatId, message) {
                 targetJid = mentionedJids[0];
             }
         }
-        // Check if replying to a message
-        else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
-            targetJid = message.message.extendedTextMessage.contextInfo.participant;
+        
+        // Check if replying to a message (FIXED THIS PART)
+        const quotedContext = message.message?.extendedTextMessage?.contextInfo;
+        if (quotedContext && quotedContext.participant) {
+            targetJid = quotedContext.participant;
         }
+        
         // Check for phone number argument
         else if (args.length > 0) {
             let phoneNumber = args[0].replace(/[^0-9]/g, '');
