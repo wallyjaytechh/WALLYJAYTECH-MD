@@ -40,7 +40,6 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { execute: connect4Command, handleDrop: handleConnect4Drop, handleSurrender: handleConnect4Surrender, handleAccept: handleConnect4Accept } = require('./commands/connect4');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
@@ -312,11 +311,7 @@ await handleAutoreact(sock, message);
                 }
             } catch (e) { }
         }
-// Handle Connect Four game moves
-if (userMessage.startsWith('drop ')) {
-    const column = userMessage.split(' ')[1];
-    if (await handleConnect4Drop(sock, chatId, senderId, column, message)) return;
-}
+
         // Then check for command prefix
         if (!userMessage.startsWith('.')) {
             // Show typing indicator if autotyping is enabled
@@ -649,18 +644,7 @@ case userMessage.startsWith('.getjid @'):
                     sock.sendMessage(chatId, { text: 'Please guess a letter using .guess <letter>', ...channelInfo }, { quoted: message });
                 }
                 break;
-          // Add these cases in your switch statement - find a good spot around other game commands
-case userMessage.startsWith('.connect4'):
-    await connect4Command(sock, chatId, message, userMessage.split(' ').slice(1));
-    break;
 
-case userMessage === '.accept':
-    if (await handleConnect4Accept(sock, chatId, senderId, message)) return;
-    break;
-
-case userMessage === '.surrender':
-    if (await handleConnect4Surrender(sock, chatId, senderId, message)) return;
-    break;
             case userMessage.startsWith('.trivia'):
                 startTrivia(sock, chatId);
                 break;
