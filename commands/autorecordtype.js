@@ -1,6 +1,6 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Autorecordtype Command - Shows fake recording AND typing status
+ * Autorecordtype Command - Shows fake recording AND typing status (COMBINED)
  */
 
 const fs = require('fs');
@@ -253,7 +253,7 @@ function isAutorecordtypeEnabled() {
     }
 }
 
-// Function to handle autorecordtype for regular messages - SHOWS BOTH SEPARATELY
+// COMBINED FUNCTION: Shows recording THEN typing (like your autotyping.js)
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage) {
     if (shouldShowRecordType(chatId)) {
         try {
@@ -267,20 +267,26 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage) {
             // PHASE 1: Show RECORDING indicator (microphone icon)
             await sock.sendPresenceUpdate('recording', chatId);
             
-            // Show recording for 4 seconds
-            await new Promise(resolve => setTimeout(resolve, 4000));
+            // Show recording based on message length (like autotyping.js)
+            const recordingDelay = Math.max(2000, Math.min(5000, userMessage.length * 100));
+            await new Promise(resolve => setTimeout(resolve, recordingDelay));
             
             // Stop recording
             await sock.sendPresenceUpdate('paused', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            // PHASE 2: Show TYPING indicator ("Typing..." text)
+            // PHASE 2: Show TYPING indicator ("Typing..." text) - EXACTLY LIKE AUTOTYPING.JS
             await sock.sendPresenceUpdate('composing', chatId);
             
-            // Show typing for 4 seconds
-            await new Promise(resolve => setTimeout(resolve, 4000));
+            // Simulate typing time based on message length with increased minimum time (like autotyping.js)
+            const typingDelay = Math.max(3000, Math.min(8000, userMessage.length * 150));
+            await new Promise(resolve => setTimeout(resolve, typingDelay));
             
-            // Stop typing
+            // Send composing again to ensure it stays visible (like autotyping.js)
+            await sock.sendPresenceUpdate('composing', chatId);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Finally send paused status
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true; // Indicates both indicators were shown
@@ -303,19 +309,26 @@ async function handleAutorecordtypeForCommand(sock, chatId) {
             await sock.sendPresenceUpdate('available', chatId);
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // PHASE 1: Show RECORDING indicator
+            // Show RECORDING indicator
             await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             // Stop recording
             await sock.sendPresenceUpdate('paused', chatId);
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // PHASE 2: Show TYPING indicator
+            // Show TYPING indicator (like autotyping.js)
             await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 3000));
             
-            // Stop typing
+            // Keep typing indicator active for commands with increased duration (like autotyping.js)
+            const commandTypingDelay = 3000;
+            await new Promise(resolve => setTimeout(resolve, commandTypingDelay));
+            
+            // Send composing again to ensure it stays visible (like autotyping.js)
+            await sock.sendPresenceUpdate('composing', chatId);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Finally send paused status
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true; // Indicates both indicators were shown
@@ -331,22 +344,27 @@ async function handleAutorecordtypeForCommand(sock, chatId) {
 async function showRecordTypeAfterCommand(sock, chatId) {
     if (shouldShowRecordType(chatId)) {
         try {
+            // This function runs after the command has been executed and response sent
+            // So we just need to show a brief recording then typing indicator
+            
             // Subscribe to presence updates
             await sock.presenceSubscribe(chatId);
             
             // Show recording status briefly
             await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Stop recording
             await sock.sendPresenceUpdate('paused', chatId);
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Then show typing status briefly
+            // Then show typing status briefly (like autotyping.js)
             await sock.sendPresenceUpdate('composing', chatId);
-            await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Stop typing
+            // Keep typing visible for a short time
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Then pause
             await sock.sendPresenceUpdate('paused', chatId);
             
             return true;
