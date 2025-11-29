@@ -347,7 +347,6 @@ ${greeting.greeting}! Here's your menu:
 ║ *🔺${prefix}autoreact <on/off>*
 ║ *🔺${prefix}autostatus <on/off>*
 ║ *🔺${prefix}autostatus react <on/off>*
-║ *🔺${prefix}autotyping <on/off>*
 ║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}anticall <on/off>*
 ║ *🔺${prefix}pmblocker <on/off/status>*
