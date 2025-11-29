@@ -348,7 +348,7 @@ if (await handleAntibotDetection(sock, chatId, message)) {
 
          // Replace any existing autorecord line with:
 await handleAutorecordForMessage(sock, chatId, userMessage);
-         await handleAutorecordtypeForMessage(sock, chatId, userMessage);
+         
          
             if (isGroup) {
                 // Always run moderation features (antitag) regardless of mode
