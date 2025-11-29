@@ -42,7 +42,7 @@ const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./comman
 
 // Command imports
 const { pollCommand, voteCommand } = require('./commands/poll');
-const { joinCommand } = require('./commands/join'),
+const { joinCommand } = require('./commands/join');
 const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
 const { autorecordtypeCommand, isAutorecordtypeEnabled, handleAutorecordtypeForMessage, handleAutorecordtypeForCommand, showRecordTypeAfterCommand } = require('./commands/autorecordtype');
 const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
