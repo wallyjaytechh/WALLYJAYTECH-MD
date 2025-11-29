@@ -2,13 +2,20 @@ async function blockCommand(sock, chatId, message) {
     try {
         const userMessage = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const args = userMessage.split(' ').slice(1);
+        const isGroup = chatId.endsWith('@g.us');
         
         let targetJid = null;
 
-        // Check for mentions
-        const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        if (mentionedJids.length > 0) {
-            targetJid = mentionedJids[0];
+        // If in DM and no arguments, block the current chat user
+        if (!isGroup && args.length === 0) {
+            targetJid = chatId;
+        }
+        // Check for mentions in groups
+        else if (isGroup) {
+            const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+            if (mentionedJids.length > 0) {
+                targetJid = mentionedJids[0];
+            }
         }
         // Check if replying to a message
         else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
@@ -30,7 +37,7 @@ async function blockCommand(sock, chatId, message) {
 
         if (!targetJid) {
             return await sock.sendMessage(chatId, {
-                text: '❌ Please specify a user to block.\n\nExamples:\n.block @username (mention in group)\n.block 2348155763709 (phone number)\nReply to a message with .block',
+                text: '❌ Please specify a user to block.\n\nExamples:\n.block (in DM to block that user)\n.block @username (mention in group)\n.block 2348155763709 (phone number)\nReply to a message with .block',
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
