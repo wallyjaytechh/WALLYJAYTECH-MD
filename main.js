@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { joinCommand } = require('./commands/join'),
 const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
 const { autorecordtypeCommand, isAutorecordtypeEnabled, handleAutorecordtypeForMessage, handleAutorecordtypeForCommand, showRecordTypeAfterCommand } = require('./commands/autorecordtype');
 const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
@@ -802,6 +803,10 @@ case userMessage.startsWith('.getjid @'):
             case userMessage === '.repo':
                 await githubCommand(sock, chatId, message);
                 break;
+case userMessage.startsWith('.join'):
+    await joinCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
           case userMessage.startsWith('.antiforeign'):
     await antiforeignCommand(sock, chatId, message);
     commandExecuted = true;
