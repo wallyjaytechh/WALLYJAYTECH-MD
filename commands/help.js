@@ -411,14 +411,6 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ *📩WHATSAPP CMDS📩*
-║
-║ *🟤${prefix}clear*
-║
-╚═══════════════════╝
-
-╔═══════════════════╗
-║
 ║ *👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦*
 ║
 ║ *🔹${prefix}ban @user*
@@ -470,6 +462,14 @@ ${platformStatsText}
 ║ *🔻${prefix}emojimix <emj1>+<emj2>*
 ║ *🔻${prefix}igs <insta link>*
 ║ *🔻${prefix}igsc <insta link>*
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ *📩WHATSAPP CMDS📩*
+║
+║ *🟤${prefix}clear*
 ║
 ╚═══════════════════╝
 
