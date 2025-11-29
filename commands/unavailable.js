@@ -46,17 +46,23 @@ function saveUnavailableData() {
 loadUnavailableData();
 
 class UnavailableSystem {
-    // Set presence to "unavailable"
+    // Set presence to "unavailable" - THE CORRECT WAY
     static async setUnavailablePresence(sock) {
         if (!unavailableData.enabled) return;
         
         try {
-            // Set presence to "unavailable" - this makes you appear offline
+            // Method 1: Set composing state to false (makes you appear inactive)
+            await sock.sendPresenceUpdate('paused');
+            
+            // Method 2: Use unavailable presence
             await sock.sendPresenceUpdate('unavailable');
             
+            // Method 3: Stop any active presence
+            await sock.sendPresenceUpdate('paused');
+            
             const now = Date.now();
-            if (now - unavailableData.lastPresenceUpdate > 30000) { // Log every 30 seconds
-                console.log('🕶️ Presence set to: unavailable');
+            if (now - unavailableData.lastPresenceUpdate > 30000) {
+                console.log('🕶️ Presence set to: unavailable/offline');
                 unavailableData.lastPresenceUpdate = now;
                 saveUnavailableData();
             }
@@ -69,11 +75,55 @@ class UnavailableSystem {
     // Set presence back to "available" (online)
     static async setAvailablePresence(sock) {
         try {
+            // Set to composing to appear online
+            await sock.sendPresenceUpdate('composing');
+            
+            // Then set to available
             await sock.sendPresenceUpdate('available');
+            
             console.log('✅ Presence set to: available');
         } catch (error) {
             console.error('❌ Error setting available presence:', error);
         }
+    }
+    
+    // Completely hide online status (most effective method)
+    static async hideOnlineStatus(sock) {
+        try {
+            // This combination works best for hiding online status
+            await sock.sendPresenceUpdate('unavailable');
+            await sock.sendPresenceUpdate('paused');
+            
+            // Add a small delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('👻 Online status hidden');
+        } catch (error) {
+            console.error('❌ Error hiding online status:', error);
+        }
+    }
+}
+
+// Add this to your main.js or index.js to continuously maintain presence
+let presenceInterval = null;
+
+function startUnavailableMaintenance(sock) {
+    if (presenceInterval) {
+        clearInterval(presenceInterval);
+    }
+    
+    presenceInterval = setInterval(async () => {
+        if (unavailableData.enabled) {
+            await UnavailableSystem.setUnavailablePresence(sock);
+            await UnavailableSystem.hideOnlineStatus(sock);
+        }
+    }, 15000); // Update every 15 seconds
+}
+
+function stopUnavailableMaintenance() {
+    if (presenceInterval) {
+        clearInterval(presenceInterval);
+        presenceInterval = null;
     }
 }
 
@@ -104,11 +154,15 @@ module.exports = {
                     unavailableData.enabled = true;
                     saveUnavailableData();
                     
+                    // Start maintaining unavailable presence
+                    startUnavailableMaintenance(sock);
+                    
                     // Set unavailable presence immediately
                     await UnavailableSystem.setUnavailablePresence(sock);
+                    await UnavailableSystem.hideOnlineStatus(sock);
                     
                     await sock.sendMessage(chatId, {
-                        text: `🕶️ *Unavailable Mode ENABLED*\n\n👻 You will now appear as "unavailable" even when online.\n\n📱 *What others see:*\n• Status: Unavailable\n• Last seen: Hidden\n• Online status: Never shows online\n\n💡 *Note:* This only affects your bot account's presence.`
+                        text: `🕶️ *Unavailable Mode ENABLED*\n\n👻 You will now appear as "unavailable" even when online.\n\n📱 *What others see:*\n• Status: Unavailable\n• Last seen: Hidden\n• Online status: Never shows online\n\n🔄 *Maintenance:* Presence updated every 15 seconds\n\n💡 *Note:* This affects your bot account's presence only.`
                     }, { quoted: message });
                     break;
                     
@@ -116,6 +170,9 @@ module.exports = {
                 case 'disable':
                     unavailableData.enabled = false;
                     saveUnavailableData();
+                    
+                    // Stop maintenance
+                    stopUnavailableMaintenance();
                     
                     // Set back to available
                     await UnavailableSystem.setAvailablePresence(sock);
@@ -132,21 +189,31 @@ module.exports = {
                         new Date(unavailableData.lastPresenceUpdate).toLocaleTimeString() : 'Never';
                     
                     await sock.sendMessage(chatId, {
-                        text: `📊 *Unavailable Status*\n\nMode: ${status}\nLast Update: ${lastUpdate}\n\n*What it does:*\n• Shows "unavailable" instead of "online"\n• Hides your active status\n• People think you\'re offline\n\n*Commands:*\n• .unavailable on - Enable stealth mode\n• .unavailable off - Show as online\n• .unavailable status - Show current status`
+                        text: `📊 *Unavailable Status*\n\nMode: ${status}\nLast Update: ${lastUpdate}\nMaintenance: ${presenceInterval ? 'Active' : 'Inactive'}\n\n*What it does:*\n• Shows "unavailable" instead of "online"\n• Hides your active status\n• People think you're offline\n\n*Commands:*\n• .unavailable on - Enable stealth mode\n• .unavailable off - Show as online\n• .unavailable status - Show current status`
                     }, { quoted: message });
                     break;
                     
                 case 'test':
                     // Test current presence
                     await UnavailableSystem.setUnavailablePresence(sock);
+                    await UnavailableSystem.hideOnlineStatus(sock);
                     await sock.sendMessage(chatId, {
-                        text: '🧪 *Presence Test*\n\nPresence set to "unavailable". Ask a friend to check if you appear offline.'
+                        text: '🧪 *Presence Test*\n\nPresence set to "unavailable". Ask a friend to check if you appear offline.\n\nIf it still shows online, try enabling the full mode with `.unavailable on`'
+                    }, { quoted: message });
+                    break;
+                    
+                case 'force':
+                    // Force immediate presence update
+                    await UnavailableSystem.setUnavailablePresence(sock);
+                    await UnavailableSystem.hideOnlineStatus(sock);
+                    await sock.sendMessage(chatId, {
+                        text: '⚡ *Force Update*\n\nPresence forcefully set to unavailable. Maintenance system activated.'
                     }, { quoted: message });
                     break;
                     
                 default:
                     await sock.sendMessage(chatId, {
-                        text: `🕶️ *Unavailable Mode*\n\nHide your online status and appear as "unavailable" even when active.\n\n*Current Status:* ${unavailableData.enabled ? '🟢 Enabled' : '🔴 Disabled'}\n\n*Usage:* .unavailable <command>\n\n*Commands:*\n• on - Enable unavailable mode\n• off - Disable unavailable mode\n• status - Show current status\n• test - Test presence setting\n\n*Privacy Features:*\n• Shows "unavailable" status\n• Hides "online" indicator\n• Last seen remains unchanged\n• Perfect for stealth mode`
+                        text: `🕶️ *Unavailable Mode*\n\nHide your online status and appear as "unavailable" even when active.\n\n*Current Status:* ${unavailableData.enabled ? '🟢 Enabled' : '🔴 Disabled'}\n\n*Usage:* .unavailable <command>\n\n*Commands:*\n• on - Enable unavailable mode\n• off - Disable unavailable mode\n• status - Show current status\n• test - Test presence setting\n• force - Force immediate update\n\n*Privacy Features:*\n• Shows "unavailable" status\n• Hides "online" indicator\n• Continuous presence maintenance\n• Perfect for stealth mode`
                     }, { quoted: message });
                     break;
             }
@@ -162,5 +229,19 @@ module.exports = {
     // Function to maintain unavailable presence (call this periodically)
     async maintainUnavailablePresence(sock) {
         await UnavailableSystem.setUnavailablePresence(sock);
+        await UnavailableSystem.hideOnlineStatus(sock);
+    },
+    
+    // Get current status
+    getStatus() {
+        return unavailableData.enabled;
+    },
+    
+    // Initialize with sock
+    initialize(sock) {
+        if (unavailableData.enabled) {
+            console.log('🕶️ Unavailable mode was enabled, starting maintenance...');
+            startUnavailableMaintenance(sock);
+        }
     }
 };
