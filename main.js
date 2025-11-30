@@ -202,12 +202,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         // Handle autoread functionality
         await handleAutoread(sock, message);
-
-     // Handle blocked users (check before processing messages)
-if (!isGroup && !message.key.fromMe) {
-    const isBlocked = await handleBlockedUser(sock, chatId, message);
-    if (isBlocked) return; // Stop processing if user is blocked
-}
         // Store message for antidelete feature
         if (message.message) {
             storeMessage(sock, message);
