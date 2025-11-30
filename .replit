@@ -1,9 +1,9 @@
 run = "pnpm install && pnpm start"
 language = "nodejs"
-nodeVersion = "20"
+nodeVersion = "18"
 
 [env]
 NODE_ENV = "production"
 
 [packages]
-nodejs = "20"
+nodejs = "18"
