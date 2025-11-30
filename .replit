@@ -1,8 +1,9 @@
 run = "npm install && npm start"
 language = "nodejs"
+nodeVersion = "20"
 
 [env]
 NODE_ENV = "production"
 
 [packages]
-nodejs = "*"
+nodejs = "20"
