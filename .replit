@@ -1,9 +1,9 @@
 run = "npm start"
 language = "nodejs"
-nodeVersion = "18"
-
-[nix]
-channel = "nodejs-18"
 
 [env]
 NODE_ENV = "production"
+
+[packages]
+nodejs = "*"
+ffmpeg = "*"
