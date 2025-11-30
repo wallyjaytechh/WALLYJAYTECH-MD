@@ -378,7 +378,6 @@ ${platformStatsText}
 ║
 ║ *🔺${prefix}autobio*
 ║ *🔺${prefix}mode <public/private>*
-║ *🔺${prefix}unavailable*
 ║ *🔺${prefix}autorecord*
 ║ *🔺${prefix}autotyping*
 ║ *🔺${prefix}autorecordtype*
