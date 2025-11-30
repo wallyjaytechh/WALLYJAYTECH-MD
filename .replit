@@ -1,9 +1,0 @@
-run = "pnpm install && pnpm start"
-language = "nodejs"
-nodeVersion = "18"
-
-[env]
-NODE_ENV = "production"
-
-[packages]
-nodejs = "18"
