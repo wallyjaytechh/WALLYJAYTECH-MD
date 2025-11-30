@@ -35,7 +35,6 @@
 // ⛥┌┤
 // */
 
-global.File = class File {};
 require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
