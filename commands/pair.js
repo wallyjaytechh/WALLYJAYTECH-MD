@@ -1,134 +1,103 @@
- const axios = require('axios');
-const { sleep } = require('../lib/myfunc');
+const sessionManager = require('../lib/sessionManager');
+const { isOwner } = require('../lib/isOwner');
 
-async function pairCommand(sock, chatId, message, q) {
+async function pairCommand(sock, chatId, message, userMessage) {
     try {
-        if (!q) {
-            return await sock.sendMessage(chatId, {
-                text: "Please provide valid WhatsApp number\nExample: .pair 23482557637XX",
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
-        }
+        const senderId = message.key.participant || message.key.remoteJid;
+        const args = userMessage.split(' ').slice(1);
+        const subCommand = args[0]?.toLowerCase();
+        const isUserOwner = await isOwner(senderId, sock, chatId);
 
-        const numbers = q.split(',')
-            .map((v) => v.replace(/[^0-9]/g, ''))
-            .filter((v) => v.length > 5 && v.length < 20);
-
-        if (numbers.length === 0) {
-            return await sock.sendMessage(chatId, {
-                text: "Invalid number❌️ Please use the correct format!",
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
-        }
-
-        for (const number of numbers) {
-            const whatsappID = number + '@s.whatsapp.net';
-            const result = await sock.onWhatsApp(whatsappID);
-
-            if (!result[0]?.exists) {
-                return await sock.sendMessage(chatId, {
-                    text: `That number is not registered on WhatsApp❗️`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                });
-            }
-
-            await sock.sendMessage(chatId, {
-                text: "Wait a moment for the code",
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
-
-            try {
-                const response = await axios.get(`https://wallyjaytech-md-vwrm.onrender.com/pair?number=${number}`);
-                
-                if (response.data && response.data.code) {
-                    const code = response.data.code;
-                    if (code === "Service Unavailable") {
-                        throw new Error('Service Unavailable');
+        if (isUserOwner) {
+            // OWNER COMMANDS
+            switch (subCommand) {
+                case 'add':
+                    if (args.length < 2) {
+                        return await sock.sendMessage(chatId, { 
+                            text: 'Usage: .pair add <number>\nExample: .pair add 2348155763709'
+                        }, { quoted: message });
                     }
                     
-                    await sleep(5000);
-                    await sock.sendMessage(chatId, {
-                        text: `Your pairing code: ${code}`,
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                                serverMessageId: -1
-                            }
-                        }
-                    });
-                } else {
-                    throw new Error('Invalid response from server');
-                }
-            } catch (apiError) {
-                console.error('API Error:', apiError);
-                const errorMessage = apiError.message === 'Service Unavailable' 
-                    ? "Service is currently unavailable. Please try again later."
-                    : "Failed to generate pairing code. Please try again later.";
-                
-                await sock.sendMessage(chatId, {
-                    text: errorMessage,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
+                    let number = args[1].replace(/[^0-9]/g, '');
+                    if (!number.startsWith('234')) number = '234' + number;
+                    const userJid = number + '@s.whatsapp.net';
+                    
+                    // Generate pair code for this user
+                    const pairCode = sessionManager.generatePairCode(userJid);
+                    const info = sessionManager.getSessionInfo();
+                    
+                    await sock.sendMessage(chatId, { 
+                        text: `🔐 *PAIRING CODE GENERATED*\n\n👤 For: ${userJid}\n📟 Code: *${pairCode}*\n⏰ Expires: 10 minutes\n\nSend this to the user. They need to:\n1. Add this bot number\n2. Use: .link ${pairCode}\n3. Scan QR code when prompted\n\n📊 Available slots: ${info.availableSlots}`
+                    }, { quoted: message });
+                    break;
+
+                case 'remove':
+                    if (args.length < 2) {
+                        return await sock.sendMessage(chatId, { 
+                            text: 'Usage: .pair remove <number>\nExample: .pair remove 2348155763709'
+                        }, { quoted: message });
                     }
-                });
+                    
+                    let removeNumber = args[1].replace(/[^0-9]/g, '');
+                    if (!removeNumber.startsWith('234')) removeNumber = '234' + removeNumber;
+                    const removeJid = removeNumber + '@s.whatsapp.net';
+                    
+                    const result = sessionManager.removeUserSession(removeJid);
+                    await sock.sendMessage(chatId, { text: result.message }, { quoted: message });
+                    break;
+
+                case 'list':
+                    const sessionInfo = sessionManager.getSessionInfo();
+                    let listText = `📱 *ACTIVE SESSIONS*\n\n`;
+                    listText += `👑 Owner: ${sessionInfo.owner || 'Not set'}\n`;
+                    listText += `👥 Users: ${sessionInfo.users.length}/${sessionInfo.totalSlots - 1}\n`;
+                    listText += `🔄 Available: ${sessionInfo.availableSlots}\n\n`;
+                    
+                    if (sessionInfo.users.length > 0) {
+                        listText += `**Active Users:**\n`;
+                        sessionInfo.users.forEach((user, index) => {
+                            listText += `${index + 1}. ${user}\n`;
+                        });
+                    } else {
+                        listText += `No active user sessions.`;
+                    }
+                    
+                    await sock.sendMessage(chatId, { text: listText }, { quoted: message });
+                    break;
+
+                default:
+                    const info = sessionManager.getSessionInfo();
+                    const helpText = `👑 *SESSION MANAGEMENT*\n\n` +
+                                   `.pair add <number> - Generate pair code for user\n` +
+                                   `.pair remove <number> - Remove user session\n` +
+                                   `.pair list - Show all active sessions\n\n` +
+                                   `📊 Status: ${info.usedSlots}/${info.totalSlots} slots used\n` +
+                                   `🔄 Available: ${info.availableSlots} slots free`;
+                    
+                    await sock.sendMessage(chatId, { text: helpText }, { quoted: message });
+                    break;
+            }
+        } else {
+            // USER COMMANDS
+            if (sessionManager.hasSession(senderId)) {
+                await sock.sendMessage(chatId, { 
+                    text: `✅ You have an active session!\n\nYour WhatsApp is linked to this bot.\nYou can use all commands in any chat.`
+                }, { quoted: message });
+            } else {
+                await sock.sendMessage(chatId, { 
+                    text: `❌ No active session found.\n\nYou need a pairing code from the owner to link your WhatsApp.\n\nContact owner to get a pairing code.`
+                }, { quoted: message });
             }
         }
     } catch (error) {
-        console.error(error);
-        await sock.sendMessage(chatId, {
-            text: "An error occurred. Please try again later.",
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
+        console.error('Error in pair command:', error);
+        await sock.sendMessage(chatId, { 
+            text: '❌ Error processing pair command.'
+        }, { quoted: message });
     }
 }
 
-module.exports = pairCommand; 
+module.exports = {
+    command: pairCommand,
+    sessionManager: sessionManager
+};
