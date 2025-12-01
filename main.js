@@ -41,8 +41,6 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { command: pairCommand, sessionManager } = require('./commands/pair');
-const linkCommand = require('./commands/link');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const blockCommand = require('./commands/block');
@@ -52,6 +50,7 @@ const { joinCommand } = require('./commands/join');
 const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
 const { autorecordtypeCommand, isAutorecordtypeEnabled, handleAutorecordtypeForMessage, handleAutorecordtypeForCommand, showRecordTypeAfterCommand } = require('./commands/autorecordtype');
 const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
+const { execute: unavailableCommand, maintainUnavailablePresence: maintainUnavailable } = require('./commands/unavailable');
 const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
@@ -204,6 +203,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         // Handle autoread functionality
         await handleAutoread(sock, message);
+
+     // Handle blocked users (check before processing messages)
+if (!isGroup && !message.key.fromMe) {
+    const isBlocked = await handleBlockedUser(sock, chatId, message);
+    if (isBlocked) return; // Stop processing if user is blocked
+}
         // Store message for antidelete feature
         if (message.message) {
             storeMessage(sock, message);
@@ -221,21 +226,6 @@ await handleAutoreact(sock, message);
        
         const senderIsSudo = await isSudo(senderId);
         const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
-     // Multi-session system - only process messages from users with active sessions
-if (userMessage.startsWith('.') && !message.key.fromMe) {
-    const senderId = message.key.participant || message.key.remoteJid;
-    
-    // Allow pairing/link commands for everyone
-    const allowedCommands = ['.pair', '.link', '.owner', '.help', '.menu'];
-    const isAllowed = allowedCommands.some(cmd => userMessage.startsWith(cmd));
-    
-    if (!isAllowed && !sessionManager.hasSession(senderId)) {
-        await sock.sendMessage(chatId, { 
-            text: `❌ Your WhatsApp is not linked to this bot.\n\nUse .link <code> to connect your WhatsApp account.\nGet pairing code from owner.`
-        }, { quoted: message });
-        return;
-    }
-}
 
         // Handle button responses
         if (message.message?.buttonsResponseMessage) {
@@ -259,30 +249,55 @@ if (userMessage.startsWith('.') && !message.key.fromMe) {
         }
 
         const userMessage = (
-    message.message?.conversation?.trim() ||
-    message.message?.extendedTextMessage?.text?.trim() ||
-    message.message?.imageMessage?.caption?.trim() ||
-    message.message?.videoMessage?.caption?.trim() ||
-    message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
-    ''
-).toLowerCase().replace(/\.\s+/g, '.').trim();
+            message.message?.conversation?.trim() ||
+            message.message?.extendedTextMessage?.text?.trim() ||
+            message.message?.imageMessage?.caption?.trim() ||
+            message.message?.videoMessage?.caption?.trim() ||
+            message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
+            ''
+        ).toLowerCase().replace(/\.\s+/g, '.').trim();
 
-// Preserve raw message for commands like .tag that need original casing
-const rawText = message.message?.conversation?.trim() ||
-    message.message?.extendedTextMessage?.text?.trim() ||
-    message.message?.imageMessage?.caption?.trim() ||
-    message.message?.videoMessage?.caption?.trim() ||
-    '';
+        // Preserve raw message for commands like .tag that need original casing
+        const rawText = message.message?.conversation?.trim() ||
+            message.message?.extendedTextMessage?.text?.trim() ||
+            message.message?.imageMessage?.caption?.trim() ||
+            message.message?.videoMessage?.caption?.trim() ||
+            '';
 
-// Only log command usage
-if (userMessage.startsWith('.')) {
-    console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        // Only log command usage
+        if (userMessage.startsWith('.')) {
+            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        }
+     // Handle antiforeign blocking (check before processing messages)
+if (!isGroup && !message.key.fromMe) {
+    const wasBlocked = await handleAntiforeign(sock, chatId, message);
+    if (wasBlocked) return; // Stop processing if blocked
 }
-
-// Handle button responses
-if (message.message?.buttonsResponseMessage) {
-    const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
-    // ... rest of your existing code continues ...
+        // Only log command usage
+        if (userMessage.startsWith('.')) {
+            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        }
+        // Read bot mode once; don't early-return so moderation can still run in private mode
+        let isPublic = true;
+        try {
+            const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
+            if (typeof data.isPublic === 'boolean') isPublic = data.isPublic;
+        } catch (error) {
+            console.error('Error checking access mode:', error);
+            // default isPublic=true on error
+        }
+        const isOwnerOrSudoCheck = message.key.fromMe || senderIsOwnerOrSudo;
+        // Check if user is banned (skip ban check for unban command)
+        if (isBanned(senderId) && !userMessage.startsWith('.unban')) {
+            // Only respond occasionally to avoid spam
+            if (Math.random() < 0.1) {
+                await sock.sendMessage(chatId, {
+                    text: '❌ You are banned from using the bot. Contact an admin to get unbanned.',
+                    ...channelInfo
+                });
+            }
+            return;
+        }
 
         /*  // Basic message response in private chat
           if (!isGroup && (userMessage === 'hi' || userMessage === 'hello' || userMessage === 'bot' || userMessage === 'hlo' || userMessage === 'hey' || userMessage === 'bro')) {
@@ -304,6 +319,14 @@ if (message.message?.buttonsResponseMessage) {
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
+     // Maintain unavailable presence (every 2 minutes)
+setInterval(async () => {
+    try {
+        await maintainUnavailable(sock);
+    } catch (error) {
+        console.error('Unavailable presence error:', error);
+    }
+}, 120000); // Every 2 minutes
   // Live time bio update (every minute - safe frequency)
 setInterval(async () => {
     try {
@@ -784,15 +807,6 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
-          case userMessage.startsWith('.pair'):
-    await pairCommand(sock, chatId, message, userMessage);
-    commandExecuted = true;
-    break;
-
-case userMessage.startsWith('.link'):
-    await linkCommand(sock, chatId, message, userMessage);
-    commandExecuted = true;
-    break;
           case userMessage.startsWith('.getpp'):
     await getppCommand(sock, chatId, message);
     break;
@@ -855,7 +869,10 @@ case userMessage.startsWith('.autorecord'):
 
                 await antibadwordCommand(sock, chatId, message, senderId, isSenderAdmin);
                 break;
-          
+          case userMessage.startsWith('.unavailable'):
+    const unavailableCmd = require('./commands/unavailable');
+    await unavailableCmd.execute(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
             case userMessage.startsWith('.chatbot'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
