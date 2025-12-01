@@ -319,14 +319,7 @@ if (!isGroup && !message.key.fromMe) {
             // Antilink checks message text internally, so run it even if userMessage is empty
             await Antilink(message, sock);
         }
-     // Maintain unavailable presence (every 2 minutes)
-setInterval(async () => {
-    try {
-        await maintainUnavailable(sock);
-    } catch (error) {
-        console.error('Unavailable presence error:', error);
-    }
-}, 120000); // Every 2 minutes
+
   // Live time bio update (every minute - safe frequency)
 setInterval(async () => {
     try {
