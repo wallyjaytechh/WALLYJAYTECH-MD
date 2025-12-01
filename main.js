@@ -279,23 +279,6 @@ if (userMessage.startsWith('.')) {
     console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
 }
 
-// ==================== ADD SESSION CHECK BLOCK HERE ====================
-// Multi-session system - only process messages from users with active sessions
-if (userMessage.startsWith('.') && !message.key.fromMe) {
-    // Allow pairing/link commands for everyone
-    const allowedCommands = ['.pair', '.link', '.owner', '.help', '.menu'];
-    const isAllowed = allowedCommands.some(cmd => userMessage.startsWith(cmd));
-    
-    if (!isAllowed && !sessionManager.hasSession(senderId)) {
-        await sock.sendMessage(chatId, { 
-            text: `❌ Your WhatsApp is not linked to this bot.\n\nUse .link <code> to connect your WhatsApp account.\nGet pairing code from owner.`
-        }, { quoted: message });
-        return;
-    }
-}
-// ==================== END SESSION CHECK BLOCK ====================
-
-// Then continue with your existing button handling code:
 // Handle button responses
 if (message.message?.buttonsResponseMessage) {
     const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
