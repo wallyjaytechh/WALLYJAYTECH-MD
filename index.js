@@ -35,6 +35,7 @@
 // ⛥┌┤
 // */
 
+global.File = class File {};
 require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
@@ -242,7 +243,7 @@ async function startXeonBotInc() {
             let id = XeonBotInc.decodeJid(contact.id)
             if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
         }
-    }
+    })
 
     XeonBotInc.getName = (jid, withoutContact = false) => {
         id = XeonBotInc.decodeJid(jid)
@@ -315,14 +316,13 @@ async function startXeonBotInc() {
         if (connection == "open") {
             console.log(chalk.magenta(` `))
             console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
-
-            if (connection == "open") {
+if (connection == "open") {
     
-                // Initialize unavailable system
-                const unavailableSystem = require('./commands/unavailable');
-                unavailableSystem.initialize(XeonBotInc);
-                // ... rest of your code
-            }
+    // Initialize unavailable system
+    const unavailableSystem = require('./commands/unavailable');
+    unavailableSystem.initialize(XeonBotInc);
+    // ... rest of your code
+}
 
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
@@ -423,6 +423,12 @@ async function startXeonBotInc() {
 
     XeonBotInc.ev.on('group-participants.update', async (update) => {
         await handleGroupParticipantUpdate(XeonBotInc, update);
+    });
+
+    XeonBotInc.ev.on('messages.upsert', async (m) => {
+        if (m.messages[0].key && m.messages[0].key.remoteJid === 'status@broadcast') {
+            await handleStatus(XeonBotInc, m);
+        }
     });
 
     XeonBotInc.ev.on('status.update', async (status) => {
