@@ -10,6 +10,12 @@ function getDeploymentPlatform() {
         return 'Codespaces';
     } else if (process.env.PANEL_APP) {
         return 'Panel';
+    } else if (process.env.REPL_SLUG) {
+        return 'Replit';
+    } else if (process.env.KOYEB_APP) {
+        return 'Koyeb';
+    } else if (process.env.FLY_APP_NAME) {
+        return 'Fly.io';
     } else {
         return 'Local Machine';
     }
@@ -153,71 +159,112 @@ async function getUserName(sock, userId, message) {
     }
 }
 
-// Track active users
-function getActiveUsersStats() {
+// Track users globally
+function updateGlobalUserStats(userJid, platform, isNewSession = false) {
     try {
-        const activeUsersPath = path.join(__dirname, '../data/activeUsers.json');
+        const statsPath = path.join(__dirname, '../data/globalStats.json');
+        let stats = {
+            totalUsers: 0,
+            activeUsers: new Set(),
+            platforms: {},
+            userPlatforms: {}, // Map user JID to their platform
+            lastUpdated: Date.now()
+        };
         
-        if (!fs.existsSync(activeUsersPath)) {
-            return {
-                active: 0,
-                total: 0,
-                platforms: {}
-            };
+        if (fs.existsSync(statsPath)) {
+            const data = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+            stats.totalUsers = data.totalUsers || 0;
+            stats.activeUsers = new Set(data.activeUsers || []);
+            stats.platforms = data.platforms || {};
+            stats.userPlatforms = data.userPlatforms || {};
         }
         
-        const data = JSON.parse(fs.readFileSync(activeUsersPath, 'utf8'));
+        // Get user's unique ID (phone number)
+        const userUniqueId = userJid.split('@')[0];
         
-        const now = Date.now();
-        const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+        // Only count as new user if they haven't been seen before
+        if (!stats.userPlatforms[userUniqueId]) {
+            stats.totalUsers++;
+            
+            // Track user's platform
+            stats.userPlatforms[userUniqueId] = platform;
+            
+            // Update platform count
+            stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+        } else if (stats.userPlatforms[userUniqueId] !== platform && isNewSession) {
+            // If user changed platform, update platform counts
+            const oldPlatform = stats.userPlatforms[userUniqueId];
+            if (stats.platforms[oldPlatform] > 0) {
+                stats.platforms[oldPlatform]--;
+            }
+            stats.userPlatforms[userUniqueId] = platform;
+            stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+        }
         
-        const activeUsers = Object.values(data.users || {}).filter(user => 
-            user.lastActive > twentyFourHoursAgo
-        ).length;
+        // Add to active users (current session)
+        stats.activeUsers.add(userUniqueId);
+        
+        // Clean old data (remove users inactive for 7 days)
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        if (stats.lastUpdated < sevenDaysAgo) {
+            // Reset active users periodically
+            stats.activeUsers = new Set([userUniqueId]);
+        }
+        
+        stats.lastUpdated = Date.now();
+        
+        // Save updated stats
+        fs.writeFileSync(statsPath, JSON.stringify({
+            totalUsers: stats.totalUsers,
+            activeUsers: Array.from(stats.activeUsers),
+            platforms: stats.platforms,
+            userPlatforms: stats.userPlatforms,
+            lastUpdated: stats.lastUpdated
+        }, null, 2));
         
         return {
-            active: activeUsers,
-            total: Object.keys(data.users || {}).length,
-            platforms: data.platforms || {}
+            totalUsers: stats.totalUsers,
+            activeUsers: stats.activeUsers.size,
+            platforms: stats.platforms
         };
+        
     } catch (error) {
-        console.error('Error getting active users stats:', error);
+        console.error('Error updating global stats:', error);
         return {
-            active: 0,
-            total: 0,
+            totalUsers: 0,
+            activeUsers: 0,
             platforms: {}
         };
     }
 }
 
-// Update user activity
-function updateUserActivity(userId, platform) {
+// Get global user stats
+function getGlobalUserStats() {
     try {
-        const activeUsersPath = path.join(__dirname, '../data/activeUsers.json');
-        let data = { users: {}, platforms: {} };
+        const statsPath = path.join(__dirname, '../data/globalStats.json');
         
-        if (fs.existsSync(activeUsersPath)) {
-            data = JSON.parse(fs.readFileSync(activeUsersPath, 'utf8'));
+        if (!fs.existsSync(statsPath)) {
+            return {
+                totalUsers: 0,
+                activeUsers: 0,
+                platforms: {}
+            };
         }
         
-        data.users[userId] = {
-            lastActive: Date.now(),
-            firstSeen: data.users[userId]?.firstSeen || Date.now()
+        const data = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+        
+        return {
+            totalUsers: data.totalUsers || 0,
+            activeUsers: data.activeUsers?.length || 0,
+            platforms: data.platforms || {}
         };
-        
-        if (platform) {
-            data.platforms[platform] = (data.platforms[platform] || 0) + 1;
-        }
-        
-        const dataDir = path.dirname(activeUsersPath);
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        
-        fs.writeFileSync(activeUsersPath, JSON.stringify(data, null, 2));
-        
     } catch (error) {
-        console.error('Error updating user activity:', error);
+        console.error('Error getting global stats:', error);
+        return {
+            totalUsers: 0,
+            activeUsers: 0,
+            platforms: {}
+        };
     }
 }
 
@@ -228,6 +275,9 @@ function getPlatformEmoji(platform) {
         'Codespaces': '💻', 
         'Panel': '🛠️',
         'Local Machine': '🏠',
+        'Replit': '⚡',
+        'Koyeb': '🚀',
+        'Fly.io': '✈️',
         'Unknown': '❓'
     };
     return platformEmojis[platform] || '❓';
@@ -243,66 +293,25 @@ function countTotalCommands() {
         }
         
         const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
-        const commands = new Set();
+        let commandCount = 0;
         
-        const switchCaseBlock = extractSwitchCaseBlock(mainJsContent);
-        
-        if (!switchCaseBlock) {
-            return 157;
-        }
-        
-        const casePattern = /case\s+(?:userMessage\s*===?\s*['"`]\.([^'"`]+)['"`]|userMessage\s*\.startsWith\(\s*['"`]\.([^'"`]+)['"`]\s*\)|userMessage\s*\.includes\(\s*['"`]\.([^'"`]+)['"`]\s*\)|userMessage\s*\.match\(\s*['"`]\.([^'"`]+)['"`]\s*\))/g;
+        // Count case statements
+        const casePattern = /case\s+(?:userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
         
         let match;
-        while ((match = casePattern.exec(switchCaseBlock)) !== null) {
-            for (let i = 1; i <= 4; i++) {
-                if (match[i] && match[i].trim()) {
-                    const command = match[i].trim();
-                    commands.add(command);
-                }
+        while ((match = casePattern.exec(mainJsContent)) !== null) {
+            if (match[2]) {
+                commandCount++;
             }
         }
         
-        const totalCount = commands.size;
-        console.log(`🔄 Dynamic scan found ${totalCount} commands`);
-        
-        return totalCount;
+        console.log(`🤖 Auto-detected ${commandCount} commands`);
+        return commandCount;
         
     } catch (error) {
         console.error('Error counting commands:', error);
         return 157;
     }
-}
-
-// Extract switch case block
-function extractSwitchCaseBlock(content) {
-    const switchStart = content.indexOf('switch (true) {');
-    if (switchStart === -1) return null;
-    
-    let braceCount = 0;
-    let inSwitch = false;
-    let switchContent = '';
-    
-    for (let i = switchStart; i < content.length; i++) {
-        const char = content[i];
-        
-        if (char === '{') {
-            braceCount++;
-            inSwitch = true;
-        } else if (char === '}') {
-            braceCount--;
-        }
-        
-        if (inSwitch) {
-            switchContent += char;
-        }
-        
-        if (inSwitch && braceCount === 0) {
-            break;
-        }
-    }
-    
-    return switchContent;
 }
 
 // Main help command
@@ -316,8 +325,9 @@ async function helpCommand(sock, chatId, message) {
     const prefix = getPrefix();
     
     const userPlatform = getDeploymentPlatform();
-    updateUserActivity(senderId, userPlatform);
-    const userStats = getActiveUsersStats();
+    
+    // Update global stats (treat each help command as active session)
+    const userStats = updateGlobalUserStats(senderId, userPlatform);
     
     const getLocalizedTime = () => {
         try {
@@ -338,9 +348,21 @@ async function helpCommand(sock, chatId, message) {
 
     const totalCommands = countTotalCommands();
     
-    const platformStatsText = Object.entries(userStats.platforms)
-        .map(([platform, count]) => `║     ${getPlatformEmoji(platform)} ${platform}: ${count}`)
-        .join('\n') || '║     📊 No data yet';
+    // Format platform stats
+    let platformStatsText = '';
+    const platforms = userStats.platforms;
+    const platformEntries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
+    
+    if (platformEntries.length > 0) {
+        platformStatsText = platformEntries.map(([platform, count]) => 
+            `║     ${getPlatformEmoji(platform)} ${platform}: ${count} users`
+        ).join('\n');
+    } else {
+        platformStatsText = '║     📊 No platform data yet';
+    }
+    
+    // Get global stats for display
+    const globalStats = getGlobalUserStats();
     
     const helpMessage = `
 👋 *Hello @${userName}!* ${greeting.message}
@@ -362,10 +384,10 @@ ${greeting.greeting}! Here's your menu:
 ║   *💻 Bot Mode: [ ${currentBotMode} ]*
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 FullDate: [ ${getLocalizedTime()} ]*
-║   *📡 Deployed Platform: [ ${getDeploymentPlatform()} ]*
-║   *👥 Active Users (24h): [ ${userStats.active} ]*
-║   *📊 Total Users: [ ${userStats.total} ]*
-║   *🌐 Deployment Platforms:*
+║   *📡 Your Platform: [ ${userPlatform} ]*
+║   *👥 Active Users (Now): [ ${globalStats.activeUsers} ]*
+║   *📊 Total Users (All Time): [ ${globalStats.totalUsers} ]*
+║   *🌐 Users by Platform:*
 ${platformStatsText}
 ║
 ╚═══════════════════╝
@@ -619,34 +641,8 @@ ${platformStatsText}
 ║
 ╚═══════════════════╝
 
-╔═══════════════════╗
-║                        
-║ *🌐GENERAL CMDS🌐*   
-║                        
-║ *🔸${prefix}help or ${prefix}menu*      
-║ *🔸${prefix}ping*            
-║ *🔸${prefix}alive*              
-║ *🔸${prefix}tts <text>*          
-║ *🔸${prefix}owner*               
-║ *🔸${prefix}joke*                
-║ *🔸${prefix}quote*               
-║ *🔸${prefix}fact*                
-║ *🔸${prefix}weather <city>*      
-║ *🔸${prefix}news*                
-║ *🔸${prefix}attp <text>*         
-║ *🔸${prefix}lyrics <songtitle>*
-║ *🔸${prefix}8ball <question>*    
-║ *🔸${prefix}vv*                  
-║ *🔸${prefix}trt <text> <lang>*  
-║ *🔸${prefix}ss <link>*          
-║ *🔸${prefix}url*        
-║ *🔸${prefix}getjid* 
-║                       
-╚═══════════════════╝ 
 
-    🟡 *Copyright wallyjaytech 2025* 🟡
-
-*📊 Total Commands: ${totalCommands}*
+*📊 Global Stats: ${globalStats.activeUsers} active now, ${globalStats.totalUsers} total users*
 
 *${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*
 
