@@ -295,8 +295,8 @@ function countTotalCommands() {
         const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
         let commandCount = 0;
         
-        // Count case statements
-        const casePattern = /case\s+(?:userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
+        // Simple pattern to count case statements
+        const casePattern = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
         
         let match;
         while ((match = casePattern.exec(mainJsContent)) !== null) {
@@ -641,6 +641,34 @@ ${platformStatsText}
 ║
 ╚═══════════════════╝
 
+╔═══════════════════╗
+║                        
+║ *🌐GENERAL CMDS🌐*   
+║                        
+║ *🔸${prefix}help or ${prefix}menu*      
+║ *🔸${prefix}ping*            
+║ *🔸${prefix}alive*              
+║ *🔸${prefix}tts <text>*          
+║ *🔸${prefix}owner*               
+║ *🔸${prefix}joke*                
+║ *🔸${prefix}quote*               
+║ *🔸${prefix}fact*                
+║ *🔸${prefix}weather <city>*      
+║ *🔸${prefix}news*                
+║ *🔸${prefix}attp <text>*         
+║ *🔸${prefix}lyrics <songtitle>*
+║ *🔸${prefix}8ball <question>*    
+║ *🔸${prefix}vv*                  
+║ *🔸${prefix}trt <text> <lang>*  
+║ *🔸${prefix}ss <link>*          
+║ *🔸${prefix}url*        
+║ *🔸${prefix}getjid* 
+║                       
+╚═══════════════════╝ 
+
+    🟡 *Copyright wallyjaytech 2025* 🟡
+
+*📊 Total Commands: ${totalCommands}*
 
 *📊 Global Stats: ${globalStats.activeUsers} active now, ${globalStats.totalUsers} total users*
 
