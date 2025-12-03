@@ -318,10 +318,7 @@ async function startXeonBotInc() {
             console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
 if (connection == "open") {
     
-    // Initialize unavailable system
-    const unavailableSystem = require('./commands/unavailable');
-    unavailableSystem.initialize(XeonBotInc);
-    // ... rest of your code
+
 }
 
             try {
