@@ -150,7 +150,11 @@ make sure to have a discord account setup first before using any panel method.
 <br>
 ## DEPLOY ON KATABUMB
 
-<a href='https://katabump.com/en/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=koyeb&logoColor=black'  width="96.35" height="28"/></a></p>
+<a href='https://katabump.com/en/' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/katabump-cyan?style=for-the-badge&logo=katabump&logoColor=black'  width="96.35" height="28"/></a></p>
+
+## KATABUMP TUTORIAL VIDEO
+
+<a href='https://youtu.be/y7wdlU_A1bk?si=AvXy2qlUcROstgSZ' target="_blank"><img alt='YOUTUBE' src='https://img.shields.io/badge/youtube-red?style=for-the-badge&logo=youtube&logoColor=white'  width="96.35" height="28"/></a></p>
 
 
    
