@@ -69,7 +69,7 @@ function getTimeBasedGreeting() {
         
         if (hourNum >= 5 && hourNum < 12) {
             return {
-                greeting: '*🌅 Good Morning*',
+                greeting: '🌅 *Good Morning*',
                 emoji: '🌅',
                 time: timeString,
                 message: '*Have a wonderful day ahead!*'
