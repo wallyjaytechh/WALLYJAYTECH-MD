@@ -76,24 +76,24 @@ function getTimeBasedGreeting() {
             };
         } else if (hourNum >= 12 && hourNum < 17) {
             return {
-                greeting: '☀️ Good Afternoon', 
+                greeting: '*☀️ Good Afternoon*', 
                 emoji: '☀️',
                 time: timeString,
-                message: 'Hope you\'re having a great day!'
+                message: '*Hope you\'re having a great day!*'
             };
         } else if (hourNum >= 17 && hourNum < 21) {
             return {
-                greeting: '🌇 Good Evening',
+                greeting: '*🌇 Good Evening*',
                 emoji: '🌇',
                 time: timeString,
-                message: 'Hope you had a productive day!'
+                message: '*Hope you had a productive day!*'
             };
         } else {
             return {
-                greeting: '🌙 Good Night',
+                greeting: '*🌙 Good Night*',
                 emoji: '🌙',
                 time: timeString,
-                message: 'Have a peaceful night!'
+                message: '*Have a peaceful night!*'
             };
         }
     } catch (error) {
