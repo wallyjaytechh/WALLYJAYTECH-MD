@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { autoStatusReactCommand, handleStatusReaction } = require('./commands/autostatusreact');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const blockCommand = require('./commands/block');
@@ -198,6 +199,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         const message = messages[0];
         if (!message?.message) return;
+     // Handle both viewing and reacting
+if (status.key && status.key.remoteJid === 'status@broadcast') {
+    // First handle viewing status
+    await handleStatusUpdate(sock, status);
+    // Then handle reactions (with delay)
+    await handleStatusReaction(sock, status);
+}
      const isGroup = chatId ? chatId.endsWith('@g.us') : false;
 
         // Handle autoread functionality
@@ -376,7 +384,7 @@ await handleAutorecordForMessage(sock, chatId, userMessage);
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
         // List of owner commands
-        const ownerCommands = ['.mode', '.autostatus', '.ban', '.unban', '.antidelete', '.cleartmp', '.tempfile', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker'];
+        const ownerCommands = ['.mode', '.autostatus', '.autostatusreact', '.ban', '.unban', '.antidelete', '.cleartmp', '.tempfile', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -941,6 +949,10 @@ case userMessage.startsWith('.autorecord'):
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
                 await clearSessionCommand(sock, chatId, message);
                 break;
+          case userMessage.startsWith('.autostatusreact'):
+    const autoStatusReactArgs = userMessage.split(' ').slice(1);
+    await autoStatusReactCommand(sock, chatId, message, autoStatusReactArgs);
+    break;
             case userMessage.startsWith('.autostatus'):
                 const autoStatusArgs = userMessage.split(' ').slice(1);
                 await autoStatusCommand(sock, chatId, message, autoStatusArgs);
