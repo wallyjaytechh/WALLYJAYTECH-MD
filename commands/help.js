@@ -69,31 +69,31 @@ function getTimeBasedGreeting() {
         
         if (hourNum >= 5 && hourNum < 12) {
             return {
-                greeting: '🌅 *Good Morning*',
+                greeting: '🌅 Good Morning',
                 emoji: '🌅',
                 time: timeString,
-                message: '*Have a wonderful day ahead!*'
+                message: 'Have a wonderful day ahead!'
             };
         } else if (hourNum >= 12 && hourNum < 17) {
             return {
-                greeting: '*☀️ Good Afternoon*', 
+                greeting: '☀️ Good Afternoon', 
                 emoji: '☀️',
                 time: timeString,
-                message: '*Hope you\'re having a great day!*'
+                message: 'Hope you\'re having a great day!'
             };
         } else if (hourNum >= 17 && hourNum < 21) {
             return {
-                greeting: '*🌇 Good Evening*',
+                greeting: '🌇 Good Evening',
                 emoji: '🌇',
                 time: timeString,
-                message: '*Hope you had a productive day!*'
+                message: 'Hope you had a productive day!'
             };
         } else {
             return {
-                greeting: '*🌙 Good Night*',
+                greeting: '🌙 Good Night',
                 emoji: '🌙',
                 time: timeString,
-                message: '*Have a peaceful night!*'
+                message: 'Have a peaceful night!'
             };
         }
     } catch (error) {
@@ -365,9 +365,9 @@ async function helpCommand(sock, chatId, message) {
     const globalStats = getGlobalUserStats();
     
     const helpMessage = `
-👋 *Hello @${userName}!* ${greeting.message}
+👋 *Hello @${userName}! ${greeting.message}*
 
-${greeting.greeting}! *Here's your menu:*
+*${greeting.greeting}! Here's your menu:*
 
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
