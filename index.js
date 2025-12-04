@@ -43,7 +43,8 @@ const chalk = require('chalk')
 const FileType = require('file-type')
 const path = require('path')
 const axios = require('axios')
-const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
+const { handleMessages, handleGroupParticipantUpdate } = require('./main');
+const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
@@ -180,19 +181,23 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-    // Message handling
+// Message handling
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         try {
             const mek = chatUpdate.messages[0]
             if (!mek.message) return
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+            
+            // OPTIMIZED: Handle status updates FIRST and immediately
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                await handleStatus(XeonBotInc, chatUpdate);
+                // Process status instantly without waiting
+                handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
+                    console.error("Status view error:", err.message);
+                });
                 return;
             }
+            
             // In private mode, only block non-group messages (allow groups for moderation)
-            // Note: XeonBotInc.public is not synced, so we check mode in main.js instead
-            // This check is kept for backward compatibility but mainly blocks DMs
             if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
                 const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
                 if (!isGroup) return // Block DMs in private mode, but allow group messages
@@ -422,18 +427,39 @@ if (connection == "open") {
         await handleGroupParticipantUpdate(XeonBotInc, update);
     });
 
-    XeonBotInc.ev.on('messages.upsert', async (m) => {
-        if (m.messages[0].key && m.messages[0].key.remoteJid === 'status@broadcast') {
-            await handleStatus(XeonBotInc, m);
+    // Additional status event handlers for immediate response
+    XeonBotInc.ev.on('status.update', async (status) => {
+        // Process status updates immediately
+        handleStatusUpdate(XeonBotInc, status).catch(err => {
+            console.error("Status.update error:", err.message);
+        });
+    });
+
+    XeonBotInc.ev.on('messages.reaction', async (reaction) => {
+        // Also handle status reactions if they appear
+        if (reaction.key && reaction.key.remoteJid === 'status@broadcast') {
+            handleStatusUpdate(XeonBotInc, { key: reaction.key }).catch(err => {
+                console.error("Status reaction error:", err.message);
+            });
         }
     });
 
-    XeonBotInc.ev.on('status.update', async (status) => {
-        await handleStatus(XeonBotInc, status);
-    });
-
-    XeonBotInc.ev.on('messages.reaction', async (status) => {
-        await handleStatus(XeonBotInc, status);
+    // Handle bulk status updates when multiple statuses appear
+    XeonBotInc.ev.on('messages.upsert', async (m) => {
+        // Check for multiple status messages
+        if (m.messages && m.messages.length > 1) {
+            const statusMessages = m.messages.filter(msg => 
+                msg.key && msg.key.remoteJid === 'status@broadcast'
+            );
+            
+            if (statusMessages.length > 0) {
+                // Import handleBulkStatusUpdate from autostatus.js
+                const { handleBulkStatusUpdate } = require('./commands/autostatus');
+                handleBulkStatusUpdate(XeonBotInc, statusMessages).catch(err => {
+                    console.error("Bulk status error:", err.message);
+                });
+            }
+        }
     });
 
     return XeonBotInc
