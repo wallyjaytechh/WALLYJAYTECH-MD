@@ -404,8 +404,8 @@ ${platformStatsText}
 ║ *🔺${prefix}autotyping*
 ║ *🔺${prefix}autorecordtype*
 ║ *🔺${prefix}autostatus <on/off>*
-║ *🔺${prefix}autoreact <on/off>*
 ║ *🔺${prefix}autostatus react <on/off>*
+║ *🔺${prefix}autoreact <on/off>*
 ║ *🔺${prefix}autoread <on/off>*
 ║ *🔺${prefix}antiforeign*
 ║ *🔺${prefix}join*
