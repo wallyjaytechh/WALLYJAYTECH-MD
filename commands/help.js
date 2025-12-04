@@ -69,10 +69,10 @@ function getTimeBasedGreeting() {
         
         if (hourNum >= 5 && hourNum < 12) {
             return {
-                greeting: '🌅 Good Morning',
+                greeting: '*🌅 Good Morning*',
                 emoji: '🌅',
                 time: timeString,
-                message: 'Have a wonderful day ahead!'
+                message: '*Have a wonderful day ahead!*'
             };
         } else if (hourNum >= 12 && hourNum < 17) {
             return {
@@ -367,7 +367,7 @@ async function helpCommand(sock, chatId, message) {
     const helpMessage = `
 👋 *Hello @${userName}!* ${greeting.message}
 
-${greeting.greeting}! Here's your menu:
+${greeting.greeting}! *Here's your menu:*
 
 ╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖
 ║
