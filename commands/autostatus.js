@@ -24,6 +24,16 @@ if (!fs.existsSync(configPath)) {
     }));
 }
 
+// Cache to avoid duplicate processing
+const processedStatuses = new Set();
+const CLEAR_CACHE_INTERVAL = 30000; // Clear cache every 30 seconds
+
+// Clear cache periodically
+setInterval(() => {
+    processedStatuses.clear();
+    console.log('🧹 Cleared status cache');
+}, CLEAR_CACHE_INTERVAL);
+
 async function autoStatusCommand(sock, chatId, msg, args) {
     try {
         const senderId = msg.key.participant || msg.key.remoteJid;
@@ -45,7 +55,7 @@ async function autoStatusCommand(sock, chatId, msg, args) {
             const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
             
             await sock.sendMessage(chatId, { 
-                text: `🔄 *WALLYJAYTECH-MD Auto Status*\n\n📱 *Auto Status View:* ${status}\n\n*Commands:*\n• .autostatus on - Enable auto status viewing\n• .autostatus off - Disable auto status viewing`,
+                text: `⚡ *WALLYJAYTECH-MD Auto Status*\n\n📱 *Auto Status View:* ${status}\n\n*Commands:*\n• .autostatus on - Enable instant status viewing\n• .autostatus off - Disable auto status viewing`,
                 ...channelInfo
             });
             return;
@@ -58,7 +68,7 @@ async function autoStatusCommand(sock, chatId, msg, args) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config));
             await sock.sendMessage(chatId, { 
-                text: '✅ *Auto status view enabled!*\n\nBot will now automatically view all contact statuses.',
+                text: '✅ *Auto status view enabled!*\n\nBot will now instantly view all contact statuses as they appear.',
                 ...channelInfo
             });
         } 
@@ -66,13 +76,13 @@ async function autoStatusCommand(sock, chatId, msg, args) {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config));
             await sock.sendMessage(chatId, { 
-                text: '❌ *Auto status view disabled!*\n\nBot will no longer automatically view statuses.',
+                text: '❌ *Auto status view disabled!*\n\nBot will no longer view statuses.',
                 ...channelInfo
             });
         }
         else {
             await sock.sendMessage(chatId, { 
-                text: `❌ *Invalid command!*\n\n*Available Commands:*\n• .autostatus on - Enable auto status viewing\n• .autostatus off - Disable auto status viewing`,
+                text: `❌ *Invalid command!*\n\n*Available Commands:*\n• .autostatus on - Enable instant status viewing\n• .autostatus off - Disable auto status viewing`,
                 ...channelInfo
             });
         }
@@ -97,70 +107,68 @@ function isAutoStatusEnabled() {
     }
 }
 
-// Function to handle status updates
+// Fast status viewing function (no delays)
+async function viewStatusInstantly(sock, statusKey) {
+    try {
+        // Create a unique identifier for this status
+        const statusId = `${statusKey.remoteJid}:${statusKey.id}`;
+        
+        // Skip if we already processed this status
+        if (processedStatuses.has(statusId)) {
+            return;
+        }
+        
+        // Mark as processed
+        processedStatuses.add(statusId);
+        
+        // View status immediately (no delay)
+        await sock.readMessages([statusKey]);
+        
+        const sender = statusKey.participant || 'Unknown';
+        console.log(`⚡ Instantly viewed status from ${sender}`);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error viewing status instantly:', error.message);
+        
+        // If it's a rate limit error, remove from cache to retry later
+        if (error.message?.includes('rate-overlimit')) {
+            const statusId = `${statusKey.remoteJid}:${statusKey.id}`;
+            processedStatuses.delete(statusId);
+            console.log('⚠️ Rate limit hit, will retry on next update');
+        }
+        
+        return false;
+    }
+}
+
+// Optimized function to handle status updates
 async function handleStatusUpdate(sock, status) {
     try {
         if (!isAutoStatusEnabled()) {
             return;
         }
 
-        // Add delay to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
         let statusKey = null;
-        let statusSender = null;
 
         // Handle status from messages.upsert
         if (status.messages && status.messages.length > 0) {
             const msg = status.messages[0];
             if (msg.key && msg.key.remoteJid === 'status@broadcast') {
                 statusKey = msg.key;
-                statusSender = msg.key.participant || 'status@broadcast';
             }
         }
         // Handle direct status updates
         else if (status.key && status.key.remoteJid === 'status@broadcast') {
             statusKey = status.key;
-            statusSender = status.key.participant || 'status@broadcast';
         }
 
-        // If we have a valid status key
-        if (statusKey && statusSender) {
-            try {
-                // Mark status as viewed
-                await sock.readMessages([statusKey]);
-                
-                console.log(`✅ Viewed status from ${statusSender}`);
-                
-            } catch (err) {
-                if (err.message?.includes('rate-overlimit')) {
-                    console.log('⚠️ Rate limit hit, waiting before retrying...');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    await sock.readMessages([statusKey]);
-                } else {
-                    throw err;
-                }
-            }
-            return;
-        }
-
-        // Handle status in reactions
-        if (status.reaction && status.reaction.key.remoteJid === 'status@broadcast') {
-            try {
-                await sock.readMessages([status.reaction.key]);
-                const sender = status.reaction.key.participant || status.reaction.key.remoteJid;
-                
-                console.log(`✅ Viewed status reaction from ${sender}`);
-            } catch (err) {
-                if (err.message?.includes('rate-overlimit')) {
-                    console.log('⚠️ Rate limit hit, waiting before retrying...');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    await sock.readMessages([status.reaction.key]);
-                } else {
-                    throw err;
-                }
-            }
-            return;
+        // If we have a valid status key, view it IMMEDIATELY
+        if (statusKey) {
+            // Don't await - process immediately without blocking
+            viewStatusInstantly(sock, statusKey).catch(err => {
+                console.error('Background status view error:', err.message);
+            });
         }
 
     } catch (error) {
@@ -168,7 +176,40 @@ async function handleStatusUpdate(sock, status) {
     }
 }
 
+// Alternative: Bulk status viewer for when multiple statuses appear
+async function handleBulkStatusUpdate(sock, statusList) {
+    if (!isAutoStatusEnabled()) return;
+    
+    try {
+        const statusKeys = [];
+        
+        for (const status of statusList) {
+            if (status.messages && status.messages.length > 0) {
+                const msg = status.messages[0];
+                if (msg.key && msg.key.remoteJid === 'status@broadcast') {
+                    // Check cache before adding
+                    const statusId = `${msg.key.remoteJid}:${msg.key.id}`;
+                    if (!processedStatuses.has(statusId)) {
+                        statusKeys.push(msg.key);
+                        processedStatuses.add(statusId);
+                    }
+                }
+            }
+        }
+        
+        if (statusKeys.length > 0) {
+            // View all statuses at once
+            await sock.readMessages(statusKeys);
+            console.log(`⚡ Bulk viewed ${statusKeys.length} statuses instantly`);
+        }
+    } catch (error) {
+        console.error('❌ Error in bulk status view:', error.message);
+    }
+}
+
 module.exports = {
     autoStatusCommand,
-    handleStatusUpdate
+    handleStatusUpdate,
+    handleBulkStatusUpdate,
+    isAutoStatusEnabled
 };
