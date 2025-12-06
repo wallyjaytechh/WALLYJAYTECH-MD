@@ -41,7 +41,6 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { autoStatusReactCommand, handleStatusReaction } = require('./commands/autostatusreact');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const blockCommand = require('./commands/block');
@@ -965,10 +964,7 @@ case userMessage.startsWith('.autorecord'):
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
                 await clearSessionCommand(sock, chatId, message);
                 break;
-          case userMessage.startsWith('.autostatusreact'):
-    const autoStatusReactArgs = userMessage.split(' ').slice(1);
-    await autoStatusReactCommand(sock, chatId, message, autoStatusReactArgs);
-    break;
+          
             case userMessage.startsWith('.autostatus'):
                 const autoStatusArgs = userMessage.split(' ').slice(1);
                 await autoStatusCommand(sock, chatId, message, autoStatusArgs);
