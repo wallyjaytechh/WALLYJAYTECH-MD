@@ -199,24 +199,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];
         if (!message?.message) return;
         
-        // ========== ADD THE STATUS HANDLER RIGHT HERE ==========
-        // Check if it's a status update
-        if (message.key && message.key.remoteJid === 'status@broadcast') {
-            // View status instantly
-            await handleStatusUpdate(sock, { messages: [message] });
-            
-            // Wait a moment and then react (if enabled)
-            setTimeout(async () => {
-                try {
-                    await handleStatusReaction(sock, { messages: [message] });
-                } catch (error) {
-                    console.error('Status reaction error:', error.message);
-                }
-            }, 800); // 800ms delay before reacting
-            
-            return; // Stop processing for status messages
-        }
-        // ========== END STATUS HANDLER ==========
+
         
      const isGroup = chatId ? chatId.endsWith('@g.us') : false;
 
