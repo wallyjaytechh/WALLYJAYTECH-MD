@@ -686,13 +686,27 @@ ${platformStatsText}
 ║  *🎮GAME CMDS🎮*
 ║
 ║ *◾️${prefix}tictactoe @user*
+║
+║   *👇HANGMAN👇* 
 ║ *◾️${prefix}hangman*
 ║ *◾️${prefix}guess <letter for hangman>*
+║
+║   *👇TRIVIA👇* 
 ║ *◾️${prefix}trivia*
 ║ *◾️${prefix}answer <answer for trivia>*
+║
+║   *👇TRUTH&DARE👇* 
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
+║
+║    *👇COINFLIP👇*
 ║ *◾️${prefix}coinflip*
+║ *◾️${prefix}coinflip <heads/tails>*
+║ *◾️${prefix}coinflip <heads/tails> <bet amount>
+║ *◾️${prefix}coinstats*
+║ *◾️${prefix}cointop*
+║ *◾️${prefix}coindaily*
+║ *◾️${prefix}coinhelp*
 ║
 ╚═══════════════════╝
 
