@@ -278,26 +278,29 @@ await handleAutoreact(sock, message);
             ''
         );
 
-        // Get current prefix - WITH CACHE CLEARING
+        // Get current prefix
         delete require.cache[require.resolve('./settings')];
         const settings = require('./settings');
         const currentPrefix = settings.prefix || '.';
         
+        // Check if message is a command
         let isCommand = false;
-        let commandText = '';
+        let commandWithoutPrefix = '';
         
+        // Case 1: No prefix needed (empty string)
         if (currentPrefix === '' && rawMessageText.trim()) {
-            // No prefix needed
             isCommand = true;
-            commandText = rawMessageText;
-        } else if (currentPrefix && rawMessageText.startsWith(currentPrefix)) {
-            // Has custom prefix
+            commandWithoutPrefix = rawMessageText.trim();
+        }
+        // Case 2: Has custom prefix
+        else if (currentPrefix && rawMessageText.startsWith(currentPrefix)) {
             isCommand = true;
-            commandText = rawMessageText.slice(currentPrefix.length).trim();
-        } else if (rawMessageText.startsWith('.')) {
-            // Has default prefix (backward compatibility)
+            commandWithoutPrefix = rawMessageText.slice(currentPrefix.length).trim();
+        }
+        // Case 3: Has dot prefix (backward compatibility)
+        else if (rawMessageText.startsWith('.')) {
             isCommand = true;
-            commandText = rawMessageText;
+            commandWithoutPrefix = rawMessageText.slice(1).trim();
         }
         
         if (!isCommand) {
@@ -308,13 +311,12 @@ await handleAutoreact(sock, message);
             return;
         }
         
-        // Process as command
-        const userMessage = commandText.toLowerCase().replace(/\.\s+/g, '.').trim();
-        const rawText = commandText;
+        // Add dot back for your switch statement
+        const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
+        const rawText = commandWithoutPrefix;
         
         // Only log command usage
-        console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage} (prefix: ${currentPrefix || 'none'})`);
-    }
+        console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
        
      // Handle antiforeign blocking (check before processing messages)
 if (!isGroup && !message.key.fromMe) {
