@@ -830,7 +830,7 @@ case userMessage.startsWith('.getjid @'):
                 commandExecuted = true;
                 break;
 
-            case userMessage === '.botinfo' || userMessage === '.binfo':
+        case userMessage === '.botinfo' || userMessage === '.binfo':
                 {
                     const uptime = formatUptime(process.uptime());
                     const memory = process.memoryUsage();
