@@ -159,49 +159,7 @@ const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/
 const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
 
-// Smart prefix handler function
-function checkPrefix(messageText, chatId, senderId) {
-    const { getPrefix } = require('./commands/setprefix');
-    const dynamicPrefix = getPrefix(chatId, senderId);
-    
-    // If no prefix is set (empty string), accept all messages as commands
-    if (dynamicPrefix === '') {
-        return {
-            isCommand: true,
-            command: messageText.trim(),
-            rawCommand: messageText.trim(),
-            prefix: ''
-        };
-    }
-    
-    // Check if message starts with the dynamic prefix
-    if (messageText.startsWith(dynamicPrefix)) {
-        const command = messageText.slice(dynamicPrefix.length).trim();
-        return {
-            isCommand: true,
-            command: command,
-            rawCommand: command,
-            prefix: dynamicPrefix
-        };
-    }
-    
-    // Check if it's a .command (for backward compatibility)
-    if (messageText.startsWith('.')) {
-        return {
-            isCommand: true,
-            command: messageText,
-            rawCommand: messageText,
-            prefix: '.'
-        };
-    }
-    
-    return {
-        isCommand: false,
-        command: '',
-        rawCommand: '',
-        prefix: dynamicPrefix
-    };
-}
+
 
 // Global settings
 global.packname = settings.packname;
