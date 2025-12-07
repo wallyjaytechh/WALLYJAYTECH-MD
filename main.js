@@ -41,12 +41,6 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { 
-    saveStatusCommand, 
-    handlePillEmoji,
-    mySavesCommand,
-    viewSaveCommand 
-} = require('./commands/savestatus');
 const {
     unlimitedChipsCommand,
     buyChipsCommand,
@@ -592,33 +586,6 @@ case userMessage.startsWith('.viewsave'):
     await viewSaveCommand(sock, chatId, message, viewArgs);
     commandExecuted = true;
     break;
-
-// Handle pill emoji reactions
-case userMessage === '💊':
-    // This handles pill emoji in chats
-    // For status reactions, it's handled in index.js
-    break;
-          // Add this in the switch statement
-case rawMessageText === '💊':
-    // Check if replying to a message
-    const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-    if (quotedMsg) {
-        // It's a pill emoji reply to a message
-        const saveResult = await saveStatusToStorage(sock, {
-            key: { remoteJid: chatId },
-            message: quotedMsg
-        }, 'quiet', senderId, 'message');
-        
-        if (saveResult?.success) {
-            await sock.sendMessage(senderId, { 
-                text: `💊 Message saved discreetly.\nID: ${saveResult.statusId}` 
-            }).catch(() => {});
-        }
-    }
-    // Don't send any response in chat (discreet)
-    commandExecuted = true;
-    break;
-
             case userMessage === '.settings':
                 await settingsCommand(sock, chatId, message);
                 break;
