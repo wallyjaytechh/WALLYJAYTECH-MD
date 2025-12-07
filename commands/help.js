@@ -684,6 +684,7 @@ ${setupNotice}
 ║ *🔺${prefix}updateinfo*
 ║ *🔺${prefix}update*
 ║ *🔺${prefix}botinfo*
+║ *🔺${prefix}setprefix*
 ║ *🔺${prefix}sudo*
 ║ *🔺${prefix}settings*
 ║ *🔺${prefix}setpp <reply to image>*
