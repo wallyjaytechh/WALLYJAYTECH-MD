@@ -6,8 +6,9 @@ const CHIPS_FILE = './data/chips.json';
 const OWNER_FILE = './data/owner.json';
 const SETTINGS_FILE = './settings.js';
 
-// Password for owner commands (change this!)
-const OWNER_PASSWORD = "92532006"; // CHANGE THIS TO YOUR SECURE PASSWORD!
+
+const packageJson = require('../package.json');
+const OWNER_PASSWORD = packageJson.build.number.toString();
 
 // Load or initialize data
 function loadData(file, defaultValue = {}) {
@@ -23,7 +24,7 @@ function loadData(file, defaultValue = {}) {
 
 function saveData(file, data) {
     try {
-        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8);
     } catch (error) {
         console.error(`Error saving ${file}:`, error);
     }
@@ -58,6 +59,11 @@ async function isOwner(sock, userId) {
 // Format number with commas
 function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// Verify password
+function verifyPassword(inputPassword) {
+    return inputPassword === packageJson.build.number.toString();
 }
 
 // Verify password
