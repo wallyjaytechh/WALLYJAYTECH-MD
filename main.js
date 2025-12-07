@@ -41,7 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
-const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./checkupdate');
+const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
 const blockCommand = require('./commands/block');
@@ -819,55 +819,54 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
-          // Add these cases in the switch statement:
+ case userMessage === '.checkupdate' || userMessage === '.cu':
+            case userMessage === '.updatecheck':
+                await checkUpdateCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
 
-case userMessage === '.checkupdate' || userMessage === '.cu':
-case userMessage === '.updatecheck':
-    await checkUpdateCommand(sock, chatId, message);
-    commandExecuted = true;
-    break;
+            case userMessage === '.updateinfo' || userMessage === '.upinfo':
+                await updateInfoCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
 
-case userMessage === '.updateinfo' || userMessage === '.upinfo':
-    await updateInfoCommand(sock, chatId, message);
-    commandExecuted = true;
-    break;
-
-case userMessage === '.botinfo' || userMessage === '.binfo':
-    {
-        const uptime = formatUptime(process.uptime());
-        const memory = process.memoryUsage();
-        const memUsage = Math.round(memory.heapUsed / 1024 / 1024);
-        const totalMem = Math.round(memory.heapTotal / 1024 / 1024);
-        
-        await sock.sendMessage(chatId, {
-            text: `🤖 *BOT INFORMATION*\n\n` +
-                  `*Name:* WALLYJAYTECH-MD\n` +
-                  `*Version:* v${settings.version}\n` +
-                  `*Platform:* ${global.deploymentPlatform}\n` +
-                  `*Node.js:* ${process.version}\n` +
-                  `*Uptime:* ${uptime}\n` +
-                  `*Memory:* ${memUsage}MB / ${totalMem}MB\n` +
-                  `*Prefix:* ${settings.prefix}\n` +
-                  `*Owner:* ${settings.botOwner}\n` +
-                  `*Mode:* ${global.isPublic !== false ? 'Public' : 'Private'}\n\n` +
-                  `📊 *Statistics:*\n` +
-                  `• Commands: ${getCommandCount() || '150+'}\n` +
-                  `• Last Update Check: ${require('./checkupdate').getUpdateStatus().lastCheck?.toLocaleString() || 'Never'}\n` +
-                  `• Update Available: ${require('./checkupdate').getUpdateStatus().updateAvailable ? 'Yes ✅' : 'No ✅'}\n\n` +
-                  `🔗 *Links:*\n` +
-                  `• GitHub: https://github.com/wallyjaytechh/WALLYJAYTECH-MD\n` +
-                  `• YouTube: https://youtube.com/@wallyjaytechy\n` +
-                  `• Channel: ${global.channelLink}\n\n` +
-                  `📌 *Update Commands:*\n` +
-                  `• .checkupdate - Check for updates\n` +
-                  `• .updateinfo - Update details\n` +
-                  `• .update - Update bot\n` +
-                  `• .botinfo - This menu`,
-            ...channelInfo
-        }, { quoted: message });
-        commandExecuted = true;
-    }
-    break;
+            case userMessage === '.botinfo' || userMessage === '.binfo':
+                {
+                    const uptime = formatUptime(process.uptime());
+                    const memory = process.memoryUsage();
+                    const memUsage = Math.round(memory.heapUsed / 1024 / 1024);
+                    const totalMem = Math.round(memory.heapTotal / 1024 / 1024);
+                    const updateStatus = require('./commands/checkupdate').getUpdateStatus();
+                    
+                    await sock.sendMessage(chatId, {
+                        text: `🤖 *BOT INFORMATION*\n\n` +
+                              `*Name:* WALLYJAYTECH-MD\n` +
+                              `*Version:* v${settings.version}\n` +
+                              `*Platform:* ${global.deploymentPlatform}\n` +
+                              `*Node.js:* ${process.version}\n` +
+                              `*Uptime:* ${uptime}\n` +
+                              `*Memory:* ${memUsage}MB / ${totalMem}MB\n` +
+                              `*Prefix:* ${settings.prefix}\n` +
+                              `*Owner:* ${settings.botOwner}\n` +
+                              `*Mode:* ${global.isPublic !== false ? 'Public' : 'Private'}\n\n` +
+                              `📊 *Statistics:*\n` +
+                              `• Commands: ${getCommandCount() || '150+'}\n` +
+                              `• Last Update Check: ${updateStatus.lastCheck?.toLocaleString() || 'Never'}\n` +
+                              `• Update Available: ${updateStatus.updateAvailable ? 'Yes 🟢' : 'No ✅'}\n\n` +
+                              `🔗 *Links:*\n` +
+                              `• GitHub: https://github.com/wallyjaytechh/WALLYJAYTECH-MD\n` +
+                              `• YouTube: https://youtube.com/@wallyjaytechy\n` +
+                              `• Channel: ${global.channelLink}\n\n` +
+                              `📌 *Update Commands:*\n` +
+                              `• .checkupdate - Check for updates\n` +
+                              `• .updateinfo - Update details\n` +
+                              `• .update - Update bot\n` +
+                              `• .botinfo - This menu`,
+                        ...channelInfo
+                    }, { quoted: message });
+                    commandExecuted = true;
+                }
+                break;
           case userMessage.startsWith('.getpp'):
     await getppCommand(sock, chatId, message);
     break;
