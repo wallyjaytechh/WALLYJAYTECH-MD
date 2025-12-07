@@ -692,6 +692,7 @@ ${platformStatsText}
 ║ *◾️${prefix}answer <answer for trivia>*
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
+║ *◾️${prefix}coinflip*
 ║
 ╚═══════════════════╝
 
