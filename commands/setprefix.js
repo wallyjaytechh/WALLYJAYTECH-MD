@@ -176,6 +176,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`${newPrefix}owner\` - Contact owner\n\n` +
                       `⚠️ *IMPORTANT:*\n` +
                       `You must **restart the bot** for changes to take effect!\n\n` +
+                      `🔁 *Restart Command:* \`.restart\`\n` +
                       `After restart, use \`${newPrefix}command\` instead of \`.command\``
             }, { quoted: message });
             
