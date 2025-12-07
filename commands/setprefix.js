@@ -64,6 +64,9 @@ async function updateSettingsPrefix(newPrefix) {
 // Main command handler
 async function execute(sock, chatId, message, args) {
     try {
+        // Clear settings cache so changes take effect immediately
+        delete require.cache[require.resolve('../settings')];
+        
         const senderId = message.key.participant || message.key.remoteJid;
         
         // Only owner can change prefix globally
