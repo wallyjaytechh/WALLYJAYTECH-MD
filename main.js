@@ -830,7 +830,7 @@ case userMessage.startsWith('.getjid @'):
                 commandExecuted = true;
                 break;
 
-        case userMessage === '.botinfo' || userMessage === '.binfo':
+            case userMessage === '.botinfo' || userMessage === '.binfo':
                 {
                     const uptime = formatUptime(process.uptime());
                     const memory = process.memoryUsage();
@@ -838,7 +838,7 @@ case userMessage.startsWith('.getjid @'):
                     const totalMem = Math.round(memory.heapTotal / 1024 / 1024);
                     const updateStatus = require('./commands/checkupdate').getUpdateStatus();
                     
-                    // Simple command counter (counts unique command patterns in the switch statement)
+                    // Simple command counter
                     let commandCount = 0;
                     try {
                         const fs = require('fs');
@@ -847,12 +847,45 @@ case userMessage.startsWith('.getjid @'):
                         const matches = [...content.matchAll(commandPattern)];
                         commandCount = new Set(matches.map(m => m[2])).size;
                     } catch (e) {
-                        commandCount = 150; // Fallback
+                        commandCount = 150;
+                    }
+                    
+                    // Get bot mode from messageCount.json
+                    let botMode = 'Unknown';
+                    let isPublic = true;
+                    try {
+                        const fs = require('fs');
+                        if (fs.existsSync('./data/messageCount.json')) {
+                            const data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8'));
+                            isPublic = data.isPublic !== false; // default to true if not set
+                            botMode = isPublic ? 'Public' : 'Private';
+                        } else {
+                            botMode = 'Public (default)';
+                        }
+                    } catch (error) {
+                        console.error('Error reading bot mode:', error);
+                        botMode = 'Public (error)';
+                    }
+                    
+                    // Format time with timezone
+                    let lastCheckTime = 'Never';
+                    if (updateStatus.lastCheck) {
+                        try {
+                            const moment = require('moment-timezone');
+                            lastCheckTime = moment(updateStatus.lastCheck)
+                                .tz(settings.timezone || 'Africa/Lagos')
+                                .format('YYYY-MM-DD HH:mm:ss');
+                        } catch (error) {
+                            // Fallback if moment-timezone not available
+                            lastCheckTime = updateStatus.lastCheck.toLocaleString('en-US', {
+                                timeZone: settings.timezone || 'Africa/Lagos'
+                            });
+                        }
                     }
                     
                     await sock.sendMessage(chatId, {
                         text: `🤖 *BOT INFORMATION*\n\n` +
-                              `*Name:* WALLYJAYTECH-MD\n` +
+                              `*Name:* ${settings.botName || 'WALLYJAYTECH-MD'}\n` +
                               `*Version:* v${settings.version}\n` +
                               `*Platform:* ${global.deploymentPlatform}\n` +
                               `*Node.js:* ${process.version}\n` +
@@ -860,10 +893,11 @@ case userMessage.startsWith('.getjid @'):
                               `*Memory:* ${memUsage}MB / ${totalMem}MB\n` +
                               `*Prefix:* ${settings.prefix}\n` +
                               `*Owner:* ${settings.botOwner}\n` +
-                              `*Mode:* ${global.isPublic !== false ? 'Public' : 'Private'}\n\n` +
+                              `*Mode:* ${botMode}\n` +
+                              `*Timezone:* ${settings.timezone || 'Africa/Lagos'}\n\n` +
                               `📊 *Statistics:*\n` +
                               `• Commands: ${commandCount}+\n` +
-                              `• Last Update Check: ${updateStatus.lastCheck?.toLocaleString() || 'Never'}\n` +
+                              `• Last Update Check: ${lastCheckTime}\n` +
                               `• Update Available: ${updateStatus.updateAvailable ? 'Yes 🟢' : 'No ✅'}\n\n` +
                               `🔗 *Links:*\n` +
                               `• GitHub: https://github.com/wallyjaytechh/WALLYJAYTECH-MD\n` +
