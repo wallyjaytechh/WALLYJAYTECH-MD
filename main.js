@@ -41,6 +41,7 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { getPrefix } = require('./commands/setprefix');
 const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
@@ -158,6 +159,50 @@ const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/
 const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
 
+// Smart prefix handler function
+function checkPrefix(messageText, chatId, senderId) {
+    const { getPrefix } = require('./commands/setprefix');
+    const dynamicPrefix = getPrefix(chatId, senderId);
+    
+    // If no prefix is set (empty string), accept all messages as commands
+    if (dynamicPrefix === '') {
+        return {
+            isCommand: true,
+            command: messageText.trim(),
+            rawCommand: messageText.trim(),
+            prefix: ''
+        };
+    }
+    
+    // Check if message starts with the dynamic prefix
+    if (messageText.startsWith(dynamicPrefix)) {
+        const command = messageText.slice(dynamicPrefix.length).trim();
+        return {
+            isCommand: true,
+            command: command,
+            rawCommand: command,
+            prefix: dynamicPrefix
+        };
+    }
+    
+    // Check if it's a .command (for backward compatibility)
+    if (messageText.startsWith('.')) {
+        return {
+            isCommand: true,
+            command: messageText,
+            rawCommand: messageText,
+            prefix: '.'
+        };
+    }
+    
+    return {
+        isCommand: false,
+        command: '',
+        rawCommand: '',
+        prefix: dynamicPrefix
+    };
+}
+
 // Global settings
 global.packname = settings.packname;
 global.author = settings.author;
@@ -267,25 +312,35 @@ await handleAutoreact(sock, message);
             }
         }
 
-        const userMessage = (
+        const rawMessageText = (
             message.message?.conversation?.trim() ||
             message.message?.extendedTextMessage?.text?.trim() ||
             message.message?.imageMessage?.caption?.trim() ||
             message.message?.videoMessage?.caption?.trim() ||
             message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
             ''
-        ).toLowerCase().replace(/\.\s+/g, '.').trim();
+        );
 
-        // Preserve raw message for commands like .tag that need original casing
-        const rawText = message.message?.conversation?.trim() ||
-            message.message?.extendedTextMessage?.text?.trim() ||
-            message.message?.imageMessage?.caption?.trim() ||
-            message.message?.videoMessage?.caption?.trim() ||
-            '';
-
-        // Only log command usage
-        if (userMessage.startsWith('.')) {
-            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        // Use the smart prefix checker
+        const prefixCheck = checkPrefix(rawMessageText, chatId, senderId);
+        
+        if (!prefixCheck.isCommand) {
+            // Not a command, check if it's a regular message for chatbot
+            if (isGroup) {
+                const userMessage = rawMessageText.toLowerCase();
+                if (userMessage) {
+                    await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
+                }
+            }
+            return;
+        }
+        
+        // Extract the command
+        const userMessage = prefixCheck.command.toLowerCase().replace(/\.\s+/g, '.').trim();
+        const rawText = prefixCheck.rawCommand; // For commands that need original case
+        
+        // Log command usage
+        console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage} (prefix: ${prefixCheck.prefix || 'none'})`);
         }
      // Handle antiforeign blocking (check before processing messages)
 if (!isGroup && !message.key.fromMe) {
@@ -774,6 +829,16 @@ case userMessage.startsWith('.getjid @'):
                     const isOwner = message.key.fromMe || senderIsSudo;
                     await mentionToggleCommand(sock, chatId, message, args, isOwner);
                 }
+                break;
+          case userMessageLower === '.prefix' || userMessageLower.startsWith('.prefix '):
+                const setprefixCommand = require('./commands/setprefix');
+                await setprefixCommand.execute(sock, chatId, message, userMessageLower.split(' ').slice(1));
+                commandExecuted = true;
+                break;
+          case userMessageLower === '.setprefix' || userMessageLower.startsWith('.setprefix '):
+                const setprefixCommand = require('./commands/setprefix');
+                await setprefixCommand.execute(sock, chatId, message, userMessageLower.split(' ').slice(1));
+                commandExecuted = true;
                 break;
             case userMessage === '.setmention':
                 {
