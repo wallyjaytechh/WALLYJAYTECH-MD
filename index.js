@@ -33,7 +33,7 @@
 //   * Credit To ally jay tech
 //   * © 2025 WALLYJAYTECH-MD.
 // ⛥┌┤
-// */
+// */ 
 
 global.File = class File {};
 require('./settings')
