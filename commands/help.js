@@ -4,8 +4,8 @@ const path = require('path');
 const axios = require('axios');
 
 // ========== GLOBAL USER TRACKING WITH GITHUB GIST ==========
-const GIST_ID = 'af229cd45cb83d58f78e99f41497fd78'; // only bot founder  need to create this
-const GITHUB_TOKEN = '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'; // only bot founder  GitHub personal token 
+const GIST_ID = process.env.GIST_ID || 'af229cd45cb83d58f78e99f41497fd78';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
 
 // Platform detection function
 function getDeploymentPlatform() {
@@ -34,26 +34,6 @@ function getDeploymentPlatform() {
     }
 }
 
-// Initialize or get Gist for global tracking
-async function initGlobalStatsGist() {
-    try {
-        // First, check if we can connect to GitHub
-        const response = await axios.get('https://api.github.com/user', {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'User-Agent': 'WALLYJAYTECH-MD-Bot'
-            }
-        });
-        
-        console.log('✅ Connected to GitHub API');
-        return true;
-    } catch (error) {
-        console.error('❌ Cannot connect to GitHub API:', error.message);
-        console.log('⚠️ Falling back to local tracking');
-        return false;
-    }
-}
-
 // Update global user stats using GitHub Gist
 async function updateGlobalUserStats(userJid, platform) {
     try {
@@ -61,7 +41,8 @@ async function updateGlobalUserStats(userJid, platform) {
         const userPhone = userJid.split('@')[0];
         
         // Try to use GitHub Gist for global tracking
-        if (GITHUB_TOKEN && GIST_ID) {
+        if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE' && 
+            GIST_ID && GIST_ID !== 'YOUR_GIST_ID_HERE') {
             try {
                 // Get current Gist data
                 const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
@@ -75,7 +56,6 @@ async function updateGlobalUserStats(userJid, platform) {
                 
                 // Update stats
                 const userKey = `user_${userPhone}`;
-                const platformKey = `platform_${platform}`;
                 
                 // Initialize if not exists
                 if (!gistData.users) gistData.users = {};
@@ -93,8 +73,10 @@ async function updateGlobalUserStats(userJid, platform) {
                     firstSeen: isNewUser ? Date.now() : gistData.users[userKey].firstSeen
                 };
                 
-                // Update platform count
-                gistData.platforms[platform] = (gistData.platforms[platform] || 0) + 1;
+                // Update platform count (only increment for new users)
+                if (isNewUser) {
+                    gistData.platforms[platform] = (gistData.platforms[platform] || 0) + 1;
+                }
                 
                 // Mark as active now
                 gistData.activeUsers[userKey] = Date.now();
@@ -175,8 +157,10 @@ function updateLocalUserStats(userPhone, platform) {
             firstSeen: isNewUser ? Date.now() : stats.users[userKey].firstSeen
         };
         
-        // Update platform
-        stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+        // Update platform (only for new users)
+        if (isNewUser) {
+            stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+        }
         
         // Mark as active
         stats.activeUsers[userKey] = Date.now();
@@ -221,7 +205,8 @@ function updateLocalUserStats(userPhone, platform) {
 async function getGlobalUserStats() {
     try {
         // Try GitHub Gist first
-        if (GITHUB_TOKEN && GIST_ID) {
+        if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE' && 
+            GIST_ID && GIST_ID !== 'YOUR_GIST_ID_HERE') {
             try {
                 const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
                     headers: {
@@ -279,23 +264,6 @@ async function getGlobalUserStats() {
         };
     }
 }
-
-// ========== SETUP INSTRUCTIONS ==========
-/*
-1. Create a GitHub Personal Access Token:
-   - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Generate new token (classic) with "gist" scope
-
-2. Create a Gist:
-   - Go to https://gist.github.com
-   - Create a new gist with filename "global_stats.json"
-   - Content: {"users": {}, "platforms": {}, "activeUsers": {}}
-   - Get the Gist ID from the URL (long hash in URL)
-
-3. Update the constants above:
-   - GIST_ID: Your gist ID
-   - GITHUB_TOKEN: Your personal access token
-*/
 
 // Get prefix from settings
 function getPrefix() {
@@ -485,6 +453,110 @@ function countTotalCommands() {
     }
 }
 
+// Send menu with random media
+async function sendMenu(sock, chatId, message, helpMessage, userId) {
+    try {
+        const mediaOptions = [
+            {
+                type: 'image',
+                path: path.join(__dirname, '../assets/bot_image.jpg'),
+                caption: helpMessage
+            },
+            {
+                type: 'video', 
+                path: path.join(__dirname, '../assets/menu_video.mp4'),
+                caption: helpMessage
+            }
+        ];
+
+        const selectedMedia = mediaOptions[Math.floor(Math.random() * mediaOptions.length)];
+        
+        console.log(`🎲 Selected media type: ${selectedMedia.type}`);
+        
+        if (fs.existsSync(selectedMedia.path)) {
+            const mediaBuffer = fs.readFileSync(selectedMedia.path);
+            
+            if (selectedMedia.type === 'image') {
+                await sock.sendMessage(chatId, {
+                    image: mediaBuffer,
+                    caption: selectedMedia.caption,
+                    mentions: [userId],
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
+                    }
+                }, { quoted: message });
+                console.log(`✅ Menu sent as image to @${userId.split('@')[0]}`);
+                return true;
+            } else if (selectedMedia.type === 'video') {
+                await sock.sendMessage(chatId, {
+                    video: mediaBuffer,
+                    caption: selectedMedia.caption,
+                    mentions: [userId],
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
+                    }
+                }, { quoted: message });
+                console.log(`✅ Menu sent as video to @${userId.split('@')[0]}`);
+                return true;
+            }
+        } else {
+            console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
+            await sock.sendMessage(chatId, { 
+                text: helpMessage,
+                mentions: [userId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    } 
+                }
+            });
+            return true;
+        }
+    } catch (error) {
+        console.error('Error sending menu:', error);
+        return false;
+    }
+}
+
+// Send menu audio
+async function sendMenuAudio(sock, chatId, message) {
+    try {
+        const audioPath = path.join(__dirname, '../assets/menu_audio.mp3');
+        if (fs.existsSync(audioPath)) {
+            const audioBuffer = fs.readFileSync(audioPath);
+            await sock.sendMessage(chatId, {
+                audio: audioBuffer,
+                mimetype: 'audio/mpeg',
+                ptt: false
+            }, { quoted: message });
+            console.log('🎵 Menu audio sent');
+            return true;
+        } else {
+            console.log('❌ Menu audio not found, skipping audio');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error sending audio:', error);
+        return false;
+    }
+}
+
 // Main help command
 async function helpCommand(sock, chatId, message) {
     const senderId = message.key.participant || message.key.remoteJid;
@@ -542,7 +614,7 @@ async function helpCommand(sock, chatId, message) {
     
     // Check if user needs to setup GitHub tracking
     let setupNotice = '';
-    if (!globalStats.isGlobal && GIST_ID === 'YOUR_GIST_ID_HERE') {
+    if (!globalStats.isGlobal && (GIST_ID === 'YOUR_GIST_ID_HERE' || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE')) {
         setupNotice = `
         
 ⚠️ *SETUP GLOBAL TRACKING:*
@@ -867,20 +939,30 @@ ${setupNotice}
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        await sock.sendMessage(chatId, { 
-            text: helpMessage,
-            mentions: [senderId],
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
+        // Try to send menu with random media (image or video)
+        const menuSent = await sendMenu(sock, chatId, message, helpMessage, senderId);
         
+        if (menuSent) {
+            // Wait a bit then send audio if available
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await sendMenuAudio(sock, chatId, message);
+        } else {
+            // Fallback: send as text only
+            await sock.sendMessage(chatId, { 
+                text: helpMessage,
+                mentions: [senderId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            });
+        }
+
         console.log(`📊 Stats: ${globalStats.activeUsers} active, ${globalStats.totalUsers} total (${globalStats.source})`);
 
     } catch (error) {
