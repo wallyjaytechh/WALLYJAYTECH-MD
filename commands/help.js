@@ -584,6 +584,14 @@ ${platformStatsText}
 ║ *🔺${prefix}update*
 ║ *🔺${prefix}botinfo*
 ║ *🔺${prefix}setprefix*
+║ *🔺${prefix}setbotname*
+║ *🔺${prefix}setbotowner*
+║ *🔺${prefix}setownernumber*
+║ *🔺${prefix}setytchannel*
+║ *🔺${prefix}setpackname*
+║ *🔺${prefix}setauthor*
+║ *🔺${prefix}settimezone*
+║ *🔺${prefix}confighelp*
 ║ *🔺${prefix}restart*
 ║ *🔺${prefix}sudo*
 ║ *🔺${prefix}settings*
