@@ -24,7 +24,7 @@ function loadData(file, defaultValue = {}) {
 
 function saveData(file, data) {
     try {
-        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8);
+        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
     } catch (error) {
         console.error(`Error saving ${file}:`, error);
     }
