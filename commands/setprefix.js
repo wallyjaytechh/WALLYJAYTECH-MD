@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to check if user is owner (simple version)
+// Simple owner check
 function isOwner(senderId) {
     try {
         const settings = require('../settings');
@@ -95,8 +95,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`.setprefix /\` - Change to /\n` +
                       `• \`.setprefix $\` - Change to $\n` +
                       `• \`.setprefix none\` - No prefix needed\n\n` +
-                      `🔁 *Restart Command:* \`.restart\`\n\n` +
-                      `⚠️ *Note:* You must restart the bot after changing prefix!`
+                      `⚠️ *Note:* Changes take effect immediately!`
             }, { quoted: message });
             return;
         }
@@ -122,11 +121,7 @@ async function execute(sock, chatId, message, args) {
                           '• Instead of `.menu` just type `menu`\n' +
                           '• Instead of `.help` just type `help`\n' +
                           '• Instead of `.ping` just type `ping`\n\n' +
-                          '⚠️ *IMPORTANT:*\n' +
-                          'You must **restart the bot** for changes to take effect!\n\n' +
-                          'After restart:\n' +
-                          '• All commands will work without prefix\n' +
-                          '• Example: `menu` instead of `.menu`'
+                          '✨ *Try it now:* Type `menu` (without any prefix)'
                 }, { quoted: message });
             } catch (error) {
                 await sock.sendMessage(chatId, {
@@ -178,10 +173,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`${newPrefix}help\` - Show help\n` +
                       `• \`${newPrefix}ping\` - Check bot speed\n` +
                       `• \`${newPrefix}owner\` - Contact owner\n\n` +
-                      `⚠️ *IMPORTANT:*\n` +
-                      `You must **restart the bot** for changes to take effect!\n\n` +
-                      `🔁 *Restart Command:* \`.restart\`\n\n` +
-                      `After restart, use \`${newPrefix}command\` instead of \`.command\``
+                      `✨ *Try it now:* Type \`${newPrefix}menu\``
             }, { quoted: message });
             
         } catch (error) {
@@ -201,6 +193,5 @@ async function execute(sock, chatId, message, args) {
 // Export
 module.exports = {
     execute,
-    command: 'setprefix',
-    isOwner // Export if needed elsewhere
+    command: 'setprefix'
 };
