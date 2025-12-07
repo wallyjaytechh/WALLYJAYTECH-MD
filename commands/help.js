@@ -687,19 +687,19 @@ ${platformStatsText}
 ║
 ║ *◾️${prefix}tictactoe @user*
 ║
-║   *👇HANGMAN👇* 
+║    *HANGMAN* 
 ║ *◾️${prefix}hangman*
 ║ *◾️${prefix}guess <letter for hangman>*
 ║
-║   *👇TRIVIA👇* 
+║    *TRIVIA* 
 ║ *◾️${prefix}trivia*
 ║ *◾️${prefix}answer <answer for trivia>*
 ║
-║   *👇TRUTH&DARE👇* 
+║    *TRUTH&DARE* 
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
 ║
-║    *👇COINFLIP👇*
+║    *COINFLIP*
 ║ *◾️${prefix}coinflip*
 ║ *◾️${prefix}coinflip <heads/tails>*
 ║ *◾️${prefix}coinflip <heads/tails> <bet amount>*
