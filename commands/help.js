@@ -646,7 +646,7 @@ To track users across ALL bot deployments:
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 AllDate: [ ${getLocalizedTime()} ]*
 ║   *📡 Your Platform: [ ${userPlatform} ]*
-║   *👥 Active Users Now: [ ${globalStats.activeUsers} ] ${sourceInfo}*
+║   *👥 Active Users Now: [ ${globalStats.activeUsers} ]*
 ║   *📊 Total Users All Time: [ ${globalStats.totalUsers} ]*
 ║   *🌐 Users by Platform:*
 ${platformStatsText}
