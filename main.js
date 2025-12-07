@@ -848,7 +848,7 @@ case userMessage.startsWith('.getjid @'):
                 await updateInfoCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
-case userMessage === '.botinfo' || userMessage === '.binfo':
+          case userMessage === '.botinfo' || userMessage === '.binfo':
                 {
                     const uptime = formatUptime(process.uptime());
                     const memory = process.memoryUsage();
@@ -857,9 +857,33 @@ case userMessage === '.botinfo' || userMessage === '.binfo':
                     const updateStatus = require('./commands/checkupdate').getUpdateStatus();
                     const settings = require('./settings');
                     
-                    // ... (rest of your code) ...
+                    // Simple command counter
+                    let commandCount = 0;
+                    try {
+                        const fs = require('fs');
+                        const content = fs.readFileSync(__filename, 'utf8');
+                        const commandPattern = /case\s+userMessage\s*(===|\.startsWith\()\s*['"`]\.([^'"`]+)['"`]/g;
+                        const matches = [...content.matchAll(commandPattern)];
+                        commandCount = new Set(matches.map(m => m[2])).size;
+                    } catch (e) {
+                        commandCount = 150;
+                    }
                     
-                    // Format time with bot's timezone (NO HARCODED FALLBACK)
+                    // Get bot mode - DECLARE botMode OUTSIDE try block
+                    let botMode = 'Public (default)';
+                    try {
+                        const fs = require('fs');
+                        if (fs.existsSync('./data/messageCount.json')) {
+                            const data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8'));
+                            const isPublic = data.isPublic !== false;
+                            botMode = isPublic ? 'Public' : 'Private';
+                        }
+                    } catch (error) {
+                        console.error('Error reading bot mode:', error);
+                        botMode = 'Public (error reading)';
+                    }
+                    
+                    // Format time with bot's timezone
                     let lastCheckTime = 'Never';
                     if (updateStatus.lastCheck) {
                         if (settings.timezone) {
