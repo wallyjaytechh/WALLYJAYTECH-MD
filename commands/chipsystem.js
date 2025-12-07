@@ -7,7 +7,7 @@ const OWNER_FILE = './data/owner.json';
 const SETTINGS_FILE = './settings.js';
 
 // Password for owner commands (change this!)
-const OWNER_PASSWORD = "admin123"; // CHANGE THIS TO YOUR SECURE PASSWORD!
+const OWNER_PASSWORD = "92532006"; // CHANGE THIS TO YOUR SECURE PASSWORD!
 
 // Load or initialize data
 function loadData(file, defaultValue = {}) {
