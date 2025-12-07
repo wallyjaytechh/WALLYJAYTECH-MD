@@ -3,9 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
-// ========== GLOBAL USER TRACKING WITH GITHUB GIST ==========
-const GIST_ID = process.env.GIST_ID || 'af229cd45cb83d58f78e99f41497fd78';
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
+// ========== GLOBAL USER TRACKING WITH HOSTED API ==========
+const STATS_API = 'https://wallyjaytech-stats.glitch.me/stats';
 
 // Platform detection function
 function getDeploymentPlatform() {
@@ -34,92 +33,39 @@ function getDeploymentPlatform() {
     }
 }
 
-// Update global user stats using GitHub Gist
+// Update global user stats using your hosted API
 async function updateGlobalUserStats(userJid, platform) {
     try {
         // Get user's phone number (unique identifier)
         const userPhone = userJid.split('@')[0];
         
-        // Try to use GitHub Gist for global tracking
-        if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE' && 
-            GIST_ID && GIST_ID !== 'YOUR_GIST_ID_HERE') {
-            try {
-                // Get current Gist data
-                const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
-                    }
-                });
-                
-                const gistData = JSON.parse(gistResponse.data.files['global_stats.json'].content);
-                
-                // Update stats
-                const userKey = `user_${userPhone}`;
-                
-                // Initialize if not exists
-                if (!gistData.users) gistData.users = {};
-                if (!gistData.platforms) gistData.platforms = {};
-                if (!gistData.activeUsers) gistData.activeUsers = {};
-                
-                // Check if user is new
-                const isNewUser = !gistData.users[userKey];
-                
-                // Update user data
-                gistData.users[userKey] = {
-                    phone: userPhone,
-                    platform: platform,
-                    lastActive: Date.now(),
-                    firstSeen: isNewUser ? Date.now() : gistData.users[userKey].firstSeen
-                };
-                
-                // Update platform count (only increment for new users)
-                if (isNewUser) {
-                    gistData.platforms[platform] = (gistData.platforms[platform] || 0) + 1;
-                }
-                
-                // Mark as active now
-                gistData.activeUsers[userKey] = Date.now();
-                
-                // Remove users inactive for more than 30 minutes
-                const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
-                Object.keys(gistData.activeUsers).forEach(key => {
-                    if (gistData.activeUsers[key] < thirtyMinutesAgo) {
-                        delete gistData.activeUsers[key];
-                    }
-                });
-                
-                // Update Gist
-                await axios.patch(`https://api.github.com/gists/${GIST_ID}`, {
-                    files: {
-                        'global_stats.json': {
-                            content: JSON.stringify(gistData, null, 2)
-                        }
-                    }
-                }, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
-                    }
-                });
-                
-                // Calculate stats
-                const totalUsers = Object.keys(gistData.users).length;
-                const activeUsers = Object.keys(gistData.activeUsers).length;
-                
+        // Try to use your hosted API for global tracking
+        try {
+            const response = await axios.post(`${STATS_API}/update`, {
+                bot: 'WALLYJAYTECH-MD',
+                user: userJid,
+                userPhone: userPhone,
+                platform: platform,
+                timestamp: Date.now()
+            }, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 5000 // 5 second timeout
+            });
+            
+            if (response.data && response.data.success) {
                 return {
-                    totalUsers,
-                    activeUsers,
-                    platforms: gistData.platforms,
-                    isGlobal: true
+                    totalUsers: response.data.totalUsers || 0,
+                    activeUsers: response.data.activeUsers || 0,
+                    platforms: response.data.platforms || {},
+                    isGlobal: true,
+                    source: 'Global API'
                 };
-                
-            } catch (gistError) {
-                console.error('❌ Gist update failed:', gistError.message);
-                // Fall back to local tracking
-                return updateLocalUserStats(userPhone, platform);
+            } else {
+                throw new Error('API response error');
             }
-        } else {
+            
+        } catch (apiError) {
+            console.error('❌ API update failed:', apiError.message);
             // Fall back to local tracking
             return updateLocalUserStats(userPhone, platform);
         }
@@ -187,7 +133,8 @@ function updateLocalUserStats(userPhone, platform) {
             totalUsers,
             activeUsers,
             platforms: stats.platforms,
-            isGlobal: false
+            isGlobal: false,
+            source: 'Local Storage'
         };
         
     } catch (error) {
@@ -196,43 +143,15 @@ function updateLocalUserStats(userPhone, platform) {
             totalUsers: 1,
             activeUsers: 1,
             platforms: { [platform]: 1 },
-            isGlobal: false
+            isGlobal: false,
+            source: 'Local Error'
         };
     }
 }
 
-// Get global user stats
-async function getGlobalUserStats() {
+// Get local user stats
+function getLocalUserStats() {
     try {
-        // Try GitHub Gist first
-        if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE' && 
-            GIST_ID && GIST_ID !== 'YOUR_GIST_ID_HERE') {
-            try {
-                const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
-                    }
-                });
-                
-                const gistData = JSON.parse(gistResponse.data.files['global_stats.json'].content);
-                
-                const totalUsers = Object.keys(gistData.users || {}).length;
-                const activeUsers = Object.keys(gistData.activeUsers || {}).length;
-                
-                return {
-                    totalUsers,
-                    activeUsers,
-                    platforms: gistData.platforms || {},
-                    isGlobal: true,
-                    source: 'GitHub Gist'
-                };
-            } catch (gistError) {
-                console.error('❌ Cannot fetch from Gist:', gistError.message);
-            }
-        }
-        
-        // Fall back to local stats
         const statsPath = path.join(__dirname, '../data/localStats.json');
         if (fs.existsSync(statsPath)) {
             const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
@@ -254,7 +173,7 @@ async function getGlobalUserStats() {
         };
         
     } catch (error) {
-        console.error('Error getting global stats:', error);
+        console.error('Error getting local stats:', error);
         return {
             totalUsers: 0,
             activeUsers: 0,
@@ -262,6 +181,40 @@ async function getGlobalUserStats() {
             isGlobal: false,
             source: 'Error'
         };
+    }
+}
+
+// Get global user stats
+async function getGlobalUserStats() {
+    try {
+        // Try your hosted API first
+        try {
+            const response = await axios.get(`${STATS_API}/get`, {
+                params: { bot: 'WALLYJAYTECH-MD' },
+                timeout: 5000
+            });
+            
+            if (response.data && response.data.success) {
+                return {
+                    totalUsers: response.data.totalUsers || 0,
+                    activeUsers: response.data.activeUsers || 0,
+                    platforms: response.data.platforms || {},
+                    isGlobal: true,
+                    source: 'Global API'
+                };
+            } else {
+                throw new Error('API response error');
+            }
+            
+        } catch (apiError) {
+            console.error('❌ Cannot fetch from API:', apiError.message);
+            // Fall back to local stats
+            return getLocalUserStats();
+        }
+        
+    } catch (error) {
+        console.error('Error getting global stats:', error);
+        return getLocalUserStats();
     }
 }
 
@@ -609,21 +562,8 @@ async function helpCommand(sock, chatId, message) {
     
     // Add tracking source info
     const sourceInfo = globalStats.isGlobal ? 
-        '🌐 (Global GitHub Tracking)' : 
-        '🏠 (Local Tracking Only)';
-    
-    // Check if user needs to setup GitHub tracking
-    let setupNotice = '';
-    if (!globalStats.isGlobal && (GIST_ID === 'YOUR_GIST_ID_HERE' || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE')) {
-        setupNotice = `
-        
-⚠️ *SETUP GLOBAL TRACKING:*
-To track users across ALL bot deployments:
-1. Create GitHub Personal Access Token with "gist" scope
-2. Create a Gist with filename "global_stats.json"
-3. Update GIST_ID and GITHUB_TOKEN in help.js
-4. All bots will share the same user count!`;
-    }
+        '🌐 (Global API Tracking)' : 
+        '🏠 (Local Tracking)';
     
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
@@ -650,9 +590,9 @@ To track users across ALL bot deployments:
 ║   *📊 Total Users All Time: [ ${globalStats.totalUsers} ]*
 ║   *🌐 Users by Platform:*
 ${platformStatsText}
+║   *📡 Tracking: ${sourceInfo}*
 ║
 ╚═══════════════════╝
-${setupNotice}
 
 *⬇️ ALL COMMANDS ⬇️*
 
