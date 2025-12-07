@@ -838,6 +838,18 @@ case userMessage.startsWith('.getjid @'):
                     const totalMem = Math.round(memory.heapTotal / 1024 / 1024);
                     const updateStatus = require('./commands/checkupdate').getUpdateStatus();
                     
+                    // Simple command counter (counts unique command patterns in the switch statement)
+                    let commandCount = 0;
+                    try {
+                        const fs = require('fs');
+                        const content = fs.readFileSync(__filename, 'utf8');
+                        const commandPattern = /case\s+userMessage\s*(===|\.startsWith\()\s*['"`]\.([^'"`]+)['"`]/g;
+                        const matches = [...content.matchAll(commandPattern)];
+                        commandCount = new Set(matches.map(m => m[2])).size;
+                    } catch (e) {
+                        commandCount = 150; // Fallback
+                    }
+                    
                     await sock.sendMessage(chatId, {
                         text: `🤖 *BOT INFORMATION*\n\n` +
                               `*Name:* WALLYJAYTECH-MD\n` +
@@ -850,7 +862,7 @@ case userMessage.startsWith('.getjid @'):
                               `*Owner:* ${settings.botOwner}\n` +
                               `*Mode:* ${global.isPublic !== false ? 'Public' : 'Private'}\n\n` +
                               `📊 *Statistics:*\n` +
-                              `• Commands: ${getCommandCount() || '150+'}\n` +
+                              `• Commands: ${commandCount}+\n` +
                               `• Last Update Check: ${updateStatus.lastCheck?.toLocaleString() || 'Never'}\n` +
                               `• Update Available: ${updateStatus.updateAvailable ? 'Yes 🟢' : 'No ✅'}\n\n` +
                               `🔗 *Links:*\n` +
