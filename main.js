@@ -42,6 +42,13 @@ const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./comman
 
 // Command imports
 const { 
+    coinflipCommand, 
+    coinstatsCommand, 
+    coindailyCommand, 
+    coinleaderboardCommand,
+    coinhelpCommand 
+} = require('./commands/coinflip');
+const { 
     setBotNameCommand,
     setBotOwnerCommand,
     setOwnerNumberCommand,
@@ -795,6 +802,32 @@ case userMessage.startsWith('.getjid @'):
             case userMessage === '.clear':
                 await clearCommand(sock, chatId, message);
                 break;
+case userMessage.startsWith('.coinflip'):
+    const coinArgs = rawText.split(' ').slice(1);
+    await coinflipCommand(sock, chatId, message, coinArgs);
+    commandExecuted = true;
+    break;
+    
+case userMessage === '.coinstats':
+    await coinstatsCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+    
+case userMessage === '.coindaily':
+    await coindailyCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+    
+case userMessage === '.coinleaderboard':
+case userMessage === '.cointop':
+    await coinleaderboardCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+    
+case userMessage === '.coinhelp':
+    await coinhelpCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
             case userMessage.startsWith('.promote'):
                 const mentionedJidListPromote = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await promoteCommand(sock, chatId, mentionedJidListPromote, message);
