@@ -840,8 +840,6 @@ ${platformStatsText}
 
 *${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*
 
-*✅ Reliable local tracking - No external API needed*
-
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
