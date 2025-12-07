@@ -805,6 +805,15 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
+          case userMessage === '.setprefix':
+            case userMessage.startsWith('.setprefix '):
+                {
+                    const setprefixCmd = require('./commands/setprefix');
+                    const prefixArgs = userMessage.split(' ').slice(1);
+                    await setprefixCmd.execute(sock, chatId, message, prefixArgs);
+                    commandExecuted = true;
+                }
+                break;
             case userMessage.startsWith('.goodbye'):
                 if (isGroup) {
                     // Check admin status if not already checked
