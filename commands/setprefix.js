@@ -1,304 +1,171 @@
-// commands/setprefix.js - Change bot prefix command with "none" option
+// commands/setprefix.js - Change bot prefix in settings.js
 const fs = require('fs');
 const path = require('path');
 const { isOwnerOrSudo } = require('../lib/index');
 
-// Store user prefixes (different prefixes per user/group)
-const PREFIX_FILE = './data/prefixes.json';
-
-// Initialize prefixes file
-function initPrefixes() {
-    if (!fs.existsSync('./data')) {
-        fs.mkdirSync('./data', { recursive: true });
-    }
-    
-    if (!fs.existsSync(PREFIX_FILE)) {
-        const defaultPrefixes = {
-            default: '.', // Global default
-            users: {},    // User-specific prefixes
-            groups: {}    // Group-specific prefixes
-        };
-        fs.writeFileSync(PREFIX_FILE, JSON.stringify(defaultPrefixes, null, 2));
-        return defaultPrefixes;
-    }
-    
+// Function to update prefix in settings.js
+async function updateSettingsPrefix(newPrefix) {
     try {
-        return JSON.parse(fs.readFileSync(PREFIX_FILE, 'utf8'));
-    } catch (error) {
-        console.error('Error reading prefixes file:', error);
-        return initPrefixes();
-    }
-}
-
-// Get prefix for a specific chat/user
-function getPrefix(chatId, userId = null) {
-    const prefixes = initPrefixes();
-    
-    // Check if chat is a group
-    if (chatId.endsWith('@g.us')) {
-        // Group-specific prefix
-        if (prefixes.groups[chatId]) {
-            const groupPrefix = prefixes.groups[chatId];
-            return groupPrefix === 'none' ? '' : groupPrefix;
-        }
-    } 
-    // Check if user has personal prefix
-    else if (userId && prefixes.users[userId]) {
-        const userPrefix = prefixes.users[userId];
-        return userPrefix === 'none' ? '' : userPrefix;
-    }
-    
-    // Return global default
-    const globalPrefix = prefixes.default;
-    return globalPrefix === 'none' ? '' : globalPrefix;
-}
-
-// Set prefix
-function setPrefix(chatId, userId, newPrefix, scope = 'global') {
-    const prefixes = initPrefixes();
-    
-    // Handle "none" prefix (no prefix needed)
-    if (newPrefix.toLowerCase() === 'none') {
-        newPrefix = 'none'; // Store as 'none'
-    } else {
-        // Validate regular prefix
-        if (newPrefix.trim() === '') {
-            return { success: false, message: 'For no prefix, use "none". For empty prefix, leave as is.' };
-        }
+        const settingsPath = path.join(__dirname, '../settings.js');
+        let settingsContent = fs.readFileSync(settingsPath, 'utf8');
         
-        if (newPrefix.length > 3) {
-            return { success: false, message: 'Prefix must be 3 characters or less!' };
-        }
+        // Find and replace the prefix line
+        // Looks for: prefix: '.',
+        const prefixRegex = /prefix:\s*['"`][^'"`]*['"`],/;
         
-        // Check if prefix contains only allowed characters
-        const validPrefix = /^[!$%&*+\-./:<=>?@^_~a-zA-Z0-9]{1,3}$/.test(newPrefix);
-        if (!validPrefix) {
-            return { success: false, message: 'Prefix can only contain letters, numbers, or special symbols!' };
-        }
-    }
-    
-    try {
-        let oldPrefix;
-        switch(scope) {
-            case 'global':
-                oldPrefix = prefixes.default;
-                if (oldPrefix === newPrefix) {
-                    const displayOld = oldPrefix === 'none' ? 'no prefix (none)' : `"${oldPrefix}"`;
-                    return { success: false, message: `Prefix is already set to ${displayOld}` };
-                }
-                prefixes.default = newPrefix;
-                break;
-                
-            case 'user':
-                oldPrefix = prefixes.users[userId] || prefixes.default;
-                if (oldPrefix === newPrefix) {
-                    const displayOld = oldPrefix === 'none' ? 'no prefix (none)' : `"${oldPrefix}"`;
-                    return { success: false, message: `Your prefix is already ${displayOld}` };
-                }
-                prefixes.users[userId] = newPrefix;
-                break;
-                
-            case 'group':
-                if (!chatId.endsWith('@g.us')) {
-                    return { success: false, message: 'Group prefix can only be set in groups!' };
-                }
-                oldPrefix = prefixes.groups[chatId] || prefixes.default;
-                if (oldPrefix === newPrefix) {
-                    const displayOld = oldPrefix === 'none' ? 'no prefix (none)' : `"${oldPrefix}"`;
-                    return { success: false, message: `Group prefix is already ${displayOld}` };
-                }
-                prefixes.groups[chatId] = newPrefix;
-                break;
-                
-            default:
-                return { success: false, message: 'Invalid scope!' };
-        }
-        
-        // Save to file
-        fs.writeFileSync(PREFIX_FILE, JSON.stringify(prefixes, null, 2));
-        
-        const displayNew = newPrefix === 'none' ? 'no prefix (commands work without prefix)' : `"${newPrefix}"`;
-        return { 
-            success: true, 
-            message: `✅ *Prefix set successfully!*\n\nNew prefix: ${displayNew}\nScope: ${scope}`,
-            scope: scope,
-            prefix: newPrefix,
-            requiresPrefix: newPrefix !== 'none'
-        };
-        
-    } catch (error) {
-        return { success: false, message: `❌ Failed to set prefix: ${error.message}` };
-    }
-}
-
-// Reset prefix
-function resetPrefix(chatId, userId, scope = 'global') {
-    const prefixes = initPrefixes();
-    
-    try {
-        switch(scope) {
-            case 'global':
-                prefixes.default = '.';
-                break;
-                
-            case 'user':
-                delete prefixes.users[userId];
-                break;
-                
-            case 'group':
-                if (!chatId.endsWith('@g.us')) {
-                    return { success: false, message: 'Group prefix can only be reset in groups!' };
-                }
-                delete prefixes.groups[chatId];
-                break;
-                
-            default:
-                return { success: false, message: 'Invalid scope!' };
-        }
-        
-        // Save to file
-        fs.writeFileSync(PREFIX_FILE, JSON.stringify(prefixes, null, 2));
-        
-        return { 
-            success: true, 
-            message: `✅ *Prefix reset successfully!*\n\nPrefix reset to default (.)\nScope: ${scope}`,
-            scope: scope
-        };
-        
-    } catch (error) {
-        return { success: false, message: `❌ Failed to reset prefix: ${error.message}` };
-    }
-}
-
-// List all prefixes
-function listPrefixes(userId, chatId) {
-    const prefixes = initPrefixes();
-    
-    let text = `🔤 *PREFIX SETTINGS*\n\n`;
-    
-    // Global prefix
-    const globalPrefix = prefixes.default === 'none' ? 'none (no prefix)' : `"${prefixes.default}"`;
-    text += `*🌍 Global Prefix:* ${globalPrefix}\n\n`;
-    
-    // User's personal prefix
-    if (prefixes.users[userId]) {
-        const userPrefix = prefixes.users[userId] === 'none' ? 'none (no prefix)' : `"${prefixes.users[userId]}"`;
-        text += `*👤 Your Personal Prefix:* ${userPrefix}\n`;
-    } else {
-        text += `*👤 Your Personal Prefix:* Not set (using global)\n`;
-    }
-    
-    // Group prefix (if in group)
-    if (chatId.endsWith('@g.us')) {
-        if (prefixes.groups[chatId]) {
-            const groupPrefix = prefixes.groups[chatId] === 'none' ? 'none (no prefix)' : `"${prefixes.groups[chatId]}"`;
-            text += `*👥 Group Prefix:* ${groupPrefix}\n`;
+        if (prefixRegex.test(settingsContent)) {
+            // For "none", we want empty string ''
+            const prefixValue = newPrefix === 'none' ? "''" : `'${newPrefix}'`;
+            settingsContent = settingsContent.replace(
+                prefixRegex,
+                `prefix: ${prefixValue},`
+            );
+            
+            fs.writeFileSync(settingsPath, settingsContent, 'utf8');
+            return true;
         } else {
-            text += `*👥 Group Prefix:* Not set (using global)\n`;
+            // Alternative pattern: prefix: '.'
+            const altRegex = /prefix:\s*['"`][^'"`]*['"`]/;
+            if (altRegex.test(settingsContent)) {
+                const prefixValue = newPrefix === 'none' ? "''" : `'${newPrefix}'`;
+                settingsContent = settingsContent.replace(
+                    altRegex,
+                    `prefix: ${prefixValue}`
+                );
+                fs.writeFileSync(settingsPath, settingsContent, 'utf8');
+                return true;
+            }
+            return false;
         }
+    } catch (error) {
+        console.error('Error updating settings.js:', error);
+        throw error;
     }
-    
-    text += `\n📋 *Available Prefix Options:*\n`;
-    text += `• Regular prefix: 1-3 characters (e.g., ., !, /, $)\n`;
-    text += `• Special prefix: "none" (commands work without prefix)\n\n`;
-    
-    text += `🎯 *Available Scopes:*\n`;
-    text += `• \`global\` - For all users (owner only)\n`;
-    text += `• \`user\` - Your personal prefix\n`;
-    text += `• \`group\` - Group-specific (admin only)\n\n`;
-    
-    text += `💡 *Examples:*\n`;
-    text += `• \`.setprefix !\` - Set your personal prefix to !\n`;
-    text += `• \`.setprefix none user\` - Remove prefix for yourself\n`;
-    text += `• \`.setprefix / group\` - Set group prefix to /\n`;
-    text += `• \`.setprefix none global\` - No prefix for everyone (owner only)\n`;
-    text += `• \`.setprefix reset\` - Reset to default\n`;
-    
-    return text;
 }
 
 // Main command handler
 async function execute(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
-        const isGroup = chatId.endsWith('@g.us');
         const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
         
-        // Show help if no arguments
-        if (args.length === 0) {
-            const helpText = listPrefixes(senderId, chatId);
-            await sock.sendMessage(chatId, { text: helpText }, { quoted: message });
-            return;
-        }
-        
-        const action = args[0].toLowerCase();
-        
-        // Handle reset
-        if (action === 'reset') {
-            const scope = args[1]?.toLowerCase() || 'user';
-            
-            // Check permissions
-            if (scope === 'global' && !isOwner && !message.key.fromMe) {
-                await sock.sendMessage(chatId, {
-                    text: '❌ Only bot owner can reset global prefix!'
-                }, { quoted: message });
-                return;
-            }
-            
-            if (scope === 'group' && isGroup) {
-                // Check if sender is group admin
-                const { isAdmin } = require('../lib/isAdmin');
-                const adminStatus = await isAdmin(sock, chatId, senderId);
-                if (!adminStatus.isSenderAdmin && !message.key.fromMe && !isOwner) {
-                    await sock.sendMessage(chatId, {
-                        text: '❌ Only group admins can reset group prefix!'
-                    }, { quoted: message });
-                    return;
-                }
-            }
-            
-            const result = resetPrefix(chatId, senderId, scope);
-            await sock.sendMessage(chatId, { text: result.message }, { quoted: message });
-            return;
-        }
-        
-        // Handle set prefix
-        const newPrefix = action;
-        const scope = args[1]?.toLowerCase() || 'user';
-        
-        // Check permissions
-        if (scope === 'global' && !isOwner && !message.key.fromMe) {
+        // Only owner can change prefix globally
+        if (!isOwner && !message.key.fromMe) {
             await sock.sendMessage(chatId, {
-                text: '❌ Only bot owner can set global prefix!'
+                text: '❌ Only bot owner can change the prefix!'
             }, { quoted: message });
             return;
         }
         
-        if (scope === 'group' && isGroup) {
-            // Check if sender is group admin
-            const { isAdmin } = require('../lib/isAdmin');
-            const adminStatus = await isAdmin(sock, chatId, senderId);
-            if (!adminStatus.isSenderAdmin && !message.key.fromMe && !isOwner) {
+        // Show current prefix if no arguments
+        if (args.length === 0) {
+            const settings = require('../settings');
+            const currentPrefix = settings.prefix || '.';
+            const prefixDisplay = currentPrefix === '' ? 'none (no prefix)' : `"${currentPrefix}"`;
+            
+            await sock.sendMessage(chatId, {
+                text: `🔤 *PREFIX SETTINGS*\n\n` +
+                      `*Current Prefix:* ${prefixDisplay}\n\n` +
+                      `📋 *Usage:*\n` +
+                      `• \`.setprefix <new-prefix>\` - Change prefix\n` +
+                      `• \`.setprefix .\` - Reset to default\n` +
+                      `• \`.setprefix none\` - No prefix (commands work without prefix)\n\n` +
+                      `💡 *Examples:*\n` +
+                      `• \`.setprefix !\` - Change to !\n` +
+                      `• \`.setprefix /\` - Change to /\n` +
+                      `• \`.setprefix $\` - Change to $\n` +
+                      `• \`.setprefix none\` - No prefix needed\n\n` +
+                      `⚠️ *Note:* You must restart the bot after changing prefix!`
+            }, { quoted: message });
+            return;
+        }
+        
+        const newPrefix = args[0].toLowerCase();
+        
+        // Handle "none" prefix (empty string)
+        if (newPrefix === 'none') {
+            const settings = require('../settings');
+            if (settings.prefix === '') {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Only group admins can set group prefix!'
+                    text: '⚠️ Prefix is already set to "none" (no prefix)!'
                 }, { quoted: message });
                 return;
             }
+            
+            try {
+                await updateSettingsPrefix('none');
+                await sock.sendMessage(chatId, {
+                    text: '✅ *Prefix removed!*\n\n' +
+                          'Now commands work **without any prefix**.\n\n' +
+                          '*Examples:*\n' +
+                          '• Instead of `.menu` just type `menu`\n' +
+                          '• Instead of `.help` just type `help`\n' +
+                          '• Instead of `.ping` just type `ping`\n\n' +
+                          '⚠️ *IMPORTANT:*\n' +
+                          'You must **restart the bot** for changes to take effect!\n\n' +
+                          'After restart:\n' +
+                          '• All commands will work without prefix\n' +
+                          '• Example: `menu` instead of `.menu`'
+                }, { quoted: message });
+            } catch (error) {
+                await sock.sendMessage(chatId, {
+                    text: `❌ Failed to update prefix: ${error.message}`
+                }, { quoted: message });
+            }
+            return;
         }
         
-        const result = setPrefix(chatId, senderId, newPrefix, scope);
-        await sock.sendMessage(chatId, { text: result.message }, { quoted: message });
-        
-        // Show example if prefix was set to "none"
-        if (result.success && newPrefix.toLowerCase() === 'none') {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        // Validate regular prefix
+        if (newPrefix.length > 3) {
             await sock.sendMessage(chatId, {
-                text: `💡 *Example:*\nNow you can use commands without prefix:\n\n` +
-                      `Instead of \`.menu\`, just type \`menu\`\n` +
-                      `Instead of \`.help\`, just type \`help\`\n` +
-                      `Instead of \`.ping\`, just type \`ping\`\n\n` +
-                      `⚠️ *Note:* This only applies to ${scope === 'global' ? 'everyone' : scope === 'group' ? 'this group' : 'you'}!`
-            });
+                text: '❌ Prefix must be 3 characters or less!'
+            }, { quoted: message });
+            return;
+        }
+        
+        // Check if prefix contains only allowed characters
+        const validPrefix = /^[!$%&*+\-./:<=>?@^_~a-zA-Z0-9]{1,3}$/.test(newPrefix);
+        if (!validPrefix) {
+            await sock.sendMessage(chatId, {
+                text: '❌ Prefix can only contain letters, numbers, or special symbols!\n\n' +
+                      '*Allowed characters:*\n' +
+                      '! $ % & * + - . / : < = > ? @ ^ _ ~\n' +
+                      'and letters a-z, A-Z, numbers 0-9'
+            }, { quoted: message });
+            return;
+        }
+        
+        // Check if prefix is already the same
+        const settings = require('../settings');
+        if (settings.prefix === newPrefix) {
+            await sock.sendMessage(chatId, {
+                text: `⚠️ Prefix is already "${newPrefix}"!`
+            }, { quoted: message });
+            return;
+        }
+        
+        // Update prefix
+        try {
+            await updateSettingsPrefix(newPrefix);
+            
+            await sock.sendMessage(chatId, {
+                text: `✅ *Prefix changed successfully!*\n\n` +
+                      `*Old prefix:* "${settings.prefix || '.'}"\n` +
+                      `*New prefix:* "${newPrefix}"\n\n` +
+                      `💡 *Examples:*\n` +
+                      `• \`${newPrefix}menu\` - Show menu\n` +
+                      `• \`${newPrefix}help\` - Show help\n` +
+                      `• \`${newPrefix}ping\` - Check bot speed\n` +
+                      `• \`${newPrefix}owner\` - Contact owner\n\n` +
+                      `⚠️ *IMPORTANT:*\n` +
+                      `You must **restart the bot** for changes to take effect!\n\n` +
+                      `After restart, use \`${newPrefix}command\` instead of \`.command\``
+            }, { quoted: message });
+            
+        } catch (error) {
+            await sock.sendMessage(chatId, {
+                text: `❌ Failed to change prefix: ${error.message}`
+            }, { quoted: message });
         }
         
     } catch (error) {
@@ -309,13 +176,8 @@ async function execute(sock, chatId, message, args) {
     }
 }
 
-// Export functions
+// Export
 module.exports = {
     execute,
-    command: 'setprefix',
-    getPrefix,
-    setPrefix,
-    resetPrefix,
-    listPrefixes,
-    initPrefixes
+    command: 'setprefix'
 };
