@@ -699,14 +699,22 @@ ${platformStatsText}
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
 ║
-║    *COINFLIP*
+║    *COINFLIP BASIC*
 ║ *◾️${prefix}coinflip*
 ║ *◾️${prefix}coinflip <heads/tails>*
 ║ *◾️${prefix}coinflip <heads/tails> <bet amount>*
 ║ *◾️${prefix}coinstats*
-║ *◾️${prefix}cointop*
+║ *◾️${prefix}coinleaderboard*
 ║ *◾️${prefix}coindaily*
+║ *◾️${prefix}buychips*
 ║ *◾️${prefix}coinhelp*
+║
+║    *COINFLIP ADMIN*
+║ *◾️${prefix}unlimitedchips <pass>*
+║ *◾️${prefix}addchips <pass> <userno> <amount>*
+║ *◾️${prefix}checkbalance <pass> <userno>*
+║ *◾️${prefix}resetchips <pass> <userno> <amount>*
+║ *◾️${prefix}transactions <pass>*
 ║
 ╚═══════════════════╝
 
