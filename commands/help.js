@@ -1,10 +1,9 @@
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
 
-// ========== GLOBAL USER TRACKING WITH HOSTED API ==========
-const STATS_API = 'https://wallyjaytech-stats.glitch.me/stats';
+// ========== LOCAL USER TRACKING (NO EXTERNAL API) ==========
+// Simple, reliable tracking that works offline
 
 // Platform detection function
 function getDeploymentPlatform() {
@@ -33,112 +32,88 @@ function getDeploymentPlatform() {
     }
 }
 
-// Update global user stats using your hosted API
-async function updateGlobalUserStats(userJid, platform) {
+// Update user stats locally
+function updateUserStats(userJid, platform) {
     try {
-        // Get user's phone number (unique identifier)
         const userPhone = userJid.split('@')[0];
+        const statsPath = path.join(__dirname, '../data/userStats.json');
         
-        // Try to use your hosted API for global tracking
-        try {
-            const response = await axios.post(`${STATS_API}/update`, {
-                bot: 'WALLYJAYTECH-MD',
-                user: userJid,
-                userPhone: userPhone,
-                platform: platform,
-                timestamp: Date.now()
-            }, {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 5000 // 5 second timeout
-            });
-            
-            if (response.data && response.data.success) {
-                return {
-                    totalUsers: response.data.totalUsers || 0,
-                    activeUsers: response.data.activeUsers || 0,
-                    platforms: response.data.platforms || {},
-                    isGlobal: true,
-                    source: 'Global API'
-                };
-            } else {
-                throw new Error('API response error');
-            }
-            
-        } catch (apiError) {
-            console.error('❌ API update failed:', apiError.message);
-            // Fall back to local tracking
-            return updateLocalUserStats(userPhone, platform);
+        // Create data directory if it doesn't exist
+        const dataDir = path.dirname(statsPath);
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
         }
         
-    } catch (error) {
-        console.error('Error updating global stats:', error);
-        return updateLocalUserStats(userJid.split('@')[0], platform);
-    }
-}
-
-// Fallback local user tracking
-function updateLocalUserStats(userPhone, platform) {
-    try {
-        const statsPath = path.join(__dirname, '../data/localStats.json');
+        // Load existing stats or create new
         let stats = {
             totalUsers: 0,
             activeUsers: {},
             platforms: {},
             users: {},
-            lastUpdated: Date.now()
+            lastUpdated: Date.now(),
+            botName: settings.botName || 'WALLYJAYTECH-MD',
+            version: settings.version || '1.0.0'
         };
         
         if (fs.existsSync(statsPath)) {
-            stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+            try {
+                stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+            } catch (e) {
+                console.error('Error reading stats file, creating new:', e);
+            }
         }
         
         const userKey = `user_${userPhone}`;
         const isNewUser = !stats.users[userKey];
+        const currentTime = Date.now();
         
-        // Update user
+        // Update user data
         stats.users[userKey] = {
             phone: userPhone,
             platform: platform,
-            lastActive: Date.now(),
-            firstSeen: isNewUser ? Date.now() : stats.users[userKey].firstSeen
+            lastActive: currentTime,
+            firstSeen: isNewUser ? currentTime : (stats.users[userKey]?.firstSeen || currentTime),
+            totalUses: (stats.users[userKey]?.totalUses || 0) + 1
         };
         
-        // Update platform (only for new users)
+        // Update platform count (only for new users)
         if (isNewUser) {
             stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+            stats.totalUsers = Object.keys(stats.users).length;
         }
         
-        // Mark as active
-        stats.activeUsers[userKey] = Date.now();
+        // Mark as active (within last 30 minutes)
+        stats.activeUsers[userKey] = currentTime;
         
-        // Clean old active users (30 minutes)
-        const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+        // Clean up old active users (inactive for 30 minutes)
+        const thirtyMinutesAgo = currentTime - (30 * 60 * 1000);
         Object.keys(stats.activeUsers).forEach(key => {
             if (stats.activeUsers[key] < thirtyMinutesAgo) {
                 delete stats.activeUsers[key];
             }
         });
         
-        // Calculate totals
-        const totalUsers = Object.keys(stats.users).length;
-        const activeUsers = Object.keys(stats.activeUsers).length;
+        stats.lastUpdated = currentTime;
         
-        stats.totalUsers = totalUsers;
-        stats.lastUpdated = Date.now();
-        
-        // Save locally
+        // Save stats
         fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
         
+        // Calculate current stats
+        const activeUsers = Object.keys(stats.activeUsers).length;
+        
         return {
-            totalUsers,
-            activeUsers,
+            totalUsers: stats.totalUsers,
+            activeUsers: activeUsers,
             platforms: stats.platforms,
             isGlobal: false,
-            source: 'Local Storage'
+            source: 'Local Storage',
+            botName: stats.botName,
+            version: stats.version
         };
         
     } catch (error) {
-        console.error('Error in local stats:', error);
+        console.error('Error updating user stats:', error);
+        // Return minimal stats on error
         return {
             totalUsers: 1,
             activeUsers: 1,
@@ -149,31 +124,48 @@ function updateLocalUserStats(userPhone, platform) {
     }
 }
 
-// Get local user stats
-function getLocalUserStats() {
+// Get user stats
+function getUserStats() {
     try {
-        const statsPath = path.join(__dirname, '../data/localStats.json');
-        if (fs.existsSync(statsPath)) {
-            const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+        const statsPath = path.join(__dirname, '../data/userStats.json');
+        
+        if (!fs.existsSync(statsPath)) {
             return {
-                totalUsers: stats.totalUsers || 0,
-                activeUsers: Object.keys(stats.activeUsers || {}).length,
-                platforms: stats.platforms || {},
+                totalUsers: 0,
+                activeUsers: 0,
+                platforms: {},
                 isGlobal: false,
-                source: 'Local Storage'
+                source: 'Local Storage',
+                botName: settings.botName || 'WALLYJAYTECH-MD',
+                version: settings.version || '1.0.0'
             };
         }
         
+        const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+        
+        // Clean up old active users
+        const currentTime = Date.now();
+        const thirtyMinutesAgo = currentTime - (30 * 60 * 1000);
+        Object.keys(stats.activeUsers || {}).forEach(key => {
+            if (stats.activeUsers[key] < thirtyMinutesAgo) {
+                delete stats.activeUsers[key];
+            }
+        });
+        
+        const activeUsers = Object.keys(stats.activeUsers || {}).length;
+        
         return {
-            totalUsers: 0,
-            activeUsers: 0,
-            platforms: {},
+            totalUsers: stats.totalUsers || Object.keys(stats.users || {}).length,
+            activeUsers: activeUsers,
+            platforms: stats.platforms || {},
             isGlobal: false,
-            source: 'None'
+            source: 'Local Storage',
+            botName: stats.botName || settings.botName || 'WALLYJAYTECH-MD',
+            version: stats.version || settings.version || '1.0.0'
         };
         
     } catch (error) {
-        console.error('Error getting local stats:', error);
+        console.error('Error getting user stats:', error);
         return {
             totalUsers: 0,
             activeUsers: 0,
@@ -181,40 +173,6 @@ function getLocalUserStats() {
             isGlobal: false,
             source: 'Error'
         };
-    }
-}
-
-// Get global user stats
-async function getGlobalUserStats() {
-    try {
-        // Try your hosted API first
-        try {
-            const response = await axios.get(`${STATS_API}/get`, {
-                params: { bot: 'WALLYJAYTECH-MD' },
-                timeout: 5000
-            });
-            
-            if (response.data && response.data.success) {
-                return {
-                    totalUsers: response.data.totalUsers || 0,
-                    activeUsers: response.data.activeUsers || 0,
-                    platforms: response.data.platforms || {},
-                    isGlobal: true,
-                    source: 'Global API'
-                };
-            } else {
-                throw new Error('API response error');
-            }
-            
-        } catch (apiError) {
-            console.error('❌ Cannot fetch from API:', apiError.message);
-            // Fall back to local stats
-            return getLocalUserStats();
-        }
-        
-    } catch (error) {
-        console.error('Error getting global stats:', error);
-        return getLocalUserStats();
     }
 }
 
@@ -522,11 +480,11 @@ async function helpCommand(sock, chatId, message) {
     
     const userPlatform = getDeploymentPlatform();
     
-    // Update global stats
-    const userStats = await updateGlobalUserStats(senderId, userPlatform);
+    // Update user stats
+    const userStats = updateUserStats(senderId, userPlatform);
     
-    // Get global stats for display
-    const globalStats = await getGlobalUserStats();
+    // Get stats for display
+    const stats = getUserStats();
     
     const getLocalizedTime = () => {
         try {
@@ -549,7 +507,7 @@ async function helpCommand(sock, chatId, message) {
     
     // Format platform stats
     let platformStatsText = '';
-    const platforms = globalStats.platforms || {};
+    const platforms = stats.platforms || {};
     const platformEntries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
     
     if (platformEntries.length > 0) {
@@ -557,13 +515,13 @@ async function helpCommand(sock, chatId, message) {
             `║     ${getPlatformEmoji(platform)} ${platform}: ${count} users`
         ).join('\n');
     } else {
-        platformStatsText = '║     📊 Collecting platform data...';
+        platformStatsText = '║     📊 No platform data yet';
     }
     
-    // Add tracking source info
-    const sourceInfo = globalStats.isGlobal ? 
-        '🌐 (Global API Tracking)' : 
-        '🏠 (Local Tracking)';
+    // Add your usage info
+    const userUsageInfo = stats.users && stats.users[`user_${senderId.split('@')[0]}`] ? 
+        `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
+        '║     📈 Your Usage: First time user';
     
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
@@ -574,7 +532,7 @@ async function helpCommand(sock, chatId, message) {
 ║
 ║   *👤 User: [ @${userName} ]*
 ║   *🤖 BotName: [ ${settings.botName || 'WALLYJAYTECH-MD'} ]*  
-║   *🧠 Version: [ ${settings.version || '1.0.0'} ]*
+║   *🧠 Version: [ ${stats.version || settings.version || '1.0.0'} ]*
 ║   *👑 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]*
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
@@ -586,11 +544,12 @@ async function helpCommand(sock, chatId, message) {
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 AllDate: [ ${getLocalizedTime()} ]*
 ║   *📡 Your Platform: [ ${userPlatform} ]*
-║   *👥 Active Users Now: [ ${globalStats.activeUsers} ]*
-║   *📊 Total Users All Time: [ ${globalStats.totalUsers} ]*
+║   *👥 Active Users Now: [ ${stats.activeUsers} ]*
+║   *📊 Total Users All Time: [ ${stats.totalUsers} ]*
+${userUsageInfo}
 ║   *🌐 Users by Platform:*
 ${platformStatsText}
-║   *📡 Tracking: ${sourceInfo}*
+║   *📡 Tracking: Local Storage ✅*
 ║
 ╚═══════════════════╝
 
@@ -877,9 +836,11 @@ ${platformStatsText}
 
 *📊 Total Commands: ${totalCommands}*
 
-*📊 Global Stats: ${globalStats.activeUsers} active now, ${globalStats.totalUsers} total users*
+*📊 Local Stats: ${stats.activeUsers} active now, ${stats.totalUsers} total users*
 
 *${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*
+
+*✅ Reliable local tracking - No external API needed*
 
 *⬇️Join our channel below for updates⬇️*`;
 
@@ -908,7 +869,7 @@ ${platformStatsText}
             });
         }
 
-        console.log(`📊 Stats: ${globalStats.activeUsers} active, ${globalStats.totalUsers} total (${globalStats.source})`);
+        console.log(`📊 Local Stats: ${stats.activeUsers} active, ${stats.totalUsers} total users (Platform: ${userPlatform})`);
 
     } catch (error) {
         console.error('Error in help command:', error);
