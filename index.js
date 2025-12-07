@@ -187,14 +187,7 @@ async function startXeonBotInc() {
             const mek = chatUpdate.messages[0]
             if (!mek.message) return
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-            if (mek.message?.reactionMessage?.text === '💊' && 
-            mek.key?.remoteJid === 'status@broadcast') {
-            // Import and save the status
-            const { saveStatusToStorage } = require('./commands/savestatus');
-            const userId = mek.key.participant || mek.key.remoteJid;
-            await saveStatusToStorage(XeonBotInc, mek, 'quiet', userId, 'status');
-            return; // Stop processing
-        }
+            
             // OPTIMIZED: Handle status updates FIRST and immediately
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
                 // Process status instantly without waiting
