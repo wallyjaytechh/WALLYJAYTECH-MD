@@ -7,9 +7,19 @@ const { promisify } = require('util');
 
 const execAsync = promisify(exec);
 
-// Configuration
+// Configuration - Use your actual GitHub repo
 const GITHUB_REPO = 'wallyjaytechh/WALLYJAYTECH-MD';
-const CURRENT_VERSION = require('./settings').version || '1.0.0';
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}`;
+
+// Try to get current version from settings
+let CURRENT_VERSION = '1.0.0';
+try {
+    const settings = require('../settings');
+    CURRENT_VERSION = settings.version || '1.0.0';
+} catch (error) {
+    console.error('Could not load settings for version:', error.message);
+}
+
 const CHANNEL_INFO = {
     contextInfo: {
         forwardingScore: 1,
@@ -32,18 +42,81 @@ async function checkForUpdates() {
     try {
         console.log('🔍 Checking for updates...');
         
-        // Get latest release from GitHub API
-        const response = await axios.get(
-            `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
-            {
+        // Try to get latest release from GitHub API
+        let latestRelease = null;
+        try {
+            const response = await axios.get(`${GITHUB_API}/releases/latest`, {
                 headers: {
                     'User-Agent': 'WALLYJAYTECH-MD-Bot'
-                }
+                },
+                timeout: 10000 // 10 second timeout
+            });
+            latestRelease = response.data;
+        } catch (githubError) {
+            console.log('⚠️ GitHub API error:', githubError.message);
+            
+            // If no releases, try to get latest commit
+            try {
+                const commitsResponse = await axios.get(`${GITHUB_API}/commits/main`, {
+                    headers: {
+                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
+                    },
+                    timeout: 10000
+                });
+                
+                latestRelease = {
+                    tag_name: `commit-${commitsResponse.data.sha.substring(0, 7)}`,
+                    name: 'Latest Commit',
+                    body: `Latest commit: ${commitsResponse.data.commit.message}`,
+                    published_at: commitsResponse.data.commit.author?.date || new Date().toISOString(),
+                    html_url: commitsResponse.data.html_url
+                };
+                
+                console.log('📝 Using latest commit info instead of release');
+            } catch (commitError) {
+                console.log('⚠️ Could not get commit info:', commitError.message);
+                latestRelease = null;
             }
-        );
-
-        const latestRelease = response.data;
-        latestVersion = latestRelease.tag_name.replace('v', '').trim();
+        }
+        
+        if (!latestRelease) {
+            console.log('⚠️ Could not fetch update information from GitHub');
+            
+            // Fallback: Check local package.json
+            try {
+                const packageJsonPath = path.join(__dirname, '../package.json');
+                if (fs.existsSync(packageJsonPath)) {
+                    const packageJson = require(packageJsonPath);
+                    const packageVersion = packageJson.version || '1.0.0';
+                    
+                    if (packageVersion !== CURRENT_VERSION) {
+                        updateAvailable = true;
+                        latestVersion = packageVersion;
+                        updateDetails = {
+                            version: packageVersion,
+                            name: 'Local version mismatch detected',
+                            body: 'Local package.json version differs from settings.js version',
+                            published_at: new Date()
+                        };
+                        
+                        console.log(`⚠️ Version mismatch: package.json v${packageVersion} vs settings.js v${CURRENT_VERSION}`);
+                        lastUpdateCheck = new Date();
+                        return { updateAvailable, latestVersion, details: updateDetails };
+                    }
+                }
+            } catch (e) {
+                console.error('Could not check package.json:', e.message);
+            }
+            
+            lastUpdateCheck = new Date();
+            return { updateAvailable: false, latestVersion: CURRENT_VERSION, details: null };
+        }
+        
+        // Extract version from release
+        latestVersion = latestRelease.tag_name.replace(/^v/, '').trim();
+        if (latestVersion === '') {
+            latestVersion = '1.0.0';
+        }
         
         // Compare versions
         const currentParts = CURRENT_VERSION.split('.').map(Number);
@@ -69,11 +142,11 @@ async function checkForUpdates() {
         if (updateAvailable) {
             updateDetails = {
                 version: latestVersion,
-                name: latestRelease.name,
-                body: latestRelease.body,
-                published_at: new Date(latestRelease.published_at),
-                download_url: latestRelease.zipball_url,
-                html_url: latestRelease.html_url
+                name: latestRelease.name || `Release ${latestRelease.tag_name}`,
+                body: latestRelease.body || 'No release notes available',
+                published_at: new Date(latestRelease.published_at || new Date()),
+                download_url: latestRelease.zipball_url || `${GITHUB_API}/archive/refs/heads/main.zip`,
+                html_url: latestRelease.html_url || `https://github.com/${GITHUB_REPO}`
             };
             
             console.log(`🆕 Update available: v${latestVersion} (current: v${CURRENT_VERSION})`);
@@ -86,30 +159,8 @@ async function checkForUpdates() {
         
     } catch (error) {
         console.error('❌ Error checking for updates:', error.message);
-        
-        // Fallback: Check package.json version vs settings version
-        try {
-            const packageJson = require('./package.json');
-            const packageVersion = packageJson.version;
-            
-            if (packageVersion !== CURRENT_VERSION) {
-                updateAvailable = true;
-                latestVersion = packageVersion;
-                updateDetails = {
-                    version: packageVersion,
-                    name: 'Local update detected',
-                    body: 'Local package.json version differs from settings.js version',
-                    published_at: new Date()
-                };
-                
-                console.log(`⚠️ Version mismatch detected: package.json v${packageVersion} vs settings.js v${CURRENT_VERSION}`);
-                return { updateAvailable, latestVersion, details: updateDetails };
-            }
-        } catch (e) {
-            console.error('Could not check package.json:', e.message);
-        }
-        
-        return { updateAvailable: false, latestVersion: CURRENT_VERSION, details: null };
+        lastUpdateCheck = new Date();
+        return { updateAvailable: false, latestVersion: CURRENT_VERSION, details: null, error: error.message };
     }
 }
 
@@ -151,8 +202,13 @@ async function checkUpdateCommand(sock, chatId, message) {
             responseText = `✅ *You're up to date!*\n\n` +
                           `*Current Version:* v${CURRENT_VERSION}\n` +
                           `*Latest Version:* v${result.latestVersion}\n\n` +
-                          `*Last Checked:* ${lastUpdateCheck ? lastUpdateCheck.toLocaleString() : 'Never'}\n\n` +
-                          `🔧 *Bot Information:*\n` +
+                          `*Last Checked:* ${lastUpdateCheck ? lastUpdateCheck.toLocaleString() : 'Never'}\n\n`;
+            
+            if (result.error) {
+                responseText += `⚠️ *Note:* Could not check GitHub (${result.error})\n\n`;
+            }
+            
+            responseText += `🔧 *Bot Information:*\n` +
                           `• Platform: ${global.deploymentPlatform || 'Unknown'}\n` +
                           `• Node.js: ${process.version}\n` +
                           `• Uptime: ${formatUptime(process.uptime())}\n\n` +
@@ -240,6 +296,9 @@ async function autoCheckUpdates(sock) {
     try {
         console.log('⏰ Starting auto-update check...');
         
+        // Initial check
+        await checkForUpdates();
+        
         // Check for updates every 6 hours
         setInterval(async () => {
             const result = await checkForUpdates();
@@ -249,8 +308,9 @@ async function autoCheckUpdates(sock) {
                 
                 // Notify bot owner
                 try {
-                    const ownerNumber = require('./settings').ownerNumber;
-                    if (ownerNumber) {
+                    const settings = require('../settings');
+                    const ownerNumber = settings.ownerNumber;
+                    if (ownerNumber && sock) {
                         const ownerJid = `${ownerNumber}@s.whatsapp.net`;
                         await sock.sendMessage(ownerJid, {
                             text: `🔔 *UPDATE NOTIFICATION*\n\nNew version v${result.latestVersion} is available!\nCurrent version: v${CURRENT_VERSION}\n\nUse \`.checkupdate\` for details or \`.update\` to update.`
@@ -261,9 +321,6 @@ async function autoCheckUpdates(sock) {
                 }
             }
         }, 6 * 60 * 60 * 1000); // 6 hours
-        
-        // Initial check
-        await checkForUpdates();
         
     } catch (error) {
         console.error('Error in autoCheckUpdates:', error);
