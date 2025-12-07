@@ -1,6 +1,11 @@
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+
+// ========== GLOBAL USER TRACKING WITH GITHUB GIST ==========
+const GIST_ID = 'af229cd45cb83d58f78e99f41497fd78'; // only bot founder  need to create this
+const GITHUB_TOKEN = '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'; // only bot founder  GitHub personal token 
 
 // Platform detection function
 function getDeploymentPlatform() {
@@ -16,10 +21,281 @@ function getDeploymentPlatform() {
         return 'Koyeb';
     } else if (process.env.FLY_APP_NAME) {
         return 'Fly.io';
+    } else if (process.env.GLITCH_PROJECT_ID) {
+        return 'Glitch';
+    } else if (process.env.VERCEL) {
+        return 'Vercel';
+    } else if (process.env.HEROKU_APP_NAME) {
+        return 'Heroku';
+    } else if (process.env.RAILWAY_ENVIRONMENT) {
+        return 'Railway';
     } else {
         return 'Local Machine';
     }
 }
+
+// Initialize or get Gist for global tracking
+async function initGlobalStatsGist() {
+    try {
+        // First, check if we can connect to GitHub
+        const response = await axios.get('https://api.github.com/user', {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'User-Agent': 'WALLYJAYTECH-MD-Bot'
+            }
+        });
+        
+        console.log('✅ Connected to GitHub API');
+        return true;
+    } catch (error) {
+        console.error('❌ Cannot connect to GitHub API:', error.message);
+        console.log('⚠️ Falling back to local tracking');
+        return false;
+    }
+}
+
+// Update global user stats using GitHub Gist
+async function updateGlobalUserStats(userJid, platform) {
+    try {
+        // Get user's phone number (unique identifier)
+        const userPhone = userJid.split('@')[0];
+        
+        // Try to use GitHub Gist for global tracking
+        if (GITHUB_TOKEN && GIST_ID) {
+            try {
+                // Get current Gist data
+                const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
+                    }
+                });
+                
+                const gistData = JSON.parse(gistResponse.data.files['global_stats.json'].content);
+                
+                // Update stats
+                const userKey = `user_${userPhone}`;
+                const platformKey = `platform_${platform}`;
+                
+                // Initialize if not exists
+                if (!gistData.users) gistData.users = {};
+                if (!gistData.platforms) gistData.platforms = {};
+                if (!gistData.activeUsers) gistData.activeUsers = {};
+                
+                // Check if user is new
+                const isNewUser = !gistData.users[userKey];
+                
+                // Update user data
+                gistData.users[userKey] = {
+                    phone: userPhone,
+                    platform: platform,
+                    lastActive: Date.now(),
+                    firstSeen: isNewUser ? Date.now() : gistData.users[userKey].firstSeen
+                };
+                
+                // Update platform count
+                gistData.platforms[platform] = (gistData.platforms[platform] || 0) + 1;
+                
+                // Mark as active now
+                gistData.activeUsers[userKey] = Date.now();
+                
+                // Remove users inactive for more than 30 minutes
+                const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+                Object.keys(gistData.activeUsers).forEach(key => {
+                    if (gistData.activeUsers[key] < thirtyMinutesAgo) {
+                        delete gistData.activeUsers[key];
+                    }
+                });
+                
+                // Update Gist
+                await axios.patch(`https://api.github.com/gists/${GIST_ID}`, {
+                    files: {
+                        'global_stats.json': {
+                            content: JSON.stringify(gistData, null, 2)
+                        }
+                    }
+                }, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
+                    }
+                });
+                
+                // Calculate stats
+                const totalUsers = Object.keys(gistData.users).length;
+                const activeUsers = Object.keys(gistData.activeUsers).length;
+                
+                return {
+                    totalUsers,
+                    activeUsers,
+                    platforms: gistData.platforms,
+                    isGlobal: true
+                };
+                
+            } catch (gistError) {
+                console.error('❌ Gist update failed:', gistError.message);
+                // Fall back to local tracking
+                return updateLocalUserStats(userPhone, platform);
+            }
+        } else {
+            // Fall back to local tracking
+            return updateLocalUserStats(userPhone, platform);
+        }
+        
+    } catch (error) {
+        console.error('Error updating global stats:', error);
+        return updateLocalUserStats(userJid.split('@')[0], platform);
+    }
+}
+
+// Fallback local user tracking
+function updateLocalUserStats(userPhone, platform) {
+    try {
+        const statsPath = path.join(__dirname, '../data/localStats.json');
+        let stats = {
+            totalUsers: 0,
+            activeUsers: {},
+            platforms: {},
+            users: {},
+            lastUpdated: Date.now()
+        };
+        
+        if (fs.existsSync(statsPath)) {
+            stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+        }
+        
+        const userKey = `user_${userPhone}`;
+        const isNewUser = !stats.users[userKey];
+        
+        // Update user
+        stats.users[userKey] = {
+            phone: userPhone,
+            platform: platform,
+            lastActive: Date.now(),
+            firstSeen: isNewUser ? Date.now() : stats.users[userKey].firstSeen
+        };
+        
+        // Update platform
+        stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
+        
+        // Mark as active
+        stats.activeUsers[userKey] = Date.now();
+        
+        // Clean old active users (30 minutes)
+        const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+        Object.keys(stats.activeUsers).forEach(key => {
+            if (stats.activeUsers[key] < thirtyMinutesAgo) {
+                delete stats.activeUsers[key];
+            }
+        });
+        
+        // Calculate totals
+        const totalUsers = Object.keys(stats.users).length;
+        const activeUsers = Object.keys(stats.activeUsers).length;
+        
+        stats.totalUsers = totalUsers;
+        stats.lastUpdated = Date.now();
+        
+        // Save locally
+        fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
+        
+        return {
+            totalUsers,
+            activeUsers,
+            platforms: stats.platforms,
+            isGlobal: false
+        };
+        
+    } catch (error) {
+        console.error('Error in local stats:', error);
+        return {
+            totalUsers: 1,
+            activeUsers: 1,
+            platforms: { [platform]: 1 },
+            isGlobal: false
+        };
+    }
+}
+
+// Get global user stats
+async function getGlobalUserStats() {
+    try {
+        // Try GitHub Gist first
+        if (GITHUB_TOKEN && GIST_ID) {
+            try {
+                const gistResponse = await axios.get(`https://api.github.com/gists/${GIST_ID}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'User-Agent': 'WALLYJAYTECH-MD-Bot'
+                    }
+                });
+                
+                const gistData = JSON.parse(gistResponse.data.files['global_stats.json'].content);
+                
+                const totalUsers = Object.keys(gistData.users || {}).length;
+                const activeUsers = Object.keys(gistData.activeUsers || {}).length;
+                
+                return {
+                    totalUsers,
+                    activeUsers,
+                    platforms: gistData.platforms || {},
+                    isGlobal: true,
+                    source: 'GitHub Gist'
+                };
+            } catch (gistError) {
+                console.error('❌ Cannot fetch from Gist:', gistError.message);
+            }
+        }
+        
+        // Fall back to local stats
+        const statsPath = path.join(__dirname, '../data/localStats.json');
+        if (fs.existsSync(statsPath)) {
+            const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
+            return {
+                totalUsers: stats.totalUsers || 0,
+                activeUsers: Object.keys(stats.activeUsers || {}).length,
+                platforms: stats.platforms || {},
+                isGlobal: false,
+                source: 'Local Storage'
+            };
+        }
+        
+        return {
+            totalUsers: 0,
+            activeUsers: 0,
+            platforms: {},
+            isGlobal: false,
+            source: 'None'
+        };
+        
+    } catch (error) {
+        console.error('Error getting global stats:', error);
+        return {
+            totalUsers: 0,
+            activeUsers: 0,
+            platforms: {},
+            isGlobal: false,
+            source: 'Error'
+        };
+    }
+}
+
+// ========== SETUP INSTRUCTIONS ==========
+/*
+1. Create a GitHub Personal Access Token:
+   - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Generate new token (classic) with "gist" scope
+
+2. Create a Gist:
+   - Go to https://gist.github.com
+   - Create a new gist with filename "global_stats.json"
+   - Content: {"users": {}, "platforms": {}, "activeUsers": {}}
+   - Get the Gist ID from the URL (long hash in URL)
+
+3. Update the constants above:
+   - GIST_ID: Your gist ID
+   - GITHUB_TOKEN: Your personal access token
+*/
 
 // Get prefix from settings
 function getPrefix() {
@@ -159,115 +435,6 @@ async function getUserName(sock, userId, message) {
     }
 }
 
-// Track users globally
-function updateGlobalUserStats(userJid, platform, isNewSession = false) {
-    try {
-        const statsPath = path.join(__dirname, '../data/globalStats.json');
-        let stats = {
-            totalUsers: 0,
-            activeUsers: new Set(),
-            platforms: {},
-            userPlatforms: {}, // Map user JID to their platform
-            lastUpdated: Date.now()
-        };
-        
-        if (fs.existsSync(statsPath)) {
-            const data = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-            stats.totalUsers = data.totalUsers || 0;
-            stats.activeUsers = new Set(data.activeUsers || []);
-            stats.platforms = data.platforms || {};
-            stats.userPlatforms = data.userPlatforms || {};
-        }
-        
-        // Get user's unique ID (phone number)
-        const userUniqueId = userJid.split('@')[0];
-        
-        // Only count as new user if they haven't been seen before
-        if (!stats.userPlatforms[userUniqueId]) {
-            stats.totalUsers++;
-            
-            // Track user's platform
-            stats.userPlatforms[userUniqueId] = platform;
-            
-            // Update platform count
-            stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
-        } else if (stats.userPlatforms[userUniqueId] !== platform && isNewSession) {
-            // If user changed platform, update platform counts
-            const oldPlatform = stats.userPlatforms[userUniqueId];
-            if (stats.platforms[oldPlatform] > 0) {
-                stats.platforms[oldPlatform]--;
-            }
-            stats.userPlatforms[userUniqueId] = platform;
-            stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
-        }
-        
-        // Add to active users (current session)
-        stats.activeUsers.add(userUniqueId);
-        
-        // Clean old data (remove users inactive for 7 days)
-        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-        if (stats.lastUpdated < sevenDaysAgo) {
-            // Reset active users periodically
-            stats.activeUsers = new Set([userUniqueId]);
-        }
-        
-        stats.lastUpdated = Date.now();
-        
-        // Save updated stats
-        fs.writeFileSync(statsPath, JSON.stringify({
-            totalUsers: stats.totalUsers,
-            activeUsers: Array.from(stats.activeUsers),
-            platforms: stats.platforms,
-            userPlatforms: stats.userPlatforms,
-            lastUpdated: stats.lastUpdated
-        }, null, 2));
-        
-        return {
-            totalUsers: stats.totalUsers,
-            activeUsers: stats.activeUsers.size,
-            platforms: stats.platforms
-        };
-        
-    } catch (error) {
-        console.error('Error updating global stats:', error);
-        return {
-            totalUsers: 0,
-            activeUsers: 0,
-            platforms: {}
-        };
-    }
-}
-
-// Get global user stats
-function getGlobalUserStats() {
-    try {
-        const statsPath = path.join(__dirname, '../data/globalStats.json');
-        
-        if (!fs.existsSync(statsPath)) {
-            return {
-                totalUsers: 0,
-                activeUsers: 0,
-                platforms: {}
-            };
-        }
-        
-        const data = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-        
-        return {
-            totalUsers: data.totalUsers || 0,
-            activeUsers: data.activeUsers?.length || 0,
-            platforms: data.platforms || {}
-        };
-    } catch (error) {
-        console.error('Error getting global stats:', error);
-        return {
-            totalUsers: 0,
-            activeUsers: 0,
-            platforms: {}
-        };
-    }
-}
-
 // Get platform emoji
 function getPlatformEmoji(platform) {
     const platformEmojis = {
@@ -278,6 +445,10 @@ function getPlatformEmoji(platform) {
         'Replit': '⚡',
         'Koyeb': '🚀',
         'Fly.io': '✈️',
+        'Glitch': '🌀',
+        'Vercel': '▲',
+        'Heroku': '⚙️',
+        'Railway': '🚂',
         'Unknown': '❓'
     };
     return platformEmojis[platform] || '❓';
@@ -326,8 +497,11 @@ async function helpCommand(sock, chatId, message) {
     
     const userPlatform = getDeploymentPlatform();
     
-    // Update global stats (treat each help command as active session)
-    const userStats = updateGlobalUserStats(senderId, userPlatform);
+    // Update global stats
+    const userStats = await updateGlobalUserStats(senderId, userPlatform);
+    
+    // Get global stats for display
+    const globalStats = await getGlobalUserStats();
     
     const getLocalizedTime = () => {
         try {
@@ -350,7 +524,7 @@ async function helpCommand(sock, chatId, message) {
     
     // Format platform stats
     let platformStatsText = '';
-    const platforms = userStats.platforms;
+    const platforms = globalStats.platforms || {};
     const platformEntries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
     
     if (platformEntries.length > 0) {
@@ -358,11 +532,26 @@ async function helpCommand(sock, chatId, message) {
             `║     ${getPlatformEmoji(platform)} ${platform}: ${count} users`
         ).join('\n');
     } else {
-        platformStatsText = '║     📊 No platform data yet';
+        platformStatsText = '║     📊 Collecting platform data...';
     }
     
-    // Get global stats for display
-    const globalStats = getGlobalUserStats();
+    // Add tracking source info
+    const sourceInfo = globalStats.isGlobal ? 
+        '🌐 (Global GitHub Tracking)' : 
+        '🏠 (Local Tracking Only)';
+    
+    // Check if user needs to setup GitHub tracking
+    let setupNotice = '';
+    if (!globalStats.isGlobal && GIST_ID === 'YOUR_GIST_ID_HERE') {
+        setupNotice = `
+        
+⚠️ *SETUP GLOBAL TRACKING:*
+To track users across ALL bot deployments:
+1. Create GitHub Personal Access Token with "gist" scope
+2. Create a Gist with filename "global_stats.json"
+3. Update GIST_ID and GITHUB_TOKEN in help.js
+4. All bots will share the same user count!`;
+    }
     
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
@@ -385,12 +574,13 @@ async function helpCommand(sock, chatId, message) {
 ║   *📊 Total Commands: [ ${totalCommands} ]*
 ║   *📅 AllDate: [ ${getLocalizedTime()} ]*
 ║   *📡 Your Platform: [ ${userPlatform} ]*
-║   *👥 Active Users (Now): [ ${globalStats.activeUsers} ]*
-║   *📊 Total Users (All Time): [ ${globalStats.totalUsers} ]*
+║   *👥 Active Users Now: [ ${globalStats.activeUsers} ] ${sourceInfo}*
+║   *📊 Total Users All Time: [ ${globalStats.totalUsers} ]*
 ║   *🌐 Users by Platform:*
 ${platformStatsText}
 ║
 ╚═══════════════════╝
+${setupNotice}
 
 *⬇️ ALL COMMANDS ⬇️*
 
@@ -677,12 +867,21 @@ ${platformStatsText}
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        const menuSent = await sendMenu(sock, chatId, message, helpMessage, senderId);
+        await sock.sendMessage(chatId, { 
+            text: helpMessage,
+            mentions: [senderId],
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        });
         
-        if (menuSent) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await sendMenuAudio(sock, chatId, message);
-        }
+        console.log(`📊 Stats: ${globalStats.activeUsers} active, ${globalStats.totalUsers} total (${globalStats.source})`);
 
     } catch (error) {
         console.error('Error in help command:', error);
@@ -699,110 +898,6 @@ ${platformStatsText}
                 }
             }
         });
-    }
-}
-
-// Send menu with media
-async function sendMenu(sock, chatId, message, helpMessage, userId) {
-    try {
-        const mediaOptions = [
-            {
-                type: 'image',
-                path: path.join(__dirname, '../assets/bot_image.jpg'),
-                caption: helpMessage
-            },
-            {
-                type: 'video', 
-                path: path.join(__dirname, '../assets/menu_video.mp4'),
-                caption: helpMessage
-            }
-        ];
-
-        const selectedMedia = mediaOptions[Math.floor(Math.random() * mediaOptions.length)];
-        
-        console.log(`🎲 Selected media type: ${selectedMedia.type}`);
-        
-        if (fs.existsSync(selectedMedia.path)) {
-            const mediaBuffer = fs.readFileSync(selectedMedia.path);
-            
-            if (selectedMedia.type === 'image') {
-                await sock.sendMessage(chatId, {
-                    image: mediaBuffer,
-                    caption: selectedMedia.caption,
-                    mentions: [userId],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }, { quoted: message });
-                console.log(`✅ Menu sent as image to @${userId.split('@')[0]}`);
-                return true;
-            } else if (selectedMedia.type === 'video') {
-                await sock.sendMessage(chatId, {
-                    video: mediaBuffer,
-                    caption: selectedMedia.caption,
-                    mentions: [userId],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }, { quoted: message });
-                console.log(`✅ Menu sent as video to @${userId.split('@')[0]}`);
-                return true;
-            }
-        } else {
-            console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
-            await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                mentions: [userId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    } 
-                }
-            });
-            return true;
-        }
-    } catch (error) {
-        console.error('Error sending menu:', error);
-        return false;
-    }
-}
-
-// Send menu audio
-async function sendMenuAudio(sock, chatId, message) {
-    try {
-        const audioPath = path.join(__dirname, '../assets/menu_audio.mp3');
-        if (fs.existsSync(audioPath)) {
-            const audioBuffer = fs.readFileSync(audioPath);
-            await sock.sendMessage(chatId, {
-                audio: audioBuffer,
-                mimetype: 'audio/mpeg',
-                ptt: false
-            }, { quoted: message });
-            console.log('🎵 Menu audio sent');
-            return true;
-        } else {
-            console.log('❌ Menu audio not found, skipping audio');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error sending audio:', error);
-        return false;
     }
 }
 
