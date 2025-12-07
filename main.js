@@ -848,85 +848,76 @@ case userMessage.startsWith('.getjid @'):
                 await updateInfoCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
-
-            case userMessage === '.botinfo' || userMessage === '.binfo':
+case userMessage === '.botinfo' || userMessage === '.binfo':
                 {
                     const uptime = formatUptime(process.uptime());
                     const memory = process.memoryUsage();
                     const memUsage = Math.round(memory.heapUsed / 1024 / 1024);
                     const totalMem = Math.round(memory.heapTotal / 1024 / 1024);
                     const updateStatus = require('./commands/checkupdate').getUpdateStatus();
+                    const settings = require('./settings');
                     
-                    // Simple command counter
-                    let commandCount = 0;
-                    try {
-                        const fs = require('fs');
-                        const content = fs.readFileSync(__filename, 'utf8');
-                        const commandPattern = /case\s+userMessage\s*(===|\.startsWith\()\s*['"`]\.([^'"`]+)['"`]/g;
-                        const matches = [...content.matchAll(commandPattern)];
-                        commandCount = new Set(matches.map(m => m[2])).size;
-                    } catch (e) {
-                        commandCount = 150;
-                    }
+                    // ... (rest of your code) ...
                     
-                    // Get bot mode from messageCount.json
-                    let botMode = 'Unknown';
-                    let isPublic = true;
-                    try {
-                        const fs = require('fs');
-                        if (fs.existsSync('./data/messageCount.json')) {
-                            const data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8'));
-                            isPublic = data.isPublic !== false; // default to true if not set
-                            botMode = isPublic ? 'Public' : 'Private';
-                        } else {
-                            botMode = 'Public (default)';
-                        }
-                    } catch (error) {
-                        console.error('Error reading bot mode:', error);
-                        botMode = 'Public (error)';
-                    }
-                    
-                    // Format time with timezone
+                    // Format time with bot's timezone (NO HARCODED FALLBACK)
                     let lastCheckTime = 'Never';
                     if (updateStatus.lastCheck) {
-                        try {
-                            const moment = require('moment-timezone');
-                            lastCheckTime = moment(updateStatus.lastCheck)
-                                .tz(settings.timezone || 'Africa/Lagos')
-                                .format('YYYY-MM-DD HH:mm:ss');
-                        } catch (error) {
-                            // Fallback if moment-timezone not available
-                            lastCheckTime = updateStatus.lastCheck.toLocaleString('en-US', {
-                                timeZone: settings.timezone || 'Africa/Lagos'
-                            });
+                        if (settings.timezone) {
+                            try {
+                                const moment = require('moment-timezone');
+                                if (moment.tz.zone(settings.timezone)) {
+                                    lastCheckTime = moment(updateStatus.lastCheck)
+                                        .tz(settings.timezone)
+                                        .format('YYYY-MM-DD HH:mm:ss');
+                                } else {
+                                    lastCheckTime = updateStatus.lastCheck.toISOString() + ` (Invalid timezone: ${settings.timezone})`;
+                                }
+                            } catch (error) {
+                                // Fallback
+                                lastCheckTime = updateStatus.lastCheck.toLocaleString('en-US', {
+                                    timeZone: settings.timezone
+                                }) || updateStatus.lastCheck.toISOString();
+                            }
+                        } else {
+                            lastCheckTime = updateStatus.lastCheck.toISOString() + ' (UTC - No timezone set)';
                         }
                     }
                     
+                    // Build botinfo message
+                    let botInfoText = `🤖 *BOT INFORMATION*\n\n` +
+                                    `*Name:* ${settings.botName || 'WALLYJAYTECH-MD'}\n` +
+                                    `*Version:* v${settings.version}\n` +
+                                    `*Platform:* ${global.deploymentPlatform}\n` +
+                                    `*Node.js:* ${process.version}\n` +
+                                    `*Uptime:* ${uptime}\n` +
+                                    `*Memory:* ${memUsage}MB / ${totalMem}MB\n` +
+                                    `*Prefix:* ${settings.prefix}\n` +
+                                    `*Owner:* ${settings.botOwner}\n` +
+                                    `*Mode:* ${botMode}\n`;
+                    
+                    // Add timezone only if set
+                    if (settings.timezone) {
+                        botInfoText += `*Timezone:* ${settings.timezone}\n\n`;
+                    } else {
+                        botInfoText += `*Timezone:* Not set\n\n`;
+                    }
+                    
+                    botInfoText += `📊 *Statistics:*\n` +
+                                 `• Commands: ${commandCount}+\n` +
+                                 `• Last Update Check: ${lastCheckTime}\n` +
+                                 `• Update Available: ${updateStatus.updateAvailable ? 'Yes 🟢' : 'No ✅'}\n\n` +
+                                 `🔗 *Links:*\n` +
+                                 `• GitHub: https://github.com/wallyjaytechh/WALLYJAYTECH-MD\n` +
+                                 `• YouTube: https://youtube.com/@wallyjaytechy\n` +
+                                 `• Channel: ${global.channelLink}\n\n` +
+                                 `📌 *Update Commands:*\n` +
+                                 `• .checkupdate - Check for updates\n` +
+                                 `• .updateinfo - Update details\n` +
+                                 `• .update - Update bot\n` +
+                                 `• .botinfo - This menu`;
+                    
                     await sock.sendMessage(chatId, {
-                        text: `🤖 *BOT INFORMATION*\n\n` +
-                              `*Name:* ${settings.botName || 'WALLYJAYTECH-MD'}\n` +
-                              `*Version:* v${settings.version}\n` +
-                              `*Platform:* ${global.deploymentPlatform}\n` +
-                              `*Node.js:* ${process.version}\n` +
-                              `*Uptime:* ${uptime}\n` +
-                              `*Memory:* ${memUsage}MB / ${totalMem}MB\n` +
-                              `*Prefix:* ${settings.prefix}\n` +
-                              `*Owner:* ${settings.botOwner}\n` +
-                              `*Mode:* ${botMode}\n` +
-                              `*Timezone:* ${settings.timezone || 'Africa/Lagos'}\n\n` +
-                              `📊 *Statistics:*\n` +
-                              `• Commands: ${commandCount}+\n` +
-                              `• Last Update Check: ${lastCheckTime}\n` +
-                              `• Update Available: ${updateStatus.updateAvailable ? 'Yes 🟢' : 'No ✅'}\n\n` +
-                              `🔗 *Links:*\n` +
-                              `• GitHub: https://github.com/wallyjaytechh/WALLYJAYTECH-MD\n` +
-                              `• YouTube: https://youtube.com/@wallyjaytechy\n` +
-                              `• Channel: ${global.channelLink}\n\n` +
-                              `📌 *Update Commands:*\n` +
-                              `• .checkupdate - Check for updates\n` +
-                              `• .updateinfo - Update details\n` +
-                              `• .update - Update bot\n` +
-                              `• .botinfo - This menu`,
+                        text: botInfoText,
                         ...channelInfo
                     }, { quoted: message });
                     commandExecuted = true;
