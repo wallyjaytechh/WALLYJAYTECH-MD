@@ -155,20 +155,32 @@ async function setBotOwnerCommand(sock, chatId, message, args) {
             return;
         }
         
+        // FIXED: Check if args exist BEFORE getting old value
         if (!args || args.length === 0) {
-            const current = getOldSetting('botOwner');
+            // Just show usage without getting old value
             await sock.sendMessage(chatId, { 
-                text: `👑 Current Bot Owner: ${current}\n\nUsage: .setbotowner <new owner name>\nExample: .setbotowner Wally Jay Tech\n\n⚠️ Bot will auto-restart after update.` 
+                text: `👑 Set Bot Owner Name\n\nUsage: .setbotowner <new owner name>\nExample: .setbotowner Wally Jay Tech\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newOwner = args.join(' ').trim();
+        
+        // Check if user entered empty or just spaces
+        if (newOwner.length === 0) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter a valid owner name.\nExample: .setbotowner Wally Jay Tech' 
+            }, { quoted: message });
+            return;
+        }
+        
+        // Only get old value AFTER confirming we have new value
+        const oldValue = getOldSetting('botOwner');
         const result = updateSettings('botOwner', newOwner);
         
         if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ BOT OWNER UPDATED!\n\n👑 Old: ${result.oldValue}\n👑 New: ${newOwner}\n\n🔄 Bot will auto-restart in 3 seconds...` 
+                text: `✅ BOT OWNER UPDATED!\n\n👑 Old: ${oldValue}\n👑 New: ${newOwner}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
             
             restartBot(3000);
@@ -186,58 +198,6 @@ async function setBotOwnerCommand(sock, chatId, message, args) {
         }, { quoted: message });
     }
 }
-
-async function setOwnerNumberCommand(sock, chatId, message, args) {
-    try {
-        const senderId = message.key.participant || message.key.remoteJid;
-        
-        if (!isExactOwner(sock, senderId, message)) {
-            await sock.sendMessage(chatId, { 
-                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
-            }, { quoted: message });
-            return;
-        }
-        
-        if (!args || args.length === 0) {
-            const current = getOldSetting('ownerNumber');
-            await sock.sendMessage(chatId, { 
-                text: `📞 Current Owner Number: ${current}\n\nUsage: .setownernumber <2348144317152>\nExample: .setownernumber 2348144317152\n\n⚠️ Bot will auto-restart after update.` 
-            }, { quoted: message });
-            return;
-        }
-        
-        const newNumber = args[0].replace(/[^0-9]/g, '');
-        
-        if (newNumber.length < 10) {
-            await sock.sendMessage(chatId, { 
-                text: '❌ Invalid number format. Use country code + number' 
-            }, { quoted: message });
-            return;
-        }
-        
-        const result = updateSettings('ownerNumber', newNumber);
-        
-        if (result.success) {
-            await sock.sendMessage(chatId, { 
-                text: `✅ OWNER NUMBER UPDATED!\n\n📞 Old: ${result.oldValue}\n📞 New: ${newNumber}\n\n🔄 Bot will auto-restart in 5 seconds...` 
-            }, { quoted: message });
-            
-            restartBot(5000);
-            
-        } else {
-            await sock.sendMessage(chatId, { 
-                text: '❌ Failed to update owner number.' 
-            }, { quoted: message });
-        }
-        
-    } catch (error) {
-        console.error('Error in setOwnerNumberCommand:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Error updating owner number.' 
-        }, { quoted: message });
-    }
-}
-
 async function setYTChannelCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
@@ -249,8 +209,14 @@ async function setYTChannelCommand(sock, chatId, message, args) {
             return;
         }
         
+        // FIXED: Check if args exist first
         if (!args || args.length === 0) {
-            let current = getOldSetting('ytChannel') || 'Not set';
+            // Show current value without trying to update
+            let current = getOldSetting('ytChannel');
+            // If not in settings, check global
+            if (current === 'Not set' && global.ytch) {
+                current = global.ytch;
+            }
             
             await sock.sendMessage(chatId, { 
                 text: `📺 Current YouTube Channel: ${current}\n\nUsage: .setytchannel <channel name>\nExample: .setytchannel Wally Jay Tech\n\n⚠️ Bot will auto-restart after update.` 
@@ -260,6 +226,14 @@ async function setYTChannelCommand(sock, chatId, message, args) {
         
         const newYT = args.join(' ').trim();
         
+        // Check if empty
+        if (newYT.length === 0) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter a valid YouTube channel name.\nExample: .setytchannel Wally Jay Tech' 
+            }, { quoted: message });
+            return;
+        }
+        
         if (newYT.includes('youtube.com') || newYT.includes('youtu.be') || newYT.includes('http')) {
             await sock.sendMessage(chatId, { 
                 text: '❌ Please enter channel NAME only, not YouTube link.\nExample: Wally Jay Tech' 
@@ -267,7 +241,12 @@ async function setYTChannelCommand(sock, chatId, message, args) {
             return;
         }
         
-        const oldValue = getOldSetting('ytChannel') || 'Not set';
+        // Get old value properly
+        let oldValue = getOldSetting('ytChannel');
+        if (oldValue === 'Not set' && global.ytch) {
+            oldValue = global.ytch;
+        }
+        
         const result = updateSettings('ytChannel', newYT);
         
         if (result.success) {
@@ -302,8 +281,15 @@ async function setPackNameCommand(sock, chatId, message, args) {
             return;
         }
         
+        // FIXED: Check args first
         if (!args || args.length === 0) {
-            const current = getOldSetting('packname');
+            // Show current without trying to update
+            let current = getOldSetting('packname');
+            // Check global too
+            if (current === 'Not set' && global.packname) {
+                current = global.packname;
+            }
+            
             await sock.sendMessage(chatId, { 
                 text: `📦 Current Pack Name: ${current}\n\nUsage: .setpackname <new pack name>\nExample: .setpackname WALLY-MD Stickers\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
@@ -311,11 +297,26 @@ async function setPackNameCommand(sock, chatId, message, args) {
         }
         
         const newPack = args.join(' ').trim();
+        
+        // Check if empty
+        if (newPack.length === 0) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter a valid pack name.\nExample: .setpackname WALLY-MD Stickers' 
+            }, { quoted: message });
+            return;
+        }
+        
+        // Get old value properly
+        let oldValue = getOldSetting('packname');
+        if (oldValue === 'Not set' && global.packname) {
+            oldValue = global.packname;
+        }
+        
         const result = updateSettings('packname', newPack);
         
         if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ PACK NAME UPDATED!\n\n📦 Old: ${result.oldValue}\n📦 New: ${newPack}\n\n🔄 Bot will auto-restart in 3 seconds...` 
+                text: `✅ PACK NAME UPDATED!\n\n📦 Old: ${oldValue}\n📦 New: ${newPack}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
             
             restartBot(3000);
@@ -345,8 +346,15 @@ async function setAuthorCommand(sock, chatId, message, args) {
             return;
         }
         
+        // FIXED: Check args first
         if (!args || args.length === 0) {
-            const current = getOldSetting('author');
+            // Show current without trying to update
+            let current = getOldSetting('author');
+            // Check global too
+            if (current === 'Not set' && global.author) {
+                current = global.author;
+            }
+            
             await sock.sendMessage(chatId, { 
                 text: `✍️ Current Author: ${current}\n\nUsage: .setauthor <new author name>\nExample: .setauthor Wally Jay\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
@@ -354,11 +362,26 @@ async function setAuthorCommand(sock, chatId, message, args) {
         }
         
         const newAuthor = args.join(' ').trim();
+        
+        // Check if empty
+        if (newAuthor.length === 0) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter a valid author name.\nExample: .setauthor Wally Jay' 
+            }, { quoted: message });
+            return;
+        }
+        
+        // Get old value properly
+        let oldValue = getOldSetting('author');
+        if (oldValue === 'Not set' && global.author) {
+            oldValue = global.author;
+        }
+        
         const result = updateSettings('author', newAuthor);
         
         if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ AUTHOR UPDATED!\n\n✍️ Old: ${result.oldValue}\n✍️ New: ${newAuthor}\n\n🔄 Bot will auto-restart in 3 seconds...` 
+                text: `✅ AUTHOR UPDATED!\n\n✍️ Old: ${oldValue}\n✍️ New: ${newAuthor}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
             
             restartBot(3000);
@@ -388,8 +411,11 @@ async function setTimezoneCommand(sock, chatId, message, args) {
             return;
         }
         
+        // FIXED: Check args first
         if (!args || args.length === 0) {
+            // Show current without trying to update
             const current = getOldSetting('timezone');
+            
             await sock.sendMessage(chatId, { 
                 text: `🌍 Current Timezone: ${current}\n\nUsage: .settimezone <timezone>\nExample: .settimezone Africa/Lagos\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
@@ -398,6 +424,14 @@ async function setTimezoneCommand(sock, chatId, message, args) {
         
         const newTimezone = args.join(' ').trim();
         
+        // Check if empty
+        if (newTimezone.length === 0) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter a valid timezone.\nExample: .settimezone Africa/Lagos' 
+            }, { quoted: message });
+            return;
+        }
+        
         if (!newTimezone.includes('/')) {
             await sock.sendMessage(chatId, { 
                 text: '❌ Invalid timezone format. Use: Continent/City\nExample: Africa/Lagos' 
@@ -405,11 +439,13 @@ async function setTimezoneCommand(sock, chatId, message, args) {
             return;
         }
         
+        // Get old value
+        const oldValue = getOldSetting('timezone');
         const result = updateSettings('timezone', newTimezone);
         
         if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ TIMEZONE UPDATED!\n\n🌍 Old: ${result.oldValue}\n🌍 New: ${newTimezone}\n\n🔄 Bot will auto-restart in 3 seconds...` 
+                text: `✅ TIMEZONE UPDATED!\n\n🌍 Old: ${oldValue}\n🌍 New: ${newTimezone}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
             
             restartBot(3000);
@@ -439,24 +475,24 @@ async function configHelpCommand(sock, chatId, message) {
             return;
         }
         
-        const helpText = `🔧 WALLYJAYTECH-MD CONFIGURATION COMMANDS
+        const helpText = `*🔧 WALLYJAYTECH-MD CONFIGURATION COMMANDS*
 
 These commands modify settings.js file directly:
 
-🤖 Bot Identity:
+*🤖 Bot Identity:*
 • .setbotname <name> - Change bot display name
 • .setbotowner <name> - Change owner display name
 • .setownernumber <num> - Change owner WhatsApp number
 
-📺 Media & Links:
+*📺 Medias:*
 • .setytchannel <name> - Change YouTube channel NAME
 • .setpackname <name> - Change sticker pack name
 • .setauthor <name> - Change sticker author name
 
-🌍 Preferences:
+*🌍 Preferences:*
 • .settimezone <zone> - Change bot timezone
 
-⚠️ IMPORTANT:
+*⚠️ IMPORTANT:*
 • ALL commands auto-restart the bot after update
 • Only the owner number can use these commands
 • Changes are saved to settings.js
