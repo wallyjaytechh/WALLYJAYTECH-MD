@@ -324,13 +324,13 @@ async function startXeonBotInc() {
 if (connection == "open") {
         // Start auto-update checker
     try {
-        const { autoCheckUpdates } = require('./checkupdate');
+        const { autoCheckUpdates } = require('./commands/checkupdate');
         autoCheckUpdates(XeonBotInc);
     } catch (error) {
         console.error('Failed to start auto-update checker:', error);
     }
     
-
+}
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                 await XeonBotInc.sendMessage(botNumber, {
