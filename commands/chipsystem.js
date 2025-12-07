@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 const fs = require('fs');
 const path = require('path');
 
@@ -325,7 +326,7 @@ async function addChipsCommand(sock, chatId, message, args) {
             `📞 *Number:* ${userInfo.number}\n` +
             `💰 *Amount Added:* ${formatNumber(amount)} chips\n` +
             `💵 *New Balance:* ${formatNumber(newBalance)} chips\n\n` +
-            `⏰ *Time:* ${new Date().toLocaleString()}\n` +
+            `⏰ *Time:* ${moment().tz(getSettings().timezone || 'Africa/Lagos').format('YYYY-MM-DD HH:mm:ss')}\n` +
             `📝 *Transaction ID:* TX${Date.now()}`;
         
         await sock.sendMessage(chatId, { 
@@ -396,7 +397,7 @@ async function checkBalanceCommand(sock, chatId, message, args) {
             `🆔 *JID:* ${userInfo.jid}\n` +
             `💰 *Chip Balance:* ${formatNumber(userChips)}\n` +
             `📅 *Account Exists:* ${userInfo.exists ? '✅ Yes' : '⚠️ Not in contacts'}\n\n` +
-            `*Last Updated:* ${new Date().toLocaleString()}`;
+            `*Last Updated:* ${moment().tz(getSettings().timezone || 'Africa/Lagos').format('YYYY-MM-DD HH:mm:ss')}`;
         
         await sock.sendMessage(chatId, { 
             text: response 
@@ -476,7 +477,7 @@ async function resetChipsCommand(sock, chatId, message, args) {
             `💰 *Old Balance:* ${formatNumber(oldBalance)} chips\n` +
             `💰 *New Balance:* ${formatNumber(newAmount)} chips\n` +
             `📉 *Change:* ${formatNumber(newAmount - oldBalance)} chips\n\n` +
-            `*Reset Time:* ${new Date().toLocaleString()}\n` +
+            `*Reset Time:* ${moment().tz(getSettings().timezone || 'Africa/Lagos').format('YYYY-MM-DD HH:mm:ss')}\n` +
             `⚠️ *Note:* User statistics remain unchanged.`;
         
         await sock.sendMessage(chatId, { 
@@ -537,7 +538,7 @@ async function viewTransactionsCommand(sock, chatId, message, args) {
         let totalChips = 0;
         
         recentTransactions.forEach((tx, index) => {
-            const date = new Date(tx.date).toLocaleString();
+            const date = moment(tx.date).tz(getSettings().timezone || 'Africa/Lagos').format('YYYY-MM-DD HH:mm:ss');
             const shortJid = tx.to.split('@')[0];
             
             response += `${index + 1}. ${date}\n`;
