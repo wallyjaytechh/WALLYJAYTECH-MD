@@ -92,6 +92,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`.setprefix /\` - Change to /\n` +
                       `• \`.setprefix $\` - Change to $\n` +
                       `• \`.setprefix none\` - No prefix needed\n\n` +
+                      `🔁 *Restart Command:* \`.restart\`\n\n` +
                       `⚠️ *Note:* You must restart the bot after changing prefix!`
             }, { quoted: message });
             return;
@@ -176,7 +177,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`${newPrefix}owner\` - Contact owner\n\n` +
                       `⚠️ *IMPORTANT:*\n` +
                       `You must **restart the bot** for changes to take effect!\n\n` +
-                      `🔁 *Restart Command:* \`.restart\`\n` +
+                      `🔁 *Restart Command:* \`.restart\`\n\n` +
                       `After restart, use \`${newPrefix}command\` instead of \`.command\``
             }, { quoted: message });
             
