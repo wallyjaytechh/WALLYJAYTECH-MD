@@ -341,7 +341,7 @@ await handleAutoreact(sock, message);
         
         // Log command usage
         console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage} (prefix: ${prefixCheck.prefix || 'none'})`);
-        }
+       
      // Handle antiforeign blocking (check before processing messages)
 if (!isGroup && !message.key.fromMe) {
     const wasBlocked = await handleAntiforeign(sock, chatId, message);
@@ -830,11 +830,7 @@ case userMessage.startsWith('.getjid @'):
                     await mentionToggleCommand(sock, chatId, message, args, isOwner);
                 }
                 break;
-          case userMessageLower === '.prefix' || userMessageLower.startsWith('.prefix '):
-                const setprefixCommand = require('./commands/setprefix');
-                await setprefixCommand.execute(sock, chatId, message, userMessageLower.split(' ').slice(1));
-                commandExecuted = true;
-                break;
+          
           case userMessageLower === '.setprefix' || userMessageLower.startsWith('.setprefix '):
                 const setprefixCommand = require('./commands/setprefix');
                 await setprefixCommand.execute(sock, chatId, message, userMessageLower.split(' ').slice(1));
