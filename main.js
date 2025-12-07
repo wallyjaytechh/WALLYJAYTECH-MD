@@ -41,6 +41,16 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const { 
+    setBotNameCommand,
+    setBotOwnerCommand,
+    setOwnerNumberCommand,
+    setYTChannelCommand,
+    setPackNameCommand,
+    setAuthorCommand,
+    setTimezoneCommand,
+    configHelpCommand
+} = require('./commands/wallyjaytech');
 const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
 const getppCommand = require('./commands/getpp');
 const { leaveCommand } = require('./commands/leave');
@@ -793,6 +803,45 @@ case userMessage.startsWith('.getjid @'):
                 const mentionedJidListDemote = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await demoteCommand(sock, chatId, mentionedJidListDemote, message);
                 break;
+          // In your main.js switch statement, add these cases:
+case userMessage.startsWith('.setbotname'):
+    const botNameArgs = rawText.slice(11).trim().split(' ');
+    await setBotNameCommand(sock, chatId, message, botNameArgs);
+    break;
+    
+case userMessage.startsWith('.setbotowner'):
+    const botOwnerArgs = rawText.slice(12).trim().split(' ');
+    await setBotOwnerCommand(sock, chatId, message, botOwnerArgs);
+    break;
+    
+case userMessage.startsWith('.setownernumber'):
+    const ownerNumArgs = rawText.slice(15).trim().split(' ');
+    await setOwnerNumberCommand(sock, chatId, message, ownerNumArgs);
+    break;
+    
+case userMessage.startsWith('.setytchannel'):
+    const ytArgs = rawText.slice(13).trim().split(' ');
+    await setYTChannelCommand(sock, chatId, message, ytArgs);
+    break;
+    
+case userMessage.startsWith('.setpackname'):
+    const packArgs = rawText.slice(12).trim().split(' ');
+    await setPackNameCommand(sock, chatId, message, packArgs);
+    break;
+    
+case userMessage.startsWith('.setauthor'):
+    const authorArgs = rawText.slice(10).trim().split(' ');
+    await setAuthorCommand(sock, chatId, message, authorArgs);
+    break;
+    
+case userMessage.startsWith('.settimezone'):
+    const timezoneArgs = rawText.slice(12).trim().split(' ');
+    await setTimezoneCommand(sock, chatId, message, timezoneArgs);
+    break;
+    
+case userMessage === '.confighelp':
+    await configHelpCommand(sock, chatId, message);
+    break;
             case userMessage === '.ping':
                 await pingCommand(sock, chatId, message);
                 break;
