@@ -680,7 +680,10 @@ ${setupNotice}
 ║ *🔺${prefix}antidelete*
 ║ *🔺${prefix}tempfile*
 ║ *🔺${prefix}cleartmp*
+║ *🔺${prefix}checkupdate*
+║ *🔺${prefix}updateinfo*
 ║ *🔺${prefix}update*
+║ *🔺${prefix}botinfo*
 ║ *🔺${prefix}sudo*
 ║ *🔺${prefix}settings*
 ║ *🔺${prefix}setpp <reply to image>*
