@@ -831,6 +831,13 @@ case userMessage.startsWith('.getjid @'):
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
                 }
                 break;
+          case userMessage === '.restart':
+                {
+                    const restartCmd = require('./commands/restart');
+                    await restartCmd.execute(sock, chatId, message, userMessage.split(' ').slice(1));
+                    commandExecuted = true;
+                }
+                break;
  case userMessage === '.checkupdate' || userMessage === '.cu':
             case userMessage === '.updatecheck':
                 await checkUpdateCommand(sock, chatId, message);
