@@ -95,7 +95,7 @@ async function execute(sock, chatId, message, args) {
                       `• \`.setprefix /\` - Change to /\n` +
                       `• \`.setprefix $\` - Change to $\n` +
                       `• \`.setprefix none\` - No prefix needed\n\n` +
-                      `⚠️ *Note:* Changes take effect immediately!`
+                      `⚠️ *Commands work immediately, but for full effect:\nUse \`.restart\` after changing prefix*`
             }, { quoted: message });
             return;
         }
@@ -121,7 +121,10 @@ async function execute(sock, chatId, message, args) {
                           '• Instead of `.menu` just type `menu`\n' +
                           '• Instead of `.help` just type `help`\n' +
                           '• Instead of `.ping` just type `ping`\n\n' +
-                          '✨ *Try it now:* Type `menu` (without any prefix)'
+                          '✨ *Try it now:* Type `menu` (without any prefix)\n\n' +
+                          '🔁 *For full effect:*\n' +
+                          'Use `.restart` to apply changes completely\n' +
+                          '(Bot will auto-reconnect after restart)'
                 }, { quoted: message });
             } catch (error) {
                 await sock.sendMessage(chatId, {
@@ -173,7 +176,13 @@ async function execute(sock, chatId, message, args) {
                       `• \`${newPrefix}help\` - Show help\n` +
                       `• \`${newPrefix}ping\` - Check bot speed\n` +
                       `• \`${newPrefix}owner\` - Contact owner\n\n` +
-                      `✨ *Try it now:* Type \`${newPrefix}menu\``
+                      `✨ *Commands work immediately!*\n` +
+                      `Try: \`${newPrefix}menu\`\n\n` +
+                      `🔁 *For full effect:*\n` +
+                      `Use \`.restart\` to apply changes completely\n` +
+                      `• Startup messages will show new prefix\n` +
+                      `• \`.botinfo\` will show correct prefix\n` +
+                      `• Bot will auto-reconnect after restart`
             }, { quoted: message });
             
         } catch (error) {
