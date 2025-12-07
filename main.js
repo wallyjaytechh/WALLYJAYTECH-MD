@@ -174,7 +174,7 @@ const soraCommand = require('./commands/sora');
 global.packname = settings.packname;
 global.author = settings.author;
 global.channelLink = "https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I";
-global.ytch = "WALLY JAY TECH";
+global.ytch = settings.ytChannel || "WALLY JAY TECH";
 
 // ADD PLATFORM DETECTION HERE
 function getDeploymentPlatform() {
