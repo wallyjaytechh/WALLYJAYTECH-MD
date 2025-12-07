@@ -711,9 +711,9 @@ ${platformStatsText}
 ║
 ║    *COINFLIP ADMIN*
 ║ *◾️${prefix}unlimitedchips <pass>*
-║ *◾️${prefix}addchips <pass> <userno> <amount>*
-║ *◾️${prefix}checkbalance <pass> <userno>*
-║ *◾️${prefix}resetchips <pass> <userno> <amount>*
+║ *◾️${prefix}addchips <pass> <user> <amount>*
+║ *◾️${prefix}checkbalance <pass> <user>*
+║ *◾️${prefix}resetchips <pass> <user> <amount>*
 ║ *◾️${prefix}transactions <pass>*
 ║
 ╚═══════════════════╝
