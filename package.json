@@ -1,7 +1,7 @@
 {
   "name": "WALLYJAYTECH-MD",
   "version": "1.0.0",
-  "description": " WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
+  "description": "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -18,8 +18,22 @@
   "keywords": [
     "whatsapp-bot"
   ],
-  "author": "",
+  "author": "wallyjaytech",
   "license": "ISC",
+  
+  "build": {
+    "number": 92532006,
+    "date": "2025-01-15",
+    "versionCode": 1
+  },
+  
+  "config": {
+    "bot": {
+      "owner": "Wally Jay",
+      "support": "https://chat.whatsapp.com/KWr561NJbHGGrT8YCSRibi"
+    }
+  },
+  
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -39,7 +53,7 @@
     "fs-extra": "^11.2.0",
     "gtts": "^0.2.1",
     "human-readable": "^0.2.1",
-    "jimp": "^1.6.0",
+    "jimp": "^0.2.1",
     "jsdom": "^22.1.0",
     "libphonenumber-js": "^1.11.18",
     "libsignal": "^2.0.1",
@@ -74,13 +88,9 @@
     "ytdl-core": "^4.11.5"
   },
   "overrides": {
-    "jimp": "^1.6.0"
+    "jimp": "^0.2.1"
   },
   "engines": {
     "node": ">=18.0.0"
   }
 }
-
-
-
-
