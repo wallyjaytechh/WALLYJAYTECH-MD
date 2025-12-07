@@ -21,6 +21,50 @@ function isOwner(senderId) {
     }
 }
 
+// Format time using bot's timezone from settings (NO HARCODED FALLBACK)
+function formatBotTime() {
+    try {
+        const settings = require('../settings');
+        const timezone = settings.timezone; // Get from their settings
+        
+        if (!timezone) {
+            // If no timezone in settings, use UTC
+            return new Date().toISOString() + ' (UTC)';
+        }
+        
+        // Try using moment-timezone if available
+        try {
+            const moment = require('moment-timezone');
+            if (moment.tz.zone(timezone)) {
+                return moment().tz(timezone).format('YYYY-MM-DD HH:mm:ss');
+            } else {
+                // Invalid timezone in settings
+                return new Date().toISOString() + ` (Invalid timezone: ${timezone})`;
+            }
+        } catch (e) {
+            // Fallback to native Date formatting
+            try {
+                return new Date().toLocaleString('en-US', {
+                    timeZone: timezone,
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+            } catch (error) {
+                // Invalid timezone
+                return new Date().toISOString() + ` (Invalid timezone: ${timezone})`;
+            }
+        }
+    } catch (error) {
+        // Ultimate fallback
+        return new Date().toISOString() + ' (UTC)';
+    }
+}
+
 async function execute(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
@@ -34,21 +78,40 @@ async function execute(sock, chatId, message, args) {
         }
         
         const reason = args.join(' ') || 'Restart requested by owner';
+        const settings = require('../settings');
+        const botTime = formatBotTime();
         
-        await sock.sendMessage(chatId, {
-            text: '🔄 *RESTARTING BOT...*\n\n' +
-                  `*Reason:* ${reason}\n` +
-                  '*Time:* ' + new Date().toLocaleString() + '\n\n' +
-                  '⏳ Please wait 10-15 seconds...'
-        }, { quoted: message });
+        // Build message
+        let restartMessage = '🔄 *RESTARTING BOT...*\n\n' +
+                           `*Reason:* ${reason}\n` +
+                           `*Bot Time:* ${botTime}\n`;
+        
+        // Add timezone info only if it exists in settings
+        if (settings.timezone) {
+            restartMessage += `*Bot Timezone:* ${settings.timezone}\n\n`;
+        } else {
+            restartMessage += '*Bot Timezone:* Not set in settings.js\n\n';
+        }
+        
+        restartMessage += '⏳ Please wait 10-15 seconds for bot to reconnect...\n' +
+                         '✅ Bot will auto-reconnect after restart';
+        
+        await sock.sendMessage(chatId, { text: restartMessage }, { quoted: message });
         
         // Log restart
         console.log(`🔄 Bot restart requested by ${senderId}: ${reason}`);
+        console.log(`🕒 Server time: ${new Date().toISOString()}`);
+        if (settings.timezone) {
+            console.log(`🌐 Bot timezone from settings: ${settings.timezone}`);
+        }
+        
+        // Clear require cache for settings.js
+        delete require.cache[require.resolve('../settings')];
         
         // Delay to ensure message is sent
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Exit process - panel/PM2 will restart it
+        // Exit process
         process.exit(0);
         
     } catch (error) {
