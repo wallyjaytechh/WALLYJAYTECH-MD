@@ -702,7 +702,7 @@ ${platformStatsText}
 ║    *👇COINFLIP👇*
 ║ *◾️${prefix}coinflip*
 ║ *◾️${prefix}coinflip <heads/tails>*
-║ *◾️${prefix}coinflip <heads/tails> <bet amount>
+║ *◾️${prefix}coinflip <heads/tails> <bet amount>*
 ║ *◾️${prefix}coinstats*
 ║ *◾️${prefix}cointop*
 ║ *◾️${prefix}coindaily*
