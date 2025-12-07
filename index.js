@@ -322,9 +322,14 @@ async function startXeonBotInc() {
             console.log(chalk.magenta(` `))
             console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
 if (connection == "open") {
+        // Start auto-update checker
+    try {
+        const { autoCheckUpdates } = require('./checkupdate');
+        autoCheckUpdates(XeonBotInc);
+    } catch (error) {
+        console.error('Failed to start auto-update checker:', error);
+    }
     
-
-}
 
             try {
                 const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
