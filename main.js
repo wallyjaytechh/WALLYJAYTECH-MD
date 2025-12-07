@@ -269,26 +269,52 @@ await handleAutoreact(sock, message);
             }
         }
 
-        const userMessage = (
+        const rawMessageText = (
             message.message?.conversation?.trim() ||
             message.message?.extendedTextMessage?.text?.trim() ||
             message.message?.imageMessage?.caption?.trim() ||
             message.message?.videoMessage?.caption?.trim() ||
             message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
             ''
-        ).toLowerCase().replace(/\.\s+/g, '.').trim();
+        );
 
-        // Preserve raw message for commands like .tag that need original casing
-        const rawText = message.message?.conversation?.trim() ||
-            message.message?.extendedTextMessage?.text?.trim() ||
-            message.message?.imageMessage?.caption?.trim() ||
-            message.message?.videoMessage?.caption?.trim() ||
-            '';
-
-        // Only log command usage
-        if (userMessage.startsWith('.')) {
-            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+        // Get current prefix - WITH CACHE CLEARING
+        delete require.cache[require.resolve('./settings')];
+        const settings = require('./settings');
+        const currentPrefix = settings.prefix || '.';
+        
+        let isCommand = false;
+        let commandText = '';
+        
+        if (currentPrefix === '' && rawMessageText.trim()) {
+            // No prefix needed
+            isCommand = true;
+            commandText = rawMessageText;
+        } else if (currentPrefix && rawMessageText.startsWith(currentPrefix)) {
+            // Has custom prefix
+            isCommand = true;
+            commandText = rawMessageText.slice(currentPrefix.length).trim();
+        } else if (rawMessageText.startsWith('.')) {
+            // Has default prefix (backward compatibility)
+            isCommand = true;
+            commandText = rawMessageText;
         }
+        
+        if (!isCommand) {
+            // Handle non-command messages
+            if (isGroup && rawMessageText.trim()) {
+                await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
+            }
+            return;
+        }
+        
+        // Process as command
+        const userMessage = commandText.toLowerCase().replace(/\.\s+/g, '.').trim();
+        const rawText = commandText;
+        
+        // Only log command usage
+        console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage} (prefix: ${currentPrefix || 'none'})`);
+    }
        
      // Handle antiforeign blocking (check before processing messages)
 if (!isGroup && !message.key.fromMe) {
