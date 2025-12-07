@@ -41,6 +41,14 @@ const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, hand
 const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
 
 // Command imports
+const {
+    unlimitedChipsCommand,
+    buyChipsCommand,
+    addChipsCommand,
+    checkBalanceCommand,
+    resetChipsCommand,
+    viewTransactionsCommand
+} = require('./commands/chipsystem');
 const { 
     coinflipCommand, 
     coinstatsCommand, 
@@ -787,6 +795,42 @@ case userMessage.startsWith('.getjid @'):
                 const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await simpCommand(sock, chatId, quotedMsg, mentionedJid, senderId);
                 break;
+
+case userMessage.startsWith('.unlimitedchips'):
+    const unlimitedArgs = rawText.split(' ').slice(1);
+    await unlimitedChipsCommand(sock, chatId, message, unlimitedArgs);
+    commandExecuted = true;
+    break;
+    
+case userMessage.startsWith('.addchips'):
+    const addArgs = rawText.split(' ').slice(1);
+    await addChipsCommand(sock, chatId, message, addArgs);
+    commandExecuted = true;
+    break;
+    
+case userMessage.startsWith('.checkbalance'):
+    const checkArgs = rawText.split(' ').slice(1);
+    await checkBalanceCommand(sock, chatId, message, checkArgs);
+    commandExecuted = true;
+    break;
+    
+case userMessage.startsWith('.resetchips'):
+    const resetArgs = rawText.split(' ').slice(1);
+    await resetChipsCommand(sock, chatId, message, resetArgs);
+    commandExecuted = true;
+    break;
+    
+case userMessage.startsWith('.transactions'):
+    const transArgs = rawText.split(' ').slice(1);
+    await viewTransactionsCommand(sock, chatId, message, transArgs);
+    commandExecuted = true;
+    break;
+
+
+case userMessage === '.buychips':
+    await buyChipsCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
             case userMessage.startsWith('.stupid') || userMessage.startsWith('.itssostupid') || userMessage.startsWith('.iss'):
                 const stupidQuotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 const stupidMentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
