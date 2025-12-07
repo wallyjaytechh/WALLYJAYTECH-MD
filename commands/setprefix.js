@@ -1,7 +1,25 @@
 // commands/setprefix.js - Change bot prefix in settings.js
 const fs = require('fs');
 const path = require('path');
-const { isOwnerOrSudo } = require('../lib/index');
+
+// Function to check if user is owner (simple version)
+function isOwner(senderId) {
+    try {
+        const settings = require('../settings');
+        const ownerNumber = settings.ownerNumber;
+        
+        if (!ownerNumber) return false;
+        
+        // Remove any non-digit characters and compare
+        const cleanOwner = ownerNumber.replace(/\D/g, '');
+        const cleanSender = senderId.replace(/\D/g, '').replace(/@s\.whatsapp\.net$/, '');
+        
+        return cleanSender.includes(cleanOwner) || cleanOwner.includes(cleanSender);
+    } catch (error) {
+        console.error('Error checking owner:', error);
+        return false;
+    }
+}
 
 // Function to update prefix in settings.js
 async function updateSettingsPrefix(newPrefix) {
@@ -47,10 +65,9 @@ async function updateSettingsPrefix(newPrefix) {
 async function execute(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
-        const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
         
         // Only owner can change prefix globally
-        if (!isOwner && !message.key.fromMe) {
+        if (!isOwner(senderId) && !message.key.fromMe) {
             await sock.sendMessage(chatId, {
                 text: '❌ Only bot owner can change the prefix!'
             }, { quoted: message });
@@ -179,5 +196,6 @@ async function execute(sock, chatId, message, args) {
 // Export
 module.exports = {
     execute,
-    command: 'setprefix'
+    command: 'setprefix',
+    isOwner // Export if needed elsewhere
 };
