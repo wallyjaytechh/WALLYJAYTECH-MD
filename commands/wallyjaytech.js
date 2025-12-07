@@ -1,38 +1,52 @@
-// commands/wallyjaytech.js
-// WALLYJAYTECH-MD Bot Configuration Commands (OWNER ONLY)
-
 const fs = require('fs');
 const path = require('path');
 
-// Function to check if user is EXACTLY the owner (not sudo, not public)
 function isExactOwner(sock, userId, message) {
     try {
         const settings = require('../settings');
         const ownerNumber = settings.ownerNumber.replace(/[^0-9]/g, '');
         const userNumber = userId.split('@')[0].replace(/[^0-9]/g, '');
-        
-        // Check if user is exactly the owner number (no sudo allowed!)
         const isOwner = userNumber === ownerNumber;
-        
-        // Also allow if message is from bot itself
         const isBotSelf = message.key.fromMe;
-        
         return isOwner || isBotSelf;
     } catch (error) {
-        console.error('Error checking exact owner:', error);
+        console.error('Error checking owner:', error);
         return false;
     }
 }
 
-// Function to update settings.js file
+function getOldSetting(settingKey) {
+    try {
+        const settingsPath = path.join(__dirname, '../settings.js');
+        const settingsContent = fs.readFileSync(settingsPath, 'utf8');
+        const pattern = new RegExp(`${settingKey}:\\s*(['"]([^'"]*)['"]|[^,\\n}]+)`, 'i');
+        const match = settingsContent.match(pattern);
+        
+        if (match && match[0]) {
+            let value = match[0].replace(`${settingKey}:`, '').trim();
+            if ((value.startsWith("'") && value.endsWith("'")) || 
+                (value.startsWith('"') && value.endsWith('"'))) {
+                value = value.substring(1, value.length - 1);
+            }
+            return value;
+        }
+        return 'Not set';
+    } catch (error) {
+        console.error(`Error getting ${settingKey}:`, error);
+        return 'Error';
+    }
+}
+
 function updateSettings(settingKey, settingValue) {
+    let oldValue = 'Not set';
+    
     try {
         const settingsPath = path.join(__dirname, '../settings.js');
         let settingsContent = fs.readFileSync(settingsPath, 'utf8');
         
-        console.log(`📝 Updating ${settingKey} to: ${settingValue}`);
+        console.log(`Updating ${settingKey} to: ${settingValue}`);
+        oldValue = getOldSetting(settingKey);
         
-        // Handle string values (add quotes)
         let newValue;
         if (typeof settingValue === 'boolean') {
             newValue = settingValue;
@@ -42,61 +56,59 @@ function updateSettings(settingKey, settingValue) {
             newValue = `'${settingValue.replace(/'/g, "\\'")}'`;
         }
         
-        // Pattern to find: "settingKey: 'value'" or "settingKey: "value""
-        const pattern = new RegExp(`(${settingKey}:\\s*)(['"][^'"]*['"]|[^,\\n}]+)`, 'g');
+        const pattern = new RegExp(`(${settingKey}:\\s*)(['"][^'"]*['"]|[^,\\n}]+)`, 'i');
         
         if (settingsContent.match(pattern)) {
             settingsContent = settingsContent.replace(pattern, `$1${newValue}`);
-            console.log(`✅ Updated ${settingKey} in settings.js`);
+            console.log(`Updated ${settingKey} from "${oldValue}" to "${settingValue}"`);
         } else {
-            // If setting doesn't exist, add it before the last }
-            const lastComma = settingsContent.lastIndexOf(',');
-            settingsContent = settingsContent.substring(0, lastComma + 1) + 
-                             `\n  ${settingKey}: ${newValue}` + 
-                             settingsContent.substring(lastComma + 1);
-            console.log(`➕ Added ${settingKey} to settings.js`);
+            // Find where to add new setting (before module.exports or last })
+            if (settingsContent.includes('module.exports')) {
+                settingsContent = settingsContent.replace('module.exports = {', `  ${settingKey}: ${newValue},\nmodule.exports = {`);
+            } else {
+                const lastComma = settingsContent.lastIndexOf(',');
+                settingsContent = settingsContent.substring(0, lastComma + 1) + 
+                                 `\n  ${settingKey}: ${newValue}` + 
+                                 settingsContent.substring(lastComma + 1);
+            }
+            console.log(`Added ${settingKey}: ${settingValue}`);
         }
         
-        // Save the file
         fs.writeFileSync(settingsPath, settingsContent, 'utf8');
-        
-        // Clear cache
         delete require.cache[require.resolve('../settings')];
         
-        return true;
+        return { success: true, oldValue };
+        
     } catch (error) {
-        console.error(`❌ Error updating ${settingKey}:`, error);
-        return false;
+        console.error(`Error updating ${settingKey}:`, error);
+        return { success: false, oldValue };
     }
 }
 
-// Get current setting
-function getSetting(settingKey) {
-    try {
-        const settings = require('../settings');
-        return settings[settingKey] || 'Not set';
-    } catch (error) {
-        return 'Error';
-    }
+// Function to restart bot
+function restartBot(delay = 3000) {
+    console.log(`🔄 Bot will restart in ${delay/1000} seconds...`);
+    setTimeout(() => {
+        console.log('🔄 Restarting bot...');
+        process.exit(1); // Exit with code 1 to trigger auto-restart
+    }, delay);
 }
 
-// Command: Set Bot Name
 async function setBotNameCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
-        // STRICT CHECK: Only exact owner can use this
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.\nSudo users are NOT allowed.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('botName');
+            const current = getOldSetting('botName');
             await sock.sendMessage(chatId, { 
-                text: `🤖 *Current Bot Name:* ${current}\n\n*Usage:* .setbotname <new name>\n*Example:* .setbotname WALLY-MD PRO\n\n⚠️ Bot will auto-restart after changes.` 
+                text: `🤖 Current Bot Name: ${current}\n\nUsage: .setbotname <new name>\nExample: .setbotname WALLY-MD PRO\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
@@ -109,22 +121,18 @@ async function setBotNameCommand(sock, chatId, message, args) {
             return;
         }
         
-        const success = updateSettings('botName', newName);
+        const result = updateSettings('botName', newName);
         
-        if (success) {
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *BOT NAME UPDATED!*\n\n📛 *Old:* ${getSetting('botName')}\n📛 *New:* ${newName}\n\n🔄 Bot will auto-restart to apply changes...` 
+                text: `✅ BOT NAME UPDATED!\n\n📛 Old: ${result.oldValue}\n📛 New: ${newName}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
             
-            // Auto-restart after 3 seconds
-            setTimeout(() => {
-                console.log('🔄 Restarting bot after name change...');
-                process.exit(1); // Exit with code 1 to trigger restart
-            }, 3000);
+            restartBot(3000);
             
         } else {
             await sock.sendMessage(chatId, { 
-                text: '❌ Failed to update bot name. Check logs.' 
+                text: '❌ Failed to update bot name.' 
             }, { quoted: message });
         }
         
@@ -136,33 +144,35 @@ async function setBotNameCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set Bot Owner Name
 async function setBotOwnerCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('botOwner');
+            const current = getOldSetting('botOwner');
             await sock.sendMessage(chatId, { 
-                text: `👑 *Current Bot Owner:* ${current}\n\n*Usage:* .setbotowner <new owner name>\n*Example:* .setbotowner Wally Jay Tech` 
+                text: `👑 Current Bot Owner: ${current}\n\nUsage: .setbotowner <new owner name>\nExample: .setbotowner Wally Jay Tech\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newOwner = args.join(' ').trim();
-        const success = updateSettings('botOwner', newOwner);
+        const result = updateSettings('botOwner', newOwner);
         
-        if (success) {
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *BOT OWNER UPDATED!*\n\n👑 *Old:* ${getSetting('botOwner')}\n👑 *New:* ${newOwner}` 
+                text: `✅ BOT OWNER UPDATED!\n\n👑 Old: ${result.oldValue}\n👑 New: ${newOwner}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
+            
+            restartBot(3000);
+            
         } else {
             await sock.sendMessage(chatId, { 
                 text: '❌ Failed to update bot owner.' 
@@ -177,48 +187,42 @@ async function setBotOwnerCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set Owner Number
 async function setOwnerNumberCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('ownerNumber');
+            const current = getOldSetting('ownerNumber');
             await sock.sendMessage(chatId, { 
-                text: `📞 *Current Owner Number:* ${current}\n\n*Usage:* .setownernumber <2348144317152>\n*Example:* .setownernumber 2348144317152\n\n⚠️ Format: Country code + number (no +, no spaces)` 
+                text: `📞 Current Owner Number: ${current}\n\nUsage: .setownernumber <2348144317152>\nExample: .setownernumber 2348144317152\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newNumber = args[0].replace(/[^0-9]/g, '');
         
-        // Basic validation
         if (newNumber.length < 10) {
             await sock.sendMessage(chatId, { 
-                text: '❌ Invalid number format. Use country code + number (e.g., 2348144317152)' 
+                text: '❌ Invalid number format. Use country code + number' 
             }, { quoted: message });
             return;
         }
         
-        const success = updateSettings('ownerNumber', newNumber);
+        const result = updateSettings('ownerNumber', newNumber);
         
-        if (success) {
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *OWNER NUMBER UPDATED!*\n\n📞 *Old:* ${getSetting('ownerNumber')}\n📞 *New:* ${newNumber}\n\n⚠️ You MUST be the owner of this new number!\n⚠️ Bot will restart to apply changes...` 
+                text: `✅ OWNER NUMBER UPDATED!\n\n📞 Old: ${result.oldValue}\n📞 New: ${newNumber}\n\n🔄 Bot will auto-restart in 5 seconds...` 
             }, { quoted: message });
             
-            // Auto-restart after 5 seconds
-            setTimeout(() => {
-                console.log('🔄 Restarting bot after owner number change...');
-                process.exit(1);
-            }, 5000);
+            restartBot(5000);
             
         } else {
             await sock.sendMessage(chatId, { 
@@ -234,37 +238,50 @@ async function setOwnerNumberCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set YouTube Channel
 async function setYTChannelCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = global.ytch || 'Not set';
+            let current = getOldSetting('ytChannel') || 'Not set';
+            
             await sock.sendMessage(chatId, { 
-                text: `📺 *Current YouTube Channel:* ${current}\n\n*Usage:* .setytchannel <channel name or link>\n*Example:* .setytchannel Wally Jay Tech\n*Example:* .setytchannel https://youtube.com/@wallyjaytechy` 
+                text: `📺 Current YouTube Channel: ${current}\n\nUsage: .setytchannel <channel name>\nExample: .setytchannel Wally Jay Tech\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newYT = args.join(' ').trim();
         
-        // Update global variable
-        global.ytch = newYT;
+        if (newYT.includes('youtube.com') || newYT.includes('youtu.be') || newYT.includes('http')) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Please enter channel NAME only, not YouTube link.\nExample: Wally Jay Tech' 
+            }, { quoted: message });
+            return;
+        }
         
-        // Also update settings.js if you want it saved
-        updateSettings('ytChannel', newYT);
+        const oldValue = getOldSetting('ytChannel') || 'Not set';
+        const result = updateSettings('ytChannel', newYT);
         
-        await sock.sendMessage(chatId, { 
-            text: `✅ *YOUTUBE CHANNEL UPDATED!*\n\n📺 *New Channel:* ${newYT}\n\nThis will be displayed in the bot menu.` 
-        }, { quoted: message });
+        if (result.success) {
+            await sock.sendMessage(chatId, { 
+                text: `✅ YOUTUBE CHANNEL UPDATED!\n\n📺 Old: ${oldValue}\n📺 New: ${newYT}\n\n🔄 Bot will auto-restart in 3 seconds...` 
+            }, { quoted: message });
+            
+            restartBot(3000);
+            
+        } else {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Failed to update YouTube channel.' 
+            }, { quoted: message });
+        }
         
     } catch (error) {
         console.error('Error in setYTChannelCommand:', error);
@@ -274,36 +291,35 @@ async function setYTChannelCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set Pack Name (for stickers)
 async function setPackNameCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('packname');
+            const current = getOldSetting('packname');
             await sock.sendMessage(chatId, { 
-                text: `📦 *Current Pack Name:* ${current}\n\n*Usage:* .setpackname <new pack name>\n*Example:* .setpackname WALLY-MD Stickers\n\n⚠️ This appears on stickers you create.` 
+                text: `📦 Current Pack Name: ${current}\n\nUsage: .setpackname <new pack name>\nExample: .setpackname WALLY-MD Stickers\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newPack = args.join(' ').trim();
-        const success = updateSettings('packname', newPack);
+        const result = updateSettings('packname', newPack);
         
-        if (success) {
-            // Update global variable too
-            global.packname = newPack;
-            
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *PACK NAME UPDATED!*\n\n📦 *Old:* ${getSetting('packname')}\n📦 *New:* ${newPack}\n\nThis will appear on all new stickers.` 
+                text: `✅ PACK NAME UPDATED!\n\n📦 Old: ${result.oldValue}\n📦 New: ${newPack}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
+            
+            restartBot(3000);
+            
         } else {
             await sock.sendMessage(chatId, { 
                 text: '❌ Failed to update pack name.' 
@@ -318,36 +334,35 @@ async function setPackNameCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set Author (for stickers)
 async function setAuthorCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('author');
+            const current = getOldSetting('author');
             await sock.sendMessage(chatId, { 
-                text: `✍️ *Current Author:* ${current}\n\n*Usage:* .setauthor <new author name>\n*Example:* .setauthor Wally Jay\n\n⚠️ This appears on stickers you create.` 
+                text: `✍️ Current Author: ${current}\n\nUsage: .setauthor <new author name>\nExample: .setauthor Wally Jay\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newAuthor = args.join(' ').trim();
-        const success = updateSettings('author', newAuthor);
+        const result = updateSettings('author', newAuthor);
         
-        if (success) {
-            // Update global variable too
-            global.author = newAuthor;
-            
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *AUTHOR UPDATED!*\n\n✍️ *Old:* ${getSetting('author')}\n✍️ *New:* ${newAuthor}\n\nThis will appear on all new stickers.` 
+                text: `✅ AUTHOR UPDATED!\n\n✍️ Old: ${result.oldValue}\n✍️ New: ${newAuthor}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
+            
+            restartBot(3000);
+            
         } else {
             await sock.sendMessage(chatId, { 
                 text: '❌ Failed to update author.' 
@@ -362,29 +377,27 @@ async function setAuthorCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Set Timezone
 async function setTimezoneCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use this command.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use this command.' 
             }, { quoted: message });
             return;
         }
         
         if (!args || args.length === 0) {
-            const current = getSetting('timezone');
+            const current = getOldSetting('timezone');
             await sock.sendMessage(chatId, { 
-                text: `🌍 *Current Timezone:* ${current}\n\n*Usage:* .settimezone <timezone>\n*Examples:*\n• .settimezone Africa/Lagos\n• .settimezone America/New_York\n• .settimezone Asia/Tokyo\n\n📚 See: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones` 
+                text: `🌍 Current Timezone: ${current}\n\nUsage: .settimezone <timezone>\nExample: .settimezone Africa/Lagos\n\n⚠️ Bot will auto-restart after update.` 
             }, { quoted: message });
             return;
         }
         
         const newTimezone = args.join(' ').trim();
         
-        // Validate timezone format
         if (!newTimezone.includes('/')) {
             await sock.sendMessage(chatId, { 
                 text: '❌ Invalid timezone format. Use: Continent/City\nExample: Africa/Lagos' 
@@ -392,12 +405,15 @@ async function setTimezoneCommand(sock, chatId, message, args) {
             return;
         }
         
-        const success = updateSettings('timezone', newTimezone);
+        const result = updateSettings('timezone', newTimezone);
         
-        if (success) {
+        if (result.success) {
             await sock.sendMessage(chatId, { 
-                text: `✅ *TIMEZONE UPDATED!*\n\n🌍 *Old:* ${getSetting('timezone')}\n🌍 *New:* ${newTimezone}\n\n⏰ Bot time will now use this timezone.` 
+                text: `✅ TIMEZONE UPDATED!\n\n🌍 Old: ${result.oldValue}\n🌍 New: ${newTimezone}\n\n🔄 Bot will auto-restart in 3 seconds...` 
             }, { quoted: message });
+            
+            restartBot(3000);
+            
         } else {
             await sock.sendMessage(chatId, { 
                 text: '❌ Failed to update timezone.' 
@@ -412,54 +428,39 @@ async function setTimezoneCommand(sock, chatId, message, args) {
     }
 }
 
-// Command: Show Configuration Commands
 async function configHelpCommand(sock, chatId, message) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         
         if (!isExactOwner(sock, senderId, message)) {
             await sock.sendMessage(chatId, { 
-                text: '🚫 *ACCESS DENIED!*\n\nOnly the bot owner can use configuration commands.' 
+                text: '🚫 ACCESS DENIED!\n\nOnly the bot owner can use configuration commands.' 
             }, { quoted: message });
             return;
         }
         
-        const helpText = `
-🔧 *WALLYJAYTECH-MD CONFIGURATION COMMANDS*
+        const helpText = `🔧 WALLYJAYTECH-MD CONFIGURATION COMMANDS
 
-*These commands modify settings.js file directly:*
+These commands modify settings.js file directly:
 
-🤖 *Bot Identity:*
+🤖 Bot Identity:
 • .setbotname <name> - Change bot display name
 • .setbotowner <name> - Change owner display name
 • .setownernumber <num> - Change owner WhatsApp number
 
-📺 *Media & Links:*
-• .setytchannel <name/link> - Change YouTube channel
+📺 Media & Links:
+• .setytchannel <name> - Change YouTube channel NAME
 • .setpackname <name> - Change sticker pack name
 • .setauthor <name> - Change sticker author name
 
-🌍 *Preferences:*
+🌍 Preferences:
 • .settimezone <zone> - Change bot timezone
 
-📊 *Current Settings:*
-• Use existing .settings command to view all
-
-⚠️ *Important Notes:*
+⚠️ IMPORTANT:
+• ALL commands auto-restart the bot after update
 • Only the owner number can use these commands
-• Some changes require bot restart
-• All changes are saved to settings.js
-• No sudo users can access these commands
-
-*Example Usage:*
-.setbotname WALLY-MD PRO
-.setbotowner Wally Jay
-.setownernumber 2348144317152
-.setytchannel https://youtube.com/@wallyjaytechy
-.setpackname WALLY Stickers
-.setauthor Wally Jay Tech
-.settimezone Africa/Lagos
-`;
+• Changes are saved to settings.js
+• No sudo users can access these commands`;
         
         await sock.sendMessage(chatId, { 
             text: helpText
@@ -473,7 +474,6 @@ async function configHelpCommand(sock, chatId, message) {
     }
 }
 
-// Export all commands
 module.exports = {
     setBotNameCommand,
     setBotOwnerCommand,
