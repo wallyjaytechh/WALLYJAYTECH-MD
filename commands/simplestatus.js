@@ -4,25 +4,37 @@ const path = require('path');
 // File to store preferences
 const PREFS_FILE = './data/save_prefs.json';
 
-// Load preferences
+// ✅ AUTO-CREATE DATA DIRECTORY
+if (!fs.existsSync('./data')) {
+    fs.mkdirSync('./data', { recursive: true });
+}
+
+// Load preferences - AUTO-CREATE FILE IF MISSING
 function loadPrefs() {
     try {
         if (fs.existsSync(PREFS_FILE)) {
-            const data = JSON.parse(fs.readFileSync(PREFS_FILE, 'utf8'));
-            return data;
+            const data = fs.readFileSync(PREFS_FILE, 'utf8');
+            return JSON.parse(data);
+        } else {
+            // ✅ CREATE EMPTY FILE IF NOT EXISTS
+            fs.writeFileSync(PREFS_FILE, JSON.stringify({}), 'utf8');
+            return {};
         }
     } catch (error) {
         console.error('Error loading prefs:', error);
+        // ✅ RETURN EMPTY OBJECT ON ERROR
+        return {};
     }
-    return {};
 }
 
 // Save preferences
 function savePrefs(prefs) {
     try {
         fs.writeFileSync(PREFS_FILE, JSON.stringify(prefs, null, 2), 'utf8');
+        return true;
     } catch (error) {
         console.error('Error saving prefs:', error);
+        return false;
     }
 }
 
@@ -34,20 +46,21 @@ async function saveStatusCommand(sock, chatId, message, args) {
         
         // Get the option
         const option = args[0]?.toLowerCase();
-        const prefs = loadPrefs();
         
-        // Debug: Check what's loaded
-        console.log('User ID:', userId);
-        console.log('Current prefs:', prefs);
-        console.log('Option passed:', option);
+        // ✅ ALWAYS LOAD FRESH PREFERENCES
+        const prefs = loadPrefs();
         
         // Set preference mode
         if (option === 'public' || option === 'private') {
             prefs[userId] = option;
-            savePrefs(prefs);
+            const saved = savePrefs(prefs);
             
-            console.log('Saved pref for', userId, '=', option);
-            console.log('Updated prefs:', prefs);
+            if (!saved) {
+                await sock.sendMessage(chatId, { 
+                    text: '❌ Failed to save preference' 
+                }, { quoted: message });
+                return;
+            }
             
             await sock.sendMessage(chatId, { 
                 text: `✅ *Save mode set to: ${option.toUpperCase()}*\n\nNow reply to any status with just \`.save\`` 
@@ -57,7 +70,6 @@ async function saveStatusCommand(sock, chatId, message, args) {
         
         // Check if user has set preference
         const userPref = prefs[userId];
-        console.log('User pref found:', userPref);
         
         if (!userPref) {
             await sock.sendMessage(chatId, { 
@@ -87,14 +99,13 @@ async function saveStatusCommand(sock, chatId, message, args) {
                 text: '✅ *Saved to your DM*' 
             });
         } else { // public
-            // For public mode, we need to find status owner
-            // This is complex - for now, send to bot owner
+            // For public mode, send to bot owner
             const settings = require('../settings');
             const ownerJid = `${settings.ownerNumber}@s.whatsapp.net`;
             
             await sock.sendMessage(ownerJid, {
                 forward: message,
-                text: `📤 Status forwarded from ${userId.split('@')[0]}`
+                text: `📤 Status from ${userId.split('@')[0]}`
             });
             
             await sock.sendMessage(chatId, { 
@@ -105,7 +116,7 @@ async function saveStatusCommand(sock, chatId, message, args) {
     } catch (error) {
         console.error('Save error:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Error: ' + error.message 
+            text: '❌ Error saving' 
         }, { quoted: message });
     }
 }
