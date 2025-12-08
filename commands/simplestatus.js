@@ -25,21 +25,8 @@ function savePrefs(prefs) {
 async function saveStatusCommand(sock, chatId, message, args) {
     try {
         const userId = message.key.participant || message.key.remoteJid;
-        const isStatus = chatId === 'status@broadcast';
         
-        if (!isStatus) {
-            await sock.sendMessage(chatId, { 
-                text: '❌ This only works on statuses.\nGo to Status tab → Reply to a status with `.save`' 
-            }, { quoted: message });
-            return;
-        }
-        
-        // Get status owner (person who posted the status)
-        const statusOwner = chatId; // status@broadcast
-        // Actually, we need to get who posted this specific status
-        // For now, we'll use the message sender
-        const statusAuthor = message.key.participant || 'unknown';
-        
+        // Get the option
         const option = args[0]?.toLowerCase();
         const prefs = loadPrefs();
         
@@ -49,57 +36,82 @@ async function saveStatusCommand(sock, chatId, message, args) {
             savePrefs(prefs);
             
             await sock.sendMessage(chatId, { 
-                text: `✅ Set to: *${option}*\n\nNow use \`.save\` on any status` 
-            });
+                text: `✅ Save mode set to: *${option}*\n\nNow reply to any status with \`.save\`` 
+            }, { quoted: message });
             return;
         }
         
-        // Check if preference is set
+        // Check if user has set preference
         const userPref = prefs[userId];
         if (!userPref) {
             await sock.sendMessage(chatId, { 
-                text: `⚙️ *Choose save mode:*\n\n` +
-                      `• \`.save public\` - Send status to owner's DM\n` +
-                      `• \`.save private\` - Send to your DM\n\n` +
-                      `Set once, then use \`.save\` on any status` 
-            });
+                text: `⚙️ *Choose save mode first:*\n\n` +
+                      `• \`.save public\` - Send status to status owner\n` +
+                      `• \`.save private\` - Send status to your DM\n\n` +
+                      `*Then reply to any status with \`.save\`` 
+            }, { quoted: message });
             return;
         }
         
-        // Forward the status
-        if (userPref === 'public') {
-            // Send to status owner's DM
-            // Extract actual user from status (this is tricky)
-            // For now, we'll send to the participant
-            if (statusAuthor && statusAuthor !== 'unknown') {
-                await sock.sendMessage(statusAuthor, {
-                    forward: message,
-                    mentions: [statusAuthor]
-                });
-                await sock.sendMessage(chatId, { 
-                    text: '✅ Status sent to owner\'s DM' 
-                });
-            } else {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ Could not identify status owner' 
-                });
-            }
-        } else { // private
+        // Check if we're in a status or replying to one
+        const isStatusBroadcast = chatId === 'status@broadcast';
+        const hasQuotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        
+        if (!isStatusBroadcast && !hasQuotedMessage) {
+            await sock.sendMessage(chatId, { 
+                text: `📌 *How to save statuses:*\n\n1. Set mode: \`.save public\` or \`.save private\`\n2. Go to Status tab\n3. Reply to any status with \`.save\`` 
+            }, { quoted: message });
+            return;
+        }
+        
+        // Forward the message
+        if (userPref === 'private') {
             // Send to user's own DM
             const userJid = userId.includes('@') ? userId : `${userId}@s.whatsapp.net`;
             await sock.sendMessage(userJid, {
                 forward: message
             });
-            await sock.sendMessage(chatId, { 
-                text: '✅ Status saved to your DM' 
-            });
+            
+            if (isStatusBroadcast) {
+                await sock.sendMessage(chatId, { 
+                    text: '✅ Saved to your DM' 
+                });
+            } else {
+                await sock.sendMessage(chatId, { 
+                    text: '✅ Saved to your DM' 
+                }, { quoted: message });
+            }
+        } else { // public
+            // Try to get status owner
+            // If it's a status broadcast, we can't easily get owner
+            // If replying in DM/chat, we can forward to quoted sender
+            if (hasQuotedMessage) {
+                const quotedJid = message.message.extendedTextMessage.contextInfo.participant;
+                if (quotedJid) {
+                    await sock.sendMessage(quotedJid, {
+                        forward: message
+                    });
+                    await sock.sendMessage(chatId, { 
+                        text: '✅ Sent to status owner' 
+                    }, { quoted: message });
+                } else {
+                    await sock.sendMessage(chatId, { 
+                        text: '❌ Could not identify status owner' 
+                    }, { quoted: message });
+                }
+            } else {
+                // In status broadcast, can't determine owner
+                await sock.sendMessage(chatId, { 
+                    text: '⚠️ Use \`.save private\` for status tab\nOr reply to status in chat for \`.save public\`' 
+                });
+            }
         }
         
     } catch (error) {
         console.error('Save error:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Error' 
-        });
+            text: '❌ Error saving' 
+        }, { quoted: message });
     }
 }
 
