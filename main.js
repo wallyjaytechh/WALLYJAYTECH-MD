@@ -56,7 +56,7 @@ const {
     coinleaderboardCommand,
     coinhelpCommand 
 } = require('./commands/coinflip');
-const { simpleSaveCommand, viewSavesCommand } = require('./commands/simplestatus');
+const { saveStatusCommand } = require('./commands/simplestatus');
 const { setBotNameCommand, setBotOwnerCommand, setOwnerNumberCommand,setYTChannelCommand,setPackNameCommand,setAuthorCommand, setTimezoneCommand,configHelpCommand } = require('./commands/wallyjaytech');
 const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
 const getppCommand = require('./commands/getpp');
@@ -806,12 +806,7 @@ case userMessage.startsWith('.getjid @'):
          
 case userMessage.startsWith('.save'):
     const saveArgs = rawText.split(' ').slice(1);
-    await simpleSaveCommand(sock, chatId, message, saveArgs);
-    commandExecuted = true;
-    break;
-
-case userMessage === '.viewsaves':
-    await viewSavesCommand(sock, chatId, message);
+    await saveStatusCommand(sock, chatId, message, saveArgs);
     commandExecuted = true;
     break;
 
