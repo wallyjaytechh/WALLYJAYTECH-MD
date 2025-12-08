@@ -570,23 +570,7 @@ await handleAutorecordForMessage(sock, chatId, userMessage);
             case userMessage.startsWith('.attp'):
                 await attpCommand(sock, chatId, message);
                 break;
-          // Status saver commands
-case userMessage.startsWith('.save'):
-    const saveArgs = rawText.split(' ').slice(1);
-    await saveStatusCommand(sock, chatId, message, saveArgs);
-    commandExecuted = true;
-    break;
-    
-case userMessage === '.mysaves':
-    await mySavesCommand(sock, chatId, message);
-    commandExecuted = true;
-    break;
-    
-case userMessage.startsWith('.viewsave'):
-    const viewArgs = rawText.split(' ').slice(1);
-    await viewSaveCommand(sock, chatId, message, viewArgs);
-    commandExecuted = true;
-    break;
+
             case userMessage === '.settings':
                 await settingsCommand(sock, chatId, message);
                 break;
