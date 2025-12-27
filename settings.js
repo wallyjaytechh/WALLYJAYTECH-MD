@@ -37,12 +37,12 @@
 
 const settings = {
   packname: 'WALLYJAYTECH-MD',
-  author: '‎Wally Jay',
+  author: '‎Jaysom',
   botName: "WALLYJAYTECH-MD",
-  botOwner: 'Wally Jay', 
+  botOwner: 'Jayson', 
   timezone: 'Africa/Lagos',
   prefix: '.',
-  ownerNumber: '2348144317152', //Set your number here without + symbol, just add country code & number without any space
+  ownerNumber: '2349065071148', //Set your number here without + symbol, just add country code & number without any space
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
   commandMode: "public",
   maxStoreMessages: 20, 
