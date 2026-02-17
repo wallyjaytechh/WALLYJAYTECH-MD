@@ -67,7 +67,13 @@ const { pollCommand, voteCommand } = require('./commands/poll');
 const { joinCommand } = require('./commands/join');
 const { antiforeignCommand, handleAntiforeign } = require('./commands/antiforeign');
 const { autorecordtypeCommand, isAutorecordtypeEnabled, handleAutorecordtypeForMessage, handleAutorecordtypeForCommand, showRecordTypeAfterCommand } = require('./commands/autorecordtype');
-const { autorecordCommand, isAutorecordEnabled, handleAutorecordForMessage, handleAutorecordForCommand, showRecordingAfterCommand } = require('./commands/autorecord');
+const { 
+    autorecordCommand, 
+    isAutorecordEnabled, 
+    handleAutorecordForMessage, 
+    handleAutorecordForCommand, 
+    showRecordingAfterCommand 
+} = require('./commands/autorecord');
 const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
