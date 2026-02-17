@@ -23,6 +23,7 @@ function initConfig() {
                 enabled: false,
                 mode: 'all' // all, dms, groups
             }, null, 2));
+            console.log('📁 Created new autorecord config file');
         }
         return JSON.parse(fs.readFileSync(configPath));
     } catch (error) {
@@ -34,6 +35,8 @@ function initConfig() {
 // Toggle autorecord feature
 async function autorecordCommand(sock, chatId, message) {
     try {
+        console.log('🎙️ AutoRecord command triggered');
+        
         const senderId = message.key.participant || message.key.remoteJid;
         const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
         
@@ -53,10 +56,24 @@ async function autorecordCommand(sock, chatId, message) {
             return;
         }
 
-        // Get command arguments
-        const userMessage = message.message?.conversation?.trim() || 
-                          message.message?.extendedTextMessage?.text?.trim() || '';
-        const args = userMessage.split(' ').slice(1);
+        // Get command arguments - FIXED PARSING
+        const userMessage = message.message?.conversation || 
+                          message.message?.extendedTextMessage?.text || '';
+        
+        console.log('📝 Raw message:', userMessage);
+        
+        // Extract command and args - handle both ".autorecord" and "autorecord"
+        let commandPart = userMessage.trim();
+        if (commandPart.startsWith('.')) {
+            commandPart = commandPart.substring(1); // Remove the dot
+        }
+        
+        const parts = commandPart.split(/\s+/);
+        const commandName = parts[0].toLowerCase();
+        const args = parts.slice(1);
+        
+        console.log('🔍 Command:', commandName);
+        console.log('🔍 Args:', args);
         
         // Initialize or read config
         const config = initConfig();
@@ -82,10 +99,12 @@ async function autorecordCommand(sock, chatId, message) {
         }
 
         const action = args[0].toLowerCase();
+        console.log('🎯 Action:', action);
         
         if (action === 'on' || action === 'enable') {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log('✅ AutoRecord ENABLED');
             await sock.sendMessage(chatId, {
                 text: `✅ *Auto-record enabled!*\n\nMode: ${getModeText(config.mode)}\n\nBot will now show recording indicators in ${getModeDescription(config.mode)}.`,
                 contextInfo: {
@@ -102,6 +121,7 @@ async function autorecordCommand(sock, chatId, message) {
         else if (action === 'off' || action === 'disable') {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log('❌ AutoRecord DISABLED');
             await sock.sendMessage(chatId, {
                 text: '❌ *Auto-record disabled!*\n\nBot will no longer show recording indicators.',
                 contextInfo: {
@@ -133,6 +153,8 @@ async function autorecordCommand(sock, chatId, message) {
             }
             
             const mode = args[1].toLowerCase();
+            console.log('📌 Setting mode to:', mode);
+            
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -196,7 +218,7 @@ async function autorecordCommand(sock, chatId, message) {
         }
         
     } catch (error) {
-        console.error('Error in autorecord command:', error);
+        console.error('❌ Error in autorecord command:', error);
         await sock.sendMessage(chatId, {
             text: '❌ Error processing command!',
             contextInfo: {
@@ -236,16 +258,30 @@ function getModeDescription(mode) {
 function shouldShowRecording(chatId) {
     try {
         const config = initConfig();
-        if (!config.enabled) return false;
+        if (!config.enabled) {
+            console.log('⏸️ AutoRecord is disabled');
+            return false;
+        }
         
         const isGroup = chatId.endsWith('@g.us');
+        let result = false;
         
         switch(config.mode) {
-            case 'all': return true;
-            case 'dms': return !isGroup;
-            case 'groups': return isGroup;
-            default: return true;
+            case 'all':
+                result = true;
+                break;
+            case 'dms':
+                result = !isGroup;
+                break;
+            case 'groups':
+                result = isGroup;
+                break;
+            default:
+                result = true;
         }
+        
+        console.log(`🎙️ AutoRecord check for ${chatId}: ${result ? 'SHOW' : 'HIDE'} (mode: ${config.mode})`);
+        return result;
     } catch (error) {
         console.error('Error checking autorecord status:', error);
         return false;
@@ -268,7 +304,7 @@ async function handleAutorecordForMessage(sock, chatId, userMessage) {
     if (!shouldShowRecording(chatId)) return false;
     
     try {
-        console.log(`🎙️ Showing recording indicator in ${chatId} for message`);
+        console.log(`🎙️ Attempting to show recording in ${chatId} for message: "${userMessage.substring(0, 30)}..."`);
         
         // Step 1: Subscribe to presence updates
         await sock.presenceSubscribe(chatId);
@@ -280,20 +316,21 @@ async function handleAutorecordForMessage(sock, chatId, userMessage) {
         
         // Step 3: Show recording status - THIS SHOWS THE MICROPHONE
         await sock.sendPresenceUpdate('recording', chatId);
+        console.log('🎙️ Recording indicator sent');
         
         // Calculate recording time based on message length
-        // Minimum 2 seconds, maximum 8 seconds
-        const recordingTime = Math.min(8000, Math.max(2000, userMessage.length * 100));
+        const recordingTime = Math.min(5000, Math.max(2000, userMessage.length * 80));
         
         // Keep recording indicator active
         await delay(recordingTime);
         
         // Step 4: Send recording again to maintain the indicator
         await sock.sendPresenceUpdate('recording', chatId);
-        await delay(1000);
+        await delay(800);
         
         // Step 5: Finally set to paused
         await sock.sendPresenceUpdate('paused', chatId);
+        console.log('🎙️ Recording finished');
         
         return true;
     } catch (error) {
@@ -307,27 +344,19 @@ async function handleAutorecordForCommand(sock, chatId) {
     if (!shouldShowRecording(chatId)) return false;
     
     try {
-        console.log(`🎙️ Showing command recording indicator in ${chatId}`);
+        console.log(`🎙️ Showing command recording in ${chatId}`);
         
-        // Step 1: Subscribe to presence
         await sock.presenceSubscribe(chatId);
         await delay(300);
-        
-        // Step 2: Set available
         await sock.sendPresenceUpdate('available', chatId);
         await delay(500);
-        
-        // Step 3: Show recording
         await sock.sendPresenceUpdate('recording', chatId);
+        console.log('🎙️ Command recording active');
         
         // Keep recording for command processing
-        await delay(3000);
-        
-        // Step 4: Refresh recording
+        await delay(2500);
         await sock.sendPresenceUpdate('recording', chatId);
-        await delay(1500);
-        
-        // Step 5: Pause
+        await delay(1000);
         await sock.sendPresenceUpdate('paused', chatId);
         
         return true;
@@ -345,9 +374,9 @@ async function showRecordingAfterCommand(sock, chatId) {
         console.log(`🎙️ Showing post-command recording in ${chatId}`);
         
         await sock.presenceSubscribe(chatId);
-        await delay(300);
+        await delay(200);
         await sock.sendPresenceUpdate('recording', chatId);
-        await delay(1000);
+        await delay(800);
         await sock.sendPresenceUpdate('paused', chatId);
         
         return true;
