@@ -387,14 +387,14 @@ if (!isGroup && !message.key.fromMe) {
             await Antilink(message, sock);
         }
 
-  // Live time bio update (every minute - safe frequency)
+  // Live time bio update (every 30 seconds - safe frequency)
 setInterval(async () => {
     try {
         await updateAutoBio(sock);
     } catch (error) {
         console.error('AutoBio update error:', error);
     }
-}, 60000); // Update every minute (60000ms)
+}, 30000); // Update every minute (30000ms)
 // AntiBot detection (add this before command processing)
 if (await handleAntibotDetection(sock, chatId, message)) {
     return; // Stop processing if bot detected
