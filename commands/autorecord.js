@@ -12,13 +12,23 @@ const configPath = path.join(__dirname, '..', 'data', 'autorecord.json');
 
 // Initialize configuration file if it doesn't exist
 function initConfig() {
-    if (!fs.existsSync(configPath)) {
-        fs.writeFileSync(configPath, JSON.stringify({ 
-            enabled: false,
-            mode: 'all' // all, dms, groups
-        }, null, 2));
+    try {
+        if (!fs.existsSync(configPath)) {
+            // Ensure data directory exists
+            const dataDir = path.join(__dirname, '..', 'data');
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
+            fs.writeFileSync(configPath, JSON.stringify({ 
+                enabled: false,
+                mode: 'all' // all, dms, groups
+            }, null, 2));
+        }
+        return JSON.parse(fs.readFileSync(configPath));
+    } catch (error) {
+        console.error('❌ Error initializing autorecord config:', error);
+        return { enabled: false, mode: 'all' };
     }
-    return JSON.parse(fs.readFileSync(configPath));
 }
 
 // Toggle autorecord feature
@@ -255,99 +265,100 @@ function isAutorecordEnabled() {
 
 // Function to handle autorecord for regular messages
 async function handleAutorecordForMessage(sock, chatId, userMessage) {
-    if (shouldShowRecording(chatId)) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Then send the recording status - THIS SHOWS THE MICROPHONE ICON
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Simulate recording time based on message length
-            const recordingDelay = Math.max(3000, Math.min(8000, userMessage.length * 150));
-            await new Promise(resolve => setTimeout(resolve, recordingDelay));
-            
-            // Send recording again to ensure it stays visible
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates recording was shown
-        } catch (error) {
-            console.error('❌ Error sending recording indicator:', error);
-            return false; // Indicates recording failed
-        }
+    if (!shouldShowRecording(chatId)) return false;
+    
+    try {
+        console.log(`🎙️ Showing recording indicator in ${chatId} for message`);
+        
+        // Step 1: Subscribe to presence updates
+        await sock.presenceSubscribe(chatId);
+        await delay(300);
+        
+        // Step 2: Set available status first
+        await sock.sendPresenceUpdate('available', chatId);
+        await delay(500);
+        
+        // Step 3: Show recording status - THIS SHOWS THE MICROPHONE
+        await sock.sendPresenceUpdate('recording', chatId);
+        
+        // Calculate recording time based on message length
+        // Minimum 2 seconds, maximum 8 seconds
+        const recordingTime = Math.min(8000, Math.max(2000, userMessage.length * 100));
+        
+        // Keep recording indicator active
+        await delay(recordingTime);
+        
+        // Step 4: Send recording again to maintain the indicator
+        await sock.sendPresenceUpdate('recording', chatId);
+        await delay(1000);
+        
+        // Step 5: Finally set to paused
+        await sock.sendPresenceUpdate('paused', chatId);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error in handleAutorecordForMessage:', error.message);
+        return false;
     }
-    return false; // Autorecord is disabled for this chat type
 }
 
 // Function to handle autorecord for commands
 async function handleAutorecordForCommand(sock, chatId) {
-    if (shouldShowRecording(chatId)) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Then send the recording status
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Keep recording indicator active for commands
-            const commandRecordingDelay = 3000;
-            await new Promise(resolve => setTimeout(resolve, commandRecordingDelay));
-            
-            // Send recording again to ensure it stays visible
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates recording was shown
-        } catch (error) {
-            console.error('❌ Error sending command recording indicator:', error);
-            return false; // Indicates recording failed
-        }
+    if (!shouldShowRecording(chatId)) return false;
+    
+    try {
+        console.log(`🎙️ Showing command recording indicator in ${chatId}`);
+        
+        // Step 1: Subscribe to presence
+        await sock.presenceSubscribe(chatId);
+        await delay(300);
+        
+        // Step 2: Set available
+        await sock.sendPresenceUpdate('available', chatId);
+        await delay(500);
+        
+        // Step 3: Show recording
+        await sock.sendPresenceUpdate('recording', chatId);
+        
+        // Keep recording for command processing
+        await delay(3000);
+        
+        // Step 4: Refresh recording
+        await sock.sendPresenceUpdate('recording', chatId);
+        await delay(1500);
+        
+        // Step 5: Pause
+        await sock.sendPresenceUpdate('paused', chatId);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error in handleAutorecordForCommand:', error.message);
+        return false;
     }
-    return false; // Autorecord is disabled for this chat type
 }
 
 // Function to show recording status AFTER command execution
 async function showRecordingAfterCommand(sock, chatId) {
-    if (shouldShowRecording(chatId)) {
-        try {
-            // This function runs after the command has been executed and response sent
-            // So we just need to show a brief recording indicator
-            
-            // Subscribe to presence updates
-            await sock.presenceSubscribe(chatId);
-            
-            // Show recording status briefly
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Keep recording visible for a short time
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Then pause
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Error sending post-command recording indicator:', error);
-            return false;
-        }
+    if (!shouldShowRecording(chatId)) return false;
+    
+    try {
+        console.log(`🎙️ Showing post-command recording in ${chatId}`);
+        
+        await sock.presenceSubscribe(chatId);
+        await delay(300);
+        await sock.sendPresenceUpdate('recording', chatId);
+        await delay(1000);
+        await sock.sendPresenceUpdate('paused', chatId);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error in showRecordingAfterCommand:', error.message);
+        return false;
     }
-    return false; // Autorecord is disabled for this chat type
 }
+
+// Delay helper function
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports = {
     autorecordCommand,
