@@ -86,7 +86,7 @@ class SimpleAutoBio {
         }
     }
     
-    // Get greeting based on time
+    // Get greeting based on time (with emoji and text)
     static getGreeting() {
         try {
             const now = new Date();
@@ -98,34 +98,61 @@ class SimpleAutoBio {
             
             const hourNum = parseInt(hour);
             
-            if (hourNum >= 5 && hourNum < 12) return '🌅 Morning';
-            if (hourNum >= 12 && hourNum < 17) return '☀️ Afternoon';
-            if (hourNum >= 17 && hourNum < 21) return '🌇 Evening';
-            return '🌙 Night';
+            if (hourNum >= 5 && hourNum < 12) return '🌅 GOOD MORNING';
+            if (hourNum >= 12 && hourNum < 17) return '☀️ GOOD AFTERNOON';
+            if (hourNum >= 17 && hourNum < 21) return '🌇 GOOD EVENING';
+            return '🌙 GOOD NIGHT';
         } catch (error) {
             const hour = new Date().getHours();
-            if (hour >= 5 && hour < 12) return '🌅 Morning';
-            if (hour >= 12 && hour < 17) return '☀️ Afternoon';
-            if (hour >= 17 && hour < 21) return '🌇 Evening';
-            return '🌙 Night';
+            if (hour >= 5 && hour < 12) return '🌅 GOOD MORNING';
+            if (hour >= 12 && hour < 17) return '☀️ GOOD AFTERNOON';
+            if (hour >= 17 && hour < 21) return '🌇 GOOD EVENING';
+            return '🌙 GOOD NIGHT';
         }
     }
     
-    // Generate bio text
+    // Get abbreviated greeting for shorter bio
+    static getShortGreeting() {
+        try {
+            const now = new Date();
+            const hour = now.toLocaleString('en-US', {
+                timeZone: autobioData.timezone,
+                hour12: false,
+                hour: '2-digit'
+            });
+            
+            const hourNum = parseInt(hour);
+            
+            if (hourNum >= 5 && hourNum < 12) return '🌅 MORNING';
+            if (hourNum >= 12 && hourNum < 17) return '☀️ AFTERNOON';
+            if (hourNum >= 17 && hourNum < 21) return '🌇 EVENING';
+            return '🌙 NIGHT';
+        } catch (error) {
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 12) return '🌅 MORNING';
+            if (hour >= 12 && hour < 17) return '☀️ AFTERNOON';
+            if (hour >= 17 && hour < 21) return '🌇 EVENING';
+            return '🌙 NIGHT';
+        }
+    }
+    
+    // Generate bio text with greeting
     static generateBio() {
         const time = this.getCurrentTime();
+        const greeting = this.getGreeting();
+        const shortGreeting = this.getShortGreeting();
         const watermark = autobioData.watermark;
         
-        // Simple templates
+        // Templates with greeting
         const templates = [
-            `⏰ ${time} | ${watermark}`,
-            `🕒 ${time} | ${watermark}`,
-            `📱 ${time} | ${watermark}`,
-            `🤖 ${time} | ${watermark}`,
-            `🚀 ${time} | ${watermark}`,
-            `💫 ${time} | ${watermark}`,
-            `⭐ ${time} | ${watermark}`,
-            `🎯 ${time} | ${watermark}`
+            `⏰ ${time} | ${greeting} | ${watermark}`,
+            `🕒 ${time} | ${greeting} | ${watermark}`,
+            `📱 ${time} | ${greeting} | ${watermark}`,
+            `🤖 ${time} | ${greeting} | ${watermark}`,
+            `🚀 ${time} | ${greeting} | ${watermark}`,
+            `💫 ${time} | ${shortGreeting} | ${watermark}`,
+            `⭐ ${time} | ${shortGreeting} | ${watermark}`,
+            `🎯 ${time} | ${shortGreeting} | ${watermark}`
         ];
         
         // Rotate template every 5 minutes
@@ -150,7 +177,7 @@ class SimpleAutoBio {
         try {
             const bioText = this.generateBio();
             
-            // Update bio
+            // Update bio (WhatsApp bio max length is 139 characters)
             const finalBio = bioText.length > 139 ? bioText.substring(0, 136) + '...' : bioText;
             
             await sock.updateProfileStatus(finalBio);
@@ -176,7 +203,7 @@ class SimpleAutoBio {
 
 module.exports = {
     name: 'autobio',
-    description: 'Live time bio with minute updates',
+    description: 'Live time bio with minute updates and greeting',
     
     async execute(sock, chatId, message, args) {
         try {
@@ -206,9 +233,10 @@ module.exports = {
                     await SimpleAutoBio.updateBio(sock);
                     
                     const currentTimeOn = SimpleAutoBio.getCurrentTime();
+                    const currentGreetingOn = SimpleAutoBio.getGreeting();
                     
                     await sock.sendMessage(chatId, {
-                        text: `✅ *Live Time Bio ENABLED*\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTimeOn}\n🏷️ Watermark: ${autobioData.watermark}\n\n📱 *Update Frequency:* Every minute\n🔄 *Total Updates:* ${autobioData.updateCount}`
+                        text: `✅ *Live Time Bio ENABLED*\n\n⏰ Timezone: ${autobioData.timezone}\n🕒 Current Time: ${currentTimeOn}\n${currentGreetingOn}\n🏷️ Watermark: ${autobioData.watermark}\n\n📱 *Update Frequency:* Every minute\n🔄 *Total Updates:* ${autobioData.updateCount}`
                     }, { quoted: message });
                     break;
                     
@@ -234,8 +262,9 @@ module.exports = {
                 case 'now':
                     await SimpleAutoBio.updateBio(sock);
                     const currentTimeUpdate = SimpleAutoBio.getCurrentTime();
+                    const currentGreetingUpdate = SimpleAutoBio.getGreeting();
                     await sock.sendMessage(chatId, {
-                        text: `✅ *Bio Updated!*\n\nCurrent time: ${currentTimeUpdate}\nTotal updates: ${autobioData.updateCount}`
+                        text: `✅ *Bio Updated!*\n\nCurrent time: ${currentTimeUpdate}\n${currentGreetingUpdate}\nTotal updates: ${autobioData.updateCount}`
                     }, { quoted: message });
                     break;
                     
@@ -266,7 +295,7 @@ module.exports = {
                             saveAutobioData();
                             
                             await sock.sendMessage(chatId, {
-                                text: `🌍 *Timezone Updated!*\n\nNew: ${newTimezone}\nCurrent: ${SimpleAutoBio.getCurrentTime()}`
+                                text: `🌍 *Timezone Updated!*\n\nNew: ${newTimezone}\nCurrent: ${SimpleAutoBio.getCurrentTime()}\n${SimpleAutoBio.getGreeting()}`
                             }, { quoted: message });
                         } catch (error) {
                             await sock.sendMessage(chatId, {
@@ -275,8 +304,9 @@ module.exports = {
                         }
                     } else {
                         const currentTimeZone = SimpleAutoBio.getCurrentTime();
+                        const currentGreetingZone = SimpleAutoBio.getGreeting();
                         await sock.sendMessage(chatId, {
-                            text: `🌍 *Current Timezone:* ${autobioData.timezone}\n⏰ Current Time: ${currentTimeZone}`
+                            text: `🌍 *Current Timezone:* ${autobioData.timezone}\n⏰ Current Time: ${currentTimeZone}\n${currentGreetingZone}`
                         }, { quoted: message });
                     }
                     break;
@@ -287,34 +317,38 @@ module.exports = {
                     const lastUpdate = autobioData.lastUpdate ? 
                         new Date(autobioData.lastUpdate).toLocaleTimeString() : 'Never';
                     const currentTimeStatus = SimpleAutoBio.getCurrentTime();
+                    const currentGreetingStatus = SimpleAutoBio.getGreeting();
                     const nextUpdate = autobioData.lastUpdate ? 
                         `Next update in ${Math.max(0, Math.floor((60000 - (Date.now() - autobioData.lastUpdate)) / 1000))}s` : 
                         'Next update: Soon';
                     
                     await sock.sendMessage(chatId, {
-                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTimeStatus}\nWatermark: ${autobioData.watermark}\nLast Update: ${lastUpdate}\nTotal Updates: ${autobioData.updateCount}\n${nextUpdate}\n\n📱 *Update Frequency:* Every minute\n🔄 *Template Rotation:* Every 5 minutes`
+                        text: `📊 *Live Time Bio Status*\n\nStatus: ${status}\nTimezone: ${autobioData.timezone}\nCurrent Time: ${currentTimeStatus}\n${currentGreetingStatus}\nWatermark: ${autobioData.watermark}\nLast Update: ${lastUpdate}\nTotal Updates: ${autobioData.updateCount}\n${nextUpdate}\n\n📱 *Update Frequency:* Every minute\n🔄 *Template Rotation:* Every 5 minutes`
                     }, { quoted: message });
                     break;
                     
                 case 'demo':
                     const currentTimeDemo = SimpleAutoBio.getCurrentTime();
+                    const currentGreetingDemo = SimpleAutoBio.getGreeting();
+                    const shortGreetingDemo = SimpleAutoBio.getShortGreeting();
                     const samples = [
-                        `⏰ ${currentTimeDemo} | ${autobioData.watermark}`,
-                        `🕒 ${currentTimeDemo} | ${autobioData.watermark}`,
-                        `📱 ${currentTimeDemo} | ${autobioData.watermark}`,
-                        `🤖 ${currentTimeDemo} | ${autobioData.watermark}`,
-                        `🚀 ${currentTimeDemo} | ${autobioData.watermark}`
+                        `⏰ ${currentTimeDemo} | ${currentGreetingDemo} | ${autobioData.watermark}`,
+                        `🕒 ${currentTimeDemo} | ${currentGreetingDemo} | ${autobioData.watermark}`,
+                        `📱 ${currentTimeDemo} | ${currentGreetingDemo} | ${autobioData.watermark}`,
+                        `🤖 ${currentTimeDemo} | ${shortGreetingDemo} | ${autobioData.watermark}`,
+                        `🚀 ${currentTimeDemo} | ${shortGreetingDemo} | ${autobioData.watermark}`
                     ];
                     
                     await sock.sendMessage(chatId, {
-                        text: `🎯 *Sample Bio Formats:*\n\n${samples.join('\n')}\n\n📱 *How it works:*\n• Updates every minute\n• Shows live time in "last updated"\n• Works on both iOS & Android\n• Timezone: ${autobioData.timezone}\n• Template rotates every 5 minutes`
+                        text: `🎯 *Sample Bio Formats:*\n\n${samples.join('\n')}\n\n📱 *How it works:*\n• Updates every minute\n• Shows live time with greeting\n• Works on both iOS & Android\n• Timezone: ${autobioData.timezone}\n• Template rotates every 5 minutes`
                     }, { quoted: message });
                     break;
                     
                 default:
                     const currentTimeDefault = SimpleAutoBio.getCurrentTime();
+                    const currentGreetingDefault = SimpleAutoBio.getGreeting();
                     await sock.sendMessage(chatId, {
-                        text: `⏰ *Live Time Bio*\n\n*Current Time:* ${currentTimeDefault}\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n*Total Updates:* ${autobioData.updateCount}\n\n📱 *Platforms:* iOS & Android\n🔄 *Updates:* Every minute (safe frequency)\n\n*Commands:*\n• on/off - Enable/disable\n• update - Update now\n• watermark <text> - Change watermark\n• timezone <zone> - Change timezone\n• status - Show status\n• demo - Show info`
+                        text: `⏰ *Live Time Bio*\n\n*Current Time:* ${currentTimeDefault}\n*${currentGreetingDefault}*\n*Timezone:* ${autobioData.timezone}\n*Watermark:* ${autobioData.watermark}\n*Total Updates:* ${autobioData.updateCount}\n\n📱 *Platforms:* iOS & Android\n🔄 *Updates:* Every minute (safe frequency)\n\n*Commands:*\n• on/off - Enable/disable\n• update - Update now\n• watermark <text> - Change watermark\n• timezone <zone> - Change timezone\n• status - Show status\n• demo - Show info`
                     }, { quoted: message });
                     break;
             }
