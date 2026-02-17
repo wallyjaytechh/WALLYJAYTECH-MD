@@ -8,13 +8,14 @@ const AUTOBIO_FILE = path.join(__dirname, '../data/autobio.json');
 class AutoBioManager {
     constructor() {
         this.data = {
-            enabled: false,
+            enabled: true, // DEFAULT ENABLED - bot connects with autobio ON
             watermark: "WALLYJAYTECH-MD",
             lastUpdate: 0,
             timezone: settings.timezone || 'Africa/Lagos',
             updateCount: 0
         };
         this.load();
+        console.log('🤖 AutoBio initialized - Default: ENABLED (updates every 30 seconds)');
     }
 
     // Load data from file
@@ -24,6 +25,10 @@ class AutoBioManager {
                 const saved = JSON.parse(fs.readFileSync(AUTOBIO_FILE, 'utf8'));
                 this.data = { ...this.data, ...saved };
                 console.log('📂 AutoBio data loaded');
+            } else {
+                // Save default enabled state
+                this.save();
+                console.log('📂 AutoBio created with default ENABLED state');
             }
         } catch (error) {
             console.error('❌ Error loading autobio:', error);
@@ -86,74 +91,77 @@ class AutoBioManager {
         }
     }
 
-    // Get short greeting
+    // Get short greeting (without "GOOD")
     getShortGreeting() {
         const full = this.getGreeting();
         return full.replace('GOOD ', '');
     }
 
-    // Generate bio text - THIS IS THE KEY FUNCTION
+    // Generate bio text
     generateBio() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
         const shortGreeting = this.getShortGreeting();
         const watermark = this.data.watermark;
         
-        // Log what we're generating
-        console.log(`⏰ Generating bio with:`);
-        console.log(`   Time: ${time}`);
-        console.log(`   Greeting: ${greeting}`);
-        console.log(`   Short: ${shortGreeting}`);
-        console.log(`   Watermark: ${watermark}`);
+        // Templates array - 8 different formats alternating between full and short greeting
+        const templates = [
+            `⏰ ${time} | ${greeting} | ${watermark}`,
+            `🕒 ${time} | ${greeting} | ${watermark}`,
+            `📱 ${time} | ${greeting} | ${watermark}`,
+            `🤖 ${time} | ${greeting} | ${watermark}`,
+            `🚀 ${time} | ${greeting} | ${watermark}`,
+            `💫 ${time} | ${shortGreeting} | ${watermark}`,
+            `⭐ ${time} | ${shortGreeting} | ${watermark}`,
+            `🎯 ${time} | ${shortGreeting} | ${watermark}`
+        ];
         
-        // Simple template - ALWAYS include greeting
-        const bioText = `⏰ ${time} | ${greeting} | ${watermark}`;
-        
-        // WhatsApp bio max length is 139 characters
-        return bioText.length > 139 ? bioText.substring(0, 136) + '...' : bioText;
+        // Rotate template every 30 seconds
+        const index = Math.floor(Date.now() / 30000) % templates.length;
+        return templates[index];
     }
 
     // Update bio if enabled and rate limit allows
     async updateBio(sock) {
         if (!this.data.enabled) {
-            console.log('⏸️ AutoBio is disabled');
             return;
         }
         
         const now = Date.now();
         const timeSinceLastUpdate = now - this.data.lastUpdate;
         
-        // Rate limiting: Only update every minute
-        if (timeSinceLastUpdate < 60000) {
-            console.log(`⏳ Next update in ${Math.ceil((60000 - timeSinceLastUpdate)/1000)}s`);
+        // Rate limiting: Update every 30 seconds
+        if (timeSinceLastUpdate < 30000) {
             return;
         }
         
         try {
             const bioText = this.generateBio();
             
-            console.log(`📝 Updating bio to: "${bioText}"`);
-            await sock.updateProfileStatus(bioText);
+            // WhatsApp bio max length is 139 characters
+            const finalBio = bioText.length > 139 ? bioText.substring(0, 136) + '...' : bioText;
+            
+            await sock.updateProfileStatus(finalBio);
             
             this.data.lastUpdate = now;
             this.data.updateCount++;
             this.save();
             
-            console.log(`✅ Bio updated successfully! (Update #${this.data.updateCount})`);
+            console.log(`✅ Bio updated (${this.data.updateCount}): "${finalBio}"`);
             
         } catch (error) {
             console.error('❌ Error updating bio:', error);
             
             // If rate limited, wait longer
             if (error.message?.includes('rate-overlimit') || error.data === 429) {
-                console.log('⚠️ Rate limit hit, waiting 5 minutes');
-                this.data.lastUpdate = now + 300000;
+                console.log('⚠️ Rate limit hit, waiting 2 minutes');
+                this.data.lastUpdate = now + 120000; // Wait 2 minutes
                 this.save();
             }
         }
     }
 
-    // Get demo samples
+    // Get demo samples with consistent format
     getDemoSamples() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
@@ -164,8 +172,11 @@ class AutoBioManager {
             `⏰ ${time} | ${greeting} | ${watermark}`,
             `🕒 ${time} | ${greeting} | ${watermark}`,
             `📱 ${time} | ${greeting} | ${watermark}`,
-            `🤖 ${time} | ${shortGreeting} | ${watermark}`,
-            `🚀 ${time} | ${shortGreeting} | ${watermark}`
+            `🤖 ${time} | ${greeting} | ${watermark}`,
+            `🚀 ${time} | ${greeting} | ${watermark}`,
+            `💫 ${time} | ${shortGreeting} | ${watermark}`,
+            `⭐ ${time} | ${shortGreeting} | ${watermark}`,
+            `🎯 ${time} | ${shortGreeting} | ${watermark}`
         ];
     }
 }
@@ -175,7 +186,7 @@ const manager = new AutoBioManager();
 
 module.exports = {
     name: 'autobio',
-    description: 'Live time bio with greeting',
+    description: 'Live time bio with greeting (updates every 30 seconds)',
     
     async execute(sock, chatId, message, args) {
         try {
@@ -213,7 +224,7 @@ module.exports = {
                               `🕒 Current Time: ${currentTimeOn}\n` +
                               `${currentGreetingOn}\n` +
                               `🏷️ Watermark: ${manager.data.watermark}\n\n` +
-                              `📱 *Update Frequency:* Every minute\n` +
+                              `📱 *Update Frequency:* Every 30 seconds\n` +
                               `🔄 *Total Updates:* ${manager.data.updateCount}`
                     }, { quoted: message });
                     break;
@@ -288,7 +299,7 @@ module.exports = {
                             await sock.sendMessage(chatId, {
                                 text: `❌ Invalid timezone!\n\n` +
                                       `Current: ${manager.data.timezone}\n` +
-                                      `Examples: Africa/Lagos, America/New_York`
+                                      `Examples: Africa/Lagos, America/New_York, Asia/Tokyo`
                             }, { quoted: message });
                         }
                     } else {
@@ -306,7 +317,7 @@ module.exports = {
                     const lastUpdate = manager.data.lastUpdate ? 
                         new Date(manager.data.lastUpdate).toLocaleTimeString() : 'Never';
                     const nextUpdate = manager.data.lastUpdate ? 
-                        `Next update in ${Math.max(0, Math.floor((60000 - (Date.now() - manager.data.lastUpdate)) / 1000))}s` : 
+                        `Next update in ${Math.max(0, Math.floor((30000 - (Date.now() - manager.data.lastUpdate)) / 1000))}s` : 
                         'Next update: Soon';
                     
                     await sock.sendMessage(chatId, {
@@ -319,7 +330,7 @@ module.exports = {
                               `Last Update: ${lastUpdate}\n` +
                               `Total Updates: ${manager.data.updateCount}\n` +
                               `${nextUpdate}\n\n` +
-                              `📱 *Update Frequency:* Every minute`
+                              `📱 *Update Frequency:* Every 30 seconds`
                     }, { quoted: message });
                     break;
                     
@@ -327,37 +338,44 @@ module.exports = {
                     const samples = manager.getDemoSamples();
                     const currentBio = manager.generateBio();
                     
+                    // Format samples with numbers
+                    const sampleList = samples.map((sample, i) => `${i+1}. ${sample}`).join('\n');
+                    
                     await sock.sendMessage(chatId, {
-                        text: `🎯 *Sample Bio Formats:*\n\n${samples.join('\n')}\n\n` +
-                              `📱 *Current Bio Template:*\n\`${currentBio}\`\n\n` +
-                              `*Time:* ${manager.getCurrentTime()}\n` +
-                              `*Greeting:* ${manager.getGreeting()}\n` +
-                              `*Watermark:* ${manager.data.watermark}\n\n` +
-                              `📱 *How it works:*\n` +
-                              `• Updates every minute\n` +
-                              `• Shows live time with greeting\n` +
-                              `• Works on both iOS & Android\n` +
-                              `• Timezone: ${manager.data.timezone}`
+                        text: `🎯 *AutoBio Sample Formats*\n\n` +
+                              `${sampleList}\n\n` +
+                              `📱 *Current Active Template:*\n` +
+                              `\`${currentBio}\`\n\n` +
+                              `⏰ *Current Time:* ${manager.getCurrentTime()}\n` +
+                              `${manager.getGreeting()}\n` +
+                              `🏷️ *Watermark:* ${manager.data.watermark}\n` +
+                              `🌍 *Timezone:* ${manager.data.timezone}\n\n` +
+                              `⚡ *Updates every 30 seconds*\n` +
+                              `🔄 *Template rotates every 30 seconds*\n` +
+                              `📱 *Works on iOS & Android*\n\n` +
+                              `*Note:* First 5 samples show FULL greeting (GOOD MORNING/AFTERNOON/EVENING/NIGHT)\n` +
+                              `*Note:* Last 3 samples show SHORT greeting (MORNING/AFTERNOON/EVENING/NIGHT)`
                     }, { quoted: message });
                     break;
                     
                 default:
                     await sock.sendMessage(chatId, {
-                        text: `⏰ *Live Time Bio*\n\n` +
+                        text: `⏰ *AutoBio Commands*\n\n` +
+                              `*Current Status:* ${manager.data.enabled ? '🟢 ON' : '🔴 OFF'}\n` +
                               `*Current Time:* ${manager.getCurrentTime()}\n` +
                               `*${manager.getGreeting()}*\n` +
                               `*Timezone:* ${manager.data.timezone}\n` +
                               `*Watermark:* ${manager.data.watermark}\n` +
                               `*Total Updates:* ${manager.data.updateCount}\n\n` +
-                              `📱 *Platforms:* iOS & Android\n` +
-                              `🔄 *Updates:* Every minute\n\n` +
+                              `📱 *Updates every 30 seconds*\n\n` +
                               `*Commands:*\n` +
-                              `• on/off - Enable/disable\n` +
-                              `• update - Update now\n` +
-                              `• watermark <text> - Change watermark\n` +
-                              `• timezone <zone> - Change timezone\n` +
-                              `• status - Show status\n` +
-                              `• demo - Show sample formats`
+                              `• .autobio on - Enable auto bio\n` +
+                              `• .autobio off - Disable auto bio\n` +
+                              `• .autobio update - Update now\n` +
+                              `• .autobio watermark <text> - Change watermark\n` +
+                              `• .autobio timezone <zone> - Change timezone\n` +
+                              `• .autobio status - Show status\n` +
+                              `• .autobio demo - Show all formats`
                     }, { quoted: message });
                     break;
             }
@@ -370,7 +388,7 @@ module.exports = {
         }
     },
     
-    // Function to be called every minute from main.js
+    // Function to be called every 30 seconds from main.js
     async updateBioIfNeeded(sock) {
         await manager.updateBio(sock);
     }
