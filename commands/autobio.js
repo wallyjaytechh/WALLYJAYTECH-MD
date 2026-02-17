@@ -91,29 +91,22 @@ class AutoBioManager {
         }
     }
 
-    // Get short greeting (without "GOOD")
-    getShortGreeting() {
-        const full = this.getGreeting();
-        return full.replace('GOOD ', '');
-    }
-
-    // Generate bio text
+    // Generate bio text - ALL FULL GREETINGS only
     generateBio() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
-        const shortGreeting = this.getShortGreeting();
         const watermark = this.data.watermark;
         
-        // Templates array - 8 different formats alternating between full and short greeting
+        // Templates array - ALL with FULL greeting
         const templates = [
             `⏰ ${time} | ${greeting} | ${watermark}`,
             `🕒 ${time} | ${greeting} | ${watermark}`,
             `📱 ${time} | ${greeting} | ${watermark}`,
             `🤖 ${time} | ${greeting} | ${watermark}`,
             `🚀 ${time} | ${greeting} | ${watermark}`,
-            `💫 ${time} | ${shortGreeting} | ${watermark}`,
-            `⭐ ${time} | ${shortGreeting} | ${watermark}`,
-            `🎯 ${time} | ${shortGreeting} | ${watermark}`
+            `💫 ${time} | ${greeting} | ${watermark}`,
+            `⭐ ${time} | ${greeting} | ${watermark}`,
+            `🎯 ${time} | ${greeting} | ${watermark}`
         ];
         
         // Rotate template every 30 seconds
@@ -161,11 +154,10 @@ class AutoBioManager {
         }
     }
 
-    // Get demo samples with consistent format
+    // Get demo samples - ALL with FULL greeting
     getDemoSamples() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
-        const shortGreeting = this.getShortGreeting();
         const watermark = this.data.watermark;
         
         return [
@@ -222,7 +214,7 @@ module.exports = {
                         text: `✅ *Live Time Bio ENABLED*\n\n` +
                               `⏰ Timezone: ${manager.data.timezone}\n` +
                               `🕒 Current Time: ${currentTimeOn}\n` +
-                              `${currentGreetingOn}\n` +
+                              `👋 Greeting: ${currentGreetingOn}\n` +
                               `🏷️ Watermark: ${manager.data.watermark}\n\n` +
                               `📱 *Update Frequency:* Every 30 seconds\n` +
                               `🔄 *Total Updates:* ${manager.data.updateCount}`
@@ -255,7 +247,7 @@ module.exports = {
                     await sock.sendMessage(chatId, {
                         text: `✅ *Bio Updated!*\n\n` +
                               `Current time: ${currentTimeUpdate}\n` +
-                              `${currentGreetingUpdate}\n` +
+                              `Greeting: ${currentGreetingUpdate}\n` +
                               `Total updates: ${manager.data.updateCount}`
                     }, { quoted: message });
                     break;
@@ -293,7 +285,7 @@ module.exports = {
                                 text: `🌍 *Timezone Updated!*\n\n` +
                                       `New: ${newTimezone}\n` +
                                       `Current: ${manager.getCurrentTime()}\n` +
-                                      `${manager.getGreeting()}`
+                                      `Greeting: ${manager.getGreeting()}`
                             }, { quoted: message });
                         } catch (error) {
                             await sock.sendMessage(chatId, {
@@ -306,7 +298,7 @@ module.exports = {
                         await sock.sendMessage(chatId, {
                             text: `🌍 *Current Timezone:* ${manager.data.timezone}\n` +
                                   `⏰ Current Time: ${manager.getCurrentTime()}\n` +
-                                  `${manager.getGreeting()}`
+                                  `👋 Greeting: ${manager.getGreeting()}`
                         }, { quoted: message });
                     }
                     break;
@@ -325,7 +317,7 @@ module.exports = {
                               `Status: ${status}\n` +
                               `Timezone: ${manager.data.timezone}\n` +
                               `Current Time: ${manager.getCurrentTime()}\n` +
-                              `${manager.getGreeting()}\n` +
+                              `Greeting: ${manager.getGreeting()}\n` +
                               `Watermark: ${manager.data.watermark}\n` +
                               `Last Update: ${lastUpdate}\n` +
                               `Total Updates: ${manager.data.updateCount}\n` +
@@ -347,14 +339,13 @@ module.exports = {
                               `📱 *Current Active Template:*\n` +
                               `\`${currentBio}\`\n\n` +
                               `⏰ *Current Time:* ${manager.getCurrentTime()}\n` +
-                              `${manager.getGreeting()}\n` +
+                              `👋 *Greeting:* ${manager.getGreeting()}\n` +
                               `🏷️ *Watermark:* ${manager.data.watermark}\n` +
                               `🌍 *Timezone:* ${manager.data.timezone}\n\n` +
                               `⚡ *Updates every 30 seconds*\n` +
                               `🔄 *Template rotates every 30 seconds*\n` +
                               `📱 *Works on iOS & Android*\n\n` +
-                              `*Note:* First 5 samples show FULL greeting (GOOD MORNING/AFTERNOON/EVENING/NIGHT)\n` +
-                              `*Note:* Last 3 samples show SHORT greeting (MORNING/AFTERNOON/EVENING/NIGHT)`
+                              `*All formats show FULL greeting (GOOD MORNING/AFTERNOON/EVENING/NIGHT)*`
                     }, { quoted: message });
                     break;
                     
@@ -363,7 +354,7 @@ module.exports = {
                         text: `⏰ *AutoBio Commands*\n\n` +
                               `*Current Status:* ${manager.data.enabled ? '🟢 ON' : '🔴 OFF'}\n` +
                               `*Current Time:* ${manager.getCurrentTime()}\n` +
-                              `*${manager.getGreeting()}*\n` +
+                              `*Greeting:* ${manager.getGreeting()}\n` +
                               `*Timezone:* ${manager.data.timezone}\n` +
                               `*Watermark:* ${manager.data.watermark}\n` +
                               `*Total Updates:* ${manager.data.updateCount}\n\n` +
