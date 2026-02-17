@@ -287,54 +287,62 @@ await handleAutoreact(sock, message);
         }
 
         const rawMessageText = (
-            message.message?.conversation?.trim() ||
-            message.message?.extendedTextMessage?.text?.trim() ||
-            message.message?.imageMessage?.caption?.trim() ||
-            message.message?.videoMessage?.caption?.trim() ||
-            message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
-            ''
-        );
+    message.message?.conversation?.trim() ||
+    message.message?.extendedTextMessage?.text?.trim() ||
+    message.message?.imageMessage?.caption?.trim() ||
+    message.message?.videoMessage?.caption?.trim() ||
+    message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
+    ''
+);
 
-        // Get current prefix
-        delete require.cache[require.resolve('./settings')];
-        const settings = require('./settings');
-        const currentPrefix = settings.prefix || '.';
+// Get current prefix
+delete require.cache[require.resolve('./settings')];
+const settings = require('./settings');
+const currentPrefix = settings.prefix || '.';
+
+// Check if message is a command
+let isCommand = false;
+let commandWithoutPrefix = '';
+
+// Case 1: No prefix needed (empty string)
+if (currentPrefix === '' && rawMessageText.trim()) {
+    isCommand = true;
+    commandWithoutPrefix = rawMessageText.trim();
+}
+// Case 2: Has custom prefix
+else if (currentPrefix && rawMessageText.startsWith(currentPrefix)) {
+    isCommand = true;
+    commandWithoutPrefix = rawMessageText.slice(currentPrefix.length).trim();
+}
+// Case 3: Has dot prefix (backward compatibility)
+else if (rawMessageText.startsWith('.')) {
+    isCommand = true;
+    commandWithoutPrefix = rawMessageText.slice(1).trim();
+}
+
+// IMPORTANT: Handle non-command messages FIRST
+if (!isCommand) {
+    // Handle non-command messages - SHOW RECORDING INDICATOR HERE
+    if (rawMessageText.trim()) {
+        // Show recording indicator for non-command messages
+        await handleAutorecordForMessage(sock, chatId, rawMessageText);
         
-        // Check if message is a command
-        let isCommand = false;
-        let commandWithoutPrefix = '';
-        
-        // Case 1: No prefix needed (empty string)
-        if (currentPrefix === '' && rawMessageText.trim()) {
-            isCommand = true;
-            commandWithoutPrefix = rawMessageText.trim();
+        // Other non-command handlers
+        if (isGroup) {
+            await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
         }
-        // Case 2: Has custom prefix
-        else if (currentPrefix && rawMessageText.startsWith(currentPrefix)) {
-            isCommand = true;
-            commandWithoutPrefix = rawMessageText.slice(currentPrefix.length).trim();
-        }
-        // Case 3: Has dot prefix (backward compatibility)
-        else if (rawMessageText.startsWith('.')) {
-            isCommand = true;
-            commandWithoutPrefix = rawMessageText.slice(1).trim();
-        }
-        
-        if (!isCommand) {
-            // Handle non-command messages
-            if (isGroup && rawMessageText.trim()) {
-                await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
-            }
-            return;
-        }
-        
-        // Add dot back for your switch statement
-        const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
-        const rawText = commandWithoutPrefix;
-        
-        // Only log command usage
-        console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
-       
+    }
+    return;
+}
+
+// If we get here, it's a command
+// Add dot back for your switch statement
+const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
+const rawText = commandWithoutPrefix;
+
+// Only log command usage
+console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
+     
      // Handle antiforeign blocking (check before processing messages)
 if (!isGroup && !message.key.fromMe) {
     const wasBlocked = await handleAntiforeign(sock, chatId, message);
