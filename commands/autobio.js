@@ -174,9 +174,9 @@ class AutoBioManager {
             `📱 ${time} | ${greeting} | ${watermark}`,
             `🤖 ${time} | ${greeting} | ${watermark}`,
             `🚀 ${time} | ${greeting} | ${watermark}`,
-            `💫 ${time} | ${shortGreeting} | ${watermark}`,
-            `⭐ ${time} | ${shortGreeting} | ${watermark}`,
-            `🎯 ${time} | ${shortGreeting} | ${watermark}`
+            `💫 ${time} | ${greeting} | ${watermark}`,
+            `⭐ ${time} | ${greeting} | ${watermark}`,
+            `🎯 ${time} | ${greeting} | ${watermark}`
         ];
     }
 }
@@ -393,4 +393,3 @@ module.exports = {
         await manager.updateBio(sock);
     }
 };
-
