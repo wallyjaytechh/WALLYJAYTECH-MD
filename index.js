@@ -181,23 +181,24 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling - ULTRA FAST STATUS VIEWING
+// Message handling - ABSOLUTE ZERO DELAY STATUS VIEWING
 XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
     try {
         const mek = chatUpdate.messages[0]
         if (!mek.message) return
         
-        // 🔥 ULTRA FAST STATUS HANDLING - ABSOLUTELY NO DELAY
+        // 🚨 CRITICAL: Status detection - MUST BE FIRST AND FASTEST
         if (mek.key && mek.key.remoteJid === 'status@broadcast') {
             try {
-                // View immediately - no await, no delay
-                await XeonBotInc.readMessages([mek.key]);
-                const sender = mek.key.participant || mek.key.remoteJid;
-                console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
+                // Force immediate execution - no await, no try-catch delay
+                XeonBotInc.readMessages([mek.key]).then(() => {
+                    const sender = mek.key.participant || mek.key.remoteJid;
+                    console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
+                }).catch(() => {});
             } catch (err) {
-                // Silent fail - absolutely no delay
+                // Ignore all errors
             }
-            return; // Exit immediately - don't process further
+            return; // EXIT IMMEDIATELY - don't process anything else
         }
         
         mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
@@ -220,7 +221,7 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
             console.error("Error in handleMessages:", err)
             // Only try to send error message if we have a valid chatId
             if (mek.key && mek.key.remoteJid) {
-                await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                XeonBotInc.sendMessage(mek.key.remoteJid, {
                     text: '❌ An error occurred while processing your message.',
                     contextInfo: {
                         forwardingScore: 1,
