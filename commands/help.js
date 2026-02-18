@@ -403,7 +403,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                     }
                 }, { quoted: message });
                 console.log(`✅ Menu sent as image to @${userId.split('@')[0]}`);
-                return true;
+                return { success: true, type: 'IMAGE' };
             } else if (selectedMedia.type === 'video') {
                 await sock.sendMessage(chatId, {
                     video: mediaBuffer,
@@ -420,7 +420,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                     }
                 }, { quoted: message });
                 console.log(`✅ Menu sent as video to @${userId.split('@')[0]}`);
-                return true;
+                return { success: true, type: 'VIDEO' };
             }
         } else {
             console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
@@ -437,11 +437,11 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
                     } 
                 }
             });
-            return true;
+            return { success: true, type: 'TEXT' };
         }
     } catch (error) {
         console.error('Error sending menu:', error);
-        return false;
+        return { success: false, type: 'ERROR' };
     }
 }
 
@@ -479,6 +479,9 @@ async function helpCommand(sock, chatId, message) {
     const prefix = getPrefix();
     
     const userPlatform = getDeploymentPlatform();
+    
+    // Determine menu type (will be set in sendMenu function)
+    let selectedMediaType = 'TEXT'; // Default
     
     // Update user stats
     const userStats = updateUserStats(senderId, userPlatform);
@@ -537,6 +540,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
+║   *🎬 Menu Type: [ ${selectedMediaType} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -875,9 +879,10 @@ ${platformStatsText}
 
     try {
         // Try to send menu with random media (image or video)
-        const menuSent = await sendMenu(sock, chatId, message, helpMessage, senderId);
+        const menuResult = await sendMenu(sock, chatId, message, helpMessage, senderId);
+        selectedMediaType = menuResult.type || 'TEXT';
         
-        if (menuSent) {
+        if (menuResult.success) {
             // Wait a bit then send audio if available
             await new Promise(resolve => setTimeout(resolve, 1000));
             await sendMenuAudio(sock, chatId, message);
