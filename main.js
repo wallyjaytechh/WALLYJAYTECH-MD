@@ -419,46 +419,43 @@ setInterval(async () => {
 if (await handleAntibotDetection(sock, chatId, message)) {
     return; // Stop processing if bot detected
 }
-        // PM blocker: block non-owner DMs when enabled (do not ban)
-        if (!isGroup && !message.key.fromMe && !senderIsSudo) {
-            try {
-                const pmState = readPmBlockerState();
-                if (pmState.enabled) {
-                    // Inform user, delay, then block without banning globally
-                    await sock.sendMessage(chatId, { text: pmState.message || 'Private messages are blocked. Please contact the owner in groups only.' });
-                    await new Promise(r => setTimeout(r, 1500));
-                    try { await sock.updateBlockStatus(chatId, 'block'); } catch (e) { }
-                    return;
-                }
-            } catch (e) { }
-        }
 
-        // Then check for command prefix
-        if (!userMessage.startsWith('.')) {
-            // Show typing indicator if autotyping is enabled
-            await handleAutotypingForMessage(sock, chatId, userMessage);
-
-         // Replace any existing autorecord line with:
-await handleAutorecordForMessage(sock, chatId, userMessage);
-         
-         
-            if (isGroup) {
-                // Always run moderation features (antitag) regardless of mode
-                await handleTagDetection(sock, chatId, message, senderId);
-                await handleMentionDetection(sock, chatId, message);
-            
-                
-                // Only run chatbot in public mode or for owner/sudo
-                if (isPublic || isOwnerOrSudoCheck) {
-                    await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
-                }
-            }
+// PM blocker: block non-owner DMs when enabled (do not ban)
+if (!isGroup && !message.key.fromMe && !senderIsSudo) {
+    try {
+        const pmState = readPmBlockerState();
+        if (pmState.enabled) {
+            // Inform user, delay, then block without banning globally
+            await sock.sendMessage(chatId, { text: pmState.message || 'Private messages are blocked. Please contact the owner in groups only.' });
+            await new Promise(r => setTimeout(r, 1500));
+            try { await sock.updateBlockStatus(chatId, 'block'); } catch (e) { }
             return;
         }
-        // In private mode, only owner/sudo can run commands
-        if (!isPublic && !isOwnerOrSudoCheck) {
-            return;
+    } catch (e) { }
+}
+
+// Then check for command prefix
+if (!userMessage.startsWith('.')) {
+    // Show recording indicator if autorecord is enabled
+    await handleAutorecordForMessage(sock, chatId, userMessage);
+
+    if (isGroup) {
+        // Always run moderation features (antitag) regardless of mode
+        await handleTagDetection(sock, chatId, message, senderId);
+        await handleMentionDetection(sock, chatId, message);
+        
+        // Only run chatbot in public mode or for owner/sudo
+        if (isPublic || isOwnerOrSudoCheck) {
+            await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
         }
+    }
+    return;
+}
+
+// In private mode, only owner/sudo can run commands
+if (!isPublic && !isOwnerOrSudoCheck) {
+    return;
+}
 
         // List of admin commands
         const adminCommands = ['.mute', '.unmute', '.promote', '.demote', '.kick', '.tagall', '.tagnotadmin', '.hidetag', '.antilink', '.antitag', '.setgdesc', '.setgname', '.setgpp'];
