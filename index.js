@@ -107,7 +107,7 @@ const store = require('./lib/lightweight_store')
 
 // Initialize store
 store.readFromFile()
-const settings = require('./settings')
+
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
 // Memory optimization - Force garbage collection if available
