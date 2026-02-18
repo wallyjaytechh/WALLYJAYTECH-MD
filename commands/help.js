@@ -441,7 +441,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
         }
     } catch (error) {
         console.error('Error sending menu:', error);
-        return { success: false, type: 'ERROR' };
+        return { success: false, type: 'TEXT' };
     }
 }
 
@@ -480,8 +480,8 @@ async function helpCommand(sock, chatId, message) {
     
     const userPlatform = getDeploymentPlatform();
     
-    // Determine menu type (will be set in sendMenu function)
-    let selectedMediaType = 'TEXT'; // Default
+    // Determine menu type (will be updated after sending)
+    let menuType = 'TEXT';
     
     // Update user stats
     const userStats = updateUserStats(senderId, userPlatform);
@@ -526,7 +526,8 @@ async function helpCommand(sock, chatId, message) {
         `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
         '║     📈 Your Usage: First time user';
     
-    const helpMessage = `
+    // Build the help message without menu type first
+    const helpMessageBase = `
 👋 *Hello @${userName}! ${greeting.message}*
 
 *${greeting.greeting}! Here's your menu:*
@@ -540,7 +541,9 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
-║   *🎬 Menu Type: [ ${selectedMediaType} ]*
+║   *🎬 Menu Media: [ `;
+
+    const helpMessageMiddle = ` & AUDIO ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -879,17 +882,24 @@ ${platformStatsText}
 
     try {
         // Try to send menu with random media (image or video)
-        const menuResult = await sendMenu(sock, chatId, message, helpMessage, senderId);
-        selectedMediaType = menuResult.type || 'TEXT';
+        const menuResult = await sendMenu(sock, chatId, message, helpMessageBase, senderId);
         
+        // Set menu type based on what was actually sent
         if (menuResult.success) {
-            // Wait a bit then send audio if available
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await sendMenuAudio(sock, chatId, message);
-        } else {
-            // Fallback: send as text only
+            menuType = menuResult.type; // 'IMAGE' or 'VIDEO' or 'TEXT'
+        }
+        
+        // Now send the actual help message with the correct menu type
+        const finalHelpMessage = helpMessageBase.replace(
+            '║   *🎬 Menu Type: [  ]*',
+            `║   *🎬 Menu Type: [ ${menuType} ]*`
+        );
+        
+        // If menu was sent successfully with media, we don't need to send again
+        // But if it was TEXT fallback or failed, we need to send the message
+        if (!menuResult.success || menuResult.type === 'TEXT') {
             await sock.sendMessage(chatId, { 
-                text: helpMessage,
+                text: finalHelpMessage,
                 mentions: [senderId],
                 contextInfo: {
                     forwardingScore: 1,
@@ -902,13 +912,23 @@ ${platformStatsText}
                 }
             });
         }
+        
+        // Wait a bit then send audio if available
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await sendMenuAudio(sock, chatId, message);
 
         console.log(`📊 Local Stats: ${stats.activeUsers} active, ${stats.totalUsers} total users (Platform: ${userPlatform})`);
+        console.log(`🎬 Menu Type: ${menuType}`);
 
     } catch (error) {
         console.error('Error in help command:', error);
+        menuType = 'TEXT';
+        const finalHelpMessage = helpMessageBase.replace(
+            '║   *🎬 Menu Type: [  ]*',
+            `║   *🎬 Menu Type: [ ${menuType} ]*`
+        );
         await sock.sendMessage(chatId, { 
-            text: helpMessage,
+            text: finalHelpMessage,
             mentions: [senderId],
             contextInfo: {
                 forwardingScore: 1,
