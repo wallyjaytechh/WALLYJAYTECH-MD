@@ -55,12 +55,6 @@ const {
     coinleaderboardCommand,
     coinhelpCommand 
 } = require('./commands/coinflip');
-// Auto Status React imports
-const { 
-    autoStatusReactCommand, 
-    reactToStatus,
-    isAutoReactEnabled 
-} = require('./commands/autostatusreact');
 const { saveStatusCommand } = require('./commands/simplestatus');
 const { setBotNameCommand, setBotOwnerCommand, setOwnerNumberCommand,setYTChannelCommand,setPackNameCommand,setAuthorCommand, setTimezoneCommand,configHelpCommand } = require('./commands/wallyjaytech');
 const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
@@ -732,9 +726,147 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage.startsWith('.autobio'):
     await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
     break;
-          case userMessage.startsWith('.autostatusreact'):
-    const reactArgs = userMessage.split(' ').slice(1);
-    await autoStatusReactCommand(sock, chatId, message, reactArgs);
+         // Auto Status Command
+case userMessage.startsWith('.autostatus'):
+    const statusArgs = userMessage.split(' ').slice(1);
+    const fs = require('fs');
+    const path = require('path');
+    
+    try {
+        const senderId = message.key.participant || message.key.remoteJid;
+        const { isOwnerOrSudo } = require('./lib/isOwner');
+        const isOwner = message.key.fromMe || await isOwnerOrSudo(senderId, sock, chatId);
+        
+        if (!isOwner) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ Only owner can use this command!',
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            });
+            break;
+        }
+
+        const configPath = path.join(__dirname, 'data', 'autoStatus.json');
+        let config = { enabled: true, reactEnabled: true, replyEnabled: false, saveEnabled: false, reactEmojis: ["💚", "❤️", "🔥", "💯", "😍", "👏"], replyMsg: "✅ Status viewed by WALLYJAYTECH-MD" };
+        
+        if (fs.existsSync(configPath)) {
+            config = JSON.parse(fs.readFileSync(configPath));
+        }
+
+        const command = statusArgs[0]?.toLowerCase();
+
+        if (!command) {
+            const statusText = `
+┏━━━━━━━━━━━━━━━━━━━━┓
+┃  STATUS SETTINGS   ┃
+┗━━━━━━━━━━━━━━━━━━━━┛
+
+┏─『 CURRENT STATUS 』──⊷
+│ Auto View: ${config.enabled ? '✅ ON' : '❌ OFF'}
+│ Auto React: ${config.reactEnabled ? '✅ ON' : '❌ OFF'}
+│ Auto Reply: ${config.replyEnabled ? '✅ ON' : '❌ OFF'}
+│ Status Saver: ${config.saveEnabled ? '✅ ON' : '❌ OFF'}
+┗──────────────⊷
+
+┏─『 REPLY MESSAGE 』──⊷
+│ ${config.replyMsg}
+┗──────────────⊷
+
+┏─『 REACT EMOJIS 』──⊷
+│ ${config.reactEmojis.join(', ')}
+┗──────────────⊷
+
+*Commands:*
+• .autostatus on - Enable auto view
+• .autostatus off - Disable auto view
+• .autostatus react on - Enable reactions
+• .autostatus react off - Disable reactions
+• .autostatus reply on - Enable replies
+• .autostatus reply off - Disable replies
+• .autostatus save on - Enable status saver
+• .autostatus save off - Disable status saver
+• .autostatus setmsg <text> - Set reply message
+• .autostatus setemoji <emoji1,emoji2> - Set reaction emojis
+`;
+
+            await sock.sendMessage(chatId, { text: statusText });
+            break;
+        }
+
+        if (command === 'on') {
+            config.enabled = true;
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await sock.sendMessage(chatId, { text: '✅ Auto status view enabled' });
+        }
+        else if (command === 'off') {
+            config.enabled = false;
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await sock.sendMessage(chatId, { text: '❌ Auto status view disabled' });
+        }
+        else if (command === 'react') {
+            const subCmd = statusArgs[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.reactEnabled = true;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '✅ Auto reactions enabled' });
+            } else if (subCmd === 'off') {
+                config.reactEnabled = false;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '❌ Auto reactions disabled' });
+            }
+        }
+        else if (command === 'reply') {
+            const subCmd = statusArgs[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.replyEnabled = true;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '✅ Auto replies enabled' });
+            } else if (subCmd === 'off') {
+                config.replyEnabled = false;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '❌ Auto replies disabled' });
+            }
+        }
+        else if (command === 'save') {
+            const subCmd = statusArgs[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.saveEnabled = true;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '✅ Status saver enabled' });
+            } else if (subCmd === 'off') {
+                config.saveEnabled = false;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: '❌ Status saver disabled' });
+            }
+        }
+        else if (command === 'setmsg') {
+            const newMsg = statusArgs.slice(1).join(' ');
+            if (newMsg) {
+                config.replyMsg = newMsg;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: `✅ Reply message set to: ${newMsg}` });
+            }
+        }
+        else if (command === 'setemoji') {
+            const emojiStr = statusArgs.slice(1).join(' ');
+            const emojis = emojiStr.split(',').map(e => e.trim());
+            if (emojis.length > 0) {
+                config.reactEmojis = emojis;
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await sock.sendMessage(chatId, { text: `✅ Reaction emojis set to: ${emojis.join(', ')}` });
+            }
+        }
+    } catch (error) {
+        console.error('AutoStatus error:', error);
+        await sock.sendMessage(chatId, { text: '❌ Error processing command' });
+    }
     break;
             case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
