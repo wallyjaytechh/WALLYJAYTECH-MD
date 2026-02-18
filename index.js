@@ -107,7 +107,7 @@ const store = require('./lib/lightweight_store')
 
 // Initialize store
 store.readFromFile()
-
+const settings = require('./settings')
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
 // Memory optimization - Force garbage collection if available
@@ -181,149 +181,58 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling - WITH FIXED STATUS FEATURES
-XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
-    try {
-        const mek = chatUpdate.messages[0]
-        if (!mek.message) return
-        
-        // 🚀 STATUS DETECTION - HANDLE ALL STATUS FEATURES HERE
-        if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-            try {
-                const sender = mek.key.participant || mek.key.remoteJid
-                const senderNumber = sender.split('@')[0]
-                
-                // Load status config - FIXED: no .catch() with readFileSync
-                let statusConfig = { 
-                    enabled: false, 
-                    reactEnabled: false, 
-                    replyEnabled: false, 
-                    saveEnabled: false,
-                    reactEmojis: ["💚", "❤️", "🔥", "💯", "😍", "👏"],
-                    replyMsg: "✅ Status viewed by WALLYJAYTECH-MD"
-                };
-                
-                try {
-                    const configPath = './data/autoStatus.json';
-                    if (fs.existsSync(configPath)) {
-                        statusConfig = JSON.parse(fs.readFileSync(configPath));
-                    }
-                } catch (e) {
-                    console.log('Using default status config');
-                }
-                
-                // Ensure reactEmojis exists
-                if (!statusConfig.reactEmojis || !Array.isArray(statusConfig.reactEmojis)) {
-                    statusConfig.reactEmojis = ["💚", "❤️", "🔥", "💯", "😍", "👏"];
-                }
-                
-                // 1. AUTO VIEW STATUS
-                if (statusConfig.enabled) {
-                    await XeonBotInc.readMessages([mek.key])
-                    console.log(`✅ Auto-viewed status from: ${senderNumber}`)
-                }
-
-                // 2. AUTO REACT TO STATUS
-                if (statusConfig.reactEnabled) {
-                    const emojis = statusConfig.reactEmojis || ['💚', '❤️', '🔥', '💯', '😍', '👏']
-                    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
-                    
-                    await XeonBotInc.sendMessage('status@broadcast', {
-                        react: {
-                            text: randomEmoji,
-                            key: mek.key
-                        }
-                    })
-                    console.log(`${randomEmoji} Reacted to status from: ${senderNumber}`)
-                }
-
-                // 3. AUTO REPLY TO STATUS (with delay)
-                if (statusConfig.replyEnabled) {
-                    const replyMsg = statusConfig.replyMsg || '✅ Status viewed by WALLYJAYTECH-MD'
-                    
-                    setTimeout(async () => {
-                        await XeonBotInc.sendMessage('status@broadcast', {
-                            text: replyMsg
-                        }, { quoted: mek }).catch(() => {})
-                        console.log(`💬 Replied to status from: ${senderNumber}`)
-                    }, 2000)
-                }
-
-                // 4. SAVE STATUS MEDIA
-                if (statusConfig.saveEnabled) {
-                    if (mek.message?.imageMessage || mek.message?.videoMessage) {
-                        try {
-                            const statusType = mek.message?.imageMessage ? 'image' : 'video'
-                            const buffer = await XeonBotInc.downloadMediaMessage(mek)
-                            const fileName = `status_${Date.now()}.${statusType === 'image' ? 'jpg' : 'mp4'}`
-                            
-                            // Create status folder if it doesn't exist
-                            const statusDir = './status'
-                            if (!fs.existsSync(statusDir)) fs.mkdirSync(statusDir)
-                            
-                            fs.writeFileSync(`${statusDir}/${fileName}`, buffer)
-                            console.log(`💾 Saved status: ${fileName}`)
-
-                            // Forward to owner - USING SETTINGS INSTEAD OF HARDCODED NUMBER
-                            const settings = require('./settings');
-                            if (settings.ownerNumber) {
-                                await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
-                                    [statusType]: buffer,
-                                    caption: `📥 Status from: ${senderNumber}`
-                                }).catch(() => {})
-                            }
-                        } catch (err) {
-                            console.error('Error saving status:', err.message)
-                        }
-                    }
-                }
-
-            } catch (err) {
-                console.error('Status handler error:', err.message)
+// Message handling
+    XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
+        try {
+            const mek = chatUpdate.messages[0]
+            if (!mek.message) return
+            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+            
+            // OPTIMIZED: Handle status updates FIRST and immediately
+            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+                // Process status instantly without waiting
+                handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
+                    console.error("Status view error:", err.message);
+                });
+                return;
             }
             
-            return // EXIT - don't process status as normal message
-        }
-        
-        // For non-status messages, continue normal processing
-        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-        
-        // In private mode, only block non-group messages
-        if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
-            const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-            if (!isGroup) return
-        }
-        
-        if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
-
-        // Clear message retry cache
-        if (XeonBotInc?.msgRetryCounterCache) {
-            XeonBotInc.msgRetryCounterCache.clear()
-        }
-
-        try {
-            await handleMessages(XeonBotInc, chatUpdate, true)
-        } catch (err) {
-            console.error("Error in handleMessages:", err)
-            if (mek.key && mek.key.remoteJid) {
-                await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                    text: '❌ An error occurred while processing your message.',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }).catch(console.error)
+            // In private mode, only block non-group messages (allow groups for moderation)
+            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
+                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
+                if (!isGroup) return // Block DMs in private mode, but allow group messages
             }
+            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
+
+            // Clear message retry cache to prevent memory bloat
+            if (XeonBotInc?.msgRetryCounterCache) {
+                XeonBotInc.msgRetryCounterCache.clear()
+            }
+
+            try {
+                await handleMessages(XeonBotInc, chatUpdate, true)
+            } catch (err) {
+                console.error("Error in handleMessages:", err)
+                // Only try to send error message if we have a valid chatId
+                if (mek.key && mek.key.remoteJid) {
+                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                        text: '❌ An error occurred while processing your message.',
+                        contextInfo: {
+                            forwardingScore: 1,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363420618370733@newsletter',
+                                newsletterName: 'WALLYJAYTECH-MD BOTS',
+                                serverMessageId: -1
+                            }
+                        }
+                    }).catch(console.error);
+                }
+            }
+        } catch (err) {
+            console.error("Error in messages.upsert:", err)
         }
-    } catch (err) {
-        console.error("Error in messages.upsert:", err)
-    }
-})
+    })
 
     // Add these event handlers for better functionality
     XeonBotInc.decodeJid = (jid) => {
