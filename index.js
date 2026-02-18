@@ -181,24 +181,17 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling - ABSOLUTE ZERO DELAY STATUS VIEWING
+// Message handling - ULTRA FAST STATUS VIEWING
 XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
     try {
         const mek = chatUpdate.messages[0]
         if (!mek.message) return
         
-        // 🚨 CRITICAL: Status detection - MUST BE FIRST AND FASTEST
+        // 🚀 STATUS DETECTION - MUST BE FIRST
         if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-            try {
-                // Force immediate execution - no await, no try-catch delay
-                XeonBotInc.readMessages([mek.key]).then(() => {
-                    const sender = mek.key.participant || mek.key.remoteJid;
-                    console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
-                }).catch(() => {});
-            } catch (err) {
-                // Ignore all errors
-            }
-            return; // EXIT IMMEDIATELY - don't process anything else
+            // Process status instantly - FIRE AND FORGET
+            handleStatusUpdate(XeonBotInc, chatUpdate).catch(() => {});
+            return; // EXIT IMMEDIATELY
         }
         
         mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
@@ -206,11 +199,10 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         // In private mode, only block non-group messages (allow groups for moderation)
         if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
             const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-            if (!isGroup) return // Block DMs in private mode, but allow group messages
+            if (!isGroup) return
         }
         if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
 
-        // Clear message retry cache to prevent memory bloat
         if (XeonBotInc?.msgRetryCounterCache) {
             XeonBotInc.msgRetryCounterCache.clear()
         }
@@ -219,9 +211,8 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
             await handleMessages(XeonBotInc, chatUpdate, true)
         } catch (err) {
             console.error("Error in handleMessages:", err)
-            // Only try to send error message if we have a valid chatId
             if (mek.key && mek.key.remoteJid) {
-                XeonBotInc.sendMessage(mek.key.remoteJid, {
+                await XeonBotInc.sendMessage(mek.key.remoteJid, {
                     text: '❌ An error occurred while processing your message.',
                     contextInfo: {
                         forwardingScore: 1,
