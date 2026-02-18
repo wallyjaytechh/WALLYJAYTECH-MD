@@ -14,22 +14,17 @@ const channelInfo = {
     }
 };
 
-// Path to store auto status reaction configuration
+// Path to store config
 const configPath = path.join(__dirname, '../data/autoStatusReact.json');
 
-// WhatsApp default status reaction emoji (the green love that appears automatically)
-const DEFAULT_WHATSAPP_REACTION = '💚';
+// WhatsApp default reaction
+const DEFAULT_REACTION = '💚';
 
-// Initialize config file if it doesn't exist
+// Initialize config
 if (!fs.existsSync(configPath)) {
     const dataDir = path.dirname(configPath);
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify({ 
-        enabled: false,
-        mode: 'default' // default, random, specific
-    }, null, 2));
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(configPath, JSON.stringify({ enabled: false }));
 }
 
 async function autoStatusReactCommand(sock, chatId, msg, args) {
@@ -39,134 +34,51 @@ async function autoStatusReactCommand(sock, chatId, msg, args) {
         
         if (!msg.key.fromMe && !isOwner) {
             await sock.sendMessage(chatId, { 
-                text: '❌ This command can only be used by the owner!',
+                text: '❌ Owner only!',
                 ...channelInfo
             });
             return;
         }
 
-        // Read current config
         let config = JSON.parse(fs.readFileSync(configPath));
+        const command = args[0]?.toLowerCase();
 
-        // If no arguments, show current status
-        if (!args || args.length === 0) {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
-            let modeText = '';
-            
-            switch(config.mode) {
-                case 'default':
-                    modeText = `💚 Default (${DEFAULT_WHATSAPP_REACTION})`;
-                    break;
-                case 'random':
-                    modeText = '🎲 Random';
-                    break;
-                case 'specific':
-                    modeText = `🎯 Specific (${config.specificEmoji || '❤️'})`;
-                    break;
-                default:
-                    modeText = `💚 Default (${DEFAULT_WHATSAPP_REACTION})`;
-            }
-            
+        if (!command) {
+            const status = config.enabled ? '✅ ON' : '❌ OFF';
             await sock.sendMessage(chatId, { 
-                text: `💚 *WALLYJAYTECH-MD Auto Status Reactions*\n\n📱 *Status Reactions:* ${status}\n🎭 *Mode:* ${modeText}\n\n*Commands:*\n• .autoreact on - Enable reactions\n• .autoreact off - Disable reactions\n• .autoreact default - Use WhatsApp default (💚)\n• .autoreact random - Use random emoji\n• .autoreact specific <emoji> - Use your emoji\n• .autoreact status - Show current settings`,
+                text: `💚 *Auto Status React*\n\nStatus: ${status}\n\nCommands:\n.autostatusreact on\n.autostatusreact off`,
                 ...channelInfo
             });
             return;
         }
 
-        // Handle commands
-        const command = args[0].toLowerCase();
-        
         if (command === 'on') {
             config.enabled = true;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            fs.writeFileSync(configPath, JSON.stringify(config));
             await sock.sendMessage(chatId, { 
-                text: '✅ *Auto status reactions enabled!*\n\nBot will now react to status updates.',
+                text: '✅ Auto status reactions ON - will react with 💚',
                 ...channelInfo
             });
         } 
         else if (command === 'off') {
             config.enabled = false;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            fs.writeFileSync(configPath, JSON.stringify(config));
             await sock.sendMessage(chatId, { 
-                text: '❌ *Auto status reactions disabled!*\n\nBot will no longer react to status updates.',
+                text: '❌ Auto status reactions OFF',
                 ...channelInfo
             });
-        }
-        else if (command === 'default') {
-            config.mode = 'default';
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        } else {
             await sock.sendMessage(chatId, { 
-                text: `💚 *Default reaction mode enabled!*\n\nBot will react with WhatsApp default: ${DEFAULT_WHATSAPP_REACTION}`,
-                ...channelInfo
-            });
-        }
-        else if (command === 'random') {
-            config.mode = 'random';
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { 
-                text: '🎲 *Random reaction mode enabled!*\n\nBot will react with random emojis.',
-                ...channelInfo
-            });
-        }
-        else if (command === 'specific') {
-            if (!args[1]) {
-                await sock.sendMessage(chatId, { 
-                    text: '❌ Please provide an emoji!\n\nExample: .autoreact specific ❤️',
-                    ...channelInfo
-                });
-                return;
-            }
-            
-            const emoji = args[1];
-            config.mode = 'specific';
-            config.specificEmoji = emoji;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { 
-                text: `🎯 *Specific reaction set to:* ${emoji}`,
-                ...channelInfo
-            });
-        }
-        else if (command === 'status') {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
-            let modeText = '';
-            
-            switch(config.mode) {
-                case 'default':
-                    modeText = `💚 Default (${DEFAULT_WHATSAPP_REACTION})`;
-                    break;
-                case 'random':
-                    modeText = '🎲 Random';
-                    break;
-                case 'specific':
-                    modeText = `🎯 Specific (${config.specificEmoji || '❤️'})`;
-                    break;
-                default:
-                    modeText = `💚 Default (${DEFAULT_WHATSAPP_REACTION})`;
-            }
-            
-            await sock.sendMessage(chatId, { 
-                text: `💚 *Auto Status Reactions Status*\n\n📱 *Status:* ${status}\n🎭 *Mode:* ${modeText}`,
-                ...channelInfo
-            });
-        }
-        else {
-            await sock.sendMessage(chatId, { 
-                text: `❌ *Invalid command!*\n\n*Available Commands:*\n• .autoreact on/off\n• .autoreact default - WhatsApp default (💚)\n• .autoreact random\n• .autoreact specific <emoji>\n• .autoreact status`,
+                text: 'Use: .autostatusreact on or .autostatusreact off',
                 ...channelInfo
             });
         }
 
     } catch (error) {
-        console.error('Error in autoreact command:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Error occurred!\n' + error.message,
-            ...channelInfo
-        });
+        console.error('Error:', error);
     }
 }
 
-// Function to check if auto reactions are enabled
 function isAutoReactEnabled() {
     try {
         if (!fs.existsSync(configPath)) return false;
@@ -177,55 +89,24 @@ function isAutoReactEnabled() {
     }
 }
 
-// Get reaction emoji based on settings
-function getReactionEmoji() {
-    try {
-        if (!fs.existsSync(configPath)) return DEFAULT_WHATSAPP_REACTION;
-        const config = JSON.parse(fs.readFileSync(configPath));
-        
-        switch(config.mode) {
-            case 'default':
-                return DEFAULT_WHATSAPP_REACTION;
-            case 'random':
-                // Simple random emojis (just a few common ones)
-                const simpleEmojis = ['❤️', '🔥', '😍', '🎉', '👍', '✨', '💯', '🙌'];
-                return simpleEmojis[Math.floor(Math.random() * simpleEmojis.length)];
-            case 'specific':
-                return config.specificEmoji || '❤️';
-            default:
-                return DEFAULT_WHATSAPP_REACTION;
-        }
-    } catch {
-        return DEFAULT_WHATSAPP_REACTION;
-    }
-}
-
-// Function to react to status
 async function reactToStatus(sock, statusKey) {
     try {
         if (!isAutoReactEnabled()) return;
-
-        const reactionEmoji = getReactionEmoji();
-
-        // Send the reaction
+        
         await sock.sendMessage('status@broadcast', {
             react: {
                 key: statusKey,
-                text: reactionEmoji
+                text: DEFAULT_REACTION
             }
         });
-        
-        console.log(`💬 Reacted to status with ${reactionEmoji}`);
-        return true;
+        console.log(`💚 Reacted to status`);
     } catch (error) {
-        console.error('❌ Error reacting to status:', error.message);
-        return false;
+        console.error('React error:', error.message);
     }
 }
 
 module.exports = {
     autoStatusReactCommand,
     reactToStatus,
-    isAutoReactEnabled,
-    getReactionEmoji
+    isAutoReactEnabled
 };
