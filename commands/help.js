@@ -467,8 +467,27 @@ async function helpCommand(sock, chatId, message) {
     
     const userPlatform = getDeploymentPlatform();
     
-    // Determine menu type (will be updated after sending)
-    let menuType = 'TEXT';
+    // DETERMINE MENU TYPE FIRST - before building message
+    let menuType = 'TEXT'; // Default
+    
+    // Check if media files exist
+    const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
+    const videoPath = path.join(__dirname, '../assets/menu_video.mp4');
+    
+    // Randomly choose between image and video if both exist
+    if (fs.existsSync(imagePath) && fs.existsSync(videoPath)) {
+        const random = Math.random();
+        menuType = random < 0.5 ? 'IMAGE' : 'VIDEO';
+    } 
+    // If only one exists, use that
+    else if (fs.existsSync(imagePath)) {
+        menuType = 'IMAGE';
+    }
+    else if (fs.existsSync(videoPath)) {
+        menuType = 'VIDEO';
+    }
+    
+    console.log(`🎬 Selected menu type: ${menuType}`);
     
     // Update user stats
     const userStats = updateUserStats(senderId, userPlatform);
@@ -513,7 +532,7 @@ async function helpCommand(sock, chatId, message) {
         `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
         '║     📈 Your Usage: First time user';
     
-    // Build the help message with a placeholder for menu type
+    // Build the help message with the CORRECT menu type from the start
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
 
@@ -528,7 +547,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
-║   *🎬 Menu Media: [ ${menuType} ]*
+║   *🎬 Menu Type: [ ${menuType} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -866,24 +885,45 @@ ${platformStatsText}
 *⬇️Join our channel below for updates⬇️*`;
 
     try {
-        // Try to send menu with random media (image or video)
-        const menuResult = await sendMenu(sock, chatId, message, helpMessage, senderId);
-        
-        // Set menu type based on what was actually sent
-        if (menuResult.success) {
-            menuType = menuResult.type; // 'IMAGE' or 'VIDEO'
-            
-            // Update the help message with the correct menu type
-            const updatedHelpMessage = helpMessage.replace(
-                '*🎬 Menu Type: [ TEXT ]*',
-                `*🎬 Menu Type: [ ${menuType} ]*`
-            );
-            
-            // Send the updated help message with the media
-            // Note: The media already has the caption with the updated message
-            console.log(`🎬 Menu Type shown: ${menuType}`);
-        } else {
-            // Send only the text message if media failed
+        // Send the appropriate media based on menuType
+        if (menuType === 'IMAGE') {
+            const imageBuffer = fs.readFileSync(imagePath);
+            await sock.sendMessage(chatId, {
+                image: imageBuffer,
+                caption: helpMessage,
+                mentions: [senderId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            }, { quoted: message });
+            console.log(`✅ Menu sent as IMAGE to @${senderId.split('@')[0]}`);
+        }
+        else if (menuType === 'VIDEO') {
+            const videoBuffer = fs.readFileSync(videoPath);
+            await sock.sendMessage(chatId, {
+                video: videoBuffer,
+                caption: helpMessage,
+                mentions: [senderId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            }, { quoted: message });
+            console.log(`✅ Menu sent as VIDEO to @${senderId.split('@')[0]}`);
+        }
+        else {
+            // TEXT fallback
             await sock.sendMessage(chatId, { 
                 text: helpMessage,
                 mentions: [senderId],
@@ -904,7 +944,7 @@ ${platformStatsText}
         await sendMenuAudio(sock, chatId, message);
 
         console.log(`📊 Local Stats: ${stats.activeUsers} active, ${stats.totalUsers} total users (Platform: ${userPlatform})`);
-        console.log(`🎬 Menu Type: ${menuType}`);
+        console.log(`🎬 Menu Type shown: ${menuType}`);
 
     } catch (error) {
         console.error('Error in help command:', error);
