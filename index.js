@@ -181,6 +181,8 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
+// In index.js - Find this section and REPLACE it:
+
 // Message handling
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         try {
@@ -188,13 +190,13 @@ async function startXeonBotInc() {
             if (!mek.message) return
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
             
-            // OPTIMIZED: Handle status updates FIRST and immediately
+            // OPTIMIZED: Handle status updates FIRST and immediately - NO DELAYS
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                // Process status instantly without waiting
+                // Process status instantly without waiting - FIRE AND FORGET
                 handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
                     console.error("Status view error:", err.message);
                 });
-                return;
+                // DON'T RETURN - let other processing continue if needed, but status is already being viewed
             }
             
             // In private mode, only block non-group messages (allow groups for moderation)
@@ -431,6 +433,8 @@ if (connection == "open") {
     XeonBotInc.ev.on('group-participants.update', async (update) => {
         await handleGroupParticipantUpdate(XeonBotInc, update);
     });
+
+   // In index.js - Find and REPLACE these sections:
 
     // Additional status event handlers for immediate response
     XeonBotInc.ev.on('status.update', async (status) => {
