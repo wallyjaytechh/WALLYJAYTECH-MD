@@ -36,7 +36,7 @@
 // */ 
 
 global.File = class File {};
-require('./settings');
+require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
