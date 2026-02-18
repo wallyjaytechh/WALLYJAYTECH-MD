@@ -541,9 +541,9 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
-║   *🎬 Menu Media: [ `;
+║   *🎬 Menu Type: [ `;
 
-    const helpMessageMiddle = ` & AUDIO ]*
+    const helpMessageMiddle = ` ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
