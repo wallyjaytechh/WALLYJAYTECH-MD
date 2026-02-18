@@ -424,20 +424,7 @@ async function sendMenu(sock, chatId, message, helpMessage, userId) {
             }
         } else {
             console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
-            await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                mentions: [userId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    } 
-                }
-            });
-            return { success: true, type: 'TEXT' };
+            return { success: false, type: 'TEXT' };
         }
     } catch (error) {
         console.error('Error sending menu:', error);
@@ -526,8 +513,8 @@ async function helpCommand(sock, chatId, message) {
         `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
         '║     📈 Your Usage: First time user';
     
-    // Build the help message without menu type first
-    const helpMessageBase = `
+    // Build the complete help message
+    const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
 
 *${greeting.greeting}! Here's your menu:*
@@ -541,9 +528,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
-║   *🎬 Menu Type: [ `;
-
-    const helpMessageMiddle = ` ]*
+║   *🎬 Menu Type: [ ${menuType} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -882,24 +867,36 @@ ${platformStatsText}
 
     try {
         // Try to send menu with random media (image or video)
-        const menuResult = await sendMenu(sock, chatId, message, helpMessageBase, senderId);
+        const menuResult = await sendMenu(sock, chatId, message, helpMessage, senderId);
         
         // Set menu type based on what was actually sent
         if (menuResult.success) {
-            menuType = menuResult.type; // 'IMAGE' or 'VIDEO' or 'TEXT'
-        }
-        
-        // Now send the actual help message with the correct menu type
-        const finalHelpMessage = helpMessageBase.replace(
-            '║   *🎬 Menu Type: [  ]*',
-            `║   *🎬 Menu Type: [ ${menuType} ]*`
-        );
-        
-        // If menu was sent successfully with media, we don't need to send again
-        // But if it was TEXT fallback or failed, we need to send the message
-        if (!menuResult.success || menuResult.type === 'TEXT') {
+            menuType = menuResult.type; // 'IMAGE' or 'VIDEO'
+            
+            // Update the help message with the correct menu type and send it
+            const updatedHelpMessage = helpMessage.replace(
+                '*🎬 Menu Type: [ TEXT ]*',
+                `*🎬 Menu Type: [ ${menuType} ]*`
+            );
+            
+            // Send the updated help message
             await sock.sendMessage(chatId, { 
-                text: finalHelpMessage,
+                text: updatedHelpMessage,
+                mentions: [senderId],
+                contextInfo: {
+                    forwardingScore: 1,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363420618370733@newsletter',
+                        newsletterName: 'WALLYJAYTECH-MD BOTS',
+                        serverMessageId: -1
+                    }
+                }
+            });
+        } else {
+            // Send the help message with TEXT menu type
+            await sock.sendMessage(chatId, { 
+                text: helpMessage,
                 mentions: [senderId],
                 contextInfo: {
                     forwardingScore: 1,
@@ -922,13 +919,8 @@ ${platformStatsText}
 
     } catch (error) {
         console.error('Error in help command:', error);
-        menuType = 'TEXT';
-        const finalHelpMessage = helpMessageBase.replace(
-            '║   *🎬 Menu Type: [  ]*',
-            `║   *🎬 Menu Type: [ ${menuType} ]*`
-        );
         await sock.sendMessage(chatId, { 
-            text: finalHelpMessage,
+            text: helpMessage,
             mentions: [senderId],
             contextInfo: {
                 forwardingScore: 1,
