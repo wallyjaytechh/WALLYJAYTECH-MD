@@ -181,7 +181,7 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling - WITH FULL STATUS FEATURES
+// Message handling - WITH FIXED STATUS FEATURES
 XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
     try {
         const mek = chatUpdate.messages[0]
@@ -193,8 +193,29 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
                 const sender = mek.key.participant || mek.key.remoteJid
                 const senderNumber = sender.split('@')[0]
                 
-                // Load status config
-                const statusConfig = JSON.parse(fs.readFileSync('./data/autoStatus.json').catch(() => '{"enabled":false,"reactEnabled":false,"replyEnabled":false,"saveEnabled":false}'))
+                // Load status config - FIXED: no .catch() with readFileSync
+                let statusConfig = { 
+                    enabled: false, 
+                    reactEnabled: false, 
+                    replyEnabled: false, 
+                    saveEnabled: false,
+                    reactEmojis: ["💚", "❤️", "🔥", "💯", "😍", "👏"],
+                    replyMsg: "✅ Status viewed by WALLYJAYTECH-MD"
+                };
+                
+                try {
+                    const configPath = './data/autoStatus.json';
+                    if (fs.existsSync(configPath)) {
+                        statusConfig = JSON.parse(fs.readFileSync(configPath));
+                    }
+                } catch (e) {
+                    console.log('Using default status config');
+                }
+                
+                // Ensure reactEmojis exists
+                if (!statusConfig.reactEmojis || !Array.isArray(statusConfig.reactEmojis)) {
+                    statusConfig.reactEmojis = ["💚", "❤️", "🔥", "💯", "😍", "👏"];
+                }
                 
                 // 1. AUTO VIEW STATUS
                 if (statusConfig.enabled) {
@@ -243,12 +264,14 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
                             fs.writeFileSync(`${statusDir}/${fileName}`, buffer)
                             console.log(`💾 Saved status: ${fileName}`)
 
-                            // Forward to owner
-                            const ownerNumber = '2348144317152' // Your number
-                            await XeonBotInc.sendMessage(ownerNumber + '@s.whatsapp.net', {
-                                [statusType]: buffer,
-                                caption: `📥 Status from: ${senderNumber}`
-                            }).catch(() => {})
+                            // Forward to owner - USING SETTINGS INSTEAD OF HARDCODED NUMBER
+                            const settings = require('./settings');
+                            if (settings.ownerNumber) {
+                                await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
+                                    [statusType]: buffer,
+                                    caption: `📥 Status from: ${senderNumber}`
+                                }).catch(() => {})
+                            }
                         } catch (err) {
                             console.error('Error saving status:', err.message)
                         }
