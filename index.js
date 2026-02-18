@@ -36,7 +36,7 @@
 // */ 
 
 global.File = class File {};
-require('./settings')
+const settings = require('./settings');
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
@@ -264,14 +264,13 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
                             fs.writeFileSync(`${statusDir}/${fileName}`, buffer)
                             console.log(`💾 Saved status: ${fileName}`)
 
-                            // Forward to owner - USING SETTINGS INSTEAD OF HARDCODED NUMBER
-                            const settings = require('./settings');
-                            if (settings.ownerNumber) {
-                                await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
-                                    [statusType]: buffer,
-                                    caption: `📥 Status from: ${senderNumber}`
-                                }).catch(() => {})
-                            }
+                            // Forward to owner - USING SETTINGS
+if (settings.ownerNumber) {
+    await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
+        [statusType]: buffer,
+        caption: `📥 Status from: ${senderNumber}`
+    }).catch(() => {})
+}
                         } catch (err) {
                             console.error('Error saving status:', err.message)
                         }
