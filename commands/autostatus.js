@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
+const settings = require('../settings');
 
 const channelInfo = {
     contextInfo: {
@@ -17,17 +18,38 @@ const channelInfo = {
 // Path to store auto status configuration
 const configPath = path.join(__dirname, '../data/autoStatus.json');
 
-// Initialize config file if it doesn't exist
+// Default settings from settings.js
+const DEFAULT_CONFIG = {
+    enabled: settings.AUTO_STATUS_SEEN || false,
+    reactEnabled: settings.AUTO_STATUS_REACT || false,
+    replyEnabled: settings.AUTO_STATUS_REPLY || false,
+    saveEnabled: settings.Status_Saver || false,
+    reactEmojis: settings.CUSTOM_REACT_EMOJIS || ['💚', '❤️', '🔥', '💯', '😍', '👏'],
+    replyMsg: settings.AUTO_STATUS_MSG || '✅ Status viewed by WALLYJAYTECH-MD'
+};
+
+// Initialize config file
 if (!fs.existsSync(configPath)) {
     const dataDir = path.dirname(configPath);
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify({ 
-        enabled: false
-    }, null, 2));
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
 }
 
+// Load config
+function loadConfig() {
+    try {
+        return JSON.parse(fs.readFileSync(configPath));
+    } catch {
+        return DEFAULT_CONFIG;
+    }
+}
+
+// Save config
+function saveConfig(config) {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+}
+
+// Main command handler
 async function autoStatusCommand(sock, chatId, msg, args) {
     try {
         const senderId = msg.key.participant || msg.key.remoteJid;
@@ -35,106 +57,197 @@ async function autoStatusCommand(sock, chatId, msg, args) {
         
         if (!msg.key.fromMe && !isOwner) {
             await sock.sendMessage(chatId, { 
-                text: '❌ This command can only be used by the owner!',
+                text: '❌ Only owner can use this!',
                 ...channelInfo
             });
             return;
         }
 
-        // Read current config
-        let config = JSON.parse(fs.readFileSync(configPath));
+        const config = loadConfig();
+        const command = args[0]?.toLowerCase();
 
-        // If no arguments, show current status
-        if (!args || args.length === 0) {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
-            
-            await sock.sendMessage(chatId, { 
-                text: `🔄 *WALLYJAYTECH-MD Auto Status*\n\n📱 *Auto Status View:* ${status}\n\n*Commands:*\n• .autostatus on - Enable auto status view\n• .autostatus off - Disable auto status view`,
-                ...channelInfo
-            });
+        // Show status if no command
+        if (!command) {
+            const statusText = `
+┏━━━━━━━━━━━━━━━━━━━━┓
+┃  STATUS SETTINGS   ┃
+┗━━━━━━━━━━━━━━━━━━━━┛
+
+┏─『 CURRENT STATUS 』──⊷
+│ Auto View: ${config.enabled ? '✅ ON' : '❌ OFF'}
+│ Auto React: ${config.reactEnabled ? '✅ ON' : '❌ OFF'}
+│ Auto Reply: ${config.replyEnabled ? '✅ ON' : '❌ OFF'}
+│ Status Saver: ${config.saveEnabled ? '✅ ON' : '❌ OFF'}
+┗──────────────⊷
+
+┏─『 REPLY MESSAGE 』──⊷
+│ ${config.replyMsg}
+┗──────────────⊷
+
+┏─『 REACT EMOJIS 』──⊷
+│ ${config.reactEmojis.join(', ')}
+┗──────────────⊷
+
+*Commands:*
+• .autostatus on/off - Toggle auto view
+• .autostatus react on/off - Toggle reactions
+• .autostatus reply on/off - Toggle replies
+• .autostatus save on/off - Toggle saving
+• .autostatus setmsg <text> - Set reply message
+• .autostatus setemoji <emoji1,emoji2> - Set reaction emojis
+`;
+
+            await sock.sendMessage(chatId, { text: statusText, ...channelInfo });
             return;
         }
 
         // Handle commands
-        const command = args[0].toLowerCase();
-        
         if (command === 'on') {
             config.enabled = true;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { 
-                text: '✅ *Auto status view enabled!*\n\nBot will now instantly view all contact statuses as soon as they are posted.',
-                ...channelInfo
-            });
-        } 
+            saveConfig(config);
+            await sock.sendMessage(chatId, { text: '✅ Auto status view enabled', ...channelInfo });
+        }
         else if (command === 'off') {
             config.enabled = false;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { 
-                text: '❌ *Auto status view disabled!*\n\nBot will no longer automatically view statuses.',
-                ...channelInfo
-            });
+            saveConfig(config);
+            await sock.sendMessage(chatId, { text: '❌ Auto status view disabled', ...channelInfo });
         }
-        else {
-            await sock.sendMessage(chatId, { 
-                text: `❌ *Invalid command!*\n\n*Available Commands:*\n• .autostatus on - Enable auto status view\n• .autostatus off - Disable auto status view`,
-                ...channelInfo
-            });
+        else if (command === 'react') {
+            const subCmd = args[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.reactEnabled = true;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '✅ Auto reactions enabled', ...channelInfo });
+            } else if (subCmd === 'off') {
+                config.reactEnabled = false;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '❌ Auto reactions disabled', ...channelInfo });
+            }
         }
-
+        else if (command === 'reply') {
+            const subCmd = args[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.replyEnabled = true;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '✅ Auto replies enabled', ...channelInfo });
+            } else if (subCmd === 'off') {
+                config.replyEnabled = false;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '❌ Auto replies disabled', ...channelInfo });
+            }
+        }
+        else if (command === 'save') {
+            const subCmd = args[1]?.toLowerCase();
+            if (subCmd === 'on') {
+                config.saveEnabled = true;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '✅ Status saver enabled', ...channelInfo });
+            } else if (subCmd === 'off') {
+                config.saveEnabled = false;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: '❌ Status saver disabled', ...channelInfo });
+            }
+        }
+        else if (command === 'setmsg') {
+            const newMsg = args.slice(1).join(' ');
+            if (newMsg) {
+                config.replyMsg = newMsg;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: `✅ Reply message set to: ${newMsg}`, ...channelInfo });
+            }
+        }
+        else if (command === 'setemoji') {
+            const emojiStr = args.slice(1).join(' ');
+            const emojis = emojiStr.split(',').map(e => e.trim());
+            if (emojis.length > 0) {
+                config.reactEmojis = emojis;
+                saveConfig(config);
+                await sock.sendMessage(chatId, { text: `✅ Reaction emojis set to: ${emojis.join(', ')}`, ...channelInfo });
+            }
+        }
     } catch (error) {
-        console.error('Error in autostatus command:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Error occurred while managing auto status!\n' + error.message,
-            ...channelInfo
-        });
+        console.error('AutoStatus command error:', error);
+        await sock.sendMessage(chatId, { text: '❌ Error occurred!', ...channelInfo });
     }
 }
 
-// Function to check if auto status is enabled
-function isAutoStatusEnabled() {
+// STATUS HANDLER - This runs on every status update (called from index.js)
+async function handleStatusUpdate(sock, message) {
     try {
-        if (!fs.existsSync(configPath)) return false;
-        const config = JSON.parse(fs.readFileSync(configPath));
-        return config.enabled;
-    } catch (error) {
-        console.error('Error checking auto status config:', error);
-        return false;
-    }
-}
+        const config = loadConfig();
+        
+        // Check if it's a status update
+        const isStatus = message.key?.remoteJid === 'status@broadcast';
+        if (!isStatus) return;
 
-// ULTRA FAST status viewing
-async function handleStatusUpdate(sock, status) {
-    try {
-        if (!isAutoStatusEnabled()) return;
+        const sender = message.key.participant || message.key.remoteJid;
+        const statusType = message.message?.imageMessage ? 'image' :
+                         message.message?.videoMessage ? 'video' :
+                         message.message?.extendedTextMessage ? 'text' : 'media';
 
-        // Handle messages.upsert format
-        if (status.messages && status.messages.length > 0) {
-            const msg = status.messages[0];
-            if (msg.key && msg.key.remoteJid === 'status@broadcast') {
-                // View immediately - FIRE AND FORGET
-                sock.readMessages([msg.key]).catch(() => {});
-                const sender = msg.key.participant || msg.key.remoteJid;
-                console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
-                return;
+        // 1. AUTO VIEW STATUS
+        if (config.enabled) {
+            await sock.readMessages([message.key]);
+            console.log(`✅ Auto-viewed status from: ${sender.split('@')[0]}`);
+        }
+
+        // 2. AUTO REACT TO STATUS
+        if (config.reactEnabled) {
+            const emojis = config.reactEmojis || ['💚', '❤️', '🔥', '💯', '😍', '👏'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            await sock.sendMessage('status@broadcast', {
+                react: {
+                    text: randomEmoji,
+                    key: message.key
+                }
+            });
+            console.log(`${randomEmoji} Reacted to status from: ${sender.split('@')[0]}`);
+        }
+
+        // 3. AUTO REPLY TO STATUS
+        if (config.replyEnabled) {
+            setTimeout(async () => {
+                await sock.sendMessage('status@broadcast', {
+                    text: config.replyMsg
+                }, { quoted: message }).catch(() => {});
+            }, 2000);
+            console.log(`💬 Will reply to status from: ${sender.split('@')[0]}`);
+        }
+
+        // 4. SAVE STATUS MEDIA
+        if (config.saveEnabled) {
+            if (message.message?.imageMessage || message.message?.videoMessage) {
+                try {
+                    const buffer = await sock.downloadMediaMessage(message);
+                    const fileName = `status_${Date.now()}.${statusType === 'image' ? 'jpg' : 'mp4'}`;
+                    
+                    // Save to ./status folder
+                    const statusDir = path.join(__dirname, '../status');
+                    if (!fs.existsSync(statusDir)) fs.mkdirSync(statusDir);
+                    
+                    fs.writeFileSync(path.join(statusDir, fileName), buffer);
+                    console.log(`💾 Saved status: ${fileName}`);
+
+                    // Forward to owner if number exists
+                    if (settings.ownerNumber) {
+                        await sock.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
+                            [statusType]: buffer,
+                            caption: `📥 Status from: ${sender.split('@')[0]}`
+                        }).catch(() => {});
+                    }
+                } catch (err) {
+                    console.error('Error saving status:', err.message);
+                }
             }
         }
 
-        // Handle direct status updates
-        if (status.key && status.key.remoteJid === 'status@broadcast') {
-            // View immediately - FIRE AND FORGET
-            sock.readMessages([status.key]).catch(() => {});
-            const sender = status.key.participant || status.key.remoteJid;
-            console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
-            return;
-        }
-
     } catch (error) {
-        // Silent fail - absolutely no delay
+        console.error('Status handler error:', error.message);
     }
 }
 
 module.exports = {
     autoStatusCommand,
-    handleStatusUpdate,
-    isAutoStatusEnabled
+    handleStatusUpdate
 };
