@@ -334,8 +334,11 @@ else if (rawMessageText.startsWith('.')) {
 
 // IMPORTANT: Handle non-command messages FIRST
 if (!isCommand) {
-    // Handle non-command messages - SHOW RECORDING INDICATOR HERE
+    // Handle non-command messages - SHOW BOTH TYPING AND RECORDING INDICATORS
     if (rawMessageText.trim()) {
+        // Show typing indicator for non-command messages
+        await handleAutotypingForMessage(sock, chatId, rawMessageText);
+        
         // Show recording indicator for non-command messages
         await handleAutorecordForMessage(sock, chatId, rawMessageText);
         
