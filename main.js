@@ -728,14 +728,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage.startsWith('.autobio'):
     await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
     break;
-          // In main.js - Add this case in your switch statement
-            case userMessage.startsWith('.autostatus'):
-                const autoStatusArgs = userMessage.split(' ').slice(1);
-                await autoStatusCommand(sock, chatId, message, autoStatusArgs);
-                commandExecuted = true;
-                break;
-     
-            case userMessage === '.quote':
+                      case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
                 break;
             case userMessage === '.getjid':
