@@ -55,6 +55,12 @@ const {
     coinleaderboardCommand,
     coinhelpCommand 
 } = require('./commands/coinflip');
+// Auto Status React imports
+const { 
+    autoStatusReactCommand, 
+    reactToStatus,
+    isAutoReactEnabled 
+} = require('./commands/autostatusreact');
 const { saveStatusCommand } = require('./commands/simplestatus');
 const { setBotNameCommand, setBotOwnerCommand, setOwnerNumberCommand,setYTChannelCommand,setPackNameCommand,setAuthorCommand, setTimezoneCommand,configHelpCommand } = require('./commands/wallyjaytech');
 const { checkUpdateCommand, updateInfoCommand, autoCheckUpdates } = require('./commands/checkupdate');
@@ -725,6 +731,10 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 break;
             case userMessage.startsWith('.autobio'):
     await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
+    break;
+          case userMessage.startsWith('.autostatusreact'):
+    const reactArgs = userMessage.split(' ').slice(1);
+    await autoStatusReactCommand(sock, chatId, message, reactArgs);
     break;
             case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
