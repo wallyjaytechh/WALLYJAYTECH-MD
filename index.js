@@ -181,58 +181,63 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling
-    XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
-        try {
-            const mek = chatUpdate.messages[0]
-            if (!mek.message) return
-            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-            
-            // OPTIMIZED: Handle status updates FIRST and immediately
-            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                // Process status instantly without waiting
-                handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
-                    console.error("Status view error:", err.message);
-                });
-                return;
-            }
-            
-            // In private mode, only block non-group messages (allow groups for moderation)
-            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
-                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-                if (!isGroup) return // Block DMs in private mode, but allow group messages
-            }
-            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
-
-            // Clear message retry cache to prevent memory bloat
-            if (XeonBotInc?.msgRetryCounterCache) {
-                XeonBotInc.msgRetryCounterCache.clear()
-            }
-
+// Message handling - ULTRA FAST STATUS VIEWING
+XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
+    try {
+        const mek = chatUpdate.messages[0]
+        if (!mek.message) return
+        
+        // 🔥 ULTRA FAST STATUS HANDLING - ABSOLUTELY NO DELAY
+        if (mek.key && mek.key.remoteJid === 'status@broadcast') {
             try {
-                await handleMessages(XeonBotInc, chatUpdate, true)
+                // View immediately - no await, no delay
+                await XeonBotInc.readMessages([mek.key]);
+                const sender = mek.key.participant || mek.key.remoteJid;
+                console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
             } catch (err) {
-                console.error("Error in handleMessages:", err)
-                // Only try to send error message if we have a valid chatId
-                if (mek.key && mek.key.remoteJid) {
-                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                        text: '❌ An error occurred while processing your message.',
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363420618370733@newsletter',
-                                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                                serverMessageId: -1
-                            }
-                        }
-                    }).catch(console.error);
-                }
+                // Silent fail - absolutely no delay
             }
-        } catch (err) {
-            console.error("Error in messages.upsert:", err)
+            return; // Exit immediately - don't process further
         }
-    })
+        
+        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+        
+        // In private mode, only block non-group messages (allow groups for moderation)
+        if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
+            const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
+            if (!isGroup) return // Block DMs in private mode, but allow group messages
+        }
+        if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
+
+        // Clear message retry cache to prevent memory bloat
+        if (XeonBotInc?.msgRetryCounterCache) {
+            XeonBotInc.msgRetryCounterCache.clear()
+        }
+
+        try {
+            await handleMessages(XeonBotInc, chatUpdate, true)
+        } catch (err) {
+            console.error("Error in handleMessages:", err)
+            // Only try to send error message if we have a valid chatId
+            if (mek.key && mek.key.remoteJid) {
+                await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                    text: '❌ An error occurred while processing your message.',
+                    contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363420618370733@newsletter',
+                            newsletterName: 'WALLYJAYTECH-MD BOTS',
+                            serverMessageId: -1
+                        }
+                    }
+                }).catch(console.error);
+            }
+        }
+    } catch (err) {
+        console.error("Error in messages.upsert:", err)
+    }
+})
 
     // Add these event handlers for better functionality
     XeonBotInc.decodeJid = (jid) => {
