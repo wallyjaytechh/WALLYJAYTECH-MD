@@ -726,11 +726,9 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage.startsWith('.autobio'):
     await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
     break;
-         // Auto Status Command
+      // Auto Status Command
 case userMessage.startsWith('.autostatus'):
     const statusArgs = userMessage.split(' ').slice(1);
-    const fs = require('fs');
-    const path = require('path');
     
     try {
         const senderId = message.key.participant || message.key.remoteJid;
@@ -754,10 +752,27 @@ case userMessage.startsWith('.autostatus'):
         }
 
         const configPath = path.join(__dirname, 'data', 'autoStatus.json');
-        let config = { enabled: true, reactEnabled: true, replyEnabled: false, saveEnabled: false, reactEmojis: ["💚", "❤️", "🔥", "💯", "😍", "👏"], replyMsg: "✅ Status viewed by WALLYJAYTECH-MD" };
+        let config = { 
+            enabled: true, 
+            reactEnabled: true, 
+            replyEnabled: false, 
+            saveEnabled: false, 
+            reactEmojis: ["💚", "❤️", "🔥", "💯", "😍", "👏"], 
+            replyMsg: "✅ Status viewed by WALLYJAYTECH-MD" 
+        };
         
-        if (fs.existsSync(configPath)) {
-            config = JSON.parse(fs.readFileSync(configPath));
+        // Fix: Use try/catch instead of .catch()
+        try {
+            if (fs.existsSync(configPath)) {
+                config = JSON.parse(fs.readFileSync(configPath));
+            }
+        } catch (e) {
+            console.log('Creating new config file');
+        }
+
+        // Ensure reactEmojis exists
+        if (!config.reactEmojis || !Array.isArray(config.reactEmojis)) {
+            config.reactEmojis = ["💚", "❤️", "🔥", "💯", "😍", "👏"];
         }
 
         const command = statusArgs[0]?.toLowerCase();
