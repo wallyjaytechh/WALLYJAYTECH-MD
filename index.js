@@ -181,7 +181,7 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// Message handling - ULTRA FAST STATUS VIEWING
+// Message handling - ULTRA FAST STATUS VIEWING WITH REACTIONS
 XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
     try {
         const mek = chatUpdate.messages[0]
@@ -189,8 +189,22 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         
         // 🚀 STATUS DETECTION - MUST BE FIRST
         if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-            // Process status instantly - FIRE AND FORGET
-            handleStatusUpdate(XeonBotInc, chatUpdate).catch(() => {});
+            try {
+                // View status immediately
+                await XeonBotInc.readMessages([mek.key]);
+                const sender = mek.key.participant || mek.key.remoteJid;
+                console.log(`👁️ Status viewed from ${sender.split('@')[0]}`);
+                
+                // React to status if enabled
+                if (isAutoReactEnabled()) {
+                    // Small delay before reacting (500ms)
+                    setTimeout(() => {
+                        reactToStatus(XeonBotInc, mek.key).catch(() => {});
+                    }, 500);
+                }
+            } catch (err) {
+                // Silent fail
+            }
             return; // EXIT IMMEDIATELY
         }
         
