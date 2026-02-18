@@ -264,14 +264,14 @@ XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
                             fs.writeFileSync(`${statusDir}/${fileName}`, buffer)
                             console.log(`💾 Saved status: ${fileName}`)
 
-                         // Forward to owner - USING EXISTING SETTINGS
-// Don't declare a new const, just use the existing one
-if (settings.ownerNumber) {
-    await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
-        [statusType]: buffer,
-        caption: `📥 Status from: ${senderNumber}`
-    }).catch(() => {})
-}
+                            // Forward to owner - USING SETTINGS INSTEAD OF HARDCODED NUMBER
+                            const settings = require('./settings');
+                            if (settings.ownerNumber) {
+                                await XeonBotInc.sendMessage(settings.ownerNumber + '@s.whatsapp.net', {
+                                    [statusType]: buffer,
+                                    caption: `📥 Status from: ${senderNumber}`
+                                }).catch(() => {})
+                            }
                         } catch (err) {
                             console.error('Error saving status:', err.message)
                         }
