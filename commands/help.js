@@ -513,7 +513,7 @@ async function helpCommand(sock, chatId, message) {
         `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
         '║     📈 Your Usage: First time user';
     
-    // Build the complete help message
+    // Build the help message with a placeholder for menu type
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
 
@@ -528,7 +528,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
-║   *🎬 Menu Type: [ ${menuType} ]*
+║   *🎬 Menu Media: [ ${menuType} ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
@@ -873,28 +873,17 @@ ${platformStatsText}
         if (menuResult.success) {
             menuType = menuResult.type; // 'IMAGE' or 'VIDEO'
             
-            // Update the help message with the correct menu type and send it
+            // Update the help message with the correct menu type
             const updatedHelpMessage = helpMessage.replace(
                 '*🎬 Menu Type: [ TEXT ]*',
                 `*🎬 Menu Type: [ ${menuType} ]*`
             );
             
-            // Send the updated help message
-            await sock.sendMessage(chatId, { 
-                text: updatedHelpMessage,
-                mentions: [senderId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+            // Send the updated help message with the media
+            // Note: The media already has the caption with the updated message
+            console.log(`🎬 Menu Type shown: ${menuType}`);
         } else {
-            // Send the help message with TEXT menu type
+            // Send only the text message if media failed
             await sock.sendMessage(chatId, { 
                 text: helpMessage,
                 mentions: [senderId],
