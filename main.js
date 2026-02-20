@@ -80,6 +80,7 @@ const {
     handleAutotypingForCommand, 
     showTypingAfterCommand 
 } = require('./commands/autotyping');
+const { autoStatusCommand } = require('./commands/autostatus');
 const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
