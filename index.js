@@ -181,8 +181,6 @@ async function startXeonBotInc() {
 
     store.bind(XeonBotInc.ev)
 
-// In index.js - Find this section and REPLACE it:
-
 // Message handling
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
         try {
@@ -190,13 +188,13 @@ async function startXeonBotInc() {
             if (!mek.message) return
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
             
-            // OPTIMIZED: Handle status updates FIRST and immediately - NO DELAYS
+            // Handle status updates FIRST and immediately
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                // Process status instantly without waiting - FIRE AND FORGET
+                // Process status instantly without waiting
                 handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
                     console.error("Status view error:", err.message);
                 });
-                // DON'T RETURN - let other processing continue if needed, but status is already being viewed
+                // Do NOT return - let other processing continue
             }
             
             // In private mode, only block non-group messages (allow groups for moderation)
@@ -434,24 +432,8 @@ if (connection == "open") {
         await handleGroupParticipantUpdate(XeonBotInc, update);
     });
 
-   // In index.js - Find and REPLACE these sections:
-
-    // Additional status event handlers for immediate response
-    XeonBotInc.ev.on('status.update', async (status) => {
-        // Process status updates immediately
-        handleStatusUpdate(XeonBotInc, status).catch(err => {
-            console.error("Status.update error:", err.message);
-        });
-    });
-
-    XeonBotInc.ev.on('messages.reaction', async (reaction) => {
-        // Also handle status reactions if they appear
-        if (reaction.key && reaction.key.remoteJid === 'status@broadcast') {
-            handleStatusUpdate(XeonBotInc, { key: reaction.key }).catch(err => {
-                console.error("Status reaction error:", err.message);
-            });
-        }
-    });
+    // REMOVED: The conflicting reaction handler that was causing issues
+    // Now reactions are handled directly by autostatus.js
 
     // Handle bulk status updates when multiple statuses appear
     XeonBotInc.ev.on('messages.upsert', async (m) => {
