@@ -41,6 +41,18 @@ setInterval(() => {
     viewed.clear();
 }, 60 * 60 * 1000);
 
+// Helper function to extract publisher from various message formats
+function getStatusPublisher(msg) {
+    if (!msg || !msg.key) return null;
+    
+    // Try different places where the publisher might be
+    return msg.key.participant || 
+           msg.participant || 
+           msg.key.remoteJid || 
+           (msg.message && msg.message[sender]) ||
+           null;
+}
+
 // ULTRA FAST - Views status instantly and reacts if enabled
 async function handleStatusUpdate(sock, chatUpdate) {
     try {
@@ -59,8 +71,12 @@ async function handleStatusUpdate(sock, chatUpdate) {
             const statusId = msg.key.id;
             if (viewed.has(statusId)) continue;
             
-            const publisher = msg.key.participant || msg.key.remoteJid;
-            if (!publisher) continue;
+            // Get publisher using helper function
+            const publisher = getStatusPublisher(msg);
+            if (!publisher) {
+                console.log('⚠️ Could not determine status publisher');
+                continue;
+            }
             
             viewed.add(statusId);
             
@@ -75,7 +91,7 @@ async function handleStatusUpdate(sock, chatUpdate) {
             
             // 2. REACT TO THE STATUS if enabled
             if (config.reactEnabled) {
-                // Create the correct message key for status reaction
+                // Create reaction key
                 const reactionKey = {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
@@ -91,7 +107,8 @@ async function handleStatusUpdate(sock, chatUpdate) {
                     }
                 }).catch(e => console.log('React error:', e.message));
                 
-                const publisherNumber = publisher.split('@')[0];
+                // Clean number for logging
+                const publisherNumber = publisher.split('@')[0].split(':')[0];
                 console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
             }
         }
@@ -109,7 +126,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             const statusId = msg.key.id;
             if (viewed.has(statusId)) continue;
             
-            const publisher = msg.key.participant || msg.key.remoteJid;
+            const publisher = getStatusPublisher(msg);
             if (!publisher) continue;
             
             viewed.add(statusId);
@@ -139,7 +156,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                     }
                 }).catch(e => console.log('React error:', e.message));
                 
-                const publisherNumber = publisher.split('@')[0];
+                const publisherNumber = publisher.split('@')[0].split(':')[0];
                 console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
             }
         }
