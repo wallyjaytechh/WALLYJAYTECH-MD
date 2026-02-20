@@ -1326,9 +1326,10 @@ case userMessage.startsWith('.autorecord'):
                 await textmakerCommand(sock, chatId, message, userMessage, 'fire');
                 break;
             case userMessage.startsWith('.antidelete'):
-                const antideleteMatch = userMessage.slice(11).trim();
-                await handleAntideleteCommand(sock, chatId, message, antideleteMatch);
-                break;
+    const antideleteArgs = userMessage.slice(11).trim().split(' ');
+    await handleAntideleteCommand(sock, chatId, message, antideleteArgs);
+    commandExecuted = true;
+    break;
             case userMessage === '.surrender':
                 // Handle surrender command for tictactoe game
                 await handleTicTacToeMove(sock, chatId, senderId, 'surrender');
