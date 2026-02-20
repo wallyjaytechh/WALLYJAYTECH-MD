@@ -1326,8 +1326,15 @@ case userMessage.startsWith('.autorecord'):
                 await textmakerCommand(sock, chatId, message, userMessage, 'fire');
                 break;
             case userMessage.startsWith('.antidelete'):
+    console.log('🔍 Antidelete command detected');
     const antideleteArgs = userMessage.slice(11).trim().split(' ');
-    await handleAntideleteCommand(sock, chatId, message, antideleteArgs);
+    console.log('📦 Args:', antideleteArgs);
+    try {
+        await handleAntideleteCommand(sock, chatId, message, antideleteArgs);
+        console.log('✅ Antidelete command executed');
+    } catch (error) {
+        console.error('❌ Antidelete error:', error);
+    }
     commandExecuted = true;
     break;
             case userMessage === '.surrender':
