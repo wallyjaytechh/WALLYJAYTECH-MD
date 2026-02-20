@@ -80,7 +80,7 @@ function loadConfig() {
                 enabled: false,
                 route: {
                     private: 'dm',        // 'dm' or 'chat'
-                    group: 'chat',        // 'chat' or 'dm'  (changed from 'group' to 'chat')
+                    group: 'chat',        // 'chat' or 'dm'
                     fallback: 'dm'        // Where to send if group is locked
                 }
             };
@@ -218,7 +218,7 @@ async function determineTargetChat(sock, config, originalChat, groupJid, deleted
     
     // If it's a group
     if (groupJid) {
-        if (route.group === 'chat') {  // Changed from 'group' to 'chat'
+        if (route.group === 'chat') {
             const canSend = await canSendToGroup(sock, groupJid);
             if (canSend) {
                 return groupJid; // Send to group
@@ -258,8 +258,9 @@ async function storeMessage(sock, message) {
         const isGroup = message.key.remoteJid.endsWith('@g.us');
         const groupJid = isGroup ? message.key.remoteJid : null;
         
-        // Don't store own messages if they're not from someone else in group
-        if (sender === sock.user.id) return;
+        // Don't store own messages
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        if (sender === botJid) return;
 
         let content = '';
         let mediaType = '';
@@ -283,9 +284,18 @@ async function storeMessage(sock, message) {
             fileSize = msg.imageMessage.fileLength || 0;
             mimeType = msg.imageMessage.mimetype || 'image/jpeg';
             
-            const buffer = await downloadContentFromMessage(msg.imageMessage, 'image');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.jpg`);
-            await writeFile(mediaPath, buffer);
+            try {
+                const stream = await downloadContentFromMessage(msg.imageMessage, 'image');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.jpg`);
+                await writeFile(mediaPath, buffer);
+            } catch (err) {
+                console.error('❌ Image download error:', err.message);
+            }
         } else if (msg.videoMessage) {
             mediaType = 'video';
             content = msg.videoMessage.caption || '';
@@ -293,28 +303,55 @@ async function storeMessage(sock, message) {
             fileSize = msg.videoMessage.fileLength || 0;
             mimeType = msg.videoMessage.mimetype || 'video/mp4';
             
-            const buffer = await downloadContentFromMessage(msg.videoMessage, 'video');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.mp4`);
-            await writeFile(mediaPath, buffer);
+            try {
+                const stream = await downloadContentFromMessage(msg.videoMessage, 'video');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.mp4`);
+                await writeFile(mediaPath, buffer);
+            } catch (err) {
+                console.error('❌ Video download error:', err.message);
+            }
         } else if (msg.audioMessage) {
             mediaType = msg.audioMessage.ptt ? 'voice' : 'audio';
-            const ext = msg.audioMessage.mimetype?.includes('ogg') ? 'ogg' : 'mp3';
+            const ext = msg.audioMessage.mimetype?.includes('ogg') ? 'ogg' : (msg.audioMessage.mimetype?.includes('mp4') ? 'm4a' : 'mp3');
             fileName = msg.audioMessage.fileName || `audio_${Date.now()}.${ext}`;
             fileSize = msg.audioMessage.fileLength || 0;
             mimeType = msg.audioMessage.mimetype || 'audio/mpeg';
             
-            const buffer = await downloadContentFromMessage(msg.audioMessage, 'audio');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.${ext}`);
-            await writeFile(mediaPath, buffer);
+            try {
+                const stream = await downloadContentFromMessage(msg.audioMessage, 'audio');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.${ext}`);
+                await writeFile(mediaPath, buffer);
+            } catch (err) {
+                console.error('❌ Audio download error:', err.message);
+            }
         } else if (msg.stickerMessage) {
             mediaType = 'sticker';
             fileName = `sticker_${Date.now()}.webp`;
             fileSize = msg.stickerMessage.fileLength || 0;
             mimeType = 'image/webp';
             
-            const buffer = await downloadContentFromMessage(msg.stickerMessage, 'sticker');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.webp`);
-            await writeFile(mediaPath, buffer);
+            try {
+                const stream = await downloadContentFromMessage(msg.stickerMessage, 'sticker');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}.webp`);
+                await writeFile(mediaPath, buffer);
+            } catch (err) {
+                console.error('❌ Sticker download error:', err.message);
+            }
         } else if (msg.documentMessage) {
             mediaType = 'document';
             content = msg.documentMessage.caption || '';
@@ -322,9 +359,18 @@ async function storeMessage(sock, message) {
             fileSize = msg.documentMessage.fileLength || 0;
             mimeType = msg.documentMessage.mimetype || 'application/octet-stream';
             
-            const buffer = await downloadContentFromMessage(msg.documentMessage, 'document');
-            mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}_${fileName}`);
-            await writeFile(mediaPath, buffer);
+            try {
+                const stream = await downloadContentFromMessage(msg.documentMessage, 'document');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}_${fileName}`);
+                await writeFile(mediaPath, buffer);
+            } catch (err) {
+                console.error('❌ Document download error:', err.message);
+            }
         } else if (msg.contactMessage) {
             mediaType = 'contact';
             content = JSON.stringify(msg.contactMessage);
@@ -370,7 +416,6 @@ async function handleMessageRevocation(sock, revocationMessage) {
         // Get revoked message key
         const revokedKey = revocationMessage.message?.protocolMessage?.key;
         if (!revokedKey?.id) {
-            console.log('❌ Invalid revocation message');
             return;
         }
 
@@ -383,9 +428,12 @@ async function handleMessageRevocation(sock, revocationMessage) {
         // Get original message
         const original = messageStore.get(messageId);
         if (!original) {
-            console.log(`❌ Original message not found: ${messageId}`);
             return;
         }
+
+        // Don't recover if bot deleted it (optional - remove if you want to recover bot deletions)
+        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        if (deletedBy === botJid) return;
 
         // Determine target chat for recovery
         const targetChat = await determineTargetChat(sock, config, originalChat, groupJid, deletedBy);
@@ -393,7 +441,6 @@ async function handleMessageRevocation(sock, revocationMessage) {
         // Format sender info
         const senderNumber = original.sender.split('@')[0];
         const deleterNumber = deletedBy.split('@')[0];
-        const botNumber = sock.user.id.split(':')[0];
 
         // Get group name if applicable
         let groupName = '';
@@ -407,66 +454,41 @@ async function handleMessageRevocation(sock, revocationMessage) {
         const msgType = original.messageType.toUpperCase();
         const emoji = original.emoji;
 
-        // Build header
-        let header = `╔═══════════◥◣✦◢◤═══════════╗\n`;
-        header += `┃    🚨 *MESSAGE RECOVERED* 🚨\n`;
-        header += `╚═══════════◢◤✦◥◣═══════════╝\n\n`;
-
-        // Message details
-        let details = `*📋 DETAILS*\n`;
-        details += `┌─────────────────────\n`;
-        details += `│ ${emoji} *Type:* ${msgType}\n`;
-        details += `│ 👤 *Sender:* @${senderNumber}\n`;
-        details += `│ 🗑️ *Deleted by:* @${deleterNumber}\n`;
-        details += `│ 🕒 *Time:* ${timestamp}\n`;
+        // Build message
+        let recoveryText = `🚨 *MESSAGE RECOVERED* 🚨\n\n`;
+        recoveryText += `${emoji} *Type:* ${msgType}\n`;
+        recoveryText += `👤 *Sender:* @${senderNumber}\n`;
+        recoveryText += `🗑️ *Deleted by:* @${deleterNumber}\n`;
+        recoveryText += `🕒 *Time:* ${timestamp}\n`;
         
         if (groupName) {
-            details += `│ 👥 *Group:* ${groupName}\n`;
+            recoveryText += `👥 *Group:* ${groupName}\n`;
         }
         
         if (original.fileName) {
-            details += `│ 📎 *File:* ${original.fileName}\n`;
+            recoveryText += `📎 *File:* ${original.fileName}\n`;
         }
         
-        if (original.fileSize) {
-            const size = (original.fileSize / 1024).toFixed(2);
-            details += `│ 📊 *Size:* ${size} KB\n`;
-        }
-        
-        details += `└─────────────────────\n`;
-
-        // Message content
-        let content = '';
         if (original.content) {
-            content += `\n*💬 CONTENT*\n`;
-            content += `┌─────────────────────\n`;
-            content += `│ ${original.content}\n`;
-            content += `└─────────────────────\n`;
+            recoveryText += `\n💬 *Message:*\n${original.content}\n`;
         }
 
-        // Footer
-        let footer = `\n╔═══════════◥◣✦◢◤═══════════╗\n`;
-        footer += `┃     🔒 *WALLYJAYTECH-MD*   \n`;
-        footer += `╚═══════════◢◤✦◥◣═══════════╝`;
-
-        const fullMessage = header + details + content + footer;
+        recoveryText += `\n🔒 *WALLYJAYTECH-MD*`;
 
         // Send recovery message
         await sock.sendMessage(targetChat, {
-            text: fullMessage,
+            text: recoveryText,
             mentions: [original.sender, deletedBy]
         });
 
         // Send media if exists
         if (original.mediaType && fs.existsSync(original.mediaPath)) {
-            const mediaCaption = `📎 *Recovered ${original.mediaType.toUpperCase()}*\nFrom: @${senderNumber}`;
-            
             try {
                 switch (original.mediaType) {
                     case 'image':
                         await sock.sendMessage(targetChat, {
                             image: { url: original.mediaPath },
-                            caption: mediaCaption,
+                            caption: `📎 Recovered image from @${senderNumber}`,
                             mentions: [original.sender]
                         });
                         break;
@@ -474,7 +496,7 @@ async function handleMessageRevocation(sock, revocationMessage) {
                     case 'video':
                         await sock.sendMessage(targetChat, {
                             video: { url: original.mediaPath },
-                            caption: mediaCaption,
+                            caption: `📎 Recovered video from @${senderNumber}`,
                             mentions: [original.sender]
                         });
                         break;
@@ -484,21 +506,13 @@ async function handleMessageRevocation(sock, revocationMessage) {
                         await sock.sendMessage(targetChat, {
                             audio: { url: original.mediaPath },
                             mimetype: original.mimeType || 'audio/mpeg',
-                            ptt: original.mediaType === 'voice',
-                            mentions: [original.sender]
-                        });
-                        await sock.sendMessage(targetChat, {
-                            text: mediaCaption
+                            ptt: original.mediaType === 'voice'
                         });
                         break;
                         
                     case 'sticker':
                         await sock.sendMessage(targetChat, {
                             sticker: { url: original.mediaPath }
-                        });
-                        await sock.sendMessage(targetChat, {
-                            text: mediaCaption,
-                            mentions: [original.sender]
                         });
                         break;
                         
@@ -507,43 +521,22 @@ async function handleMessageRevocation(sock, revocationMessage) {
                             document: { url: original.mediaPath },
                             fileName: original.fileName || 'document.bin',
                             mimetype: original.mimeType,
-                            caption: mediaCaption,
+                            caption: `📎 Recovered document from @${senderNumber}`,
                             mentions: [original.sender]
-                        });
-                        break;
-                        
-                    case 'contact':
-                        await sock.sendMessage(targetChat, {
-                            contacts: {
-                                displayName: 'Recovered Contact',
-                                contacts: [JSON.parse(original.content)]
-                            }
                         });
                         break;
                 }
                 
                 // Log recovery
-                console.log(`✅ Recovered [${original.emoji}] ${messageId} from ${senderNumber} → ${targetChat.includes('g.us') ? 'Group' : 'DM'}`);
+                console.log(`✅ Recovered [${emoji}] from ${senderNumber}`);
                 
-                // Track deleted message
-                deletedLog.set(messageId, {
-                    ...original,
-                    recoveredAt: Date.now(),
-                    recoveredTo: targetChat
-                });
-
                 // Cleanup media file
                 try {
                     fs.unlinkSync(original.mediaPath);
-                } catch (err) {
-                    console.error('⚠️ Media cleanup error:', err.message);
-                }
+                } catch (err) {}
                 
             } catch (err) {
                 console.error('❌ Media send error:', err.message);
-                await sock.sendMessage(targetChat, {
-                    text: `⚠️ Error sending media: ${err.message}`
-                });
             }
         }
 
@@ -556,7 +549,7 @@ async function handleMessageRevocation(sock, revocationMessage) {
 }
 
 /**
- * Anti-delete command handler
+ * Anti-delete command handler - SIMPLIFIED for compatibility
  */
 async function handleAntideleteCommand(sock, chatId, message, args) {
     try {
@@ -564,135 +557,112 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
         const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
 
         if (!message.key.fromMe && !isOwner) {
-            return sock.sendMessage(chatId, { 
+            await sock.sendMessage(chatId, { 
                 text: '❌ *Only the bot owner can use this command.*' 
             }, { quoted: message });
+            return;
         }
 
         const config = loadConfig();
-        const action = args[0]?.toLowerCase();
-
-        // Show settings if no action
-        if (!action) {
-            const status = config.enabled ? '✅ ON' : '❌ OFF';
-            const privateRoute = config.route.private === 'dm' ? 'Bot DM' : 'Original Chat';
-            const groupRoute = config.route.group === 'chat' ? 'Group Chat' : 'Bot DM';  // Changed display text
+        
+        // Handle different arguments
+        if (args && args.length > 0) {
+            const action = args[0].toLowerCase();
             
-            const settingsText = `╔══════════════════════╗
-║  🚨 *ANTI-DELETE* 🚨
-╚══════════════════════╝
-
-*📊 CURRENT SETTINGS*
-
-┌─────────────────────
-│ *Status:* ${status}
-│ *Private Msg Route:* ${privateRoute}
-│ *Group Msg Route:* ${groupRoute}
-│ *Fallback:* Bot DM
-└─────────────────────
-
-*⚡ COMMANDS*
-
-┌─────────────────────
-│ • *.antidelete on* - Enable
-│ • *.antidelete off* - Disable
-│ • *.antidelete private dm* - Send to DM
-│ • *.antidelete private chat* - Send to chat
-│ • *.antidelete group chat* - Send to group chat
-│ • *.antidelete group dm* - Send to DM
-│ • *.antidelete stats* - View stats
-└─────────────────────
-
-*📌 NOTE*
-• If group is locked, falls back to DM
-• All media is recovered immediately
-• Works in DMs and Groups
-
-╔══════════════════════╗
-║  🔒 WALLYJAYTECH-MD
-╚══════════════════════╝`;
-
-            return sock.sendMessage(chatId, {
-                text: settingsText
-            }, { quoted: message });
-        }
-
-        // Handle different actions
-        if (action === 'on') {
-            config.enabled = true;
-            saveConfig(config);
-            return sock.sendMessage(chatId, {
-                text: '✅ *Anti-delete ENABLED*\n\nI will now recover all deleted messages instantly.'
-            }, { quoted: message });
-        }
-
-        if (action === 'off') {
-            config.enabled = false;
-            saveConfig(config);
-            return sock.sendMessage(chatId, {
-                text: '❌ *Anti-delete DISABLED*\n\nI will ignore deleted messages.'
-            }, { quoted: message });
-        }
-
-        if (action === 'private') {
-            const subAction = args[1]?.toLowerCase();
-            if (subAction === 'dm') {
-                config.route.private = 'dm';
+            if (action === 'on') {
+                config.enabled = true;
                 saveConfig(config);
-                return sock.sendMessage(chatId, {
-                    text: '✅ *Private messages will be sent to BOT DM*'
+                await sock.sendMessage(chatId, {
+                    text: '✅ *Anti-delete ENABLED*\n\nI will now recover deleted messages.'
                 }, { quoted: message });
+                return;
             }
-            if (subAction === 'chat') {
-                config.route.private = 'chat';
-                saveConfig(config);
-                return sock.sendMessage(chatId, {
-                    text: '✅ *Private messages will be sent to ORIGINAL CHAT*'
-                }, { quoted: message });
-            }
-        }
-
-        if (action === 'group') {
-            const subAction = args[1]?.toLowerCase();
-            if (subAction === 'chat') {  // Changed from 'group' to 'chat'
-                config.route.group = 'chat';
-                saveConfig(config);
-                return sock.sendMessage(chatId, {
-                    text: '✅ *Group messages will be sent to GROUP CHAT (falls back to DM if locked)*'
-                }, { quoted: message });
-            }
-            if (subAction === 'dm') {
-                config.route.group = 'dm';
-                saveConfig(config);
-                return sock.sendMessage(chatId, {
-                    text: '✅ *Group messages will be sent to BOT DM*'
-                }, { quoted: message });
-            }
-        }
-
-        if (action === 'stats') {
-            const storedCount = messageStore.size;
-            const deletedCount = deletedLog.size;
-            const tempSize = getFolderSizeInMB(TEMP_MEDIA_DIR).toFixed(2);
             
-            return sock.sendMessage(chatId, {
-                text: `*📊 ANTI-DELETE STATS*\n\n` +
-                      `• Stored Messages: ${storedCount}\n` +
-                      `• Recovered Messages: ${deletedCount}\n` +
-                      `• Temp Folder Size: ${tempSize} MB\n` +
-                      `• Max Temp Size: ${MAX_TEMP_SIZE_MB} MB\n\n` +
-                      `*Status:* ${config.enabled ? '✅ Active' : '❌ Inactive'}`
-            }, { quoted: message });
+            if (action === 'off') {
+                config.enabled = false;
+                saveConfig(config);
+                await sock.sendMessage(chatId, {
+                    text: '❌ *Anti-delete DISABLED*\n\nI will ignore deleted messages.'
+                }, { quoted: message });
+                return;
+            }
+            
+            if (action === 'private') {
+                if (args[1] === 'dm') {
+                    config.route.private = 'dm';
+                    saveConfig(config);
+                    await sock.sendMessage(chatId, {
+                        text: '✅ *Private messages will be sent to BOT DM*'
+                    }, { quoted: message });
+                    return;
+                }
+                if (args[1] === 'chat') {
+                    config.route.private = 'chat';
+                    saveConfig(config);
+                    await sock.sendMessage(chatId, {
+                        text: '✅ *Private messages will be sent to ORIGINAL CHAT*'
+                    }, { quoted: message });
+                    return;
+                }
+            }
+            
+            if (action === 'group') {
+                if (args[1] === 'chat') {
+                    config.route.group = 'chat';
+                    saveConfig(config);
+                    await sock.sendMessage(chatId, {
+                        text: '✅ *Group messages will be sent to GROUP CHAT*'
+                    }, { quoted: message });
+                    return;
+                }
+                if (args[1] === 'dm') {
+                    config.route.group = 'dm';
+                    saveConfig(config);
+                    await sock.sendMessage(chatId, {
+                        text: '✅ *Group messages will be sent to BOT DM*'
+                    }, { quoted: message });
+                    return;
+                }
+            }
+            
+            if (action === 'stats') {
+                const storedCount = messageStore.size;
+                const tempSize = getFolderSizeInMB(TEMP_MEDIA_DIR).toFixed(2);
+                await sock.sendMessage(chatId, {
+                    text: `*📊 ANTI-DELETE STATS*\n\n` +
+                          `• Stored: ${storedCount} messages\n` +
+                          `• Temp Size: ${tempSize} MB\n` +
+                          `• Status: ${config.enabled ? '✅ Active' : '❌ Inactive'}`
+                }, { quoted: message });
+                return;
+            }
         }
+        
+        // Show settings if no valid command
+        const status = config.enabled ? '✅ ON' : '❌ OFF';
+        const privateRoute = config.route.private === 'dm' ? 'Bot DM' : 'Original Chat';
+        const groupRoute = config.route.group === 'chat' ? 'Group Chat' : 'Bot DM';
+        
+        const settingsText = `*🚨 ANTI-DELETE SETTINGS*\n\n` +
+            `*Status:* ${status}\n` +
+            `*Private Route:* ${privateRoute}\n` +
+            `*Group Route:* ${groupRoute}\n\n` +
+            `*Commands:*\n` +
+            `• .antidelete on - Enable\n` +
+            `• .antidelete off - Disable\n` +
+            `• .antidelete private dm - Send to DM\n` +
+            `• .antidelete private chat - Send to chat\n` +
+            `• .antidelete group chat - Send to group\n` +
+            `• .antidelete group dm - Send to DM\n` +
+            `• .antidelete stats - View stats`;
 
-        // Invalid command
-        return sock.sendMessage(chatId, {
-            text: '❌ *Invalid command!*\n\nUse *.antidelete* to see available commands.'
+        await sock.sendMessage(chatId, {
+            text: settingsText
         }, { quoted: message });
 
     } catch (err) {
         console.error('❌ Command error:', err.message);
-        return sock.sendMessage(chatId, {
+        await sock.sendMessage(chatId, {
             text: '❌ Error processing command.'
         }, { quoted: message });
     }
