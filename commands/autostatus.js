@@ -17,8 +17,8 @@ if (!fs.existsSync(dataDir)) {
 // Default config
 let config = { 
     enabled: false,
-    reactEnabled: false,  // Auto-reaction on/off
-    reactionEmoji: '❤️'    // Default green heart
+    reactEnabled: false,
+    reactionEmoji: '❤️'
 };
 
 // Load config
@@ -33,7 +33,7 @@ function saveConfig() {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
 }
 
-// Track viewed statuses to avoid double-viewing
+// Track viewed statuses
 const viewed = new Set();
 
 // Clear cache every hour
@@ -59,13 +59,12 @@ async function handleStatusUpdate(sock, chatUpdate) {
             const statusId = msg.key.id;
             if (viewed.has(statusId)) continue;
             
-            // Get the status publisher (who posted the status)
             const publisher = msg.key.participant || msg.key.remoteJid;
             if (!publisher) continue;
             
             viewed.add(statusId);
             
-            // 1. VIEW THE STATUS (mark as seen)
+            // 1. VIEW THE STATUS
             const receipt = {
                 remoteJid: 'status@broadcast',
                 id: statusId,
@@ -74,25 +73,24 @@ async function handleStatusUpdate(sock, chatUpdate) {
             
             await sock.readMessages([receipt]).catch(() => {});
             
-            // 2. REACT TO THE STATUS if enabled (green heart at bottom right)
+            // 2. REACT TO THE STATUS if enabled
             if (config.reactEnabled) {
-                // Create message key for the status
-                const statusKey = {
+                // Create the correct message key for status reaction
+                const reactionKey = {
                     remoteJid: 'status@broadcast',
+                    fromMe: false,
                     id: statusId,
-                    participant: publisher,
-                    fromMe: false
+                    participant: publisher
                 };
                 
-                // Send reaction to the status
+                // Send reaction
                 await sock.sendMessage('status@broadcast', {
                     react: {
                         text: config.reactionEmoji,
-                        key: statusKey
+                        key: reactionKey
                     }
-                }).catch(() => {});
+                }).catch(e => console.log('React error:', e.message));
                 
-                // Extract just the number part for cleaner logging
                 const publisherNumber = publisher.split('@')[0];
                 console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
             }
@@ -127,19 +125,19 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             
             // React if enabled
             if (config.reactEnabled) {
-                const statusKey = {
+                const reactionKey = {
                     remoteJid: 'status@broadcast',
+                    fromMe: false,
                     id: statusId,
-                    participant: publisher,
-                    fromMe: false
+                    participant: publisher
                 };
                 
                 await sock.sendMessage('status@broadcast', {
                     react: {
                         text: config.reactionEmoji,
-                        key: statusKey
+                        key: reactionKey
                     }
-                }).catch(() => {});
+                }).catch(e => console.log('React error:', e.message));
                 
                 const publisherNumber = publisher.split('@')[0];
                 console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
@@ -148,12 +146,11 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
     } catch (e) {}
 }
 
-// Simple on/off command with reaction control
+// Command handler
 async function autoStatusCommand(sock, chatId, message, args) {
     try {
         const cmd = args[0]?.toLowerCase();
         
-        // Main on/off
         if (cmd === 'on') {
             config.enabled = true;
             saveConfig();
@@ -168,7 +165,6 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 text: '❌ *Auto Status: OFF*' 
             }, { quoted: message });
         }
-        // Reaction control
         else if (cmd === 'react') {
             const reactCmd = args[1]?.toLowerCase();
             
@@ -203,17 +199,10 @@ async function autoStatusCommand(sock, chatId, message, args) {
             else {
                 const reactStatus = config.reactEnabled ? 'ON ✅' : 'OFF ❌';
                 await sock.sendMessage(chatId, { 
-                    text: `📱 *AUTO-REACTION SETTINGS*\n\n` +
-                          `Status: ${reactStatus}\n` +
-                          `Emoji: ${config.reactionEmoji}\n\n` +
-                          `Commands:\n` +
-                          `• .autostatus react on\n` +
-                          `• .autostatus react off\n` +
-                          `• .autostatus react emoji ❤️` 
+                    text: `📱 *AUTO-REACTION*\n\nStatus: ${reactStatus}\nEmoji: ${config.reactionEmoji}\n\nCommands:\n• .autostatus react on\n• .autostatus react off\n• .autostatus react emoji ❤️` 
                 }, { quoted: message });
             }
         }
-        // Show status
         else {
             const status = config.enabled ? 'ON ✅' : 'OFF ❌';
             const reactStatus = config.reactEnabled ? 'ON ✅' : 'OFF ❌';
