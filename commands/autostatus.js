@@ -55,25 +55,32 @@ async function handleStatusUpdate(sock, chatUpdate) {
         
         for (const msg of messages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
-            if (viewed.has(msg.key.id)) continue;
             
-            viewed.add(msg.key.id);
+            const statusId = msg.key.id;
+            if (viewed.has(statusId)) continue;
+            
+            // Get the status publisher (who posted the status)
+            const publisher = msg.key.participant || msg.key.remoteJid;
+            if (!publisher) continue;
+            
+            viewed.add(statusId);
             
             // 1. VIEW THE STATUS (mark as seen)
             const receipt = {
                 remoteJid: 'status@broadcast',
-                id: msg.key.id,
-                participant: msg.key.participant || msg.key.remoteJid
+                id: statusId,
+                participant: publisher
             };
             
             await sock.readMessages([receipt]).catch(() => {});
             
             // 2. REACT TO THE STATUS if enabled (green heart at bottom right)
             if (config.reactEnabled) {
+                // Create message key for the status
                 const statusKey = {
                     remoteJid: 'status@broadcast',
-                    id: msg.key.id,
-                    participant: msg.key.participant || msg.key.remoteJid,
+                    id: statusId,
+                    participant: publisher,
                     fromMe: false
                 };
                 
@@ -85,7 +92,9 @@ async function handleStatusUpdate(sock, chatUpdate) {
                     }
                 }).catch(() => {});
                 
-                console.log(`❤️ Auto-reacted to status from: ${(msg.key.participant || msg.key.remoteJid).split('@')[0]}`);
+                // Extract just the number part for cleaner logging
+                const publisherNumber = publisher.split('@')[0];
+                console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
             }
         }
     } catch (e) {}
@@ -98,15 +107,20 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         
         for (const msg of statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
-            if (viewed.has(msg.key.id)) continue;
             
-            viewed.add(msg.key.id);
+            const statusId = msg.key.id;
+            if (viewed.has(statusId)) continue;
+            
+            const publisher = msg.key.participant || msg.key.remoteJid;
+            if (!publisher) continue;
+            
+            viewed.add(statusId);
             
             // View status
             const receipt = {
                 remoteJid: 'status@broadcast',
-                id: msg.key.id,
-                participant: msg.key.participant || msg.key.remoteJid
+                id: statusId,
+                participant: publisher
             };
             
             await sock.readMessages([receipt]).catch(() => {});
@@ -115,8 +129,8 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             if (config.reactEnabled) {
                 const statusKey = {
                     remoteJid: 'status@broadcast',
-                    id: msg.key.id,
-                    participant: msg.key.participant || msg.key.remoteJid,
+                    id: statusId,
+                    participant: publisher,
                     fromMe: false
                 };
                 
@@ -126,6 +140,9 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                         key: statusKey
                     }
                 }).catch(() => {});
+                
+                const publisherNumber = publisher.split('@')[0];
+                console.log(`❤️ Auto-reacted to status from: ${publisherNumber}`);
             }
         }
     } catch (e) {}
