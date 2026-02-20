@@ -18,19 +18,31 @@ if (!fs.existsSync(dataDir)) {
 let config = { 
     enabled: false,
     reactEnabled: false,
-    reactionEmoji: '❤️'
+    reactionEmoji: '❤️'  // Default green heart
 };
 
 // Load config
 try {
     if (fs.existsSync(CONFIG_FILE)) {
-        config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        const loaded = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        // Merge with defaults to ensure all fields exist
+        config = {
+            enabled: loaded.enabled || false,
+            reactEnabled: loaded.reactEnabled || false,
+            reactionEmoji: loaded.reactionEmoji || '❤️'
+        };
     }
-} catch (e) {}
+} catch (e) {
+    console.log('Using default auto-status config');
+}
 
 // Save config
 function saveConfig() {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    try {
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    } catch (e) {
+        console.error('Error saving config:', e);
+    }
 }
 
 // Track viewed statuses
@@ -49,7 +61,6 @@ function getStatusPublisher(msg) {
     return msg.key.participant || 
            msg.participant || 
            msg.key.remoteJid || 
-           (msg.message && msg.message[sender]) ||
            null;
 }
 
@@ -73,10 +84,7 @@ async function handleStatusUpdate(sock, chatUpdate) {
             
             // Get publisher using helper function
             const publisher = getStatusPublisher(msg);
-            if (!publisher) {
-                console.log('⚠️ Could not determine status publisher');
-                continue;
-            }
+            if (!publisher) continue;
             
             viewed.add(statusId);
             
@@ -102,7 +110,7 @@ async function handleStatusUpdate(sock, chatUpdate) {
                 // Send reaction
                 await sock.sendMessage('status@broadcast', {
                     react: {
-                        text: config.reactionEmoji,
+                        text: config.reactionEmoji || '❤️',
                         key: reactionKey
                     }
                 }).catch(e => console.log('React error:', e.message));
@@ -151,7 +159,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                 
                 await sock.sendMessage('status@broadcast', {
                     react: {
-                        text: config.reactionEmoji,
+                        text: config.reactionEmoji || '❤️',
                         key: reactionKey
                     }
                 }).catch(e => console.log('React error:', e.message));
@@ -189,7 +197,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 config.reactEnabled = true;
                 saveConfig();
                 await sock.sendMessage(chatId, { 
-                    text: `✅ *Auto-Reaction: ON*\n\nNow reacting to statuses with ${config.reactionEmoji}` 
+                    text: `✅ *Auto-Reaction: ON*\n\nNow reacting to statuses with ${config.reactionEmoji || '❤️'}` 
                 }, { quoted: message });
             }
             else if (reactCmd === 'off') {
@@ -209,14 +217,14 @@ async function autoStatusCommand(sock, chatId, message, args) {
                     }, { quoted: message });
                 } else {
                     await sock.sendMessage(chatId, { 
-                        text: `Current reaction emoji: ${config.reactionEmoji}\n\nUsage: .autostatus react emoji ❤️` 
+                        text: `Current reaction emoji: ${config.reactionEmoji || '❤️'}\n\nUsage: .autostatus react emoji ❤️` 
                     }, { quoted: message });
                 }
             }
             else {
                 const reactStatus = config.reactEnabled ? 'ON ✅' : 'OFF ❌';
                 await sock.sendMessage(chatId, { 
-                    text: `📱 *AUTO-REACTION*\n\nStatus: ${reactStatus}\nEmoji: ${config.reactionEmoji}\n\nCommands:\n• .autostatus react on\n• .autostatus react off\n• .autostatus react emoji ❤️` 
+                    text: `📱 *AUTO-REACTION*\n\nStatus: ${reactStatus}\nEmoji: ${config.reactionEmoji || '❤️'}\n\nCommands:\n• .autostatus react on\n• .autostatus react off\n• .autostatus react emoji ❤️` 
                 }, { quoted: message });
             }
         }
@@ -226,7 +234,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
             await sock.sendMessage(chatId, { 
                 text: `📱 *AUTO STATUS*\n\n` +
                       `View Status: ${status}\n` +
-                      `Auto-Reaction: ${reactStatus} (${config.reactionEmoji})\n\n` +
+                      `Auto-Reaction: ${reactStatus} (${config.reactionEmoji || '❤️'})\n\n` +
                       `Commands:\n` +
                       `• .autostatus on\n` +
                       `• .autostatus off\n` +
