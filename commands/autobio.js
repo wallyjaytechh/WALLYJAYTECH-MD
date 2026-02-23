@@ -12,10 +12,11 @@ class AutoBioManager {
             watermark: "WALLYJAYTECH-MD",
             lastUpdate: 0,
             timezone: settings.timezone || 'Africa/Lagos',
-            updateCount: 0
+            updateCount: 0,
+            rateLimitUntil: 0 // Track when rate limit expires
         };
         this.load();
-        console.log('🤖 AutoBio initialized - Default: ENABLED (updates every 30 seconds)');
+        console.log('🤖 AutoBio initialized - Default: ENABLED (updates every 60 seconds)');
     }
 
     // Load data from file
@@ -91,13 +92,13 @@ class AutoBioManager {
         }
     }
 
-    // Generate bio text - ALL FULL GREETINGS only
+    // Generate bio text
     generateBio() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
         const watermark = this.data.watermark;
         
-        // Templates array - ALL with FULL greeting
+        // Templates array
         const templates = [
             `⏰ ${time} | ${greeting} | ${watermark}`,
             `🕒 ${time} | ${greeting} | ${watermark}`,
@@ -109,23 +110,29 @@ class AutoBioManager {
             `🎯 ${time} | ${greeting} | ${watermark}`
         ];
         
-        // Rotate template every 30 seconds
-        const index = Math.floor(Date.now() / 30000) % templates.length;
+        // Rotate template every 60 seconds
+        const index = Math.floor(Date.now() / 60000) % templates.length;
         return templates[index];
     }
 
-    // Update bio if enabled and rate limit allows
-    async updateBio(sock) {
-        if (!this.data.enabled) {
-            return;
+    // Update bio if enabled
+    async updateBio(sock, force = false) {
+        if (!this.data.enabled && !force) {
+            return false;
         }
         
         const now = Date.now();
-        const timeSinceLastUpdate = now - this.data.lastUpdate;
         
-        // Rate limiting: Update every 30 seconds
-        if (timeSinceLastUpdate < 30000) {
-            return;
+        // Check if rate limited
+        if (now < this.data.rateLimitUntil) {
+            const waitTime = Math.ceil((this.data.rateLimitUntil - now) / 1000);
+            console.log(`⏳ AutoBio rate limited, waiting ${waitTime}s`);
+            return false;
+        }
+        
+        // Rate limiting: Update every 60 seconds
+        if (!force && now - this.data.lastUpdate < 60000) {
+            return false;
         }
         
         try {
@@ -141,20 +148,33 @@ class AutoBioManager {
             this.save();
             
             console.log(`✅ Bio updated (${this.data.updateCount}): "${finalBio}"`);
+            return true;
             
         } catch (error) {
             console.error('❌ Error updating bio:', error);
             
-            // If rate limited, wait longer
-            if (error.message?.includes('rate-overlimit') || error.data === 429) {
-                console.log('⚠️ Rate limit hit, waiting 2 minutes');
-                this.data.lastUpdate = now + 120000; // Wait 2 minutes
+            // Check for rate limit error
+            if (error.message?.includes('rate') || error.message?.includes('overlimit') || error.data === 429) {
+                console.log('⚠️ Rate limit detected, waiting 5 minutes');
+                this.data.rateLimitUntil = now + 300000; // Wait 5 minutes
                 this.save();
             }
+            return false;
         }
     }
 
-    // Get demo samples - ALL with FULL greeting
+    // Force start auto bio - resets rate limit and updates immediately
+    async forceStart(sock) {
+        this.data.enabled = true;
+        this.data.rateLimitUntil = 0; // Reset rate limit
+        this.data.lastUpdate = 0; // Force update
+        this.save();
+        
+        console.log('🚀 AutoBio force started');
+        return await this.updateBio(sock, true);
+    }
+
+    // Get demo samples
     getDemoSamples() {
         const time = this.getCurrentTime();
         const greeting = this.getGreeting();
@@ -178,7 +198,7 @@ const manager = new AutoBioManager();
 
 module.exports = {
     name: 'autobio',
-    description: 'Live time bio with greeting (updates every 30 seconds)',
+    description: 'Live time bio with greeting (updates every 60 seconds)',
     
     async execute(sock, chatId, message, args) {
         try {
@@ -200,12 +220,8 @@ module.exports = {
             switch (action) {
                 case 'on':
                 case 'enable':
-                    manager.data.enabled = true;
-                    manager.data.lastUpdate = 0; // Force immediate update
-                    manager.save();
-                    
-                    // Update bio immediately
-                    await manager.updateBio(sock);
+                    // Force start with reset
+                    const started = await manager.forceStart(sock);
                     
                     const currentTimeOn = manager.getCurrentTime();
                     const currentGreetingOn = manager.getGreeting();
@@ -216,7 +232,7 @@ module.exports = {
                               `🕒 Current Time: ${currentTimeOn}\n` +
                               `👋 Greeting: ${currentGreetingOn}\n` +
                               `🏷️ Watermark: ${manager.data.watermark}\n\n` +
-                              `📱 *Update Frequency:* Every 30 seconds\n` +
+                              `📱 *Update Frequency:* Every 60 seconds\n` +
                               `🔄 *Total Updates:* ${manager.data.updateCount}`
                     }, { quoted: message });
                     break;
@@ -241,15 +257,21 @@ module.exports = {
                     
                 case 'update':
                 case 'now':
-                    await manager.updateBio(sock);
-                    const currentTimeUpdate = manager.getCurrentTime();
-                    const currentGreetingUpdate = manager.getGreeting();
-                    await sock.sendMessage(chatId, {
-                        text: `✅ *Bio Updated!*\n\n` +
-                              `Current time: ${currentTimeUpdate}\n` +
-                              `Greeting: ${currentGreetingUpdate}\n` +
-                              `Total updates: ${manager.data.updateCount}`
-                    }, { quoted: message });
+                    const updated = await manager.updateBio(sock, true);
+                    if (updated) {
+                        const currentTimeUpdate = manager.getCurrentTime();
+                        const currentGreetingUpdate = manager.getGreeting();
+                        await sock.sendMessage(chatId, {
+                            text: `✅ *Bio Updated!*\n\n` +
+                                  `Current time: ${currentTimeUpdate}\n` +
+                                  `Greeting: ${currentGreetingUpdate}\n` +
+                                  `Total updates: ${manager.data.updateCount}`
+                        }, { quoted: message });
+                    } else {
+                        await sock.sendMessage(chatId, {
+                            text: `❌ *Update failed!*\n\nCheck console for errors.`
+                        }, { quoted: message });
+                    }
                     break;
                     
                 case 'watermark':
@@ -258,7 +280,7 @@ module.exports = {
                         manager.data.watermark = newWatermark;
                         manager.save();
                         
-                        await manager.updateBio(sock);
+                        await manager.updateBio(sock, true);
                         
                         await sock.sendMessage(chatId, {
                             text: `🏷️ *Watermark Updated!*\n\nNew watermark: "${newWatermark}"`
@@ -280,6 +302,9 @@ module.exports = {
                             new Date().toLocaleString('en-US', { timeZone: newTimezone });
                             manager.data.timezone = newTimezone;
                             manager.save();
+                            
+                            // Update bio with new timezone
+                            await manager.updateBio(sock, true);
                             
                             await sock.sendMessage(chatId, {
                                 text: `🌍 *Timezone Updated!*\n\n` +
@@ -306,11 +331,24 @@ module.exports = {
                 case 'status':
                 case 'info':
                     const status = manager.data.enabled ? '🟢 ENABLED' : '🔴 DISABLED';
-                    const lastUpdate = manager.data.lastUpdate ? 
+                    const lastUpdate = manager.data.lastUpdate > 0 ? 
                         new Date(manager.data.lastUpdate).toLocaleTimeString() : 'Never';
-                    const nextUpdate = manager.data.lastUpdate ? 
-                        `Next update in ${Math.max(0, Math.floor((30000 - (Date.now() - manager.data.lastUpdate)) / 1000))}s` : 
-                        'Next update: Soon';
+                    
+                    let nextUpdateText = 'Next update: Soon';
+                    if (manager.data.enabled && manager.data.lastUpdate > 0) {
+                        const secondsUntil = Math.max(0, Math.floor((60000 - (Date.now() - manager.data.lastUpdate)) / 1000));
+                        if (secondsUntil > 0) {
+                            nextUpdateText = `Next update in ${secondsUntil}s`;
+                        } else {
+                            nextUpdateText = 'Updating soon...';
+                        }
+                    }
+                    
+                    // Check if rate limited
+                    if (Date.now() < manager.data.rateLimitUntil) {
+                        const rateLimitRemaining = Math.ceil((manager.data.rateLimitUntil - Date.now()) / 1000);
+                        nextUpdateText = `⚠️ Rate limited (${rateLimitRemaining}s remaining)`;
+                    }
                     
                     await sock.sendMessage(chatId, {
                         text: `📊 *Live Time Bio Status*\n\n` +
@@ -321,8 +359,8 @@ module.exports = {
                               `Watermark: ${manager.data.watermark}\n` +
                               `Last Update: ${lastUpdate}\n` +
                               `Total Updates: ${manager.data.updateCount}\n` +
-                              `${nextUpdate}\n\n` +
-                              `📱 *Update Frequency:* Every 30 seconds`
+                              `${nextUpdateText}\n\n` +
+                              `📱 *Update Frequency:* Every 60 seconds`
                     }, { quoted: message });
                     break;
                     
@@ -342,10 +380,9 @@ module.exports = {
                               `👋 *Greeting:* ${manager.getGreeting()}\n` +
                               `🏷️ *Watermark:* ${manager.data.watermark}\n` +
                               `🌍 *Timezone:* ${manager.data.timezone}\n\n` +
-                              `⚡ *Updates every 30 seconds*\n` +
-                              `🔄 *Template rotates every 30 seconds*\n` +
-                              `📱 *Works on iOS & Android*\n\n` +
-                              `*All formats show FULL greeting (GOOD MORNING/AFTERNOON/EVENING/NIGHT)*`
+                              `⚡ *Updates every 60 seconds*\n` +
+                              `🔄 *Template rotates every 60 seconds*\n` +
+                              `📱 *Works on iOS & Android*`
                     }, { quoted: message });
                     break;
                     
@@ -358,7 +395,7 @@ module.exports = {
                               `*Timezone:* ${manager.data.timezone}\n` +
                               `*Watermark:* ${manager.data.watermark}\n` +
                               `*Total Updates:* ${manager.data.updateCount}\n\n` +
-                              `📱 *Updates every 30 seconds*\n\n` +
+                              `📱 *Updates every 60 seconds*\n\n` +
                               `*Commands:*\n` +
                               `• .autobio on - Enable auto bio\n` +
                               `• .autobio off - Disable auto bio\n` +
@@ -379,8 +416,17 @@ module.exports = {
         }
     },
     
-    // Function to be called every 30 seconds from main.js
+    // Function to be called every 60 seconds from main.js
     async updateBioIfNeeded(sock) {
-        await manager.updateBio(sock);
+        return await manager.updateBio(sock);
+    },
+    
+    // Function to force start when bot connects
+    async forceStartOnConnect(sock) {
+        if (manager.data.enabled) {
+            console.log('🚀 AutoBio force starting on connect...');
+            return await manager.forceStart(sock);
+        }
+        return false;
     }
 };
