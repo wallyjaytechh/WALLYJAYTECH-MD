@@ -418,7 +418,7 @@ setInterval(async () => {
     } catch (error) {
         console.error('AutoBio update error:', error);
     }
-}, 30000); // Update every minute (30000ms)
+}, 60000); // Update every minute (30000ms)
 // AntiBot detection (add this before command processing)
 if (await handleAntibotDetection(sock, chatId, message)) {
     return; // Stop processing if bot detected
