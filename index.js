@@ -4,154 +4,146 @@
 //                                                                                                                                                            //
 //                                                                  𝐕 : 1.0.0                                                                                 //
 //                                                                                                                                                            //
-//                                                                                                                                                            //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
-//                                                                                                                                                            //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
-//                                                                                                                                                            //
-//                                                                                                                                                            //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//* 
-//  * project_name : WALLYJAYTECH-MD
-//  * author : wallyjaytech
-//  * youtube : https://www.youtube.com/wallyjaytechy
-//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
-//*
-//*
-//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
-//Instagram: wallyjaytech
-//Telegram: t.me/wallyjaytech
-//GitHub: wallyjaytechh
-//WhatsApp: +2348144317152
-//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
-//   * Created By Github: wallyjaytechh.
-//   * Credit To ally jay tech
-//   * © 2025 WALLYJAYTECH-MD.
-// ⛥┌┤
-// */ 
 
 global.File = class File {};
-require('./settings')
-const { Boom } = require('@hapi/boom')
-const fs = require('fs')
-const chalk = require('chalk')
-const FileType = require('file-type')
-const path = require('path')
-const axios = require('axios')
+require('./settings');
+const { Boom } = require('@hapi/boom');
+const fs = require('fs');
+const chalk = require('chalk');
+const path = require('path');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
 const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
-const PhoneNumber = require('awesome-phonenumber')
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
+const PhoneNumber = require('awesome-phonenumber');
+const { smsg } = require('./lib/myfunc');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
     DisconnectReason,
     fetchLatestBaileysVersion,
-    generateForwardMessageContent,
-    prepareWAMessageMedia,
-    generateWAMessageFromContent,
-    generateMessageID,
-    downloadContentFromMessage,
     jidDecode,
-    proto,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
     delay
-} = require("@whiskeysockets/baileys")
-const NodeCache = require("node-cache")
-// Using a lightweight persisted store instead of makeInMemoryStore (compat across versions)
-const pino = require("pino")
-const readline = require("readline")
-const { parsePhoneNumber } = require("libphonenumber-js")
-const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics')
-const { rmSync, existsSync } = require('fs')
-const { join } = require('path')
+} = require("@whiskeysockets/baileys");
+const NodeCache = require("node-cache");
+const pino = require("pino");
+const readline = require("readline");
+const { rmSync } = require('fs');
 
+// Import lightweight store
+const store = require('./lib/lightweight_store');
+store.readFromFile();
+const settings = require('./settings');
+setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000);
 
+// Memory optimization
+setInterval(() => {
+    if (global.gc) {
+        global.gc();
+        console.log('🧹 Garbage collection completed');
+    }
+}, 60000);
+
+setInterval(() => {
+    const used = process.memoryUsage().rss / 1024 / 1024;
+    if (used > 400) {
+        console.log('⚠️ RAM too high (>400MB), restarting bot...');
+        process.exit(1);
+    }
+}, 30000);
+
+let phoneNumber = "2348155763709";
+let owner = JSON.parse(fs.readFileSync('./data/owner.json'));
+
+global.botname = "WALLYJAYTECH-MD";
+global.themeemoji = "🤖";
+const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
+const useMobile = process.argv.includes("--mobile");
+
+const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null;
+const question = (text) => {
+    if (rl) {
+        return new Promise((resolve) => rl.question(text, resolve));
+    } else {
+        return Promise.resolve(settings.ownerNumber || phoneNumber);
+    }
+};
 
 function getCommandCount() {
     try {
-        const mainJsPath = require('path').join(__dirname, 'main.js');
-        const mainJsContent = require('fs').readFileSync(mainJsPath, 'utf8');
-        
-        let commandCount = 0;
-        
-        // Count all case statements in main.js
+        const mainJsPath = path.join(__dirname, 'main.js');
+        const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
         const casePattern = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
-        
-        let match;
+        let match, commandCount = 0;
         while ((match = casePattern.exec(mainJsContent)) !== null) {
-            if (match[2]) {
-                commandCount++;
-            }
+            if (match[2]) commandCount++;
         }
-        
-        console.log(`🤖 Auto-detected ${commandCount} commands`);
-        return commandCount;
-        
+        return commandCount || 150;
     } catch (error) {
-        console.error('Error counting commands:', error);
-        return 150; // Fallback number
+        return 150;
     }
 }
 
+// ==================== SIMPLE AUTOBIO FUNCTION ====================
+const AUTOBIO_FILE = path.join(__dirname, 'data/autobio.json');
+let autobioEnabled = true;
+let autobioLastUpdate = 0;
+const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 
-// Import lightweight store
-const store = require('./lib/lightweight_store')
-
-// Initialize store
-store.readFromFile()
-const settings = require('./settings')
-setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
-
-// Memory optimization - Force garbage collection if available
-setInterval(() => {
-    if (global.gc) {
-        global.gc()
-        console.log('🧹 Garbage collection completed')
+// Load autobio state
+try {
+    if (fs.existsSync(AUTOBIO_FILE)) {
+        const saved = JSON.parse(fs.readFileSync(AUTOBIO_FILE, 'utf8'));
+        autobioEnabled = saved.enabled !== false;
     }
-}, 60_000) // every 1 minute
+} catch (e) {}
 
-// Memory monitoring - Restart if RAM gets too high
-setInterval(() => {
-    const used = process.memoryUsage().rss / 1024 / 1024
-    if (used > 400) {
-        console.log('⚠️ RAM too high (>400MB), restarting bot...')
-        process.exit(1) // Panel will auto-restart
-    }
-}, 30_000) // check every 30 seconds
+function saveAutobioState() {
+    try {
+        const dir = path.dirname(AUTOBIO_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(AUTOBIO_FILE, JSON.stringify({ enabled: autobioEnabled }, null, 2));
+    } catch (e) {}
+}
 
-let phoneNumber = "2348155763709"
-let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
-
-global.botname = "WALLYJAYTECH-MD"
-global.themeemoji = "🤖"
-const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
-const useMobile = process.argv.includes("--mobile")
-
-// Only create readline interface if we're in an interactive environment
-const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null
-const question = (text) => {
-    if (rl) {
-        return new Promise((resolve) => rl.question(text, resolve))
-    } else {
-        // In non-interactive environment, use ownerNumber from settings
-        return Promise.resolve(settings.ownerNumber || phoneNumber)
+async function updateAutobio(sock) {
+    if (!autobioEnabled) return false;
+    
+    const now = Date.now();
+    // Update every hour to avoid rate limiting
+    if (now - autobioLastUpdate < 3600000) return false;
+    
+    try {
+        await sock.updateProfileStatus(AUTOBIO_TEXT);
+        autobioLastUpdate = now;
+        console.log(`✅ AutoBio updated: "${AUTOBIO_TEXT}"`);
+        return true;
+    } catch (error) {
+        console.error('❌ AutoBio update error:', error.message);
+        return false;
     }
 }
 
+async function forceUpdateAutobio(sock) {
+    if (!autobioEnabled) return false;
+    try {
+        await sock.updateProfileStatus(AUTOBIO_TEXT);
+        autobioLastUpdate = Date.now();
+        console.log(`✅ AutoBio forced update: "${AUTOBIO_TEXT}"`);
+        return true;
+    } catch (error) {
+        console.error('❌ AutoBio force update error:', error.message);
+        return false;
+    }
+}
+// ==================== END AUTOBIO ====================
 
 async function startXeonBotInc() {
     try {
-        let { version, isLatest } = await fetchLatestBaileysVersion()
-        const { state, saveCreds } = await useMultiFileAuthState(`./session`)
-        const msgRetryCounterCache = new NodeCache()
+        let { version } = await fetchLatestBaileysVersion();
+        const { state, saveCreds } = await useMultiFileAuthState(`./session`);
+        const msgRetryCounterCache = new NodeCache();
 
         const XeonBotInc = makeWASocket({
             version,
@@ -166,175 +158,162 @@ async function startXeonBotInc() {
             generateHighQualityLinkPreview: true,
             syncFullHistory: false,
             getMessage: async (key) => {
-                let jid = jidNormalizedUser(key.remoteJid)
-                let msg = await store.loadMessage(jid, key.id)
-                return msg?.message || ""
+                let jid = jidNormalizedUser(key.remoteJid);
+                let msg = await store.loadMessage(jid, key.id);
+                return msg?.message || "";
             },
             msgRetryCounterCache,
             defaultQueryTimeoutMs: 60000,
             connectTimeoutMs: 60000,
             keepAliveIntervalMs: 10000,
-        })
+        });
 
-        // Save credentials when they update
-        XeonBotInc.ev.on('creds.update', saveCreds)
+        XeonBotInc.ev.on('creds.update', saveCreds);
+        store.bind(XeonBotInc.ev);
 
-    store.bind(XeonBotInc.ev)
-
-// Message handling
-    XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
-        try {
-            const mek = chatUpdate.messages[0]
-            if (!mek.message) return
-            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-            
-            // Handle status updates FIRST and immediately
-            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                // Process status instantly without waiting
-                handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
-                    console.error("Status view error:", err.message);
-                });
-                // Do NOT return - let other processing continue
-            }
-            
-            // In private mode, only block non-group messages (allow groups for moderation)
-            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
-                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-                if (!isGroup) return // Block DMs in private mode, but allow group messages
-            }
-            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
-
-            // Clear message retry cache to prevent memory bloat
-            if (XeonBotInc?.msgRetryCounterCache) {
-                XeonBotInc.msgRetryCounterCache.clear()
-            }
-
+        // Message handling
+        XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
             try {
-                await handleMessages(XeonBotInc, chatUpdate, true)
-            } catch (err) {
-                console.error("Error in handleMessages:", err)
-                // Only try to send error message if we have a valid chatId
-                if (mek.key && mek.key.remoteJid) {
-                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                        text: '❌ An error occurred while processing your message.',
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363420618370733@newsletter',
-                                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                                serverMessageId: -1
-                            }
-                        }
-                    }).catch(console.error);
+                const mek = chatUpdate.messages[0];
+                if (!mek.message) return;
+                mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
+                
+                if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+                    handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
+                        console.error("Status view error:", err.message);
+                    });
                 }
+                
+                if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
+                    const isGroup = mek.key?.remoteJid?.endsWith('@g.us');
+                    if (!isGroup) return;
+                }
+                if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
+
+                if (XeonBotInc?.msgRetryCounterCache) {
+                    XeonBotInc.msgRetryCounterCache.clear();
+                }
+
+                try {
+                    await handleMessages(XeonBotInc, chatUpdate, true);
+                } catch (err) {
+                    console.error("Error in handleMessages:", err);
+                    if (mek.key && mek.key.remoteJid) {
+                        await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                            text: '❌ An error occurred while processing your message.',
+                            contextInfo: {
+                                forwardingScore: 1,
+                                isForwarded: true,
+                                forwardedNewsletterMessageInfo: {
+                                    newsletterJid: '120363420618370733@newsletter',
+                                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                                    serverMessageId: -1
+                                }
+                            }
+                        }).catch(console.error);
+                    }
+                }
+            } catch (err) {
+                console.error("Error in messages.upsert:", err);
             }
-        } catch (err) {
-            console.error("Error in messages.upsert:", err)
-        }
-    })
+        });
 
-    // Add these event handlers for better functionality
-    XeonBotInc.decodeJid = (jid) => {
-        if (!jid) return jid
-        if (/:\d+@/gi.test(jid)) {
-            let decode = jidDecode(jid) || {}
-            return decode.user && decode.server && decode.user + '@' + decode.server || jid
-        } else return jid
-    }
+        XeonBotInc.decodeJid = (jid) => {
+            if (!jid) return jid;
+            if (/:\d+@/gi.test(jid)) {
+                let decode = jidDecode(jid) || {};
+                return decode.user && decode.server && decode.user + '@' + decode.server || jid;
+            } else return jid;
+        };
 
-    XeonBotInc.ev.on('contacts.update', update => {
-        for (let contact of update) {
-            let id = XeonBotInc.decodeJid(contact.id)
-            if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
-        }
-    })
-
-    XeonBotInc.getName = (jid, withoutContact = false) => {
-        id = XeonBotInc.decodeJid(jid)
-        withoutContact = XeonBotInc.withoutContact || withoutContact
-        let v
-        if (id.endsWith("@g.us")) return new Promise(async (resolve) => {
-            v = store.contacts[id] || {}
-            if (!(v.name || v.subject)) v = XeonBotInc.groupMetadata(id) || {}
-            resolve(v.name || v.subject || PhoneNumber('+' + id.replace('@s.whatsapp.net', '')).getNumber('international'))
-        })
-        else v = id === '0@s.whatsapp.net' ? {
-            id,
-            name: 'WhatsApp'
-        } : id === XeonBotInc.decodeJid(XeonBotInc.user.id) ?
-            XeonBotInc.user :
-            (store.contacts[id] || {})
-        return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
-    }
-
-    XeonBotInc.public = true
-
-    XeonBotInc.serializeM = (m) => smsg(XeonBotInc, m, store)
-
-    // Handle pairing code
-    if (pairingCode && !XeonBotInc.authState.creds.registered) {
-        if (useMobile) throw new Error('Cannot use pairing code with mobile api')
-
-        let phoneNumber
-        if (!!global.phoneNumber) {
-            phoneNumber = global.phoneNumber
-        } else {
-            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFormat: 2348155763709 (without + or spaces) : `)))
-        }
-
-        // Clean the phone number - remove any non-digit characters
-        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
-
-        // Validate the phone number using awesome-phonenumber
-        const pn = require('awesome-phonenumber');
-        if (!pn('+' + phoneNumber).isValid()) {
-            console.log(chalk.red('Invalid phone number. Please enter your full international number (e.g., 16543897634 for US, 448756980975 for UK, 2348155763709 for Nigeria etc.) without + or spaces.'));
-            process.exit(1);
-        }
-
-        setTimeout(async () => {
-            try {
-                let code = await XeonBotInc.requestPairingCode(phoneNumber)
-                code = code?.match(/.{1,4}/g)?.join("-") || code
-                console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
-                console.log(chalk.yellow(`\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap "Link a Device"\n4. Enter the code shown above`))
-            } catch (error) {
-                console.error('Error requesting pairing code:', error)
-                console.log(chalk.red('Failed to get pairing code. Please check your phone number and try again.'))
+        XeonBotInc.ev.on('contacts.update', update => {
+            for (let contact of update) {
+                let id = XeonBotInc.decodeJid(contact.id);
+                if (store && store.contacts) store.contacts[id] = { id, name: contact.notify };
             }
-        }, 3000)
-    }
+        });
 
-    // Connection handling
-    XeonBotInc.ev.on('connection.update', async (s) => {
-        const { connection, lastDisconnect, qr } = s
-        
-        if (qr) {
-            console.log(chalk.cyan('📱 QR Code generated. Please scan with WhatsApp.'))
+        XeonBotInc.getName = (jid, withoutContact = false) => {
+            let id = XeonBotInc.decodeJid(jid);
+            withoutContact = XeonBotInc.withoutContact || withoutContact;
+            let v;
+            if (id.endsWith("@g.us")) return new Promise(async (resolve) => {
+                v = store.contacts[id] || {};
+                if (!(v.name || v.subject)) v = XeonBotInc.groupMetadata(id) || {};
+                resolve(v.name || v.subject || PhoneNumber('+' + id.replace('@s.whatsapp.net', '')).getNumber('international'));
+            });
+            else v = id === '0@s.whatsapp.net' ? {
+                id,
+                name: 'WhatsApp'
+            } : id === XeonBotInc.decodeJid(XeonBotInc.user.id) ?
+                XeonBotInc.user :
+                (store.contacts[id] || {});
+            return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international');
+        };
+
+        XeonBotInc.public = true;
+        XeonBotInc.serializeM = (m) => smsg(XeonBotInc, m, store);
+
+        // Handle pairing code
+        if (pairingCode && !XeonBotInc.authState.creds.registered) {
+            if (useMobile) throw new Error('Cannot use pairing code with mobile api');
+            let phoneNumber;
+            if (!!global.phoneNumber) {
+                phoneNumber = global.phoneNumber;
+            } else {
+                phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFormat: 2348155763709 (without + or spaces) : `)));
+            }
+            phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+            const pn = require('awesome-phonenumber');
+            if (!pn('+' + phoneNumber).isValid()) {
+                console.log(chalk.red('Invalid phone number. Please enter your full international number.'));
+                process.exit(1);
+            }
+            setTimeout(async () => {
+                try {
+                    let code = await XeonBotInc.requestPairingCode(phoneNumber);
+                    code = code?.match(/.{1,4}/g)?.join("-") || code;
+                    console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)));
+                    console.log(chalk.yellow(`\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap "Link a Device"\n4. Enter the code shown above`));
+                } catch (error) {
+                    console.error('Error requesting pairing code:', error);
+                }
+            }, 3000);
         }
-        
-        if (connection === 'connecting') {
-            console.log(chalk.cyan('🔄 Connecting to WhatsApp...'))
-        }
-        
-        if (connection == "open") {
-            console.log(chalk.magenta(` `))
-            console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
-if (connection == "open") {
-        // Start auto-update checker
-    try {
-        const { autoCheckUpdates } = require('./commands/checkupdate');
-        autoCheckUpdates(XeonBotInc);
-    } catch (error) {
-        console.error('Failed to start auto-update checker:', error);
-    }
-    
-}
-            try {
-                const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-                await XeonBotInc.sendMessage(botNumber, {
-    text: `╔═══════════════════╗
+
+        // Connection handling
+        XeonBotInc.ev.on('connection.update', async (s) => {
+            const { connection, lastDisconnect, qr } = s;
+            
+            if (qr) {
+                console.log(chalk.cyan('📱 QR Code generated. Please scan with WhatsApp.'));
+            }
+            
+            if (connection === 'connecting') {
+                console.log(chalk.cyan('🔄 Connecting to WhatsApp...'));
+            }
+            
+            if (connection == "open") {
+                console.log(chalk.magenta(` `));
+                console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)));
+                
+                // Start auto-update checker
+                try {
+                    const { autoCheckUpdates } = require('./commands/checkupdate');
+                    autoCheckUpdates(XeonBotInc);
+                } catch (error) {
+                    console.error('Failed to start auto-update checker:', error);
+                }
+                
+                // ========== START AUTOBIO ON CONNECT ==========
+                await forceUpdateAutobio(XeonBotInc);
+                console.log('✅ AutoBio started - Status will show: "POWERED BY WALLYJAYTECH-MD"');
+                // ========== END AUTOBIO ==========
+                
+                try {
+                    const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
+                    await XeonBotInc.sendMessage(botNumber, {
+                        text: `╔═══════════════════╗
 ║   🤖 BOT ACTIVATED!   ║
 ╠═══════════════════╣
 ║  📅 ${new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos' })}
@@ -373,112 +352,111 @@ if (connection == "open") {
 *💻 GitHub:* https://github.com/wallyjaytechh
 
 *🛠️ WALLYJAYTECH-MD - Professional WhatsApp Bot*`,
-    contextInfo: {
-        forwardingScore: 1,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363420618370733@newsletter',
-            newsletterName: 'WALLYJAYTECH-MD BOTS',
-            serverMessageId: -1
-        }
-    }
-});
-            } catch (error) {
-                console.error('Error sending connection message:', error.message)
-            }
-
-            await delay(1999)
-            console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'WALLYJAYTECH-MD'} ]`)}\n\n`))
-            console.log(chalk.cyan(`< ================================================== >`))
-            console.log(chalk.magenta(`\n${global.themeemoji || '•'} YT CHANNEL: WALLY JAY TECH`))
-            console.log(chalk.magenta(`${global.themeemoji || '•'} GITHUB: wallyjaytechh`))
-            console.log(chalk.magenta(`${global.themeemoji || '•'} WA NUMBER: ${owner}`))
-            console.log(chalk.magenta(`${global.themeemoji || '•'} CREDIT: WALLY JAY TECH`))
-            console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected Successfully! ✅`))
-            console.log(chalk.blue(`Bot Version: ${settings.version}`))
-        }
-        
-        if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
-            const statusCode = lastDisconnect?.error?.output?.statusCode
-            
-            console.log(chalk.red(`Connection closed due to ${lastDisconnect?.error}, reconnecting ${shouldReconnect}`))
-            
-            if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
-                try {
-                    rmSync('./session', { recursive: true, force: true })
-                    console.log(chalk.yellow('Session folder deleted. Please re-authenticate.'))
+                        contextInfo: {
+                            forwardingScore: 1,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363420618370733@newsletter',
+                                newsletterName: 'WALLYJAYTECH-MD BOTS',
+                                serverMessageId: -1
+                            }
+                        }
+                    });
                 } catch (error) {
-                    console.error('Error deleting session:', error)
+                    console.error('Error sending connection message:', error.message);
                 }
-                console.log(chalk.red('Session logged out. Please re-authenticate.'))
+
+                await delay(1999);
+                console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'WALLYJAYTECH-MD'} ]`)}\n\n`));
+                console.log(chalk.cyan(`< ================================================== >`));
+                console.log(chalk.magenta(`\n${global.themeemoji || '•'} YT CHANNEL: WALLY JAY TECH`));
+                console.log(chalk.magenta(`${global.themeemoji || '•'} GITHUB: wallyjaytechh`));
+                console.log(chalk.magenta(`${global.themeemoji || '•'} WA NUMBER: ${owner}`));
+                console.log(chalk.magenta(`${global.themeemoji || '•'} CREDIT: WALLY JAY TECH`));
+                console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected Successfully! ✅`));
+                console.log(chalk.blue(`Bot Version: ${settings.version}`));
             }
             
-            if (shouldReconnect) {
-                console.log(chalk.yellow('Reconnecting...'))
-                await delay(5000)
-                startXeonBotInc()
+            if (connection === 'close') {
+                const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                
+                console.log(chalk.red(`Connection closed due to ${lastDisconnect?.error}, reconnecting ${shouldReconnect}`));
+                
+                if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                    try {
+                        rmSync('./session', { recursive: true, force: true });
+                        console.log(chalk.yellow('Session folder deleted. Please re-authenticate.'));
+                    } catch (error) {
+                        console.error('Error deleting session:', error);
+                    }
+                }
+                
+                if (shouldReconnect) {
+                    console.log(chalk.yellow('Reconnecting...'));
+                    await delay(5000);
+                    startXeonBotInc();
+                }
             }
-        }
-    })
+        });
 
-    // Use the new anticall handler
-    const { handleAnticall } = require('./commands/anticall');
-    XeonBotInc.ev.on('call', async (calls) => {
-        await handleAnticall(XeonBotInc, calls);
-    });
+        // Anticall handler
+        const { handleAnticall } = require('./commands/anticall');
+        XeonBotInc.ev.on('call', async (calls) => {
+            await handleAnticall(XeonBotInc, calls);
+        });
 
-    XeonBotInc.ev.on('group-participants.update', async (update) => {
-        await handleGroupParticipantUpdate(XeonBotInc, update);
-    });
+        // Group participants handler
+        XeonBotInc.ev.on('group-participants.update', async (update) => {
+            await handleGroupParticipantUpdate(XeonBotInc, update);
+        });
 
-    // REMOVED: The conflicting reaction handler that was causing issues
-    // Now reactions are handled directly by autostatus.js
-
-    // Handle bulk status updates when multiple statuses appear
-    XeonBotInc.ev.on('messages.upsert', async (m) => {
-        // Check for multiple status messages
-        if (m.messages && m.messages.length > 1) {
-            const statusMessages = m.messages.filter(msg => 
-                msg.key && msg.key.remoteJid === 'status@broadcast'
-            );
-            
-            if (statusMessages.length > 0) {
-                // Import handleBulkStatusUpdate from autostatus.js
-                const { handleBulkStatusUpdate } = require('./commands/autostatus');
-                handleBulkStatusUpdate(XeonBotInc, statusMessages).catch(err => {
-                    console.error("Bulk status error:", err.message);
-                });
+        // Bulk status handler
+        XeonBotInc.ev.on('messages.upsert', async (m) => {
+            if (m.messages && m.messages.length > 1) {
+                const statusMessages = m.messages.filter(msg => 
+                    msg.key && msg.key.remoteJid === 'status@broadcast'
+                );
+                if (statusMessages.length > 0) {
+                    handleBulkStatusUpdate(XeonBotInc, statusMessages).catch(err => {
+                        console.error("Bulk status error:", err.message);
+                    });
+                }
             }
-        }
-    });
+        });
 
-    return XeonBotInc
+        // ========== AUTOBIO PERIODIC UPDATER (every hour) ==========
+        setInterval(async () => {
+            await updateAutobio(XeonBotInc);
+        }, 3600000); // Update every hour
+        // ========== END AUTOBIO UPDATER ==========
+
+        return XeonBotInc;
     } catch (error) {
-        console.error('Error in startXeonBotInc:', error)
-        await delay(5000)
-        startXeonBotInc()
+        console.error('Error in startXeonBotInc:', error);
+        await delay(5000);
+        startXeonBotInc();
     }
 }
 
-
-// Start the bot with error handling
+// Start the bot
 startXeonBotInc().catch(error => {
-    console.error('Fatal error:', error)
-    process.exit(1)
-})
+    console.error('Fatal error:', error);
+    process.exit(1);
+});
+
 process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err)
-})
+    console.error('Uncaught Exception:', err);
+});
 
-process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Rejection:', err)
-})
+process.on('unhandledRejection', (err) {
+    console.error('Unhandled Rejection:', err);
+});
 
-let file = require.resolve(__filename)
+let file = require.resolve(__filename);
 fs.watchFile(file, () => {
-    fs.unwatchFile(file)
-    console.log(chalk.redBright(`Update ${__filename}`))
-    delete require.cache[file]
-    require(file)
-})
+    fs.unwatchFile(file);
+    console.log(chalk.redBright(`Update ${__filename}`));
+    delete require.cache[file];
+    require(file);
+});
