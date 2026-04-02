@@ -1,9 +1,5 @@
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                            //
 //                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
-//                                                                                                                                                            //
-//                                                                  𝐕 : 1.0.0                                                                                 //
-//                                                                                                                                                            //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 
 global.File = class File {};
@@ -85,7 +81,7 @@ function getCommandCount() {
     }
 }
 
-// ==================== SIMPLE AUTOBIO ====================
+// ==================== STANDALONE AUTOBIO ====================
 const AUTOBIO_FILE = path.join(__dirname, 'data/autobio.json');
 const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 let autobioEnabled = true;
@@ -97,12 +93,15 @@ try {
         const saved = JSON.parse(fs.readFileSync(AUTOBIO_FILE, 'utf8'));
         autobioEnabled = saved.enabled !== false;
     }
-} catch (e) {}
+} catch (e) {
+    // Create default file
+    const dir = path.dirname(AUTOBIO_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(AUTOBIO_FILE, JSON.stringify({ enabled: true }, null, 2));
+}
 
 function saveAutobioState() {
     try {
-        const dir = path.dirname(AUTOBIO_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(AUTOBIO_FILE, JSON.stringify({ enabled: autobioEnabled }, null, 2));
     } catch (e) {}
 }
@@ -111,16 +110,15 @@ async function updateAutobio(sock) {
     if (!autobioEnabled) return false;
     
     const now = Date.now();
-    // Update every hour to avoid rate limiting
     if (now - autobioLastUpdate < 3600000) return false;
     
     try {
         await sock.updateProfileStatus(AUTOBIO_TEXT);
         autobioLastUpdate = now;
-        console.log(`✅ AutoBio: "${AUTOBIO_TEXT}"`);
+        console.log(`✅ AutoBio updated: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
-        console.error('❌ AutoBio error:', error.message);
+        console.error(`❌ AutoBio error:`, error.message);
         return false;
     }
 }
@@ -130,11 +128,41 @@ async function forceUpdateAutobio(sock) {
     try {
         await sock.updateProfileStatus(AUTOBIO_TEXT);
         autobioLastUpdate = Date.now();
-        console.log(`✅ AutoBio forced: "${AUTOBIO_TEXT}"`);
+        console.log(`✅ AutoBio set: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
-        console.error('❌ AutoBio force error:', error.message);
+        console.error(`❌ AutoBio force error:`, error.message);
         return false;
+    }
+}
+
+// Autobio command handler
+async function handleAutobioCommand(sock, chatId, message, args) {
+    const senderId = message.key.participant || message.key.remoteJid;
+    const isOwner = message.key.fromMe || (senderId.includes(settings.ownerNumber) || senderId === settings.ownerNumber + '@s.whatsapp.net');
+    
+    if (!isOwner) {
+        await sock.sendMessage(chatId, { text: '❌ Only bot owner can use this command!' }, { quoted: message });
+        return;
+    }
+    
+    const action = args[0]?.toLowerCase();
+    
+    if (action === 'on' || action === 'enable') {
+        autobioEnabled = true;
+        saveAutobioState();
+        await forceUpdateAutobio(sock);
+        await sock.sendMessage(chatId, { text: `✅ AutoBio ENABLED\n\n📱 Bio: ${AUTOBIO_TEXT}` }, { quoted: message });
+    } 
+    else if (action === 'off' || action === 'disable') {
+        autobioEnabled = false;
+        saveAutobioState();
+        await sock.sendMessage(chatId, { text: `❌ AutoBio DISABLED` }, { quoted: message });
+    }
+    else {
+        await sock.sendMessage(chatId, { 
+            text: `⚙️ *AutoBio*\n\nStatus: ${autobioEnabled ? '🟢 ON' : '🔴 OFF'}\nBio: ${AUTOBIO_TEXT}\n\n.autobio on - Enable\n.autobio off - Disable` 
+        }, { quoted: message });
     }
 }
 // ==================== END AUTOBIO ====================
@@ -192,6 +220,14 @@ async function startXeonBotInc() {
 
                 if (XeonBotInc?.msgRetryCounterCache) {
                     XeonBotInc.msgRetryCounterCache.clear();
+                }
+
+                // Check for .autobio command in the message text
+                const msgText = mek.message?.conversation || mek.message?.extendedTextMessage?.text || '';
+                if (msgText.startsWith('.autobio')) {
+                    const args = msgText.slice(8).trim().split(/\s+/);
+                    await handleAutobioCommand(XeonBotInc, mek.key.remoteJid, mek, args);
+                    return;
                 }
 
                 try {
@@ -305,8 +341,9 @@ async function startXeonBotInc() {
                     console.error('Failed to start auto-update checker:', error);
                 }
                 
-                // ========== FORCE AUTOBIO ON CONNECT ==========
+                // ========== SET AUTOBIO ON CONNECT ==========
                 await forceUpdateAutobio(XeonBotInc);
+                console.log('✅ AutoBio active - Status: "POWERED BY WALLYJAYTECH-MD"');
                 // ========== END AUTOBIO ==========
                 
                 try {
