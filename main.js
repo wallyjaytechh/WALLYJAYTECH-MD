@@ -81,7 +81,6 @@ const {
     showTypingAfterCommand 
 } = require('./commands/autotyping');
 const { autoStatusCommand } = require('./commands/autostatus');
-const { execute: autobioCommand, updateBioIfNeeded: updateAutoBio } = require('./commands/autobio');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
@@ -712,9 +711,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage === '.joke':
                 await jokeCommand(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.autobio'):
-    await autobioCommand(sock, chatId, message, userMessage.split(' ').slice(1));
-    break;
+            
                       case userMessage === '.quote':
                 await quoteCommand(sock, chatId, message);
                 break;
