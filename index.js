@@ -20,8 +20,7 @@ const {
     jidDecode,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
-    delay,
-    proto
+    delay
 } = require("@whiskeysockets/baileys");
 const NodeCache = require("node-cache");
 const pino = require("pino");
@@ -82,7 +81,7 @@ function getCommandCount() {
     }
 }
 
-// ==================== UPDATED AUTOBIO FOR NEW WHATSAPP UPDATE ====================
+// ==================== AUTOBIO FOR BAILEYS v7.x.x ====================
 const AUTOBIO_FILE = path.join(__dirname, 'data/autobio.json');
 const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 let autobioEnabled = true;
@@ -106,9 +105,7 @@ function saveAutobioState() {
     } catch (e) {}
 }
 
-// NEW METHOD: Using updateProfileName for about/status
-// WhatsApp now uses status (about) that can be set via updateProfileStatus
-// If that fails, we'll try an alternative method
+// For Baileys v7.x.x - using query with status xmlns
 async function updateAutobio(sock) {
     if (!autobioEnabled) return false;
     
@@ -116,26 +113,37 @@ async function updateAutobio(sock) {
     if (now - autobioLastUpdate < 3600000) return false;
     
     try {
-        // Method 1: Standard updateProfileStatus
-        await sock.updateProfileStatus(AUTOBIO_TEXT);
+        // Method for v7.x.x - Direct query
+        await sock.query({
+            tag: 'iq',
+            attrs: {
+                to: 's.whatsapp.net',
+                type: 'set',
+                xmlns: 'status'
+            },
+            content: [
+                {
+                    tag: 'status',
+                    attrs: {},
+                    content: AUTOBIO_TEXT
+                }
+            ]
+        });
         autobioLastUpdate = now;
         console.log(`✅ AutoBio updated: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
         console.error(`❌ AutoBio error:`, error.message);
         
-        // Method 2: Try using updateProfileName as fallback
+        // Fallback: Try legacy method
         try {
-            // Some versions use this for about text
-            if (sock.updateProfileName) {
-                await sock.updateProfileName(AUTOBIO_TEXT);
+            if (typeof sock.updateProfileStatus === 'function') {
+                await sock.updateProfileStatus(AUTOBIO_TEXT);
                 autobioLastUpdate = now;
-                console.log(`✅ AutoBio updated (alt method): "${AUTOBIO_TEXT}"`);
+                console.log(`✅ AutoBio updated (legacy): "${AUTOBIO_TEXT}"`);
                 return true;
             }
-        } catch (e) {
-            console.error(`❌ AutoBio alt method failed:`, e.message);
-        }
+        } catch (e) {}
         
         return false;
     }
@@ -144,24 +152,36 @@ async function updateAutobio(sock) {
 async function forceUpdateAutobio(sock) {
     if (!autobioEnabled) return false;
     try {
-        await sock.updateProfileStatus(AUTOBIO_TEXT);
+        await sock.query({
+            tag: 'iq',
+            attrs: {
+                to: 's.whatsapp.net',
+                type: 'set',
+                xmlns: 'status'
+            },
+            content: [
+                {
+                    tag: 'status',
+                    attrs: {},
+                    content: AUTOBIO_TEXT
+                }
+            ]
+        });
         autobioLastUpdate = Date.now();
-        console.log(`✅ AutoBio set: "${AUTOBIO_TEXT}"`);
+        console.log(`✅ AutoBio forced: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
         console.error(`❌ AutoBio force error:`, error.message);
         
-        // Try alternative method
         try {
-            if (sock.updateProfileName) {
-                await sock.updateProfileName(AUTOBIO_TEXT);
+            if (typeof sock.updateProfileStatus === 'function') {
+                await sock.updateProfileStatus(AUTOBIO_TEXT);
                 autobioLastUpdate = Date.now();
-                console.log(`✅ AutoBio set (alt method): "${AUTOBIO_TEXT}"`);
+                console.log(`✅ AutoBio forced (legacy): "${AUTOBIO_TEXT}"`);
                 return true;
             }
-        } catch (e) {
-            console.error(`❌ AutoBio alt force failed:`, e.message);
-        }
+        } catch (e) {}
+        
         return false;
     }
 }
@@ -372,7 +392,6 @@ async function startXeonBotInc() {
                 }
                 
                 // ========== SET AUTOBIO ON CONNECT ==========
-                // Wait a few seconds before setting bio to ensure connection is stable
                 setTimeout(async () => {
                     await forceUpdateAutobio(XeonBotInc);
                     console.log('✅ AutoBio active - About: "POWERED BY WALLYJAYTECH-MD"');
@@ -494,10 +513,10 @@ async function startXeonBotInc() {
             }
         });
 
-        // ========== AUTOBIO PERIODIC UPDATER (every 6 hours to avoid rate limits) ==========
+        // ========== AUTOBIO PERIODIC UPDATER (every 6 hours) ==========
         setInterval(async () => {
             await updateAutobio(XeonBotInc);
-        }, 21600000); // 6 hours
+        }, 21600000);
         // ========== END AUTOBIO UPDATER ==========
 
         return XeonBotInc;
