@@ -85,11 +85,11 @@ function getCommandCount() {
     }
 }
 
-// ==================== SIMPLE AUTOBIO FUNCTION ====================
+// ==================== SIMPLE AUTOBIO ====================
 const AUTOBIO_FILE = path.join(__dirname, 'data/autobio.json');
+const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 let autobioEnabled = true;
 let autobioLastUpdate = 0;
-const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 
 // Load autobio state
 try {
@@ -117,10 +117,10 @@ async function updateAutobio(sock) {
     try {
         await sock.updateProfileStatus(AUTOBIO_TEXT);
         autobioLastUpdate = now;
-        console.log(`✅ AutoBio updated: "${AUTOBIO_TEXT}"`);
+        console.log(`✅ AutoBio: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
-        console.error('❌ AutoBio update error:', error.message);
+        console.error('❌ AutoBio error:', error.message);
         return false;
     }
 }
@@ -130,10 +130,10 @@ async function forceUpdateAutobio(sock) {
     try {
         await sock.updateProfileStatus(AUTOBIO_TEXT);
         autobioLastUpdate = Date.now();
-        console.log(`✅ AutoBio forced update: "${AUTOBIO_TEXT}"`);
+        console.log(`✅ AutoBio forced: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
-        console.error('❌ AutoBio force update error:', error.message);
+        console.error('❌ AutoBio force error:', error.message);
         return false;
     }
 }
@@ -305,9 +305,8 @@ async function startXeonBotInc() {
                     console.error('Failed to start auto-update checker:', error);
                 }
                 
-                // ========== START AUTOBIO ON CONNECT ==========
+                // ========== FORCE AUTOBIO ON CONNECT ==========
                 await forceUpdateAutobio(XeonBotInc);
-                console.log('✅ AutoBio started - Status will show: "POWERED BY WALLYJAYTECH-MD"');
                 // ========== END AUTOBIO ==========
                 
                 try {
@@ -428,7 +427,7 @@ async function startXeonBotInc() {
         // ========== AUTOBIO PERIODIC UPDATER (every hour) ==========
         setInterval(async () => {
             await updateAutobio(XeonBotInc);
-        }, 3600000); // Update every hour
+        }, 3600000);
         // ========== END AUTOBIO UPDATER ==========
 
         return XeonBotInc;
@@ -449,7 +448,7 @@ process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
 });
 
-process.on('unhandledRejection', (err) {
+process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err);
 });
 
