@@ -20,7 +20,8 @@ const {
     jidDecode,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
-    delay
+    delay,
+    proto
 } = require("@whiskeysockets/baileys");
 const NodeCache = require("node-cache");
 const pino = require("pino");
@@ -81,7 +82,7 @@ function getCommandCount() {
     }
 }
 
-// ==================== STANDALONE AUTOBIO ====================
+// ==================== UPDATED AUTOBIO FOR NEW WHATSAPP UPDATE ====================
 const AUTOBIO_FILE = path.join(__dirname, 'data/autobio.json');
 const AUTOBIO_TEXT = "POWERED BY WALLYJAYTECH-MD";
 let autobioEnabled = true;
@@ -94,7 +95,6 @@ try {
         autobioEnabled = saved.enabled !== false;
     }
 } catch (e) {
-    // Create default file
     const dir = path.dirname(AUTOBIO_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(AUTOBIO_FILE, JSON.stringify({ enabled: true }, null, 2));
@@ -106,6 +106,9 @@ function saveAutobioState() {
     } catch (e) {}
 }
 
+// NEW METHOD: Using updateProfileName for about/status
+// WhatsApp now uses status (about) that can be set via updateProfileStatus
+// If that fails, we'll try an alternative method
 async function updateAutobio(sock) {
     if (!autobioEnabled) return false;
     
@@ -113,12 +116,27 @@ async function updateAutobio(sock) {
     if (now - autobioLastUpdate < 3600000) return false;
     
     try {
+        // Method 1: Standard updateProfileStatus
         await sock.updateProfileStatus(AUTOBIO_TEXT);
         autobioLastUpdate = now;
         console.log(`✅ AutoBio updated: "${AUTOBIO_TEXT}"`);
         return true;
     } catch (error) {
         console.error(`❌ AutoBio error:`, error.message);
+        
+        // Method 2: Try using updateProfileName as fallback
+        try {
+            // Some versions use this for about text
+            if (sock.updateProfileName) {
+                await sock.updateProfileName(AUTOBIO_TEXT);
+                autobioLastUpdate = now;
+                console.log(`✅ AutoBio updated (alt method): "${AUTOBIO_TEXT}"`);
+                return true;
+            }
+        } catch (e) {
+            console.error(`❌ AutoBio alt method failed:`, e.message);
+        }
+        
         return false;
     }
 }
@@ -132,6 +150,18 @@ async function forceUpdateAutobio(sock) {
         return true;
     } catch (error) {
         console.error(`❌ AutoBio force error:`, error.message);
+        
+        // Try alternative method
+        try {
+            if (sock.updateProfileName) {
+                await sock.updateProfileName(AUTOBIO_TEXT);
+                autobioLastUpdate = Date.now();
+                console.log(`✅ AutoBio set (alt method): "${AUTOBIO_TEXT}"`);
+                return true;
+            }
+        } catch (e) {
+            console.error(`❌ AutoBio alt force failed:`, e.message);
+        }
         return false;
     }
 }
@@ -152,7 +182,7 @@ async function handleAutobioCommand(sock, chatId, message, args) {
         autobioEnabled = true;
         saveAutobioState();
         await forceUpdateAutobio(sock);
-        await sock.sendMessage(chatId, { text: `✅ AutoBio ENABLED\n\n📱 Bio: ${AUTOBIO_TEXT}` }, { quoted: message });
+        await sock.sendMessage(chatId, { text: `✅ AutoBio ENABLED\n\n📱 About: ${AUTOBIO_TEXT}` }, { quoted: message });
     } 
     else if (action === 'off' || action === 'disable') {
         autobioEnabled = false;
@@ -161,7 +191,7 @@ async function handleAutobioCommand(sock, chatId, message, args) {
     }
     else {
         await sock.sendMessage(chatId, { 
-            text: `⚙️ *AutoBio*\n\nStatus: ${autobioEnabled ? '🟢 ON' : '🔴 OFF'}\nBio: ${AUTOBIO_TEXT}\n\n.autobio on - Enable\n.autobio off - Disable` 
+            text: `⚙️ *AutoBio*\n\nStatus: ${autobioEnabled ? '🟢 ON' : '🔴 OFF'}\nAbout: ${AUTOBIO_TEXT}\n\n.autobio on - Enable\n.autobio off - Disable` 
         }, { quoted: message });
     }
 }
@@ -222,7 +252,7 @@ async function startXeonBotInc() {
                     XeonBotInc.msgRetryCounterCache.clear();
                 }
 
-                // Check for .autobio command in the message text
+                // Check for .autobio command
                 const msgText = mek.message?.conversation || mek.message?.extendedTextMessage?.text || '';
                 if (msgText.startsWith('.autobio')) {
                     const args = msgText.slice(8).trim().split(/\s+/);
@@ -342,8 +372,11 @@ async function startXeonBotInc() {
                 }
                 
                 // ========== SET AUTOBIO ON CONNECT ==========
-                await forceUpdateAutobio(XeonBotInc);
-                console.log('✅ AutoBio active - Status: "POWERED BY WALLYJAYTECH-MD"');
+                // Wait a few seconds before setting bio to ensure connection is stable
+                setTimeout(async () => {
+                    await forceUpdateAutobio(XeonBotInc);
+                    console.log('✅ AutoBio active - About: "POWERED BY WALLYJAYTECH-MD"');
+                }, 5000);
                 // ========== END AUTOBIO ==========
                 
                 try {
@@ -461,10 +494,10 @@ async function startXeonBotInc() {
             }
         });
 
-        // ========== AUTOBIO PERIODIC UPDATER (every hour) ==========
+        // ========== AUTOBIO PERIODIC UPDATER (every 6 hours to avoid rate limits) ==========
         setInterval(async () => {
             await updateAutobio(XeonBotInc);
-        }, 3600000);
+        }, 21600000); // 6 hours
         // ========== END AUTOBIO UPDATER ==========
 
         return XeonBotInc;
