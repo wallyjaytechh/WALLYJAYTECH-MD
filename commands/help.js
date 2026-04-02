@@ -570,7 +570,6 @@ ${platformStatsText}
 ║
 ║  *🔒OWNER CMDS🔒*
 ║
-║ *🔺${prefix}autobio*
 ║ *🔺${prefix}mode <public/private>*
 ║ *🔺${prefix}autorecord*
 ║ *🔺${prefix}autotyping*
