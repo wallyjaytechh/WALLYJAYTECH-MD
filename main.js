@@ -631,7 +631,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 externalAdReply: {
                     title: 'WALLY JAY TECH WORLD OF BOTS',
                     body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
+                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
                     renderLargerThumbnail: false,
@@ -649,7 +649,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 externalAdReply: {
                     title: 'WALLY JAY TECH WORLD OF BOTS',
                     body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
+                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
                     renderLargerThumbnail: false,
@@ -677,7 +677,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 externalAdReply: {
                     title: 'WALLY JAY TECH WORLD OF BOTS',
                     body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
+                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
                     renderLargerThumbnail: false,
@@ -693,7 +693,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 externalAdReply: {
                     title: 'WALLY JAY TECH WORLD OF BOTS',
                     body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
+                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
                     renderLargerThumbnail: false,
