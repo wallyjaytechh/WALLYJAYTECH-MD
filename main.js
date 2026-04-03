@@ -606,54 +606,54 @@ if (!isPublic && !isOwnerOrSudoCheck) {
         const modeEmoji = data.isPublic ? '🌐' : '🔒';
         const modeColor = data.isPublic ? '🟢' : '🔴';
         
-        const modeText = `${modeEmoji} *BOT ACCESS MODE*\n\n` +
+        const modeMessage = {
+            text: `${modeEmoji} *BOT ACCESS MODE*\n\n` +
                   `${modeColor} Current Mode: *${currentMode.toUpperCase()}*\n\n` +
                   `━━━━━━━━━━━━━━━━━━━━\n` +
                   `📖 *Usage:*\n` +
-                  `└ .mode public\n` +
-                  `└ .mode private\n\n` +
+                  `└ ${settings.prefix}mode public\n` +
+                  `└ ${settings.prefix}mode private\n\n` +
                   `━━━━━━━━━━━━━━━━━━━━\n` +
                   `✨ *Examples:*\n` +
-                  `└ .mode public\n` +
+                  `└ ${settings.prefix}mode public\n` +
                   `   → Everyone can use bot\n` +
-                  `└ .mode private\n` +
+                  `└ ${settings.prefix}mode private\n` +
                   `   → Owner only access\n\n` +
                   `━━━━━━━━━━━━━━━━━━━━\n` +
                   `🔧 *Current Settings:*\n` +
                   `└ Public Mode: ${data.isPublic ? '✅ Everyone can use' : '❌ Owner only'}\n` +
-                  `└ Groups: ${data.isPublic ? '✅ Full access' : '⚠️ Moderation only'}\n\n` +
+                  `└ Groups: ${data.isPublic ? '✅ All commands' : '⚠️ Moderation only'}\n\n` +
                   `━━━━━━━━━━━━━━━━━━━━\n` +
-                  `💡 *Tip:* Private mode still allows group moderation features`;
-        
-        await sock.sendMessage(chatId, {
-            text: modeText,
+                  `💡 *Tip:* Private mode still allows group moderation features`,
             contextInfo: {
-                externalAdReply: {
-                    title: 'WALLY JAY TECH WORLD OF BOTS',
-                    body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
-                    sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
-                    mediaType: 1,
-                    renderLargerThumbnail: false,
-                    showAdAttribution: false
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
             }
-        }, { quoted: message });
+        };
+        
+        await sock.sendMessage(chatId, modeMessage, { quoted: message });
         return;
     }
 
     if (action !== 'public' && action !== 'private') {
         await sock.sendMessage(chatId, {
-            text: `⚠️ *Invalid Option*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ .mode public\n└ .mode private\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .mode public → Allow everyone\n└ .mode private → Owner only`,
+            text: `⚠️ *Invalid Option*\n\n` +
+                  `Usage: ${settings.prefix}mode public or ${settings.prefix}mode private\n\n` +
+                  `Example:\n` +
+                  `• ${settings.prefix}mode public - Allow everyone\n` +
+                  `• ${settings.prefix}mode private - Owner only`,
             contextInfo: {
-                externalAdReply: {
-                    title: 'WALLY JAY TECH WORLD OF BOTS',
-                    body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
-                    sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
-                    mediaType: 1,
-                    renderLargerThumbnail: false,
-                    showAdAttribution: false
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
             }
         }, { quoted: message });
@@ -672,16 +672,21 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             : '🔐 Only bot owner can use commands now';
         
         await sock.sendMessage(chatId, {
-            text: `${successEmoji} *${successText} ACTIVATED*\n\n━━━━━━━━━━━━━━━━━━━━\n${description}\n\n━━━━━━━━━━━━━━━━━━━━\n🔄 Use .mode to check current status`,
+            text: `${successEmoji} *${successText} ACTIVATED*\n\n` +
+                  `${description}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `🔄 *Changes Applied:*\n` +
+                  `└ Access: ${action === 'public' ? 'Public (Everyone)' : 'Private (Owner Only)'}\n` +
+                  `└ Groups: ${action === 'public' ? 'Full access' : 'Moderation only'}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `📌 Use ${settings.prefix}mode to check current status`,
             contextInfo: {
-                externalAdReply: {
-                    title: 'WALLY JAY TECH WORLD OF BOTS',
-                    body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
-                    sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
-                    mediaType: 1,
-                    renderLargerThumbnail: false,
-                    showAdAttribution: false
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
             }
         }, { quoted: message });
@@ -690,14 +695,12 @@ if (!isPublic && !isOwnerOrSudoCheck) {
         await sock.sendMessage(chatId, {
             text: '❌ Failed to update bot access mode',
             contextInfo: {
-                externalAdReply: {
-                    title: 'WALLY JAY TECH WORLD OF BOTS',
-                    body: 'INTRODUCTION TO WALLY JAY TECH...',
-                    thumbnailUrl: 'https://n.uguu.se/WiGqQKEZ.jpg',
-                    sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
-                    mediaType: 1,
-                    renderLargerThumbnail: false,
-                    showAdAttribution: false
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
             }
         }, { quoted: message });
