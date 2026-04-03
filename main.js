@@ -608,30 +608,34 @@ if (!isPublic && !isOwnerOrSudoCheck) {
         
         const modeText = `${modeEmoji} *BOT ACCESS MODE*\n\n` +
                   `${modeColor} Current Mode: *${currentMode.toUpperCase()}*\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
                   `📖 *Usage:*\n` +
                   `└ .mode public\n` +
                   `└ .mode private\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
                   `✨ *Examples:*\n` +
-                  `└ .mode public → Everyone can use bot\n` +
-                  `└ .mode private → Owner only access\n\n` +
+                  `└ .mode public\n` +
+                  `   → Everyone can use bot\n` +
+                  `└ .mode private\n` +
+                  `   → Owner only access\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
                   `🔧 *Current Settings:*\n` +
                   `└ Public Mode: ${data.isPublic ? '✅ Everyone can use' : '❌ Owner only'}\n` +
                   `└ Groups: ${data.isPublic ? '✅ Full access' : '⚠️ Moderation only'}\n\n` +
-                  `💡 *Tip:* Private mode still allows group moderation features\n\n` +
-                  `🔗 *Join our Channel:*\nhttps://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I`;
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `💡 *Tip:* Private mode still allows group moderation features`;
         
         await sock.sendMessage(chatId, {
             text: modeText,
             contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
                 externalAdReply: {
-                    title: 'WALLYJAYTECH-MD BOTS',
-                    body: 'Official Channel',
-                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg', // Add your channel image URL
+                    title: 'WALLY JAY TECH WORLD OF BOTS',
+                    body: 'INTRODUCTION TO WALLY JAY TECH...',
+                    thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
-                    renderLargerThumbnail: false
+                    renderLargerThumbnail: false,
+                    showAdAttribution: false
                 }
             }
         }, { quoted: message });
@@ -640,17 +644,16 @@ if (!isPublic && !isOwnerOrSudoCheck) {
 
     if (action !== 'public' && action !== 'private') {
         await sock.sendMessage(chatId, {
-            text: `⚠️ *Invalid Option*\n\nUsage: .mode public or .mode private\n\nExample:\n• .mode public - Allow everyone\n• .mode private - Owner only`,
+            text: `⚠️ *Invalid Option*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ .mode public\n└ .mode private\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .mode public → Allow everyone\n└ .mode private → Owner only`,
             contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
                 externalAdReply: {
-                    title: 'WALLYJAYTECH-MD BOTS',
-                    body: 'Official Channel',
+                    title: 'WALLY JAY TECH WORLD OF BOTS',
+                    body: 'INTRODUCTION TO WALLY JAY TECH...',
                     thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
-                    renderLargerThumbnail: false
+                    renderLargerThumbnail: false,
+                    showAdAttribution: false
                 }
             }
         }, { quoted: message });
@@ -669,17 +672,16 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             : '🔐 Only bot owner can use commands now';
         
         await sock.sendMessage(chatId, {
-            text: `${successEmoji} *${successText} ACTIVATED*\n\n${description}\n\n🔄 Use .mode to check current status`,
+            text: `${successEmoji} *${successText} ACTIVATED*\n\n━━━━━━━━━━━━━━━━━━━━\n${description}\n\n━━━━━━━━━━━━━━━━━━━━\n🔄 Use .mode to check current status`,
             contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
                 externalAdReply: {
-                    title: 'WALLYJAYTECH-MD BOTS',
-                    body: 'Official Channel',
+                    title: 'WALLY JAY TECH WORLD OF BOTS',
+                    body: 'INTRODUCTION TO WALLY JAY TECH...',
                     thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
-                    renderLargerThumbnail: false
+                    renderLargerThumbnail: false,
+                    showAdAttribution: false
                 }
             }
         }, { quoted: message });
@@ -688,15 +690,14 @@ if (!isPublic && !isOwnerOrSudoCheck) {
         await sock.sendMessage(chatId, {
             text: '❌ Failed to update bot access mode',
             contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
                 externalAdReply: {
-                    title: 'WALLYJAYTECH-MD BOTS',
-                    body: 'Official Channel',
+                    title: 'WALLY JAY TECH WORLD OF BOTS',
+                    body: 'INTRODUCTION TO WALLY JAY TECH...',
                     thumbnailUrl: 'https://files.catbox.moe/e94sgo.jpg',
                     sourceUrl: 'https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I',
                     mediaType: 1,
-                    renderLargerThumbnail: false
+                    renderLargerThumbnail: false,
+                    showAdAttribution: false
                 }
             }
         }, { quoted: message });
