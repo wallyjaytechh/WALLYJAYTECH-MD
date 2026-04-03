@@ -1,6 +1,6 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Autorecord Command - Shows fake recording status for 60 seconds
+ * Autorecord Command - Shows fake recording status
  */
 
 const fs = require('fs');
@@ -14,15 +14,14 @@ const configPath = path.join(__dirname, '..', 'data', 'autorecord.json');
 function initConfig() {
     try {
         if (!fs.existsSync(configPath)) {
-            // Ensure data directory exists
             const dataDir = path.join(__dirname, '..', 'data');
             if (!fs.existsSync(dataDir)) {
                 fs.mkdirSync(dataDir, { recursive: true });
             }
             fs.writeFileSync(configPath, JSON.stringify({ 
                 enabled: false,
-                mode: 'all', // all, dms, groups
-                duration: 60 // duration in seconds
+                mode: 'all',
+                duration: 60
             }, null, 2));
             console.log('📁 Created new autorecord config file');
         }
@@ -32,6 +31,19 @@ function initConfig() {
         return { enabled: false, mode: 'all', duration: 60 };
     }
 }
+
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
 
 // Toggle autorecord feature
 async function autorecordCommand(sock, chatId, message) {
@@ -44,26 +56,16 @@ async function autorecordCommand(sock, chatId, message) {
         if (!message.key.fromMe && !isOwner) {
             await sock.sendMessage(chatId, {
                 text: '❌ This command is only available for the owner!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                ...channelInfo
             });
             return;
         }
 
-        // Get command arguments
         const userMessage = message.message?.conversation || 
                           message.message?.extendedTextMessage?.text || '';
         
         console.log('📝 Raw message:', userMessage);
         
-        // Extract command and args
         let commandPart = userMessage.trim();
         if (commandPart.startsWith('.')) {
             commandPart = commandPart.substring(1);
@@ -76,36 +78,33 @@ async function autorecordCommand(sock, chatId, message) {
         console.log('🔍 Command:', commandName);
         console.log('🔍 Args:', args);
         
-        // Initialize or read config
         const config = initConfig();
         
         // If no arguments, show current status
         if (args.length === 0) {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const modeText = getModeText(config.mode);
             
-            await sock.sendMessage(chatId, {
-                text: `🎙️ *Auto-Record Settings*\n\n` +
-                      `📱 *Status:* ${status}\n` +
+            const settingText = `🎙️ *AUTO-RECORD SETTINGS*\n\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `🎯 *Mode:* ${modeText}\n` +
                       `⏱️ *Duration:* ${config.duration} seconds\n\n` +
-                      `*Commands:*\n` +
-                      `• .autorecord on/off - Enable/disable\n` +
-                      `• .autorecord mode all - Work everywhere\n` +
-                      `• .autorecord mode dms - DMs only\n` +
-                      `• .autorecord mode groups - Groups only\n` +
-                      `• .autorecord duration <seconds> - Set duration (max 120)\n` +
-                      `• .autorecord status - Show current settings`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📖 *Commands:*\n` +
+                      `└ .autorecord on/off - Enable/disable\n` +
+                      `└ .autorecord mode all - Work everywhere\n` +
+                      `└ .autorecord mode dms - DMs only\n` +
+                      `└ .autorecord mode groups - Groups only\n` +
+                      `└ .autorecord duration <seconds> - Set duration (5-120)\n` +
+                      `└ .autorecord status - Show current settings\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 *Example:*\n` +
+                      `└ .autorecord duration 30\n` +
+                      `└ .autorecord mode groups`;
+            
+            await sock.sendMessage(chatId, { text: settingText, ...channelInfo });
             return;
         }
 
@@ -116,52 +115,31 @@ async function autorecordCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             console.log('✅ AutoRecord ENABLED');
-            await sock.sendMessage(chatId, {
-                text: `✅ *Auto-record enabled!*\n\n` +
-                      `Mode: ${getModeText(config.mode)}\n` +
-                      `Duration: ${config.duration} seconds\n\n` +
-                      `Bot will now show recording indicators for ${config.duration} seconds in ${getModeDescription(config.mode)}.`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+            
+            const responseText = `✅ *AUTO-RECORD ENABLED*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🎯 Mode: ${getModeText(config.mode)}\n` +
+                      `⏱️ Duration: ${config.duration} seconds\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 Bot will now show recording indicators for ${config.duration} seconds in ${getModeDescription(config.mode)}.`;
+            
+            await sock.sendMessage(chatId, { text: responseText, ...channelInfo });
         } 
         else if (action === 'off' || action === 'disable') {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             console.log('❌ AutoRecord DISABLED');
-            await sock.sendMessage(chatId, {
-                text: '❌ *Auto-record disabled!*\n\nBot will no longer show recording indicators.',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+            
+            await sock.sendMessage(chatId, { 
+                text: '❌ *AUTO-RECORD DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\nBot will no longer show recording indicators.',
+                ...channelInfo 
             });
         }
         else if (action === 'mode') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify a mode!\n\nAvailable modes:\n• all - Work everywhere\n• dms - DMs only\n• groups - Groups only',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID OPTION*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecord mode groups`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -172,46 +150,23 @@ async function autorecordCommand(sock, chatId, message) {
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                
                 await sock.sendMessage(chatId, {
-                    text: `🎯 *Auto-record mode set to:* ${getModeText(mode)}\n\n${getModeDescription(mode)}\n\nDuration: ${config.duration} seconds`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 ${getModeDescription(mode)}\n⏱️ Duration: ${config.duration} seconds`,
+                    ...channelInfo
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Invalid mode!\n\nAvailable modes:\n• all - Work everywhere\n• dms - DMs only\n• groups - Groups only',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only`,
+                    ...channelInfo
                 });
             }
         }
         else if (action === 'duration') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify duration in seconds!\n\nExample: .autorecord duration 60\nMax: 120 seconds',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autorecord duration <seconds>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecord duration 60\n\n📌 Max: 120 seconds | Min: 5 seconds`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -219,73 +174,48 @@ async function autorecordCommand(sock, chatId, message) {
             const duration = parseInt(args[1]);
             if (isNaN(duration) || duration < 5 || duration > 120) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Invalid duration!\n\nDuration must be between 5 and 120 seconds.',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID DURATION*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Duration must be between 5 and 120 seconds.\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecord duration 30`,
+                    ...channelInfo
                 });
                 return;
             }
             
             config.duration = duration;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            
             await sock.sendMessage(chatId, {
-                text: `⏱️ *Auto-record duration set to:* ${duration} seconds`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Recording duration: ${duration} seconds`,
+                ...channelInfo
             });
         }
         else if (action === 'status') {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const modeText = getModeText(config.mode);
             
             await sock.sendMessage(chatId, {
-                text: `🎙️ *Auto-Record Status*\n\n` +
-                      `📱 *Status:* ${status}\n` +
+                text: `🎙️ *AUTO-RECORD STATUS*\n\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `🎯 *Mode:* ${modeText}\n` +
                       `⏱️ *Duration:* ${config.duration} seconds\n\n` +
-                      `${getModeDescription(config.mode)}`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 ${getModeDescription(config.mode)}`,
+                ...channelInfo
             });
         }
         else {
             await sock.sendMessage(chatId, {
-                text: '❌ Invalid command!\n\n*Available Commands:*\n' +
-                      '• .autorecord on/off\n' +
-                      '• .autorecord mode all/dms/groups\n' +
-                      '• .autorecord duration <seconds>\n' +
-                      '• .autorecord status\n' +
-                      '• .autorecord (shows this menu)',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available Commands:*\n` +
+                      `└ .autorecord on/off\n` +
+                      `└ .autorecord mode all/dms/groups\n` +
+                      `└ .autorecord duration <seconds>\n` +
+                      `└ .autorecord status\n` +
+                      `└ .autorecord (shows this menu)\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `✨ *Example:*\n` +
+                      `└ .autorecord mode groups`,
+                ...channelInfo
             });
         }
         
@@ -293,15 +223,7 @@ async function autorecordCommand(sock, chatId, message) {
         console.error('❌ Error in autorecord command:', error);
         await sock.sendMessage(chatId, {
             text: '❌ Error processing command!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            ...channelInfo
         });
     }
 }
@@ -376,31 +298,24 @@ async function handleAutorecordForMessage(sock, chatId, userMessage) {
     try {
         const config = initConfig();
         const duration = config.duration || 60;
-        const refreshInterval = 10000; // Refresh every 10 seconds
+        const refreshInterval = 10000;
         const refreshCount = Math.floor(duration * 1000 / refreshInterval);
         
         console.log(`🎙️ Showing recording in ${chatId} for ${duration} seconds`);
         
-        // Subscribe to presence updates
         await sock.presenceSubscribe(chatId);
         await delay(300);
-        
-        // Set available status first
         await sock.sendPresenceUpdate('available', chatId);
         await delay(500);
-        
-        // Show recording status
         await sock.sendPresenceUpdate('recording', chatId);
         console.log(`🎙️ Recording indicator started (will last ${duration} seconds)`);
         
-        // Keep recording indicator active for the specified duration
         for (let i = 0; i < refreshCount; i++) {
             await delay(refreshInterval);
             await sock.sendPresenceUpdate('recording', chatId);
             console.log(`🎙️ Recording indicator refreshed (${Math.min((i+1)*10, duration)}/${duration} seconds)`);
         }
         
-        // Set to paused after duration
         await sock.sendPresenceUpdate('paused', chatId);
         console.log(`🎙️ Recording finished after ${duration} seconds`);
         
@@ -430,14 +345,12 @@ async function handleAutorecordForCommand(sock, chatId) {
         await sock.sendPresenceUpdate('recording', chatId);
         console.log(`🎙️ Command recording started (will last ${duration} seconds)`);
         
-        // Keep recording for the specified duration
         for (let i = 0; i < refreshCount; i++) {
             await delay(refreshInterval);
             await sock.sendPresenceUpdate('recording', chatId);
             console.log(`🎙️ Command recording refreshed (${Math.min((i+1)*10, duration)}/${duration} seconds)`);
         }
         
-        // Finally pause
         await sock.sendPresenceUpdate('paused', chatId);
         console.log(`🎙️ Command recording finished after ${duration} seconds`);
         
@@ -465,7 +378,6 @@ async function showRecordingAfterCommand(sock, chatId) {
         await sock.sendPresenceUpdate('recording', chatId);
         console.log(`🎙️ Post-command recording started (will last ${duration} seconds)`);
         
-        // Keep recording for the specified duration
         for (let i = 0; i < refreshCount; i++) {
             await delay(refreshInterval);
             await sock.sendPresenceUpdate('recording', chatId);
@@ -485,10 +397,10 @@ async function showRecordingAfterCommand(sock, chatId) {
 // Delay helper function
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-module.exports = {
+module.exports =,
+    shouldShow {
     autorecordCommand,
-    isAutorecordEnabled,
-    shouldShowRecording,
+    isAutorecordEnabledRecording,
     handleAutorecordForMessage,
     handleAutorecordForCommand,
     showRecordingAfterCommand
