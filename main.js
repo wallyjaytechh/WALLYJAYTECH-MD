@@ -583,53 +583,129 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 await settingsCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.mode'):
-                // Check if sender is the owner
-                if (!message.key.fromMe && !senderIsOwnerOrSudo) {
-                    await sock.sendMessage(chatId, { text: 'Only bot owner can use this command!', ...channelInfo }, { quoted: message });
-                    return;
-                }
-                // Read current data first
-                let data;
-                try {
-                    data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-                } catch (error) {
-                    console.error('Error reading access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to read bot mode status', ...channelInfo });
-                    return;
-                }
+    // Check if sender is the owner
+    if (!message.key.fromMe && !senderIsOwnerOrSudo) {
+        await sock.sendMessage(chatId, { text: '❌ Only bot owner can use this command!' }, { quoted: message });
+        return;
+    }
+    // Read current data first
+    let data;
+    try {
+        data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
+    } catch (error) {
+        console.error('Error reading access mode:', error);
+        await sock.sendMessage(chatId, { text: '❌ Failed to read bot mode status' }, { quoted: message });
+        return;
+    }
 
-                const action = userMessage.split(' ')[1]?.toLowerCase();
-                // If no argument provided, show current status
-                if (!action) {
-                    const currentMode = data.isPublic ? 'public' : 'private';
-                    await sock.sendMessage(chatId, {
-                        text: `*Your Current Bot Mode: ${currentMode}*\n\n*Usage: .mode public/private*\n\n*Example:*\n\n*.mode public - Allow everyone to use bot*\n\n*.mode private - Restrict to owner only*\n\n*Copyright wallyjaytech 2025*`,
-                        ...channelInfo
-                    }, { quoted: message });
-                    return;
+    const action = userMessage.split(' ')[1]?.toLowerCase();
+    
+    // If no argument provided, show current status
+    if (!action) {
+        const currentMode = data.isPublic ? 'public' : 'private';
+        const modeEmoji = data.isPublic ? '🌐' : '🔒';
+        const modeColor = data.isPublic ? '🟢' : '🔴';
+        
+        const modeMessage = {
+            text: `${modeEmoji} *BOT ACCESS MODE*\n\n` +
+                  `${modeColor} Current Mode: *${currentMode.toUpperCase()}*\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `📖 *Usage:*\n` +
+                  `└ ${settings.prefix}mode public\n` +
+                  `└ ${settings.prefix}mode private\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `✨ *Examples:*\n` +
+                  `└ ${settings.prefix}mode public\n` +
+                  `   → Everyone can use bot\n` +
+                  `└ ${settings.prefix}mode private\n` +
+                  `   → Owner only access\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `🔧 *Current Settings:*\n` +
+                  `└ Public Mode: ${data.isPublic ? '✅ Everyone can use' : '❌ Owner only'}\n` +
+                  `└ Groups: ${data.isPublic ? '✅ All commands' : '⚠️ Moderation only'}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `💡 *Tip:* Private mode still allows group moderation features`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
+            }
+        };
+        
+        await sock.sendMessage(chatId, modeMessage, { quoted: message });
+        return;
+    }
 
-                if (action !== 'public' && action !== 'private') {
-                    await sock.sendMessage(chatId, {
-                        text: 'Usage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only',
-                        ...channelInfo
-                    }, { quoted: message });
-                    return;
+    if (action !== 'public' && action !== 'private') {
+        await sock.sendMessage(chatId, {
+            text: `⚠️ *Invalid Option*\n\n` +
+                  `Usage: ${settings.prefix}mode public or ${settings.prefix}mode private\n\n` +
+                  `Example:\n` +
+                  `• ${settings.prefix}mode public - Allow everyone\n` +
+                  `• ${settings.prefix}mode private - Owner only`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
+            }
+        }, { quoted: message });
+        return;
+    }
 
-                try {
-                    // Update access mode
-                    data.isPublic = action === 'public';
+    try {
+        // Update access mode
+        data.isPublic = action === 'public';
+        fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
 
-                    // Save updated data
-                    fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
-
-                    await sock.sendMessage(chatId, { text: `Bot is now in *${action}* mode`, ...channelInfo });
-                } catch (error) {
-                    console.error('Error updating access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to update bot access mode', ...channelInfo });
+        const successEmoji = action === 'public' ? '🌐' : '🔒';
+        const successText = action === 'public' ? 'PUBLIC MODE' : 'PRIVATE MODE';
+        const description = action === 'public' 
+            ? '✅ Everyone can now use bot commands' 
+            : '🔐 Only bot owner can use commands now';
+        
+        await sock.sendMessage(chatId, {
+            text: `${successEmoji} *${successText} ACTIVATED*\n\n` +
+                  `${description}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `🔄 *Changes Applied:*\n` +
+                  `└ Access: ${action === 'public' ? 'Public (Everyone)' : 'Private (Owner Only)'}\n` +
+                  `└ Groups: ${action === 'public' ? 'Full access' : 'Moderation only'}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `📌 Use ${settings.prefix}mode to check current status`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
                 }
-                break;
+            }
+        }, { quoted: message });
+    } catch (error) {
+        console.error('Error updating access mode:', error);
+        await sock.sendMessage(chatId, {
+            text: '❌ Failed to update bot access mode',
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        }, { quoted: message });
+    }
+    break;
             case userMessage.startsWith('.anticall'):
                 if (!message.key.fromMe && !senderIsOwnerOrSudo) {
                     await sock.sendMessage(chatId, { text: 'Only owner/sudo can use anticall.' }, { quoted: message });
