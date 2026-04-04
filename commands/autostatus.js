@@ -8,6 +8,19 @@ const path = require('path');
 
 const CONFIG_FILE = path.join(__dirname, '../data/autostatus.json');
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Ensure directory exists
 const dataDir = path.join(__dirname, '../data');
 if (!fs.existsSync(dataDir)) {
@@ -88,10 +101,6 @@ async function handleStatusUpdate(sock, chatUpdate) {
             };
             
             await sock.readMessages([receipt]).catch(() => {});
-            
-            // Optional: Uncomment to see logs
-            // const publisherNumber = publisher.split('@')[0].split(':')[0];
-            // console.log(`👁️ Viewed status from: ${publisherNumber}`);
         }
     } catch (e) {}
 }
@@ -127,33 +136,65 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
     } catch (e) {}
 }
 
-// Simple on/off command
+// Professional on/off command
 async function autoStatusCommand(sock, chatId, message, args) {
     try {
+        const senderId = message.key.participant || message.key.remoteJid;
+        const isOwner = message.key.fromMe || (senderId.includes('2348144317152') || senderId === '2348144317152@s.whatsapp.net');
+        
+        if (!isOwner) {
+            await sock.sendMessage(chatId, {
+                text: '❌ This command is only available for the owner!',
+                ...channelInfo
+            });
+            return;
+        }
+        
         const cmd = args[0]?.toLowerCase();
         
-        if (cmd === 'on') {
+        if (cmd === 'on' || cmd === 'enable') {
             config.enabled = true;
             saveConfig();
-            await sock.sendMessage(chatId, { 
-                text: '✅ *Auto Status: ON*\n\nNow viewing statuses instantly!' 
-            }, { quoted: message });
+            
+            const responseText = `✅ *AUTO-STATUS ENABLED*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 Bot will now automatically view all status updates instantly.\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 *Note:* Statuses are viewed without reactions.`;
+            
+            await sock.sendMessage(chatId, { text: responseText, ...channelInfo });
         } 
-        else if (cmd === 'off') {
+        else if (cmd === 'off' || cmd === 'disable') {
             config.enabled = false;
             saveConfig();
+            
             await sock.sendMessage(chatId, { 
-                text: '❌ *Auto Status: OFF*' 
-            }, { quoted: message });
+                text: '❌ *AUTO-STATUS DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\nBot will no longer view statuses automatically.',
+                ...channelInfo
+            });
         }
         else {
-            const status = config.enabled ? 'ON ✅' : 'OFF ❌';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
+            
             await sock.sendMessage(chatId, { 
-                text: `📱 *AUTO STATUS*\n\nStatus: ${status}\n\nCommands:\n• .autostatus on\n• .autostatus off` 
-            }, { quoted: message });
+                text: `👁️ *AUTO-STATUS SETTINGS*\n\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📖 *Commands:*\n` +
+                      `└ .autostatus on - Enable auto-view\n` +
+                      `└ .autostatus off - Disable auto-view\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 *Note:* Statuses are viewed without reactions.`,
+                ...channelInfo
+            });
         }
     } catch (error) {
-        await sock.sendMessage(chatId, { text: '❌ Error processing command' }, { quoted: message });
+        console.error('❌ Error in autoStatusCommand:', error);
+        await sock.sendMessage(chatId, { 
+            text: '❌ Error processing command!',
+            ...channelInfo
+        });
     }
 }
 
