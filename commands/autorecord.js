@@ -10,6 +10,19 @@ const isOwnerOrSudo = require('../lib/isOwner');
 // Path to store the configuration
 const configPath = path.join(__dirname, '..', 'data', 'autorecord.json');
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Initialize configuration file if it doesn't exist
 function initConfig() {
     try {
@@ -31,19 +44,6 @@ function initConfig() {
         return { enabled: false, mode: 'all', duration: 60 };
     }
 }
-
-// Channel info for professional branding
-const channelInfo = {
-    contextInfo: {
-        forwardingScore: 1,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363420618370733@newsletter',
-            newsletterName: 'WALLYJAYTECH-MD BOTS',
-            serverMessageId: -1
-        }
-    }
-};
 
 // Toggle autorecord feature
 async function autorecordCommand(sock, chatId, message) {
@@ -397,10 +397,10 @@ async function showRecordingAfterCommand(sock, chatId) {
 // Delay helper function
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-module.exports =,
-    shouldShow {
+module.exports = {
     autorecordCommand,
-    isAutorecordEnabledRecording,
+    isAutorecordEnabled,
+    shouldShowRecording,
     handleAutorecordForMessage,
     handleAutorecordForCommand,
     showRecordingAfterCommand
