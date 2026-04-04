@@ -71,23 +71,22 @@ function isOwnStatus(sock, publisher) {
     return publisher === botJid;
 }
 
-// React to status with 💚 - FIXED VERSION
-async function reactToStatus(sock, statusKey) {
+// React to status with 💚 - WORKING VERSION
+async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
+        if (!statusId || !publisherJid) return false;
         
-        // Get the publisher JID
-        const publisherJid = statusKey.participant || statusKey.remoteJid;
-        if (!publisherJid) return false;
+        console.log(`💚 Attempting to react to status: ${statusId} from ${publisherJid.split('@')[0]}`);
         
-        // Send reaction using the correct method
+        // Method 1: Using react key
         await sock.sendMessage('status@broadcast', {
             react: {
                 text: '💚',
                 key: {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
-                    id: statusKey.id,
+                    id: statusId,
                     participant: publisherJid
                 }
             }
@@ -96,10 +95,7 @@ async function reactToStatus(sock, statusKey) {
         console.log(`✅ Reacted to status with 💚 from: ${publisherJid.split('@')[0]}`);
         return true;
     } catch (error) {
-        // Silently fail - don't spam console
-        if (!error.message?.includes('rate-overlimit')) {
-            console.log(`⚠️ Could not react to status: ${error.message}`);
-        }
+        console.log(`⚠️ Could not react to status: ${error.message}`);
         return false;
     }
 }
@@ -109,47 +105,49 @@ async function handleStatusUpdate(sock, chatUpdate) {
     try {
         if (!config.enabled || !sock) return;
         
-        // Handle different update types
-        let statusKey = null;
+        console.log('📱 Status update received:', JSON.stringify(chatUpdate, null, 2).substring(0, 500));
+        
+        let statusId = null;
         let publisher = null;
         
-        // Case 1: Direct message with status
+        // Case 1: messages.upsert event
         if (chatUpdate.messages && chatUpdate.messages[0]) {
             const msg = chatUpdate.messages[0];
             if (msg.key && msg.key.remoteJid === 'status@broadcast') {
-                statusKey = msg.key;
-                publisher = getStatusPublisher(msg);
+                statusId = msg.key.id;
+                publisher = msg.key.participant || msg.key.remoteJid;
+                console.log(`📱 Found status in messages.upsert: ${statusId}`);
             }
         }
-        // Case 2: Direct key object
+        // Case 2: Direct status update
         else if (chatUpdate.key && chatUpdate.key.remoteJid === 'status@broadcast') {
-            statusKey = chatUpdate.key;
-            publisher = getStatusPublisher(chatUpdate);
-        }
-        // Case 3: Reaction or other update
-        else if (chatUpdate.reaction && chatUpdate.reaction.key) {
-            const reactKey = chatUpdate.reaction.key;
-            if (reactKey.remoteJid === 'status@broadcast') {
-                statusKey = reactKey;
-                publisher = reactKey.participant || reactKey.remoteJid;
-            }
+            statusId = chatUpdate.key.id;
+            publisher = chatUpdate.key.participant || chatUpdate.key.remoteJid;
+            console.log(`📱 Found status in direct update: ${statusId}`);
         }
         
-        if (!statusKey || !publisher) return;
-        
-        const statusId = statusKey.id;
+        if (!statusId || !publisher) {
+            console.log('📱 No status found in update');
+            return;
+        }
         
         // Skip if already viewed
-        if (viewed.has(statusId)) return;
+        if (viewed.has(statusId)) {
+            console.log(`📱 Status ${statusId} already viewed, skipping`);
+            return;
+        }
         
         // Skip bot's own statuses
-        if (isOwnStatus(sock, publisher)) return;
+        if (isOwnStatus(sock, publisher)) {
+            console.log(`📱 Skipping bot's own status`);
+            return;
+        }
         
         // Mark as viewed
         viewed.add(statusId);
         
         // Small delay to avoid race conditions
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // View the status
         const receipt = {
@@ -164,23 +162,24 @@ async function handleStatusUpdate(sock, chatUpdate) {
             
             // React after successful view (if reactions enabled)
             if (config.reactOn) {
-                await reactToStatus(sock, statusKey);
+                // Add a small delay before reacting
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await reactToStatus(sock, statusId, publisher);
             }
         } catch (err) {
             if (err.message?.includes('rate-overlimit')) {
-                console.log('⚠️ Rate limit hit, waiting...');
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                console.log('⚠️ Rate limit hit, waiting 5 seconds...');
+                await new Promise(resolve => setTimeout(resolve, 5000));
                 await sock.readMessages([receipt]);
                 if (config.reactOn) {
-                    await reactToStatus(sock, statusKey);
+                    await reactToStatus(sock, statusId, publisher);
                 }
+            } else {
+                console.log(`⚠️ Error viewing status: ${err.message}`);
             }
         }
     } catch (e) {
-        // Silent fail for status handler
-        if (e.message && !e.message.includes('rate')) {
-            console.log('⚠️ Status handler error:', e.message);
-        }
+        console.log('⚠️ Status handler error:', e.message);
     }
 }
 
@@ -195,14 +194,14 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             const statusId = msg.key.id;
             if (viewed.has(statusId)) continue;
             
-            const publisher = getStatusPublisher(msg);
+            const publisher = msg.key.participant || msg.key.remoteJid;
             if (!publisher) continue;
             
             if (isOwnStatus(sock, publisher)) continue;
             
             viewed.add(statusId);
             
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             const receipt = {
                 remoteJid: 'status@broadcast',
@@ -212,23 +211,28 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             
             try {
                 await sock.readMessages([receipt]);
+                console.log(`✅ Viewed bulk status from: ${publisher.split('@')[0]}`);
+                
                 if (config.reactOn) {
-                    await reactToStatus(sock, msg.key);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await reactToStatus(sock, statusId, publisher);
                 }
             } catch (err) {
                 if (err.message?.includes('rate-overlimit')) {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                     await sock.readMessages([receipt]);
                     if (config.reactOn) {
-                        await reactToStatus(sock, msg.key);
+                        await reactToStatus(sock, statusId, publisher);
                     }
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) {
+        console.log('⚠️ Bulk status error:', e.message);
+    }
 }
 
-// Professional command with reaction support - USING DYNAMIC OWNER CHECK
+// Professional command with reaction support
 async function autoStatusCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
