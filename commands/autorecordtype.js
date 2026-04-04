@@ -10,6 +10,19 @@ const isOwnerOrSudo = require('../lib/isOwner');
 // Path to store the configuration
 const configPath = path.join(__dirname, '..', 'data', 'autorecordtype.json');
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Initialize configuration file if it doesn't exist
 function initConfig() {
     try {
@@ -20,8 +33,8 @@ function initConfig() {
             }
             fs.writeFileSync(configPath, JSON.stringify({ 
                 enabled: false,
-                mode: 'all', // all, dms, groups
-                duration: 60 // duration in seconds
+                mode: 'all',
+                duration: 60
             }, null, 2));
             console.log('📁 Created new autorecordtype config file');
         }
@@ -43,75 +56,60 @@ async function autorecordtypeCommand(sock, chatId, message) {
         if (!message.key.fromMe && !isOwner) {
             await sock.sendMessage(chatId, {
                 text: '❌ This command is only available for the owner!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                ...channelInfo
             });
             return;
         }
 
-        // Get command arguments
         const userMessage = message.message?.conversation || 
                           message.message?.extendedTextMessage?.text || '';
         
         console.log('📝 Raw message:', userMessage);
         
-        // Extract command and args
         let commandPart = userMessage.trim();
         if (commandPart.startsWith('.')) {
             commandPart = commandPart.substring(1);
         }
         
         const parts = commandPart.split(/\s+/);
-        const commandName = parts[0].toLowerCase();
         const args = parts.slice(1);
         
-        console.log('🔍 Command:', commandName);
         console.log('🔍 Args:', args);
         
-        // Initialize or read config
         const config = initConfig();
         
         // If no arguments, show current status
         if (args.length === 0) {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const modeText = getModeText(config.mode);
             
-            // Get individual feature status
             const typingStatus = await getAutotypingStatus();
             const recordStatus = await getAutorecordStatus();
             
-            await sock.sendMessage(chatId, {
-                text: `🎙️⌨️ *AutoRecordType Settings*\n\n` +
-                      `📱 *Master Status:* ${status}\n` +
+            const settingText = `🎙️⌨️ *AUTO-RECORD-TYPE SETTINGS*\n\n` +
+                      `${statusIcon} *Master Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `🎯 *Mode:* ${modeText}\n` +
                       `⏱️ *Duration:* ${config.duration} seconds\n\n` +
-                      `*Individual Status:*\n` +
-                      `• Auto-typing: ${typingStatus}\n` +
-                      `• Auto-record: ${recordStatus}\n\n` +
-                      `*Commands:*\n` +
-                      `• .autorecordtype on/off - Enable/disable both\n` +
-                      `• .autorecordtype mode all - Work everywhere\n` +
-                      `• .autorecordtype mode dms - DMs only\n` +
-                      `• .autorecordtype mode groups - Groups only\n` +
-                      `• .autorecordtype duration <seconds> - Set duration (max 120)\n` +
-                      `• .autorecordtype status - Show current settings`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📊 *Individual Status:*\n` +
+                      `└ Auto-typing: ${typingStatus}\n` +
+                      `└ Auto-record: ${recordStatus}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📖 *Commands:*\n` +
+                      `└ .autorecordtype on/off - Enable/disable both\n` +
+                      `└ .autorecordtype mode all - Work everywhere\n` +
+                      `└ .autorecordtype mode dms - DMs only\n` +
+                      `└ .autorecordtype mode groups - Groups only\n` +
+                      `└ .autorecordtype duration <seconds> - Set duration (5-120)\n` +
+                      `└ .autorecordtype status - Show current settings\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 *Example:*\n` +
+                      `└ .autorecordtype duration 30\n` +
+                      `└ .autorecordtype mode groups`;
+            
+            await sock.sendMessage(chatId, { text: settingText, ...channelInfo });
             return;
         }
 
@@ -122,112 +120,64 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            // Enable both autotyping and autorecord
             await enableBothFeatures(config.mode, config.duration);
             
-            await sock.sendMessage(chatId, {
-                text: `✅ *AutoRecordType enabled!*\n\n` +
-                      `Mode: ${getModeText(config.mode)}\n` +
-                      `Duration: ${config.duration} seconds\n\n` +
+            const responseText = `✅ *AUTO-RECORD-TYPE ENABLED*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🎯 Mode: ${getModeText(config.mode)}\n` +
+                      `⏱️ Duration: ${config.duration} seconds\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `✅ Auto-typing: ENABLED\n` +
                       `✅ Auto-record: ENABLED\n\n` +
-                      `Both typing and recording indicators are now active for ${config.duration} seconds!`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 Both typing and recording indicators are now active for ${config.duration} seconds!`;
+            
+            await sock.sendMessage(chatId, { text: responseText, ...channelInfo });
         } 
         else if (action === 'off' || action === 'disable') {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            // Disable both autotyping and autorecord
             await disableBothFeatures();
             
-            await sock.sendMessage(chatId, {
-                text: '❌ *AutoRecordType disabled!*\n\nBoth typing and recording indicators are now turned off.',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+            await sock.sendMessage(chatId, { 
+                text: '❌ *AUTO-RECORD-TYPE DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\nBoth typing and recording indicators are now turned off.',
+                ...channelInfo 
             });
         }
         else if (action === 'mode') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify a mode!\n\nAvailable modes:\n• all - Work everywhere\n• dms - DMs only\n• groups - Groups only',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID OPTION*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecordtype mode groups`,
+                    ...channelInfo
                 });
                 return;
             }
             
             const mode = args[1].toLowerCase();
+            
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
                 
-                // Update both features with new mode
                 await updateBothFeaturesMode(mode);
                 
                 await sock.sendMessage(chatId, {
-                    text: `🎯 *AutoRecordType mode set to:* ${getModeText(mode)}\n\n${getModeDescription(mode)}\n\nDuration: ${config.duration} seconds`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 ${getModeDescription(mode)}\n⏱️ Duration: ${config.duration} seconds`,
+                    ...channelInfo
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Invalid mode!\n\nAvailable modes:\n• all - Work everywhere\n• dms - DMs only\n• groups - Groups only',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only`,
+                    ...channelInfo
                 });
             }
         }
         else if (action === 'duration') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify duration in seconds!\n\nExample: .autorecordtype duration 60\nMax: 120 seconds',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autorecordtype duration <seconds>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecordtype duration 60\n\n📌 Max: 120 seconds | Min: 5 seconds`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -235,16 +185,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
             const duration = parseInt(args[1]);
             if (isNaN(duration) || duration < 5 || duration > 120) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Invalid duration!\n\nDuration must be between 5 and 120 seconds.',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID DURATION*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Duration must be between 5 and 120 seconds.\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autorecordtype duration 30`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -252,67 +194,48 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.duration = duration;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            // Update both features with new duration
             await updateBothFeaturesDuration(duration);
             
             await sock.sendMessage(chatId, {
-                text: `⏱️ *AutoRecordType duration set to:* ${duration} seconds\n\nBoth typing and recording will now last for ${duration} seconds.`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing and recording duration: ${duration} seconds`,
+                ...channelInfo
             });
         }
         else if (action === 'status') {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const modeText = getModeText(config.mode);
             
-            // Check current status of both features
             const typingStatus = await getAutotypingStatus();
             const recordStatus = await getAutorecordStatus();
             
             await sock.sendMessage(chatId, {
-                text: `🎙️⌨️ *AutoRecordType Status*\n\n` +
-                      `📱 *Master Status:* ${status}\n` +
+                text: `🎙️⌨️ *AUTO-RECORD-TYPE STATUS*\n\n` +
+                      `${statusIcon} *Master Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `🎯 *Mode:* ${modeText}\n` +
                       `⏱️ *Duration:* ${config.duration} seconds\n\n` +
-                      `*Individual Status:*\n` +
-                      `• Auto-typing: ${typingStatus}\n` +
-                      `• Auto-record: ${recordStatus}\n\n` +
-                      `${getModeDescription(config.mode)}`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📊 *Individual Status:*\n` +
+                      `└ Auto-typing: ${typingStatus}\n` +
+                      `└ Auto-record: ${recordStatus}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 ${getModeDescription(config.mode)}`,
+                ...channelInfo
             });
         }
         else {
             await sock.sendMessage(chatId, {
-                text: '❌ Invalid command!\n\n*Available Commands:*\n' +
-                      '• .autorecordtype on/off\n' +
-                      '• .autorecordtype mode all/dms/groups\n' +
-                      '• .autorecordtype duration <seconds>\n' +
-                      '• .autorecordtype status\n' +
-                      '• .autorecordtype (shows this menu)',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available Commands:*\n` +
+                      `└ .autorecordtype on/off\n` +
+                      `└ .autorecordtype mode all/dms/groups\n` +
+                      `└ .autorecordtype duration <seconds>\n` +
+                      `└ .autorecordtype status\n` +
+                      `└ .autorecordtype (shows this menu)\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `✨ *Example:*\n` +
+                      `└ .autorecordtype mode groups`,
+                ...channelInfo
             });
         }
         
@@ -320,15 +243,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
         console.error('❌ Error in autorecordtype command:', error);
         await sock.sendMessage(chatId, {
             text: '❌ Error processing command!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            ...channelInfo
         });
     }
 }
@@ -356,7 +271,6 @@ function getModeDescription(mode) {
 // Enable both autotyping and autorecord
 async function enableBothFeatures(mode, duration) {
     try {
-        // Enable autotyping
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         let autotypingConfig = { enabled: true, mode: mode, duration: duration };
         
@@ -368,7 +282,6 @@ async function enableBothFeatures(mode, duration) {
         autotypingConfig.duration = duration;
         fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         
-        // Enable autorecord
         const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
         let autorecordConfig = { enabled: true, mode: mode, duration: duration };
         
@@ -391,7 +304,6 @@ async function enableBothFeatures(mode, duration) {
 // Disable both autotyping and autorecord
 async function disableBothFeatures() {
     try {
-        // Disable autotyping
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         if (fs.existsSync(autotypingConfigPath)) {
             let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
@@ -399,7 +311,6 @@ async function disableBothFeatures() {
             fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         }
         
-        // Disable autorecord
         const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
         if (fs.existsSync(autorecordConfigPath)) {
             let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
@@ -418,7 +329,6 @@ async function disableBothFeatures() {
 // Update mode for both features
 async function updateBothFeaturesMode(mode) {
     try {
-        // Update autotyping mode
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         if (fs.existsSync(autotypingConfigPath)) {
             let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
@@ -426,7 +336,6 @@ async function updateBothFeaturesMode(mode) {
             fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         }
         
-        // Update autorecord mode
         const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
         if (fs.existsSync(autorecordConfigPath)) {
             let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
@@ -445,7 +354,6 @@ async function updateBothFeaturesMode(mode) {
 // Update duration for both features
 async function updateBothFeaturesDuration(duration) {
     try {
-        // Update autotyping duration
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         if (fs.existsSync(autotypingConfigPath)) {
             let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
@@ -453,7 +361,6 @@ async function updateBothFeaturesDuration(duration) {
             fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         }
         
-        // Update autorecord duration
         const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
         if (fs.existsSync(autorecordConfigPath)) {
             let autorecordConfig = JSON.parse(fs.readFileSync(autorecordConfigPath));
