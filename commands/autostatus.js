@@ -52,16 +52,23 @@ function saveConfig() {
 
 // Track viewed statuses
 const viewed = new Set();
+const reacted = new Set(); // Track reacted statuses to avoid double reactions
 
 // Clear cache every hour
 setInterval(() => {
     viewed.clear();
+    reacted.clear();
 }, 60 * 60 * 1000);
 
 // Helper function to extract publisher
 function getStatusPublisher(msg) {
     if (!msg || !msg.key) return null;
-    return msg.key.participant || msg.participant || msg.key.remoteJid || null;
+    // Get the participant who posted the status
+    const participant = msg.key.participant || msg.participant;
+    if (participant && participant !== 'status@broadcast') {
+        return participant;
+    }
+    return null;
 }
 
 // Helper to check if status is from bot
@@ -71,15 +78,27 @@ function isOwnStatus(sock, publisher) {
     return publisher === botJid;
 }
 
-// React to status with 💚 - WORKING VERSION
+// Check if message is a reaction (to avoid loops)
+function isReactionMessage(msg) {
+    return msg.message?.reactionMessage || msg.reaction;
+}
+
+// React to status with 💚 - FIXED VERSION
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
         if (!statusId || !publisherJid) return false;
         
+        // Check if already reacted to this status
+        const reactKey = `${statusId}_${publisherJid}`;
+        if (reacted.has(reactKey)) {
+            console.log(`💚 Already reacted to status ${statusId}, skipping`);
+            return false;
+        }
+        
         console.log(`💚 Attempting to react to status: ${statusId} from ${publisherJid.split('@')[0]}`);
         
-        // Method 1: Using react key
+        // Send reaction
         await sock.sendMessage('status@broadcast', {
             react: {
                 text: '💚',
@@ -92,6 +111,8 @@ async function reactToStatus(sock, statusId, publisherJid) {
             }
         });
         
+        // Mark as reacted
+        reacted.add(reactKey);
         console.log(`✅ Reacted to status with 💚 from: ${publisherJid.split('@')[0]}`);
         return true;
     } catch (error) {
@@ -105,77 +126,92 @@ async function handleStatusUpdate(sock, chatUpdate) {
     try {
         if (!config.enabled || !sock) return;
         
-        console.log('📱 Status update received:', JSON.stringify(chatUpdate, null, 2).substring(0, 500));
+        let messages = [];
         
-        let statusId = null;
-        let publisher = null;
-        
-        // Case 1: messages.upsert event
-        if (chatUpdate.messages && chatUpdate.messages[0]) {
-            const msg = chatUpdate.messages[0];
-            if (msg.key && msg.key.remoteJid === 'status@broadcast') {
-                statusId = msg.key.id;
-                publisher = msg.key.participant || msg.key.remoteJid;
-                console.log(`📱 Found status in messages.upsert: ${statusId}`);
-            }
-        }
-        // Case 2: Direct status update
-        else if (chatUpdate.key && chatUpdate.key.remoteJid === 'status@broadcast') {
-            statusId = chatUpdate.key.id;
-            publisher = chatUpdate.key.participant || chatUpdate.key.remoteJid;
-            console.log(`📱 Found status in direct update: ${statusId}`);
-        }
-        
-        if (!statusId || !publisher) {
-            console.log('📱 No status found in update');
+        // Extract messages from different update types
+        if (chatUpdate.messages) {
+            messages = chatUpdate.messages;
+        } else if (chatUpdate.key) {
+            messages = [chatUpdate];
+        } else {
             return;
         }
         
-        // Skip if already viewed
-        if (viewed.has(statusId)) {
-            console.log(`📱 Status ${statusId} already viewed, skipping`);
-            return;
-        }
-        
-        // Skip bot's own statuses
-        if (isOwnStatus(sock, publisher)) {
-            console.log(`📱 Skipping bot's own status`);
-            return;
-        }
-        
-        // Mark as viewed
-        viewed.add(statusId);
-        
-        // Small delay to avoid race conditions
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // View the status
-        const receipt = {
-            remoteJid: 'status@broadcast',
-            id: statusId,
-            participant: publisher
-        };
-        
-        try {
-            await sock.readMessages([receipt]);
-            console.log(`✅ Viewed status from: ${publisher.split('@')[0]}`);
+        for (const msg of messages) {
+            // Skip if no key
+            if (!msg.key) continue;
             
-            // React after successful view (if reactions enabled)
-            if (config.reactOn) {
-                // Add a small delay before reacting
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                await reactToStatus(sock, statusId, publisher);
+            // Skip if not a status broadcast
+            if (msg.key.remoteJid !== 'status@broadcast') continue;
+            
+            // CRITICAL: Skip reaction messages to avoid infinite loop
+            if (isReactionMessage(msg)) {
+                console.log(`⏭️ Skipping reaction message to avoid loop`);
+                continue;
             }
-        } catch (err) {
-            if (err.message?.includes('rate-overlimit')) {
-                console.log('⚠️ Rate limit hit, waiting 5 seconds...');
-                await new Promise(resolve => setTimeout(resolve, 5000));
+            
+            // Skip if it's a message from the bot itself
+            if (msg.key.fromMe === true) {
+                console.log(`⏭️ Skipping bot's own message`);
+                continue;
+            }
+            
+            const statusId = msg.key.id;
+            const publisher = getStatusPublisher(msg);
+            
+            if (!statusId || !publisher) {
+                console.log(`⚠️ Could not extract publisher for status`);
+                continue;
+            }
+            
+            // Skip if already viewed
+            if (viewed.has(statusId)) {
+                console.log(`📱 Status ${statusId} already viewed`);
+                continue;
+            }
+            
+            // Skip bot's own statuses
+            if (isOwnStatus(sock, publisher)) {
+                console.log(`⏭️ Skipping bot's own status`);
+                continue;
+            }
+            
+            console.log(`📱 New status from: ${publisher.split('@')[0]}, ID: ${statusId}`);
+            
+            // Mark as viewed immediately to prevent duplicate processing
+            viewed.add(statusId);
+            
+            // Small delay to ensure status is processed
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // View the status
+            const receipt = {
+                remoteJid: 'status@broadcast',
+                id: statusId,
+                participant: publisher
+            };
+            
+            try {
                 await sock.readMessages([receipt]);
+                console.log(`✅ Viewed status from: ${publisher.split('@')[0]}`);
+                
+                // React after successful view (if reactions enabled)
                 if (config.reactOn) {
+                    // Delay before reacting
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     await reactToStatus(sock, statusId, publisher);
                 }
-            } else {
-                console.log(`⚠️ Error viewing status: ${err.message}`);
+            } catch (err) {
+                if (err.message?.includes('rate-overlimit')) {
+                    console.log('⚠️ Rate limit hit, waiting 5 seconds...');
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    await sock.readMessages([receipt]);
+                    if (config.reactOn) {
+                        await reactToStatus(sock, statusId, publisher);
+                    }
+                } else {
+                    console.log(`⚠️ Error viewing status: ${err.message}`);
+                }
             }
         }
     } catch (e) {
@@ -191,12 +227,18 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         for (const msg of statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
             
+            // Skip reaction messages
+            if (isReactionMessage(msg)) continue;
+            
+            // Skip bot's own messages
+            if (msg.key.fromMe === true) continue;
+            
             const statusId = msg.key.id;
+            const publisher = getStatusPublisher(msg);
+            
+            if (!statusId || !publisher) continue;
+            
             if (viewed.has(statusId)) continue;
-            
-            const publisher = msg.key.participant || msg.key.remoteJid;
-            if (!publisher) continue;
-            
             if (isOwnStatus(sock, publisher)) continue;
             
             viewed.add(statusId);
@@ -214,7 +256,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                 console.log(`✅ Viewed bulk status from: ${publisher.split('@')[0]}`);
                 
                 if (config.reactOn) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     await reactToStatus(sock, statusId, publisher);
                 }
             } catch (err) {
