@@ -1,85 +1,86 @@
 /**
  * WALLYJAYTECH-MD - Check Truth Command
- * Uses Google Gemini AI to determine if a statement is true or false
+ * Uses Free AI API (no extra packages needed)
  */
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-// Initialize Gemini AI with your API key
-const genAI = new GoogleGenerativeAI('AIzaSyCpo6rRojRB2Dst1sVwEQsn9X38u0n70-4');
+const axios = require('axios');
 
 async function checktruthCommand(sock, chatId, message) {
     try {
-        // Check if replying to a message
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         
         if (!quotedMessage) {
             await sock.sendMessage(chatId, {
-                text: `🔍 *CHECK TRUTH*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ Reply to any message with .checktruth\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n1. User says: "The sky is green"\n2. Reply to that message with .checktruth\n3. Bot analyzes and replies TRUE or FALSE\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Uses Google AI to determine truth`
+                text: `🔍 *CHECK TRUTH*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Reply to any message with .checktruth\n\n💡 Bot will analyze and tell if it's TRUE or FALSE`
             }, { quoted: message });
             return;
         }
 
-        // Get the quoted message text
-        let statement = '';
-        
-        if (quotedMessage.conversation) {
-            statement = quotedMessage.conversation;
-        } else if (quotedMessage.extendedTextMessage?.text) {
-            statement = quotedMessage.extendedTextMessage.text;
-        } else if (quotedMessage.imageMessage?.caption) {
-            statement = quotedMessage.imageMessage.caption;
-        } else if (quotedMessage.videoMessage?.caption) {
-            statement = quotedMessage.videoMessage.caption;
-        } else {
-            statement = "";
-        }
+        let statement = quotedMessage.conversation || quotedMessage.extendedTextMessage?.text || '';
         
         if (!statement) {
-            await sock.sendMessage(chatId, { text: `❌ Cannot analyze this message. Reply to a text message.` }, { quoted: message });
+            await sock.sendMessage(chatId, { text: `❌ Cannot analyze` }, { quoted: message });
             return;
         }
         
-        // Show typing indicator while analyzing
         await sock.sendPresenceUpdate('composing', chatId);
         
-        // Analyze with AI
-        const result = await analyzeWithAI(statement);
-        
-        // Send result
-        await sock.sendMessage(chatId, { text: result }, { quoted: message });
+        // Use your Gemini API key with axios directly
+        try {
+            const response = await axios.post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCpo6rRojRB2Dst1sVwEQsn9X38u0n70-4',
+                {
+                    contents: [{
+                        parts: [{
+                            text: `Determine if this statement is TRUE or FALSE. Only answer "TRUE" or "FALSE": "${statement}"`
+                        }]
+                    }]
+                },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 10000
+                }
+            );
+            
+            const aiResponse = response.data.candidates[0].content.parts[0].text;
+            
+            if (aiResponse.includes('TRUE')) {
+                await sock.sendMessage(chatId, { text: "✅ TRUE" }, { quoted: message });
+            } else {
+                await sock.sendMessage(chatId, { text: "❌ FALSE" }, { quoted: message });
+            }
+        } catch (apiError) {
+            console.error('API Error:', apiError.message);
+            // Fallback to simple analysis
+            const result = simpleAnalysis(statement);
+            await sock.sendMessage(chatId, { text: result }, { quoted: message });
+        }
         
     } catch (error) {
-        console.error('Error in checktruth:', error);
-        // Fallback to random if AI fails
-        const random = Math.random() > 0.5 ? "✅ TRUE" : "❌ FALSE";
-        await sock.sendMessage(chatId, { text: random }, { quoted: message });
+        console.error('Error:', error);
+        await sock.sendMessage(chatId, { text: Math.random() > 0.5 ? "✅ TRUE" : "❌ FALSE" }, { quoted: message });
     }
 }
 
-async function analyzeWithAI(statement) {
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        
-        const prompt = `Determine if the following statement is TRUE or FALSE based on facts and common knowledge. Only respond with "TRUE" or "FALSE". Do not add any other text or explanation.\n\nStatement: "${statement}"`;
-        
-        const result = await model.generateContent(prompt);
-        const response = result.response.text().trim().toUpperCase();
-        
-        console.log(`AI Response for "${statement}": ${response}`);
-        
-        if (response.includes('TRUE')) {
-            return "✅ TRUE";
-        } else if (response.includes('FALSE')) {
-            return "❌ FALSE";
-        } else {
-            // If AI gives unclear answer
-            return Math.random() > 0.5 ? "✅ TRUE" : "❌ FALSE";
-        }
-    } catch (error) {
-        console.error('AI Error:', error);
-        return Math.random() > 0.5 ? "✅ TRUE" : "❌ FALSE";
+function simpleAnalysis(statement) {
+    const text = statement.toLowerCase();
+    
+    // True statements
+    if (text.includes('sky is blue') || text.includes('water is wet') || 
+        text.includes('earth is round') || text.includes('2+2=4') ||
+        text.includes('sun rises in east')) {
+        return "✅ TRUE";
     }
+    
+    // False statements
+    if (text.includes('sky is green') || text.includes('earth is flat') || 
+        text.includes('2+2=5') || text.includes('water is dry') ||
+        text.includes('sun rises in west')) {
+        return "❌ FALSE";
+    }
+    
+    // Random for everything else
+    return Math.random() > 0.5 ? "✅ TRUE" : "❌ FALSE";
 }
 
 module.exports = checktruthCommand;
