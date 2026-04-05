@@ -29,6 +29,7 @@ setInterval(() => {
 const settings = require('./settings');
 require('./config.js');
 const { isBanned } = require('./lib/isBanned');
+const checktruthCommand = require('./commands/checktruth');
 const yts = require('yt-search');
 const { fetchBuffer } = require('./lib/myfunc');
 const fetch = require('node-fetch');
@@ -798,9 +799,8 @@ if (!isPublic && !isOwnerOrSudoCheck) {
 case userMessage.startsWith('.getjid @'):
     await getMentionedJids(sock, chatId, message);
     break;
-          case userMessage === '.testblock':
-    const { testBlock } = require('./commands/antiforeign');
-    await testBlock(sock, chatId, message);
+          case userMessage === '.checktruth':
+    await checktruthCommand(sock, chatId, message);
     break;
             case userMessage === '.fact':
                 await factCommand(sock, chatId, message, message);
