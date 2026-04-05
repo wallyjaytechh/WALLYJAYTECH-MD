@@ -798,6 +798,10 @@ if (!isPublic && !isOwnerOrSudoCheck) {
 case userMessage.startsWith('.getjid @'):
     await getMentionedJids(sock, chatId, message);
     break;
+          case userMessage === '.testblock':
+    const { testBlock } = require('./commands/antiforeign');
+    await testBlock(sock, chatId, message);
+    break;
             case userMessage === '.fact':
                 await factCommand(sock, chatId, message, message);
                 break;
