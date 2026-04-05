@@ -54,7 +54,7 @@ async function antiforeignCommand(sock, chatId, message) {
         
         if (args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `🚫 *ANTI-FOREIGN*\n\nStatus: ${settings.enabled ? '✅ ON' : '❌ OFF'}\nBlocked: ${settings.blockedCountries.join(', ')}\n\nCommands:\n.antiforeign on\n.antiforeign off\n.antiforeign add 91\n.antiforeign remove 91`
+                text: `🚫 *ANTI-FOREIGN*\n\nStatus: ${settings.enabled ? '✅ ON' : '❌ OFF'}\nBlocked: ${settings.blockedCountries.join(', ')}\n\nCommands:\n.antiforeign on\n.antiforeign off\n.antiforeign add 91\n.antiforeign remove 91\n\nTest: .testblock`
             });
             return;
         }
@@ -94,10 +94,12 @@ async function antiforeignCommand(sock, chatId, message) {
     }
 }
 
-// MAIN BLOCKING FUNCTION - This is what actually blocks
+// MAIN BLOCKING FUNCTION
 async function handleAntiforeign(sock, chatId, message) {
     try {
-        console.log(`🔍 ANTI-FOREIGN CHECK - Enabled: ${settings.enabled}, Chat: ${chatId}`);
+        console.log(`🔍 ANTI-FOREIGN CHECK - Enabled: ${settings.enabled}`);
+        console.log(`🔍 Chat ID: ${chatId}`);
+        console.log(`🔍 From Me: ${message.key.fromMe}`);
         
         // Only block private chats
         if (chatId.includes('@g.us')) {
@@ -150,9 +152,24 @@ async function handleAntiforeign(sock, chatId, message) {
     }
 }
 
+// TEST FUNCTION - Add this to test blocking
+async function testBlock(sock, chatId, message) {
+    try {
+        const sender = message.key.participant || message.key.remoteJid;
+        const countryCode = getCountryCode(sender);
+        
+        await sock.sendMessage(chatId, {
+            text: `🧪 *TEST BLOCK*\n\nYour number: ${sender}\nCountry code: ${countryCode}\nBlocked countries: ${settings.blockedCountries.join(', ')}\n\nWould you be blocked? ${settings.blockedCountries.includes(countryCode) ? '✅ YES' : '❌ NO'}`
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 module.exports = {
     antiforeignCommand,
     handleAntiforeign,
+    testBlock,
     isAntiforeignEnabled: () => settings.enabled,
     getBlockedCountries: () => settings.blockedCountries
 };
