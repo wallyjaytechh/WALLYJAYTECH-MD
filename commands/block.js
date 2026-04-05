@@ -1,5 +1,5 @@
 /**
- * WALLYJAYTECH-MD - Block Command (LID Compatible)
+ * WALLYJAYTECH-MD - Block Command (Fixes LID to Phone Number)
  */
 
 async function blockCommand(sock, chatId, message) {
@@ -57,85 +57,93 @@ async function blockCommand(sock, chatId, message) {
 
         console.log(`🔍 Attempting to block: ${targetJid}`);
         
-        // METHOD 1: Try updateBlockStatus
-        try {
-            await sock.updateBlockStatus(targetJid, 'block');
-            console.log(`✅ Blocked via updateBlockStatus: ${targetJid}`);
+        // STEP 1: Get the real phone number (resolve from LID if needed)
+        let realPhoneNumber = targetNumber;
+        let realJid = targetJid;
+        
+        // If it's a LID, try to get the real phone number
+        if (targetJid.includes('@lid')) {
+            console.log(`🔄 LID detected, trying to resolve to phone number...`);
             
-            await sock.sendMessage(chatId, {
-                text: `✅ Successfully blocked user.\n🆔: ${targetJid}`
-            }, { quoted: message });
-            return;
-        } catch (err1) {
-            console.log(`⚠️ updateBlockStatus failed: ${err1.message}`);
-            
-            // METHOD 2: Try using query method for LIDs
             try {
-                await sock.query({
-                    tag: 'iq',
-                    attrs: {
-                        to: 's.whatsapp.net',
-                        type: 'set',
-                        xmlns: 'block'
-                    },
-                    content: [
-                        {
-                            tag: 'block',
-                            attrs: {
-                                jid: targetJid
-                            }
-                        }
-                    ]
-                });
-                console.log(`✅ Blocked via query: ${targetJid}`);
+                // Try to get contact info
+                const contact = await sock.getContact(targetJid);
+                console.log(`📞 Contact info:`, JSON.stringify(contact, null, 2));
                 
-                await sock.sendMessage(chatId, {
-                    text: `✅ Successfully blocked user.\n🆔: ${targetJid}`
-                }, { quoted: message });
-                return;
-            } catch (err2) {
-                console.log(`⚠️ Query method failed: ${err2.message}`);
-                
-                // METHOD 3: Try with phone number if available
-                if (targetNumber) {
-                    try {
-                        await sock.updateBlockStatus(targetNumber + '@s.whatsapp.net', 'block');
-                        console.log(`✅ Blocked via phone number: ${targetNumber}`);
-                        
-                        await sock.sendMessage(chatId, {
-                            text: `✅ Successfully blocked user.\n📱: ${targetNumber}`
-                        }, { quoted: message });
-                        return;
-                    } catch (err3) {
-                        console.log(`⚠️ Phone number method failed: ${err3.message}`);
-                    }
+                if (contact && contact.phoneNumber) {
+                    realPhoneNumber = contact.phoneNumber;
+                    realJid = realPhoneNumber + '@s.whatsapp.net';
+                    console.log(`✅ Resolved LID to phone: ${realPhoneNumber}`);
+                } else if (contact && contact.id && !contact.id.includes('@lid')) {
+                    realJid = contact.id;
+                    realPhoneNumber = realJid.split('@')[0];
+                    console.log(`✅ Resolved LID to JID: ${realJid}`);
                 }
-                
-                // METHOD 4: Try to resolve LID to phone number first
-                try {
-                    // Get contact info
-                    const contact = await sock.getContact(targetJid);
-                    if (contact && contact.phoneNumber) {
-                        await sock.updateBlockStatus(contact.phoneNumber + '@s.whatsapp.net', 'block');
-                        console.log(`✅ Blocked via resolved phone: ${contact.phoneNumber}`);
-                        
-                        await sock.sendMessage(chatId, {
-                            text: `✅ Successfully blocked user.\n📱: ${contact.phoneNumber}`
-                        }, { quoted: message });
-                        return;
-                    }
-                } catch (err4) {
-                    console.log(`⚠️ Contact resolution failed: ${err4.message}`);
-                }
-                
-                throw new Error('All blocking methods failed');
+            } catch (err) {
+                console.log(`⚠️ Could not resolve contact: ${err.message}`);
             }
         }
+        
+        // STEP 2: Try to block using the real phone number JID
+        if (realJid && !realJid.includes('@lid')) {
+            console.log(`🔒 Attempting to block real JID: ${realJid}`);
+            
+            try {
+                await sock.updateBlockStatus(realJid, 'block');
+                console.log(`✅ Blocked successfully: ${realJid}`);
+                
+                await sock.sendMessage(chatId, {
+                    text: `✅ Successfully blocked user.\n📱: ${realPhoneNumber || realJid}`
+                }, { quoted: message });
+                return;
+            } catch (err) {
+                console.log(`⚠️ Block failed with real JID: ${err.message}`);
+            }
+        }
+        
+        // STEP 3: Try using the onWhatsApp method to get JID
+        try {
+            if (realPhoneNumber) {
+                const [result] = await sock.onWhatsApp(realPhoneNumber);
+                if (result && result.jid) {
+                    console.log(`📱 Found WhatsApp JID: ${result.jid}`);
+                    await sock.updateBlockStatus(result.jid, 'block');
+                    console.log(`✅ Blocked via onWhatsApp: ${result.jid}`);
+                    
+                    await sock.sendMessage(chatId, {
+                        text: `✅ Successfully blocked user.\n📱: ${realPhoneNumber}`
+                    }, { quoted: message });
+                    return;
+                }
+            }
+        } catch (err) {
+            console.log(`⚠️ onWhatsApp failed: ${err.message}`);
+        }
+        
+        // STEP 4: Last resort - try to send a message first to get real JID
+        try {
+            if (realPhoneNumber) {
+                const testJid = realPhoneNumber + '@s.whatsapp.net';
+                await sock.presenceSubscribe(testJid);
+                await new Promise(r => setTimeout(r, 500));
+                await sock.updateBlockStatus(testJid, 'block');
+                console.log(`✅ Blocked after presence subscribe: ${testJid}`);
+                
+                await sock.sendMessage(chatId, {
+                    text: `✅ Successfully blocked user.\n📱: ${realPhoneNumber}`
+                }, { quoted: message });
+                return;
+            }
+        } catch (err) {
+            console.log(`⚠️ Final attempt failed: ${err.message}`);
+        }
+        
+        throw new Error('Could not resolve LID to a valid phone number for blocking');
         
     } catch (error) {
         console.error('Error blocking user:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Failed to block user. Please try again.\n\nMake sure the user exists and you have the correct number.'
+            text: '❌ Failed to block user.\n\nPossible reasons:\n• User has privacy settings enabled\n• Cannot resolve LID to phone number\n• Try using .block with their phone number directly'
         }, { quoted: message });
     }
 }
