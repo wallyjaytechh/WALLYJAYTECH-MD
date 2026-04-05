@@ -10,12 +10,29 @@ const isOwnerOrSudo = require('../lib/isOwner');
 // Path to store the configuration
 const configPath = path.join(__dirname, '..', 'data', 'antiforeign.json');
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Country codes to block (you can modify this list)
 const DEFAULT_BLOCKED_COUNTRIES = ['91', '92', '1', '44', '86']; // India, Pakistan, US, UK, China
 
 // Initialize configuration file if it doesn't exist
 function initConfig() {
     if (!fs.existsSync(configPath)) {
+        const dataDir = path.join(__dirname, '..', 'data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
         fs.writeFileSync(configPath, JSON.stringify({ 
             enabled: false,
             blockedCountries: DEFAULT_BLOCKED_COUNTRIES,
@@ -28,10 +45,7 @@ function initConfig() {
 // Extract country code from phone number
 function extractCountryCode(jid) {
     try {
-        // JID format: 1234567890@s.whatsapp.net
         const phoneNumber = jid.split('@')[0];
-        
-        // Remove any non-digit characters
         const cleanNumber = phoneNumber.replace(/\D/g, '');
         
         // Common country code patterns
@@ -44,6 +58,12 @@ function extractCountryCode(jid) {
         if (cleanNumber.startsWith('233') && cleanNumber.length === 12) return '233'; // Ghana
         if (cleanNumber.startsWith('254') && cleanNumber.length === 12) return '254'; // Kenya
         if (cleanNumber.startsWith('27') && cleanNumber.length === 11) return '27'; // South Africa
+        if (cleanNumber.startsWith('55') && cleanNumber.length === 12) return '55'; // Brazil
+        if (cleanNumber.startsWith('52') && cleanNumber.length === 12) return '52'; // Mexico
+        if (cleanNumber.startsWith('63') && cleanNumber.length === 12) return '63'; // Philippines
+        if (cleanNumber.startsWith('62') && cleanNumber.length === 12) return '62'; // Indonesia
+        if (cleanNumber.startsWith('66') && cleanNumber.length === 11) return '66'; // Thailand
+        if (cleanNumber.startsWith('84') && cleanNumber.length === 11) return '84'; // Vietnam
         
         // Default: first 1-3 digits as country code
         if (cleanNumber.length >= 10) {
@@ -76,44 +96,45 @@ async function antiforeignCommand(sock, chatId, message) {
         if (!message.key.fromMe && !isOwner) {
             await sock.sendMessage(chatId, {
                 text: '❌ This command is only available for the owner!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                ...channelInfo
             });
             return;
         }
 
-        // Get command arguments
         const userMessage = message.message?.conversation?.trim() || 
                           message.message?.extendedTextMessage?.text?.trim() || '';
         const args = userMessage.split(' ').slice(1);
         
-        // Initialize or read config
         const config = initConfig();
         
         // If no arguments, show current status
         if (args.length === 0) {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const countries = config.blockedCountries.join(', ');
+            const countryCount = config.blockedCountries.length;
             
-            await sock.sendMessage(chatId, {
-                text: `🚫 *Anti-Foreign Settings*\n\n📱 *Status:* ${status}\n🇺🇳 *Blocked Countries:* ${countries}\n💬 *Message:* ${config.blockMessage}\n\n*Commands:*\n• .antiforeign on/off - Enable/disable\n• .antiforeign add <code> - Add country\n• .antiforeign remove <code> - Remove country\n• .antiforeign list - Show blocked countries\n• .antiforeign message <text> - Set block message\n• .antiforeign status - Show current settings`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+            const settingText = `🚫 *ANTI-FOREIGN SETTINGS*\n\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🌍 *Blocked Countries:* ${countryCount}\n` +
+                      `└ ${countries}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💬 *Block Message:*\n└ ${config.blockMessage}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📖 *Commands:*\n` +
+                      `└ .antiforeign on/off - Enable/disable\n` +
+                      `└ .antiforeign add <code> - Add country\n` +
+                      `└ .antiforeign remove <code> - Remove country\n` +
+                      `└ .antiforeign list - Show blocked countries\n` +
+                      `└ .antiforeign message <text> - Set block message\n` +
+                      `└ .antiforeign status - Show current settings\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 *Example:*\n` +
+                      `└ .antiforeign add 91\n` +
+                      `└ .antiforeign message "Your country is blocked"`;
+            
+            await sock.sendMessage(chatId, { text: settingText, ...channelInfo });
             return;
         }
 
@@ -122,48 +143,30 @@ async function antiforeignCommand(sock, chatId, message) {
         if (action === 'on' || action === 'enable') {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, {
-                text: `✅ *Anti-foreign enabled!*\n\nBlocking ${config.blockedCountries.length} countries:\n${config.blockedCountries.join(', ')}\n\nForeign numbers will be automatically blocked.`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
-            });
+            
+            const responseText = `✅ *ANTI-FOREIGN ENABLED*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🌍 Blocking ${config.blockedCountries.length} countries:\n` +
+                      `└ ${config.blockedCountries.join(', ')}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 Foreign numbers will be automatically blocked.`;
+            
+            await sock.sendMessage(chatId, { text: responseText, ...channelInfo });
         } 
         else if (action === 'off' || action === 'disable') {
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, {
-                text: '❌ *Anti-foreign disabled!*\n\nAll countries are now allowed.',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+            
+            await sock.sendMessage(chatId, { 
+                text: '❌ *ANTI-FOREIGN DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\nAll countries are now allowed.',
+                ...channelInfo
             });
         }
         else if (action === 'add') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify a country code!\n\nExample: .antiforeign add 91 (for India)',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .antiforeign add <country_code>\n\n✨ *Example:*\n└ .antiforeign add 91 (India)\n└ .antiforeign add 1 (USA)\n\n📌 *Common codes:* 91(India), 92(Pakistan), 1(USA), 44(UK), 86(China)`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -172,46 +175,23 @@ async function antiforeignCommand(sock, chatId, message) {
             if (!config.blockedCountries.includes(countryCode)) {
                 config.blockedCountries.push(countryCode);
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                
                 await sock.sendMessage(chatId, {
-                    text: `✅ *Country ${countryCode} added to blocklist!*\n\nBlocked countries: ${config.blockedCountries.join(', ')}`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `✅ *COUNTRY ADDED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Code: ${countryCode}\n\n━━━━━━━━━━━━━━━━━━━━\n🌍 Blocked countries: ${config.blockedCountries.join(', ')}`,
+                    ...channelInfo
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: `❌ Country ${countryCode} is already blocked!`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *ALREADY BLOCKED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Country code ${countryCode} is already in blocklist.`,
+                    ...channelInfo
                 });
             }
         }
         else if (action === 'remove') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify a country code to remove!\n\nExample: .antiforeign remove 91',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .antiforeign remove <country_code>\n\n✨ *Example:*\n└ .antiforeign remove 91`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -221,64 +201,33 @@ async function antiforeignCommand(sock, chatId, message) {
             if (index > -1) {
                 config.blockedCountries.splice(index, 1);
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                
                 await sock.sendMessage(chatId, {
-                    text: `✅ *Country ${countryCode} removed from blocklist!*\n\nBlocked countries: ${config.blockedCountries.join(', ')}`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `✅ *COUNTRY REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Code: ${countryCode}\n\n━━━━━━━━━━━━━━━━━━━━\n🌍 Blocked countries: ${config.blockedCountries.length > 0 ? config.blockedCountries.join(', ') : 'None'}`,
+                    ...channelInfo
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: `❌ Country ${countryCode} is not in blocklist!`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *NOT FOUND*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Country code ${countryCode} is not in blocklist.`,
+                    ...channelInfo
                 });
             }
         }
         else if (action === 'list') {
             const countries = config.blockedCountries.length > 0 
                 ? config.blockedCountries.join(', ')
-                : 'No countries blocked';
+                : 'None';
                 
             await sock.sendMessage(chatId, {
-                text: `📋 *Blocked Countries*\n\n${countries}\n\nTotal: ${config.blockedCountries.length} countries`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `📋 *BLOCKED COUNTRIES*\n\n━━━━━━━━━━━━━━━━━━━━\n🌍 ${countries}\n\n━━━━━━━━━━━━━━━━━━━━\n📊 Total: ${config.blockedCountries.length} countries`,
+                ...channelInfo
             });
         }
         else if (action === 'message') {
             if (args.length < 2) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ Please specify a message!\n\nExample: .antiforeign message "Your country is not allowed to contact me."',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .antiforeign message <text>\n\n✨ *Example:*\n└ .antiforeign message "Your country is not allowed to contact me."`,
+                    ...channelInfo
                 });
                 return;
             }
@@ -286,48 +235,44 @@ async function antiforeignCommand(sock, chatId, message) {
             const newMessage = args.slice(1).join(' ');
             config.blockMessage = newMessage;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            
             await sock.sendMessage(chatId, {
-                text: `✅ *Block message updated!*\n\nNew message: "${newMessage}"`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `✅ *BLOCK MESSAGE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n💬 New message:\n└ "${newMessage}"`,
+                ...channelInfo
             });
         }
         else if (action === 'status') {
-            const status = config.enabled ? '✅ Enabled' : '❌ Disabled';
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
             const countries = config.blockedCountries.join(', ');
             
             await sock.sendMessage(chatId, {
-                text: `🚫 *Anti-Foreign Status*\n\n📱 *Status:* ${status}\n🇺🇳 *Blocked Countries:* ${countries}\n💬 *Message:* ${config.blockMessage}\n\n*Currently blocking:* ${config.blockedCountries.length} countries`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `🚫 *ANTI-FOREIGN STATUS*\n\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🌍 *Blocked Countries:*\n└ ${countries}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💬 *Block Message:*\n└ ${config.blockMessage}\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📊 Total blocked: ${config.blockedCountries.length} countries`,
+                ...channelInfo
             });
         }
         else {
             await sock.sendMessage(chatId, {
-                text: '❌ Invalid command!\n\n*Available Commands:*\n• .antiforeign on/off\n• .antiforeign add <code>\n• .antiforeign remove <code>\n• .antiforeign list\n• .antiforeign message <text>\n• .antiforeign status\n• .antiforeign (shows this menu)',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available Commands:*\n` +
+                      `└ .antiforeign on/off\n` +
+                      `└ .antiforeign add <code>\n` +
+                      `└ .antiforeign remove <code>\n` +
+                      `└ .antiforeign list\n` +
+                      `└ .antiforeign message <text>\n` +
+                      `└ .antiforeign status\n` +
+                      `└ .antiforeign (shows this menu)\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `✨ *Example:*\n` +
+                      `└ .antiforeign add 91\n` +
+                      `└ .antiforeign message "Blocked"`,
+                ...channelInfo
             });
         }
         
@@ -335,15 +280,7 @@ async function antiforeignCommand(sock, chatId, message) {
         console.error('Error in antiforeign command:', error);
         await sock.sendMessage(chatId, {
             text: '❌ Error processing command!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            ...channelInfo
         });
     }
 }
@@ -354,32 +291,30 @@ async function handleAntiforeign(sock, chatId, message) {
         const config = initConfig();
         if (!config.enabled) return false;
 
-        // Skip if it's a group or from bot itself
         if (chatId.endsWith('@g.us') || message.key.fromMe) return false;
 
         const senderJid = message.key.participant || message.key.remoteJid;
         
-        // Check if sender is from blocked country
         if (isBlockedCountry(senderJid, config.blockedCountries)) {
             console.log(`🚫 Blocked message from country: ${extractCountryCode(senderJid)}`);
             
-            // Send block message
             await sock.sendMessage(chatId, { 
-                text: config.blockMessage 
+                text: config.blockMessage,
+                ...channelInfo
             });
             
-            // Block the user
             await new Promise(resolve => setTimeout(resolve, 1000));
             try {
                 await sock.updateBlockStatus(senderJid, 'block');
+                console.log(`✅ Blocked user from country code: ${extractCountryCode(senderJid)}`);
             } catch (blockError) {
                 console.error('Error blocking user:', blockError);
             }
             
-            return true; // Message was blocked
+            return true;
         }
         
-        return false; // Message was not blocked
+        return false;
     } catch (error) {
         console.error('Error in antiforeign handler:', error);
         return false;
