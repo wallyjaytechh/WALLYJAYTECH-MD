@@ -1,143 +1,93 @@
 /**
- * WALLYJAYTECH-MD - Block Command (Working with LIDs)
+ * WALLYJAYTECH-MD - Block Command (Working version)
  */
 
 async function blockCommand(sock, chatId, message) {
     try {
-        const userMessage = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-        const args = userMessage.split(' ').slice(1);
-        const isGroup = chatId.endsWith('@g.us');
+        // Get the bot owner's number dynamically
+        const botOwner = sock.user.id.split(":")[0] + "@s.whatsapp.net";
+        const senderId = message.key.participant || message.key.remoteJid;
         
-        let targetJid = null;
-        let targetNumber = null;
+        // Only owner can use this command
+        if (senderId !== botOwner && !message.key.fromMe) {
+            await sock.sendMessage(chatId, {
+                text: "❌ Only the bot owner can use this command."
+            }, { quoted: message });
+            return;
+        }
 
-        // If in DM and no arguments, block the current chat user
-        if (!isGroup && args.length === 0) {
-            targetJid = chatId;
+        let targetJid = null;
+        
+        // Method 1: If replying to a message, get sender JID
+        const quotedMsg = message.message?.extendedTextMessage?.contextInfo;
+        if (quotedMsg && quotedMsg.participant) {
+            targetJid = quotedMsg.participant;
+            console.log(`📌 Got JID from reply: ${targetJid}`);
         }
-        // Check for mentions in groups
-        else if (isGroup) {
-            const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-            if (mentionedJids.length > 0) {
-                targetJid = mentionedJids[0];
-            }
+        
+        // Method 2: If mentioning a user
+        else if (quotedMsg && quotedMsg.mentionedJid && quotedMsg.mentionedJid.length > 0) {
+            targetJid = quotedMsg.mentionedJid[0];
+            console.log(`📌 Got JID from mention: ${targetJid}`);
         }
-        // Check if replying to a message
-        else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
-            targetJid = message.message.extendedTextMessage.contextInfo.participant;
-        }
-        // Check for phone number argument
-        else if (args.length > 0) {
-            let phoneNumber = args[0].replace(/[^0-9]/g, '');
+        
+        // Method 3: If manually typing a JID or phone number
+        else {
+            const userMessage = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+            const args = userMessage.split(' ').slice(1);
+            const q = args.join(' ');
             
-            if (phoneNumber.length === 10) {
-                phoneNumber = '234' + phoneNumber;
-            }
-            
-            if (phoneNumber.length >= 10 && phoneNumber.length <= 13) {
-                targetNumber = phoneNumber;
+            if (q && q.includes('@')) {
+                // If it's a JID
+                targetJid = q.replace(/[@\s]/g, '') + '@s.whatsapp.net';
+                console.log(`📌 Got JID from input: ${targetJid}`);
+            } else if (q && q.match(/[0-9]/g)) {
+                // If it's a phone number
+                let phoneNumber = q.replace(/[^0-9]/g, '');
+                if (phoneNumber.length === 10) {
+                    phoneNumber = '234' + phoneNumber;
+                }
                 targetJid = phoneNumber + '@s.whatsapp.net';
+                console.log(`📌 Got JID from phone: ${targetJid}`);
             }
         }
 
         if (!targetJid) {
-            return await sock.sendMessage(chatId, {
-                text: '❌ Please specify a user to block.\n\nExamples:\n.block (in DM to block that user)\n.block @username\n.block 2348155763709'
+            await sock.sendMessage(chatId, {
+                text: "❌ Please mention a user or reply to their message.\n\nExamples:\n.block (reply to a message)\n.block @username\n.block 2348155763709"
             }, { quoted: message });
+            return;
         }
 
         // Prevent blocking the bot itself
-        const botNumber = sock.user.id.split(':')[0];
-        if (targetJid.includes(botNumber)) {
-            return await sock.sendMessage(chatId, {
-                text: '❌ You cannot block the bot itself!'
+        if (targetJid === botOwner) {
+            await sock.sendMessage(chatId, {
+                text: "❌ You cannot block the bot itself!"
             }, { quoted: message });
+            return;
         }
 
-        console.log(`🔍 Attempting to block: ${targetJid}`);
-        
-        // Try to get real phone number from LID
-        let realJid = targetJid;
-        let realNumber = targetNumber;
-        
-        // If it's a LID, try to extract or get the real number
-        if (targetJid.includes('@lid')) {
-            console.log(`🔄 LID detected, attempting to resolve...`);
+        console.log(`🔒 Attempting to block: ${targetJid}`);
+
+        try {
+            await sock.updateBlockStatus(targetJid, "block");
+            console.log(`✅ Blocked successfully: ${targetJid}`);
             
-            // Method 1: Try to get from message history
-            try {
-                // Get chat messages to find real number
-                const messages = await sock.loadMessages(targetJid, 5);
-                for (const msg of messages) {
-                    if (msg.key && msg.key.remoteJid && !msg.key.remoteJid.includes('@lid')) {
-                        realJid = msg.key.remoteJid;
-                        realNumber = realJid.split('@')[0];
-                        console.log(`✅ Found real JID from message: ${realJid}`);
-                        break;
-                    }
-                }
-            } catch (err) {
-                console.log(`⚠️ Could not get messages: ${err.message}`);
-            }
-            
-            // Method 2: Try to extract phone number from LID string
-            if (realJid.includes('@lid')) {
-                const lidNumber = targetJid.split('@')[0];
-                // LIDs often contain the phone number
-                if (lidNumber.length >= 10 && lidNumber.length <= 13) {
-                    realNumber = lidNumber;
-                    realJid = realNumber + '@s.whatsapp.net';
-                    console.log(`✅ Extracted phone from LID: ${realNumber}`);
-                }
-            }
+            await sock.sendMessage(chatId, {
+                text: `✅ Successfully blocked @${targetJid.split("@")[0]}`,
+                mentions: [targetJid]
+            }, { quoted: message });
+        } catch (error) {
+            console.error("Block command error:", error);
+            await sock.sendMessage(chatId, {
+                text: "❌ Failed to block the user."
+            }, { quoted: message });
         }
-        
-        // Try to block using the real JID
-        if (realJid && !realJid.includes('@lid')) {
-            console.log(`🔒 Attempting to block: ${realJid}`);
-            
-            try {
-                await sock.updateBlockStatus(realJid, 'block');
-                console.log(`✅ Blocked successfully: ${realJid}`);
-                
-                await sock.sendMessage(chatId, {
-                    text: `✅ Successfully blocked user.\n📱: ${realNumber || realJid.split('@')[0]}`
-                }, { quoted: message });
-                return;
-            } catch (err) {
-                console.log(`⚠️ Block failed: ${err.message}`);
-            }
-        }
-        
-        // Method 3: Try using onWhatsApp to get JID
-        if (realNumber) {
-            try {
-                const result = await sock.onWhatsApp(realNumber);
-                if (result && result[0] && result[0].jid) {
-                    const jid = result[0].jid;
-                    console.log(`📱 Found JID via onWhatsApp: ${jid}`);
-                    await sock.updateBlockStatus(jid, 'block');
-                    console.log(`✅ Blocked via onWhatsApp: ${jid}`);
-                    
-                    await sock.sendMessage(chatId, {
-                        text: `✅ Successfully blocked user.\n📱: ${realNumber}`
-                    }, { quoted: message });
-                    return;
-                }
-            } catch (err) {
-                console.log(`⚠️ onWhatsApp failed: ${err.message}`);
-            }
-        }
-        
-        // If all else fails, show instructions
-        await sock.sendMessage(chatId, {
-            text: `❌ Cannot block LID user directly.\n\nTo block this user:\n1. Ask them to message you first\n2. Then use: .block ${realNumber || 'their phone number'}\n\nOr use their phone number if you know it:\n.block 234XXXXXXXXX`
-        }, { quoted: message });
         
     } catch (error) {
-        console.error('Error blocking user:', error);
+        console.error('Error in block command:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Failed to block user. Try using their phone number: .block 234XXXXXXXXX'
+            text: '❌ Failed to block user.'
         }, { quoted: message });
     }
 }
