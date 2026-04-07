@@ -1,9 +1,22 @@
- const { exec } = require('child_process');
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const settings = require('../settings');
 const isOwnerOrSudo = require('../lib/isOwner');
+
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
 
 function run(cmd) {
     return new Promise((resolve, reject) => {
@@ -40,7 +53,6 @@ async function updateViaGit() {
 function downloadFile(url, dest, visited = new Set()) {
     return new Promise((resolve, reject) => {
         try {
-            // Avoid infinite redirect loops
             if (visited.has(url) || visited.size > 5) {
                 return reject(new Error('Too many redirects'));
             }
@@ -54,7 +66,6 @@ function downloadFile(url, dest, visited = new Set()) {
                     'Accept': '*/*'
                 }
             }, res => {
-                // Handle redirects
                 if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
                     const location = res.headers.location;
                     if (!location) return reject(new Error(`HTTP ${res.statusCode} without Location`));
@@ -85,13 +96,11 @@ function downloadFile(url, dest, visited = new Set()) {
 }
 
 async function extractZip(zipPath, outDir) {
-    // Try to use platform tools; no extra npm modules required
     if (process.platform === 'win32') {
         const cmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir.replace(/\\/g, '/')}' -Force"`;
         await run(cmd);
         return;
     }
-    // Linux/mac: try unzip, else 7z, else busybox unzip
     try {
         await run('command -v unzip');
         await run(`unzip -o '${zipPath}' -d '${outDir}'`);
@@ -139,14 +148,11 @@ async function updateViaZip(sock, chatId, message, zipOverride) {
     if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
     await extractZip(zipPath, extractTo);
 
-    // Find the top-level extracted folder (GitHub zips create REPO-branch folder)
     const [root] = fs.readdirSync(extractTo).map(n => path.join(extractTo, n));
     const srcRoot = fs.existsSync(root) && fs.lstatSync(root).isDirectory() ? root : extractTo;
 
-    // Copy over while preserving runtime dirs/files
-    const ignore = ['node_modules', '.git', 'session', 'tmp', 'tmp/', 'temp', 'data', 'baileys_store.json'];
+    const ignore = ['node_modules', '.git', 'session', 'tmp', 'temp', 'data', 'baileys_store.json'];
     const copied = [];
-    // Preserve ownerNumber from existing settings.js if present
     let preservedOwner = null;
     let preservedBotOwner = null;
     try {
@@ -168,26 +174,22 @@ async function updateViaZip(sock, chatId, message, zipOverride) {
             }
         } catch {}
     }
-    // Cleanup extracted directory
     try { fs.rmSync(extractTo, { recursive: true, force: true }); } catch {}
     try { fs.rmSync(zipPath, { force: true }); } catch {}
     return { copiedFiles: copied };
 }
 
+// PANEL-FRIENDLY RESTART - NO AUTO EXIT
 async function restartProcess(sock, chatId, message) {
     try {
-        await sock.sendMessage(chatId, { text: '✅ Update complete! Restarting…' }, { quoted: message });
+        await sock.sendMessage(chatId, { 
+            text: `✅ *UPDATE COMPLETE!*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot has been updated successfully.\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *IMPORTANT:*\nPlease restart the bot manually from your hosting panel for changes to take effect.\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *How to restart:*\n└ Go to your bot panel\n└ Click the Restart/Stop button\n└ Then Start again\n\n━━━━━━━━━━━━━━━━━━━━\n🤖 *WALLYJAYTECH-MD*`,
+            ...channelInfo
+        }, { quoted: message });
     } catch {}
-    try {
-        // Preferred: PM2
-        await run('pm2 restart all');
-        return;
-    } catch {}
-    // Panels usually auto-restart when the process exits.
-    // Exit after a short delay to allow the above message to flush.
-    setTimeout(() => {
-        process.exit(0);
-    }, 500);
+    
+    // DO NOT call process.exit() - let panel handle restart manually
+    console.log('✅ Update completed. Please restart the bot manually from your panel.');
 }
 
 async function updateCommand(sock, chatId, message, zipOverride) {
@@ -195,37 +197,57 @@ async function updateCommand(sock, chatId, message, zipOverride) {
     const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
     
     if (!message.key.fromMe && !isOwner) {
-        await sock.sendMessage(chatId, { text: 'Only bot owner or sudo can use .update' }, { quoted: message });
+        await sock.sendMessage(chatId, { 
+            text: '❌ Only bot owner or sudo can use .update',
+            ...channelInfo
+        }, { quoted: message });
         return;
     }
+    
     try {
-        // Minimal UX
-        await sock.sendMessage(chatId, { text: '🔄 Updating the bot, please wait…' }, { quoted: message });
+        await sock.sendMessage(chatId, { 
+            text: `🔄 *UPDATING BOT*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Downloading latest updates...\n⏳ Please wait...`,
+            ...channelInfo
+        }, { quoted: message });
+        
         if (await hasGitRepo()) {
-            // silent
-            const { oldRev, newRev, alreadyUpToDate, commits, files } = await updateViaGit();
-            // Short message only: version info
-            const summary = alreadyUpToDate ? `✅ Already up to date: ${newRev}` : `✅ Updated to ${newRev}`;
-            console.log('[update] summary generated');
-            // silent
+            const { oldRev, newRev, alreadyUpToDate } = await updateViaGit();
+            
+            if (alreadyUpToDate) {
+                await sock.sendMessage(chatId, { 
+                    text: `✅ *ALREADY UP TO DATE*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Current version: ${newRev}\n\n━━━━━━━━━━━━━━━━━━━━\n🤖 No updates available.`,
+                    ...channelInfo
+                }, { quoted: message });
+                return;
+            }
+            
+            await sock.sendMessage(chatId, { 
+                text: `✅ *GIT UPDATE COMPLETED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Updated from: ${oldRev}\n📌 To: ${newRev}\n\n━━━━━━━━━━━━━━━━━━━━\n📦 Installing dependencies...`,
+                ...channelInfo
+            }, { quoted: message });
+            
             await run('npm install --no-audit --no-fund');
+            
         } else {
             const { copiedFiles } = await updateViaZip(sock, chatId, message, zipOverride);
-            // silent
+            
+            await sock.sendMessage(chatId, { 
+                text: `✅ *ZIP UPDATE COMPLETED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Files updated: ${copiedFiles.length}\n\n━━━━━━━━━━━━━━━━━━━━\n📦 Installing dependencies...`,
+                ...channelInfo
+            }, { quoted: message });
+            
+            await run('npm install --no-audit --no-fund');
         }
-        try {
-            const v = require('../settings').version || '';
-            await sock.sendMessage(chatId, { text: `✅ Update done. Restarting…` }, { quoted: message });
-        } catch {
-            await sock.sendMessage(chatId, { text: '✅ Restared Successfully\n Type .ping to check latest version.' }, { quoted: message });
-        }
+        
         await restartProcess(sock, chatId, message);
+        
     } catch (err) {
         console.error('Update failed:', err);
-        await sock.sendMessage(chatId, { text: `❌ Update failed:\n${String(err.message || err)}` }, { quoted: message });
+        await sock.sendMessage(chatId, { 
+            text: `❌ *UPDATE FAILED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Error: ${String(err.message || err)}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Try manual update:\n└ git pull\n└ npm install\n└ Restart bot manually`,
+            ...channelInfo
+        }, { quoted: message });
     }
 }
 
 module.exports = updateCommand;
-
-
