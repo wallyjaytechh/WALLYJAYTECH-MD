@@ -3,6 +3,19 @@
  * Join Command - Join any WhatsApp group via link
  */
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Join any WhatsApp group
 async function joinCommand(sock, chatId, message) {
     try {
@@ -13,16 +26,8 @@ async function joinCommand(sock, chatId, message) {
         // If no arguments, show usage
         if (args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `👥 *JOIN WHATSAPP GROUP* 👥\n\n*Usage:*\n• \`.join <group-link>\` - Join any WhatsApp group\n• \`.join help\` - Show examples\n\n*Examples:*\n• \`.join https://chat.whatsapp.com/ABC123def456\`\n• \`.join https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\`\n\n*Note:* You can join any valid WhatsApp group or channel link!`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `👥 *JOIN COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ .join <group-link>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Examples:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n└ .join https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Supported Links:*\n└ WhatsApp Group Invite\n└ WhatsApp Channel\n└ WhatsApp Group\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Join Official Channel:*\nhttps://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf`,
+                ...channelInfo
             });
             return;
         }
@@ -32,16 +37,8 @@ async function joinCommand(sock, chatId, message) {
         // Show help
         if (action === 'help') {
             await sock.sendMessage(chatId, {
-                text: `🆘 *JOIN COMMAND HELP* 🆘\n\n*How to use:*\n1. Copy any WhatsApp group invite link\n2. Use: \`.join <paste-link-here>\`\n\n*Valid link formats:*\n• https://chat.whatsapp.com/ABC123def456\n• https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n• https://whatsapp.com/groups/ABC123def456\n\n*Examples:*\n• \`.join https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE\`\n• \`.join https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\`\n\n*Note:* The bot will attempt to join any valid WhatsApp group or channel!`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `🆘 *JOIN COMMAND HELP*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *How to use:*\n1. Copy any WhatsApp group invite link\n2. Use: .join <paste-link-here>\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Valid link formats:*\n└ https://chat.whatsapp.com/XXXXXX\n└ https://whatsapp.com/channel/XXXXXX\n└ https://whatsapp.com/groups/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Examples:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Note:* Bot will attempt to join any valid WhatsApp group or channel.`,
+                ...channelInfo
             });
             return;
         }
@@ -51,36 +48,20 @@ async function joinCommand(sock, chatId, message) {
         
         if (!link) {
             await sock.sendMessage(chatId, {
-                text: '❌ Please provide a WhatsApp group link!\n\nExample: `.join https://chat.whatsapp.com/ABC123def456`',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *INVALID LINK*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Please provide a WhatsApp group link!\n\n✨ *Example:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf`,
+                ...channelInfo
             });
             return;
         }
 
-        // Validate WhatsApp link format
-        const whatsappLinkRegex = /https?:\/\/(?:chat\.|www\.)?whatsapp\.com\/(?:invite\/|channel\/|groups\/)?([a-zA-Z0-9]+)/i;
+        // Validate WhatsApp link format (supports new format with ?mode=gi_t)
+        const whatsappLinkRegex = /https?:\/\/(?:chat\.|www\.)?whatsapp\.com\/(?:invite\/|channel\/|groups\/)?([a-zA-Z0-9]+)(?:\?mode=[a-z_]+)?/i;
         const match = link.match(whatsappLinkRegex);
 
         if (!match) {
             await sock.sendMessage(chatId, {
-                text: '❌ Invalid WhatsApp link format!\n\nPlease provide a valid WhatsApp group/channel link.\n\n*Valid formats:*\n• https://chat.whatsapp.com/ABC123\n• https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n• https://whatsapp.com/groups/ABC123',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *INVALID LINK FORMAT*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Please provide a valid WhatsApp group/channel link.\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Valid formats:*\n└ https://chat.whatsapp.com/XXXXXX\n└ https://whatsapp.com/channel/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Example:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf`,
+                ...channelInfo
             });
             return;
         }
@@ -89,16 +70,8 @@ async function joinCommand(sock, chatId, message) {
         
         // Show processing message
         await sock.sendMessage(chatId, {
-            text: `🔄 *Processing your request...*\n\n🔗 Link: ${link}\n\nAttempting to join the group...`,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            text: `🔄 *PROCESSING*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Link: ${link}\n📌 Code: ${groupCode}\n\n━━━━━━━━━━━━━━━━━━━━\n⏳ Attempting to join the group...`,
+            ...channelInfo
         });
 
         try {
@@ -107,78 +80,46 @@ async function joinCommand(sock, chatId, message) {
             
             if (result) {
                 await sock.sendMessage(chatId, {
-                    text: `✅ *SUCCESS!* ✅\n\n🎉 Successfully joined the group!\n\n🔗 *Link:* ${link}\n📛 *Group ID:* ${result}\n\nYou can now interact with the group members and use bot commands there!`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `✅ *SUCCESSFULLY JOINED!*\n\n━━━━━━━━━━━━━━━━━━━━\n🎉 Bot has joined the group!\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Link:* ${link}\n📛 *Group ID:* ${result}\n\n━━━━━━━━━━━━━━━━━━━━\n🤖 Bot is now active in the group!`,
+                    ...channelInfo
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: `❌ *Failed to join group!*\n\nPossible reasons:\n• Invalid or expired link\n• Group is full\n• Link requires approval\n• Bot is banned from group\n\nPlease check the link and try again.`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Possible reasons:\n└ Invalid or expired link\n└ Group is full\n└ Link requires approval\n└ Bot is banned from group\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Please check the link and try again.`,
+                    ...channelInfo
                 });
             }
 
         } catch (error) {
             console.error('Join group error:', error);
             
-            let errorMessage = '❌ *Failed to join group!*\n\n';
+            let errorMessage = `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n`;
             
-            if (error.message.includes('invite')) {
-                errorMessage += '• Invalid or expired invite link\n';
+            if (error.message.includes('invite') || error.message.includes('Invalid')) {
+                errorMessage += `📌 Error: Invalid or expired invite link\n`;
             } else if (error.message.includes('full')) {
-                errorMessage += '• Group is full\n';
+                errorMessage += `📌 Error: Group is full\n`;
             } else if (error.message.includes('banned')) {
-                errorMessage += '• Bot is banned from this group\n';
+                errorMessage += `📌 Error: Bot is banned from this group\n`;
             } else if (error.message.includes('approval')) {
-                errorMessage += '• Group requires admin approval\n';
+                errorMessage += `📌 Error: Group requires admin approval\n`;
             } else {
-                errorMessage += '• Unknown error occurred\n';
+                errorMessage += `📌 Error: ${error.message}\n`;
             }
             
-            errorMessage += '\nPlease try a different group link.';
+            errorMessage += `\n━━━━━━━━━━━━━━━━━━━━\n💡 Please try a different group link.`;
             
             await sock.sendMessage(chatId, {
                 text: errorMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                ...channelInfo
             });
         }
 
     } catch (error) {
         console.error('Error in join command:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Error processing join command!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            text: `❌ *ERROR*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Failed to process join command.\n\n💡 Please try again later.`,
+            ...channelInfo
         });
     }
 }
