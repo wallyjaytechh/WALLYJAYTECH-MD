@@ -553,7 +553,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *${dayInfo.emoji} Day: [ ${dayInfo.day} ]*
 ║   *💻 Bot Mode: [ ${currentBotMode} ]*
 ║   *📊 Total Commands: [ ${totalCommands} ]*
-║   *📅 AllDate: [ ${getLocalizedTime()} ]*
+║   *📅 Date: [ ${getLocalizedTime()} ]*
 ║   *📡 Your Platform: [ ${userPlatform} ]*
 ║   *👥 Active Users Now: [ ${stats.activeUsers} ]*
 ║   *📊 Total Users All Time: [ ${stats.totalUsers} ]*
