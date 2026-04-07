@@ -27,6 +27,11 @@ const pino = require("pino");
 const readline = require("readline");
 const { rmSync } = require('fs');
 
+// Reconnection tracking
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+let isReconnecting = false;
+
 // Import lightweight store
 const store = require('./lib/lightweight_store');
 store.readFromFile();
@@ -83,6 +88,10 @@ function getCommandCount() {
 
 async function startXeonBotInc() {
     try {
+        // Reset reconnect attempts on successful connection
+        reconnectAttempts = 0;
+        isReconnecting = false;
+        
         let { version } = await fetchLatestBaileysVersion();
         const { state, saveCreds } = await useMultiFileAuthState(`./session`);
         const msgRetryCounterCache = new NodeCache();
@@ -223,7 +232,7 @@ async function startXeonBotInc() {
             }, 3000);
         }
 
-        // Connection handling
+        // Connection handling - FIXED VERSION
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
             
@@ -239,13 +248,19 @@ async function startXeonBotInc() {
                 console.log(chalk.magenta(` `));
                 console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)));
                 
-                // Start auto-update checker
+                // Reset reconnect attempts on successful connection
+                reconnectAttempts = 0;
+                
+                // Start auto-update checker (disabled for panel stability)
+                /*
                 try {
                     const { autoCheckUpdates } = require('./commands/checkupdate');
                     autoCheckUpdates(XeonBotInc);
                 } catch (error) {
                     console.error('Failed to start auto-update checker:', error);
                 }
+                */
+                console.log(chalk.yellow('⚠️ Auto-update checker disabled for stability'));
                 
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
@@ -314,25 +329,61 @@ async function startXeonBotInc() {
                 console.log(chalk.blue(`Bot Version: ${settings.version}`));
             }
             
+            // FIXED: Proper connection close handling with conflict detection
             if (connection === 'close') {
-                const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const errorMessage = lastDisconnect?.error?.message || '';
                 
-                console.log(chalk.red(`Connection closed due to ${lastDisconnect?.error}, reconnecting ${shouldReconnect}`));
+                // Check for conflict error (another instance running)
+                const isConflictError = errorMessage.includes('conflict') || 
+                                       errorMessage.includes('Stream Errored') ||
+                                       errorMessage.includes('already connected');
                 
+                console.log(chalk.red(`\n❌ Connection closed!`));
+                console.log(chalk.red(`   Status: ${statusCode}`));
+                console.log(chalk.red(`   Error: ${errorMessage || 'Unknown'}`));
+                console.log(chalk.red(`   Conflict: ${isConflictError}`));
+                
+                // Handle logged out - delete session
                 if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                    console.log(chalk.yellow('📱 Session logged out. Deleting session folder...'));
                     try {
                         rmSync('./session', { recursive: true, force: true });
-                        console.log(chalk.yellow('Session folder deleted. Please re-authenticate.'));
+                        console.log(chalk.green('✅ Session folder deleted. Please re-authenticate.'));
                     } catch (error) {
                         console.error('Error deleting session:', error);
                     }
+                    console.log(chalk.yellow('Bot will not reconnect automatically. Please restart manually.'));
+                    return;
                 }
                 
-                if (shouldReconnect) {
-                    console.log(chalk.yellow('Reconnecting...'));
-                    await delay(5000);
+                // Handle conflict - don't spam reconnect
+                if (isConflictError) {
+                    console.log(chalk.red('⚠️ CONFLICT DETECTED!'));
+                    console.log(chalk.yellow('This usually means another instance of the bot is already running.'));
+                    console.log(chalk.yellow('Please make sure only ONE bot instance is active.'));
+                    
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        reconnectAttempts++;
+                        console.log(chalk.yellow(`⏳ Waiting ${reconnectAttempts * 10} seconds before reconnecting... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`));
+                        await delay(reconnectAttempts * 10000);
+                        startXeonBotInc();
+                    } else {
+                        console.log(chalk.red(`❌ Max reconnection attempts (${MAX_RECONNECT_ATTEMPTS}) reached.`));
+                        console.log(chalk.yellow('Please check your configuration and restart manually.'));
+                    }
+                    return;
+                }
+                
+                // Normal reconnect for other errors
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    console.log(chalk.yellow(`🔄 Reconnecting... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`));
+                    await delay(5000 * reconnectAttempts);
                     startXeonBotInc();
+                } else {
+                    console.log(chalk.red(`❌ Max reconnection attempts (${MAX_RECONNECT_ATTEMPTS}) reached.`));
+                    console.log(chalk.yellow('Please check your connection and restart manually.'));
                 }
             }
         });
@@ -365,12 +416,20 @@ async function startXeonBotInc() {
         return XeonBotInc;
     } catch (error) {
         console.error('Error in startXeonBotInc:', error);
-        await delay(5000);
-        startXeonBotInc();
+        
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            console.log(chalk.yellow(`🔄 Retrying... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`));
+            await delay(5000 * reconnectAttempts);
+            startXeonBotInc();
+        } else {
+            console.log(chalk.red(`❌ Max reconnection attempts reached. Please restart manually.`));
+        }
     }
 }
 
 // Start the bot
+console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
 startXeonBotInc().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
