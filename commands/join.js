@@ -16,6 +16,33 @@ const channelInfo = {
     }
 };
 
+// Get bot's JID
+function getBotJid(sock) {
+    return sock.user.id.split(':')[0] + '@s.whatsapp.net';
+}
+
+// Check if bot is already in a group by invite code
+async function isBotAlreadyInGroup(sock, groupCode) {
+    try {
+        // Try to get group invite info first
+        const inviteInfo = await sock.groupGetInviteInfo(groupCode).catch(() => null);
+        if (!inviteInfo) return false;
+        
+        const groupId = inviteInfo.id;
+        const botJid = getBotJid(sock);
+        
+        // Get group metadata to check participants
+        const metadata = await sock.groupMetadata(groupId).catch(() => null);
+        if (!metadata) return false;
+        
+        // Check if bot is already a participant
+        return metadata.participants.some(p => p.id === botJid);
+    } catch (error) {
+        // If can't check, assume not in group
+        return false;
+    }
+}
+
 // Join any WhatsApp group
 async function joinCommand(sock, chatId, message) {
     try {
@@ -68,14 +95,30 @@ async function joinCommand(sock, chatId, message) {
 
         const groupCode = match[1];
         
+        // CHECK IF BOT IS ALREADY IN THE GROUP
+        await sock.sendMessage(chatId, {
+            text: `🔄 *CHECKING*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Link: ${link}\n📌 Code: ${groupCode}\n\n━━━━━━━━━━━━━━━━━━━━\n⏳ Checking if bot is already in this group...`,
+            ...channelInfo
+        });
+
+        const alreadyJoined = await isBotAlreadyInGroup(sock, groupCode);
+        
+        if (alreadyJoined) {
+            await sock.sendMessage(chatId, {
+                text: `⚠️ *ALREADY A MEMBER*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot is already in this group!\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Link:* ${link}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 No need to join again.`,
+                ...channelInfo
+            });
+            return;
+        }
+        
         // Show processing message
         await sock.sendMessage(chatId, {
-            text: `🔄 *PROCESSING*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Link: ${link}\n📌 Code: ${groupCode}\n\n━━━━━━━━━━━━━━━━━━━━\n⏳ Attempting to join the group...`,
+            text: `🔄 *JOINING*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Link: ${link}\n📌 Code: ${groupCode}\n\n━━━━━━━━━━━━━━━━━━━━\n⏳ Attempting to join the group...`,
             ...channelInfo
         });
 
         try {
-            // Try to join the group using WhatsApp's group invite acceptance
+            // Try to join the group
             const result = await sock.groupAcceptInvite(groupCode);
             
             if (result) {
@@ -103,6 +146,8 @@ async function joinCommand(sock, chatId, message) {
                 errorMessage += `📌 Error: Bot is banned from this group\n`;
             } else if (error.message.includes('approval')) {
                 errorMessage += `📌 Error: Group requires admin approval\n`;
+            } else if (error.message.includes('already')) {
+                errorMessage += `📌 Error: Bot is already in this group\n`;
             } else {
                 errorMessage += `📌 Error: ${error.message}\n`;
             }
@@ -127,6 +172,12 @@ async function joinCommand(sock, chatId, message) {
 // Quick join function for direct group codes
 async function quickJoin(sock, chatId, groupCode) {
     try {
+        // Check if already joined first
+        const alreadyJoined = await isBotAlreadyInGroup(sock, groupCode);
+        if (alreadyJoined) {
+            return { success: false, error: 'ALREADY_JOINED', message: 'Bot is already in this group' };
+        }
+        
         const result = await sock.groupAcceptInvite(groupCode);
         return { success: true, groupId: result };
     } catch (error) {
