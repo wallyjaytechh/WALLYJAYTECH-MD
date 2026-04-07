@@ -6,11 +6,28 @@
 const fs = require('fs');
 const path = require('path');
 
+// Channel info for professional branding
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
 // Store active polls
 const POLLS_FILE = path.join(__dirname, '../data/polls.json');
 
 // Initialize polls file
 function initPolls() {
+    const dataDir = path.join(__dirname, '../data');
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
     if (!fs.existsSync(POLLS_FILE)) {
         fs.writeFileSync(POLLS_FILE, JSON.stringify({ polls: {} }, null, 2));
     }
@@ -27,67 +44,48 @@ async function createPoll(sock, chatId, question, options, message) {
     try {
         if (!chatId.endsWith('@g.us')) {
             await sock.sendMessage(chatId, {
-                text: '❌ Polls can only be created in groups!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *GROUPS ONLY*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Polls can only be created in WhatsApp groups.`,
+                ...channelInfo
             });
             return;
         }
 
-        // Validate options
         if (options.length < 2) {
             await sock.sendMessage(chatId, {
-                text: '❌ Poll must have at least 2 options!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *INVALID OPTIONS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Poll must have at least 2 options.`,
+                ...channelInfo
             });
             return;
         }
 
         if (options.length > 10) {
             await sock.sendMessage(chatId, {
-                text: '❌ Poll can have maximum 10 options!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *TOO MANY OPTIONS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Poll can have maximum 10 options.`,
+                ...channelInfo
             });
             return;
         }
 
         // Create poll message
-        let pollMessage = `📊 *POLL CREATED* 📊\n\n`;
-        pollMessage += `*Question:* ${question}\n\n`;
-        pollMessage += `*Options:*\n`;
+        let pollMessage = `📊 *NEW POLL CREATED* 📊\n\n`;
+        pollMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        pollMessage += `📝 *Question:*\n└ ${question}\n\n`;
+        pollMessage += `📋 *Options:*\n`;
         
         options.forEach((option, index) => {
-            pollMessage += `${index + 1}️⃣ ${option}\n`;
+            pollMessage += `└ ${index + 1}️⃣ ${option}\n`;
         });
 
-        pollMessage += `\n*How to vote:*\n`;
-        pollMessage += `• Reply with .vote <number>\n`;
-        pollMessage += `• Example: .vote 1\n\n`;
-        pollMessage += `• Use .poll results to see current results\n`;
-        pollMessage += `• Use .poll end to close this poll`;
+        pollMessage += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+        pollMessage += `🎯 *How to vote:*\n`;
+        pollMessage += `└ Reply with .vote <number>\n`;
+        pollMessage += `└ Example: .vote 1\n\n`;
+        pollMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        pollMessage += `📊 *Other commands:*\n`;
+        pollMessage += `└ .poll results - View current results\n`;
+        pollMessage += `└ .poll end - Close this poll\n\n`;
+        pollMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        pollMessage += `🤖 *Powered by WALLYJAYTECH-MD*`;
 
         // Create poll data
         const pollId = Date.now().toString();
@@ -110,20 +108,7 @@ async function createPoll(sock, chatId, question, options, message) {
 
         savePolls(pollsData);
 
-        // Send poll message
-        await sock.sendMessage(chatId, {
-            text: pollMessage,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
-
+        await sock.sendMessage(chatId, { text: pollMessage, ...channelInfo });
         console.log(`✅ Poll created: ${pollId}`);
 
     } catch (error) {
@@ -142,54 +127,28 @@ async function voteInPoll(sock, chatId, pollNumber, voterId, message) {
 
         if (activePolls.length === 0) {
             await sock.sendMessage(chatId, {
-                text: '❌ No active polls in this group!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *NO ACTIVE POLLS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 No active polls in this group.\n\n💡 Use .poll create to start a new poll.`,
+                ...channelInfo
             });
             return;
         }
 
-        // Get the latest active poll
         const [pollId, poll] = activePolls[activePolls.length - 1];
         const optionIndex = poll.options.findIndex(opt => opt.number === pollNumber);
 
         if (optionIndex === -1) {
             await sock.sendMessage(chatId, {
-                text: `❌ Invalid option number! Valid options: ${poll.options.map(opt => opt.number).join(', ')}`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *INVALID OPTION*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Valid options: ${poll.options.map(opt => opt.number).join(', ')}`,
+                ...channelInfo
             });
             return;
         }
 
-        // Check if user already voted
         const hasVoted = poll.options.some(opt => opt.voters.includes(voterId));
         if (hasVoted) {
             await sock.sendMessage(chatId, {
-                text: '❌ You have already voted in this poll!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *ALREADY VOTED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 You have already voted in this poll.`,
+                ...channelInfo
             });
             return;
         }
@@ -204,7 +163,6 @@ async function voteInPoll(sock, chatId, pollNumber, voterId, message) {
             }
         });
 
-        // Add new vote
         poll.options[optionIndex].votes++;
         poll.options[optionIndex].voters.push(voterId);
         poll.totalVotes++;
@@ -212,16 +170,8 @@ async function voteInPoll(sock, chatId, pollNumber, voterId, message) {
         savePolls(pollsData);
 
         await sock.sendMessage(chatId, {
-            text: `✅ Vote recorded! You voted for option ${pollNumber}: ${poll.options[optionIndex].text}`,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            text: `✅ *VOTE RECORDED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 You voted for option ${pollNumber}: ${poll.options[optionIndex].text}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Use .poll results to see current standings.`,
+            ...channelInfo
         });
 
     } catch (error) {
@@ -240,16 +190,8 @@ async function showPollResults(sock, chatId) {
 
         if (activePolls.length === 0) {
             await sock.sendMessage(chatId, {
-                text: '❌ No active polls in this group!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *NO ACTIVE POLLS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 No active polls in this group.`,
+                ...channelInfo
             });
             return;
         }
@@ -257,36 +199,31 @@ async function showPollResults(sock, chatId) {
         const [pollId, poll] = activePolls[activePolls.length - 1];
         
         let resultsMessage = `📊 *POLL RESULTS* 📊\n\n`;
-        resultsMessage += `*Question:* ${poll.question}\n\n`;
-        resultsMessage += `*Results:*\n`;
+        resultsMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        resultsMessage += `📝 *Question:*\n└ ${poll.question}\n\n`;
+        resultsMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        resultsMessage += `📊 *Results:*\n`;
 
         poll.options.forEach(option => {
             const percentage = poll.totalVotes > 0 
                 ? Math.round((option.votes / poll.totalVotes) * 100) 
                 : 0;
             
-            const bars = '█'.repeat(Math.round(percentage / 10)) + '░'.repeat(10 - Math.round(percentage / 10));
+            const barLength = Math.round(percentage / 5);
+            const bars = '█'.repeat(barLength) + '░'.repeat(20 - barLength);
             
-            resultsMessage += `${option.number}️⃣ ${option.text}\n`;
-            resultsMessage += `${bars} ${percentage}% (${option.votes} votes)\n\n`;
+            resultsMessage += `\n└ ${option.number}️⃣ ${option.text}\n`;
+            resultsMessage += `   ${bars} ${percentage}% (${option.votes} votes)\n`;
         });
 
-        resultsMessage += `*Total Votes:* ${poll.totalVotes}\n`;
-        resultsMessage += `*Poll ID:* ${pollId}\n`;
-        resultsMessage += `*Status:* ${poll.isActive ? '🟢 Active' : '🔴 Closed'}`;
+        resultsMessage += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+        resultsMessage += `📊 *Total Votes:* ${poll.totalVotes}\n`;
+        resultsMessage += `🆔 *Poll ID:* ${pollId}\n`;
+        resultsMessage += `📌 *Status:* ${poll.isActive ? '🟢 Active' : '🔴 Closed'}\n`;
+        resultsMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        resultsMessage += `💡 Use .vote <number> to vote!`;
 
-        await sock.sendMessage(chatId, {
-            text: resultsMessage,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
+        await sock.sendMessage(chatId, { text: resultsMessage, ...channelInfo });
 
     } catch (error) {
         console.error('Error showing results:', error);
@@ -304,35 +241,18 @@ async function endPoll(sock, chatId, enderId) {
 
         if (activePolls.length === 0) {
             await sock.sendMessage(chatId, {
-                text: '❌ No active polls to end!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *NO ACTIVE POLLS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 No active polls to end.`,
+                ...channelInfo
             });
             return;
         }
 
         const [pollId, poll] = activePolls[activePolls.length - 1];
 
-        // Check if user is poll creator or admin
         if (poll.createdBy !== enderId) {
             await sock.sendMessage(chatId, {
-                text: '❌ Only the poll creator can end this poll!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *PERMISSION DENIED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Only the poll creator can end this poll.`,
+                ...channelInfo
             });
             return;
         }
@@ -340,38 +260,31 @@ async function endPoll(sock, chatId, enderId) {
         poll.isActive = false;
         savePolls(pollsData);
 
-        // Find winner
         const winner = poll.options.reduce((prev, current) => 
             (prev.votes > current.votes) ? prev : current
         );
 
         let endMessage = `🏁 *POLL ENDED* 🏁\n\n`;
-        endMessage += `*Question:* ${poll.question}\n\n`;
-        endMessage += `🎉 *Winner:* Option ${winner.number} - ${winner.text}\n`;
-        endMessage += `🏆 *Votes:* ${winner.votes}\n\n`;
-        endMessage += `*Final Results:*\n`;
+        endMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        endMessage += `📝 *Question:*\n└ ${poll.question}\n\n`;
+        endMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        endMessage += `🏆 *WINNER:*\n└ Option ${winner.number} - ${winner.text}\n└ Votes: ${winner.votes}\n\n`;
+        endMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        endMessage += `📊 *Final Results:*\n`;
 
         poll.options.forEach(option => {
             const percentage = poll.totalVotes > 0 
                 ? Math.round((option.votes / poll.totalVotes) * 100) 
                 : 0;
-            endMessage += `${option.number}️⃣ ${option.text}: ${percentage}% (${option.votes} votes)\n`;
+            endMessage += `└ ${option.number}️⃣ ${option.text}: ${percentage}% (${option.votes} votes)\n`;
         });
 
-        endMessage += `\n*Total Votes:* ${poll.totalVotes}`;
+        endMessage += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+        endMessage += `📊 *Total Votes:* ${poll.totalVotes}\n`;
+        endMessage += `━━━━━━━━━━━━━━━━━━━━\n`;
+        endMessage += `🤖 *Poll closed by poll creator*`;
 
-        await sock.sendMessage(chatId, {
-            text: endMessage,
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
+        await sock.sendMessage(chatId, { text: endMessage, ...channelInfo });
 
     } catch (error) {
         console.error('Error ending poll:', error);
@@ -387,19 +300,10 @@ async function pollCommand(sock, chatId, message) {
         const args = userMessage.split(' ').slice(1);
         const senderId = message.key.participant || message.key.remoteJid;
 
-        // Show help if no arguments
         if (args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `📊 *POLL SYSTEM* 📊\n\n*Commands:*\n• .poll create "Question" | Option1 | Option2 | ...\n• .vote <number> - Vote in active poll\n• .poll results - Show current results\n• .poll end - End active poll\n• .poll help - Show this menu\n\n*Examples:*\n• .poll create "Best programming language?" | JavaScript | Python | Java | C++\n• .vote 2\n• .poll results\n• .poll end\n\n*Note:* Polls only work in groups!`,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `📊 *POLL SYSTEM* 📊\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Commands:*\n└ .poll create "Question" | Option1 | Option2\n└ .vote <number> - Vote in active poll\n└ .poll results - Show current results\n└ .poll end - End active poll\n└ .poll help - Show this menu\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .poll create "Best language?" | JS | Python | Java\n└ .vote 2\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Note:* Polls only work in groups!`,
+                ...channelInfo
             });
             return;
         }
@@ -410,16 +314,8 @@ async function pollCommand(sock, chatId, message) {
             case 'create':
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
-                        text: '❌ Usage: .poll create "Question" | Option1 | Option2 | Option3 ...',
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363420618370733@newsletter',
-                                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                                serverMessageId: -1
-                            }
-                        }
+                        text: `❌ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .poll create "Question" | Option1 | Option2 | Option3\n\n✨ *Example:*\n└ .poll create "Favorite color?" | Red | Blue | Green`,
+                        ...channelInfo
                     });
                     return;
                 }
@@ -429,16 +325,8 @@ async function pollCommand(sock, chatId, message) {
                 
                 if (parts.length < 3) {
                     await sock.sendMessage(chatId, {
-                        text: '❌ Format: .poll create "Question" | Option1 | Option2 | ... (min 2 options)',
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363420618370733@newsletter',
-                                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                                serverMessageId: -1
-                            }
-                        }
+                        text: `❌ *INVALID FORMAT*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Format: .poll create "Question" | Option1 | Option2 | ...\n📌 Minimum 2 options required.`,
+                        ...channelInfo
                     });
                     return;
                 }
@@ -459,31 +347,15 @@ async function pollCommand(sock, chatId, message) {
 
             case 'help':
                 await sock.sendMessage(chatId, {
-                    text: `🆘 *POLL HELP* 🆘\n\n*Create Poll:*\n.poll create "Your question?" | Option 1 | Option 2 | Option 3\n\n*Vote:*\n.vote <number> - Vote for an option\n\n*View Results:*\n.poll results - See current results\n\n*End Poll:*\n.poll end - Close the poll (creator only)\n\n*Example:*\n.poll create "Favorite color?" | Red | Blue | Green | Yellow\n.vote 2\n.poll results\n.poll end`,
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `🆘 *POLL HELP* 🆘\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Create Poll:*\n└ .poll create "Question?" | Option1 | Option2\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 *Vote:*\n└ .vote <number>\n\n━━━━━━━━━━━━━━━━━━━━\n📊 *View Results:*\n└ .poll results\n\n━━━━━━━━━━━━━━━━━━━━\n🏁 *End Poll:*\n└ .poll end (creator only)\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Full Example:*\n1️⃣ .poll create "Best color?" | Red | Blue | Green\n2️⃣ .vote 2\n3️⃣ .poll results\n4️⃣ .poll end`,
+                    ...channelInfo
                 });
                 break;
 
             default:
                 await sock.sendMessage(chatId, {
-                    text: '❌ Invalid poll command! Use .poll help for usage.',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
+                    text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Use .poll help for available commands.`,
+                    ...channelInfo
                 });
                 break;
         }
@@ -491,16 +363,8 @@ async function pollCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Error in poll command:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Error processing poll command!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            text: `❌ *ERROR*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Failed to process poll command.\n\n💡 Please try again.`,
+            ...channelInfo
         });
     }
 }
@@ -515,16 +379,8 @@ async function voteCommand(sock, chatId, message) {
 
         if (args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: '❌ Usage: .vote <option-number>\n\nExample: .vote 2',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `🎯 *VOTE COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Usage: .vote <option-number>\n\n✨ *Example:*\n└ .vote 2\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Use .poll results to see options.`,
+                ...channelInfo
             });
             return;
         }
@@ -533,16 +389,8 @@ async function voteCommand(sock, chatId, message) {
         
         if (isNaN(voteNumber) || voteNumber < 1) {
             await sock.sendMessage(chatId, {
-                text: '❌ Please provide a valid option number!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                text: `❌ *INVALID NUMBER*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Please provide a valid option number.\n\n✨ *Example:* .vote 2`,
+                ...channelInfo
             });
             return;
         }
@@ -552,16 +400,8 @@ async function voteCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Error in vote command:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Error processing vote!',
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
+            text: `❌ *ERROR*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Failed to process vote.\n\n💡 Please try again.`,
+            ...channelInfo
         });
     }
 }
