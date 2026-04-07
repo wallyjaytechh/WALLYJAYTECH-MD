@@ -26,7 +26,7 @@ async function joinCommand(sock, chatId, message) {
         // If no arguments, show usage
         if (args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `👥 *JOIN COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ .join <group-link>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Examples:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n└ .join https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Supported Links:*\n└ WhatsApp Group Invite\n└ WhatsApp Channel\n└ WhatsApp Group\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Join Official Channel:*\nhttps://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf`,
+                text: `👥 *JOIN COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Usage:*\n└ .join <group-link>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Examples:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n└ .join https://chat.whatsapp.com/ABC123def456\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Note:*\n└ Only works for WhatsApp GROUP links\n└ Does NOT work for Channels\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Group link format:*\n└ https://chat.whatsapp.com/XXXXXX`,
                 ...channelInfo
             });
             return;
@@ -37,7 +37,7 @@ async function joinCommand(sock, chatId, message) {
         // Show help
         if (action === 'help') {
             await sock.sendMessage(chatId, {
-                text: `🆘 *JOIN COMMAND HELP*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *How to use:*\n1. Copy any WhatsApp group invite link\n2. Use: .join <paste-link-here>\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Valid link formats:*\n└ https://chat.whatsapp.com/XXXXXX\n└ https://whatsapp.com/channel/XXXXXX\n└ https://whatsapp.com/groups/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Examples:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Note:* Bot will attempt to join any valid WhatsApp group or channel.`,
+                text: `🆘 *JOIN COMMAND HELP*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *How to use:*\n1. Copy any WhatsApp group invite link\n2. Use: .join <paste-link-here>\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Valid link format:*\n└ https://chat.whatsapp.com/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Note:*\n└ Only works for WhatsApp GROUPS\n└ Does NOT work for Channels\n└ Bot must not be banned from the group`,
                 ...channelInfo
             });
             return;
@@ -54,13 +54,13 @@ async function joinCommand(sock, chatId, message) {
             return;
         }
 
-        // Validate WhatsApp link format (supports new format with ?mode=gi_t)
-        const whatsappLinkRegex = /https?:\/\/(?:chat\.|www\.)?whatsapp\.com\/(?:invite\/|channel\/|groups\/)?([a-zA-Z0-9]+)(?:\?mode=[a-z_]+)?/i;
-        const match = link.match(whatsappLinkRegex);
+        // Validate WhatsApp group link format (must be chat.whatsapp.com)
+        const groupLinkRegex = /https?:\/\/(?:chat\.)?whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9]+)/i;
+        const match = link.match(groupLinkRegex);
 
-        if (!match) {
+        if (!match || !link.includes('chat.whatsapp.com')) {
             await sock.sendMessage(chatId, {
-                text: `❌ *INVALID LINK FORMAT*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Please provide a valid WhatsApp group/channel link.\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Valid formats:*\n└ https://chat.whatsapp.com/XXXXXX\n└ https://whatsapp.com/channel/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Example:*\n└ .join https://chat.whatsapp.com/DNk2fx5wUEeLXCQMnTkEOf`,
+                text: `❌ *INVALID GROUP LINK*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 This command only works for WhatsApp GROUP links.\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 *Valid format:*\n└ https://chat.whatsapp.com/XXXXXX\n\n━━━━━━━━━━━━━━━━━━━━\n❌ *Does NOT work for:*\n└ Channel links (whatsapp.com/channel/)\n└ Other WhatsApp links\n\n━━━━━━━━━━━━━━━━━━━━\n💡 *Tip:* Make sure you copied a GROUP invite link.`,
                 ...channelInfo
             });
             return;
@@ -85,7 +85,7 @@ async function joinCommand(sock, chatId, message) {
                 });
             } else {
                 await sock.sendMessage(chatId, {
-                    text: `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Possible reasons:\n└ Invalid or expired link\n└ Group is full\n└ Link requires approval\n└ Bot is banned from group\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Please check the link and try again.`,
+                    text: `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Possible reasons:\n└ Invalid or expired link\n└ Group is full\n└ Link requires admin approval\n└ Bot is banned from the group\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Please check the link and try again.`,
                     ...channelInfo
                 });
             }
