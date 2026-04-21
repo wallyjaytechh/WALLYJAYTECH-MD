@@ -26,6 +26,9 @@ setInterval(() => {
   console.log('🧹 Temp folder auto-cleaned');
 }, 3 * 60 * 60 * 1000);
 
+// At the top
+const diceCommand = require('./commands/dice');
+
 const settings = require('./settings');
 require('./config.js');
 const { isBanned } = require('./lib/isBanned');
@@ -795,7 +798,10 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage === '.getjid':
     await getjidCommand(sock, chatId, message);
     break;
-
+// In switch statement
+case userMessage === '.dice':
+    await diceCommand(sock, chatId, message);
+    break;
 case userMessage.startsWith('.getjid @'):
     await getMentionedJids(sock, chatId, message);
     break;
