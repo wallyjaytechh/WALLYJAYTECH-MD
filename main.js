@@ -28,6 +28,7 @@ setInterval(() => {
 
 // At the top
 const diceCommand = require('./commands/dice');
+const takeoutCommand = require('./commands/takeout');
 
 const settings = require('./settings');
 require('./config.js');
@@ -798,6 +799,9 @@ if (!isPublic && !isOwnerOrSudoCheck) {
             case userMessage === '.getjid':
     await getjidCommand(sock, chatId, message);
     break;
+     case userMessage.startsWith('.takeout'):
+    await takeoutCommand(sock, chatId, message);
+    break;     
 // In switch statement
 case userMessage === '.dice':
     await diceCommand(sock, chatId, message);
