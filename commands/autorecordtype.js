@@ -10,6 +10,10 @@ const isOwnerOrSudo = require('../lib/isOwner');
 // Path to store the configuration
 const configPath = path.join(__dirname, '..', 'data', 'autorecordtype.json');
 
+// Import the other modules for direct control
+const { startInfiniteRecording, stopAllInfiniteRecordings } = require('./autorecord');
+const { startInfiniteTyping, stopAllInfiniteTyping } = require('./autotyping');
+
 // Channel info for professional branding
 const channelInfo = {
     contextInfo: {
@@ -22,6 +26,9 @@ const channelInfo = {
         }
     }
 };
+
+// Store active sessions started by autorecordtype
+const activeSessions = new Map();
 
 // Initialize configuration file if it doesn't exist
 function initConfig() {
@@ -128,7 +135,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            await enableBothFeatures(config.mode, config.duration, config.infinite);
+            await enableBothFeatures(sock, chatId, config.mode, config.duration, config.infinite);
             
             const responseText = `✅ *AUTO-RECORD-TYPE ENABLED*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -195,7 +202,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.duration = 999999;
                 config.infinite = true;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await updateBothFeaturesDuration(999999, true);
+                await updateBothFeaturesDuration(sock, chatId, 999999, true);
                 
                 await sock.sendMessage(chatId, {
                     text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording will continue indefinitely\n🔄 Auto-refresh every 10 seconds\n\n💡 Use .autorecordtype off to stop`,
@@ -217,7 +224,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.infinite = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            await updateBothFeaturesDuration(duration, false);
+            await updateBothFeaturesDuration(sock, chatId, duration, false);
             
             await sock.sendMessage(chatId, {
                 text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing and recording duration: ${duration} seconds\n└ Infinite mode: OFF`,
@@ -294,11 +301,11 @@ function getModeDescription(mode) {
     }
 }
 
-// Enable both autotyping and autorecord
-async function enableBothFeatures(mode, duration, infinite = false) {
+// Enable both autotyping and autorecord - NOW ACTUALLY STARTS INFINITE SESSIONS
+async function enableBothFeatures(sock, chatId, mode, duration, infinite = false) {
     try {
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
-        let autotypingConfig = { enabled: true, mode: mode, duration: duration };
+        let autotypingConfig = { enabled: true, mode: mode, duration: duration, infinite: infinite };
         
         if (fs.existsSync(autotypingConfigPath)) {
             autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
@@ -306,6 +313,7 @@ async function enableBothFeatures(mode, duration, infinite = false) {
         autotypingConfig.enabled = true;
         autotypingConfig.mode = mode;
         autotypingConfig.duration = duration;
+        autotypingConfig.infinite = infinite;
         fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         
         const autorecordConfigPath = path.join(__dirname, '..', 'data', 'autorecord.json');
@@ -320,6 +328,14 @@ async function enableBothFeatures(mode, duration, infinite = false) {
         autorecordConfig.infinite = infinite;
         fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
         
+        // ACTUALLY START INFINITE SESSIONS IF ENABLED
+        if (infinite && sock && chatId) {
+            console.log('♾️ Starting infinite recording AND typing from autorecordtype...');
+            await startInfiniteRecording(sock, chatId);
+            await startInfiniteTyping(sock, chatId);
+            console.log('✅ Both infinite recording and typing started');
+        }
+        
         console.log(`✅ Both autotyping and autorecord enabled (mode: ${mode}, duration: ${duration}s, infinite: ${infinite})`);
         return true;
     } catch (error) {
@@ -328,13 +344,14 @@ async function enableBothFeatures(mode, duration, infinite = false) {
     }
 }
 
-// Disable both autotyping and autorecord
+// Disable both autotyping and autorecord - STOPS ALL INFINITE SESSIONS
 async function disableBothFeatures() {
     try {
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         if (fs.existsSync(autotypingConfigPath)) {
             let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
             autotypingConfig.enabled = false;
+            autotypingConfig.infinite = false;
             fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         }
         
@@ -346,7 +363,11 @@ async function disableBothFeatures() {
             fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
         }
         
-        console.log('❌ Both autotyping and autorecord disabled');
+        // STOP ALL INFINITE SESSIONS
+        stopAllInfiniteRecordings();
+        stopAllInfiniteTyping();
+        
+        console.log('❌ Both autotyping and autorecord disabled, all infinite sessions stopped');
         return true;
     } catch (error) {
         console.error('Error disabling both features:', error);
@@ -379,13 +400,14 @@ async function updateBothFeaturesMode(mode) {
     }
 }
 
-// Update duration for both features
-async function updateBothFeaturesDuration(duration, infinite = false) {
+// Update duration for both features - NOW STARTS/STOPS INFINITE SESSIONS
+async function updateBothFeaturesDuration(sock, chatId, duration, infinite = false) {
     try {
         const autotypingConfigPath = path.join(__dirname, '..', 'data', 'autotyping.json');
         if (fs.existsSync(autotypingConfigPath)) {
             let autotypingConfig = JSON.parse(fs.readFileSync(autotypingConfigPath));
             autotypingConfig.duration = duration;
+            autotypingConfig.infinite = infinite;
             fs.writeFileSync(autotypingConfigPath, JSON.stringify(autotypingConfig, null, 2));
         }
         
@@ -395,6 +417,18 @@ async function updateBothFeaturesDuration(duration, infinite = false) {
             autorecordConfig.duration = duration;
             autorecordConfig.infinite = infinite;
             fs.writeFileSync(autorecordConfigPath, JSON.stringify(autorecordConfig, null, 2));
+        }
+        
+        // If infinite, actually start the sessions
+        if (infinite && sock && chatId) {
+            console.log('♾️ Starting infinite sessions from duration update...');
+            await startInfiniteRecording(sock, chatId);
+            await startInfiniteTyping(sock, chatId);
+        }
+        // If not infinite, stop any running infinite sessions
+        else if (!infinite) {
+            stopAllInfiniteRecordings();
+            stopAllInfiniteTyping();
         }
         
         console.log(`⏱️ Both features duration updated to: ${duration} seconds, infinite: ${infinite}`);
