@@ -9,6 +9,19 @@ const fs = require('fs');
 const chalk = require('chalk');
 const path = require('path');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
+
+// Clean up stale infinite recording/typing sessions from previous run
+try {
+    const autorecord = require('./commands/autorecord');
+    autorecord.stopAllInfiniteRecordings();
+    console.log('🧹 Cleaned up stale recording sessions');
+} catch (e) {}
+try {
+    const autotyping = require('./commands/autotyping');
+    autotyping.stopAllInfiniteTyping();
+    console.log('🧹 Cleaned up stale typing sessions');
+} catch (e) {}
+
 const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
 const PhoneNumber = require('awesome-phonenumber');
 const { smsg } = require('./lib/myfunc');
@@ -232,7 +245,7 @@ async function startXeonBotInc() {
             }, 3000);
         }
 
-        // Connection handling - FIXED VERSION
+        // Connection handling
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
             
@@ -248,18 +261,8 @@ async function startXeonBotInc() {
                 console.log(chalk.magenta(` `));
                 console.log(chalk.cyan(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)));
                 
-                // Reset reconnect attempts on successful connection
                 reconnectAttempts = 0;
                 
-                // Start auto-update checker (disabled for panel stability)
-                /*
-                try {
-                    const { autoCheckUpdates } = require('./commands/checkupdate');
-                    autoCheckUpdates(XeonBotInc);
-                } catch (error) {
-                    console.error('Failed to start auto-update checker:', error);
-                }
-                */
                 console.log(chalk.yellow('⚠️ Auto-update checker disabled for stability'));
                 
                 try {
@@ -329,12 +332,10 @@ async function startXeonBotInc() {
                 console.log(chalk.blue(`Bot Version: ${settings.version}`));
             }
             
-            // FIXED: Proper connection close handling with conflict detection
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
                 const errorMessage = lastDisconnect?.error?.message || '';
                 
-                // Check for conflict error (another instance running)
                 const isConflictError = errorMessage.includes('conflict') || 
                                        errorMessage.includes('Stream Errored') ||
                                        errorMessage.includes('already connected');
@@ -344,7 +345,6 @@ async function startXeonBotInc() {
                 console.log(chalk.red(`   Error: ${errorMessage || 'Unknown'}`));
                 console.log(chalk.red(`   Conflict: ${isConflictError}`));
                 
-                // Handle logged out - delete session
                 if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
                     console.log(chalk.yellow('📱 Session logged out. Deleting session folder...'));
                     try {
@@ -357,7 +357,6 @@ async function startXeonBotInc() {
                     return;
                 }
                 
-                // Handle conflict - don't spam reconnect
                 if (isConflictError) {
                     console.log(chalk.red('⚠️ CONFLICT DETECTED!'));
                     console.log(chalk.yellow('This usually means another instance of the bot is already running.'));
@@ -375,7 +374,6 @@ async function startXeonBotInc() {
                     return;
                 }
                 
-                // Normal reconnect for other errors
                 if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                     reconnectAttempts++;
                     console.log(chalk.yellow(`🔄 Reconnecting... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`));
@@ -427,6 +425,34 @@ async function startXeonBotInc() {
         }
     }
 }
+
+// Graceful shutdown - clean up infinite sessions
+process.on('SIGINT', async () => {
+    console.log('🛑 Shutting down...');
+    try {
+        const autorecord = require('./commands/autorecord');
+        autorecord.stopAllInfiniteRecordings();
+    } catch (e) {}
+    try {
+        const autotyping = require('./commands/autotyping');
+        autotyping.stopAllInfiniteTyping();
+    } catch (e) {}
+    console.log('✅ Cleanup complete');
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    console.log('🛑 Received SIGTERM...');
+    try {
+        const autorecord = require('./commands/autorecord');
+        autorecord.stopAllInfiniteRecordings();
+    } catch (e) {}
+    try {
+        const autotyping = require('./commands/autotyping');
+        autotyping.stopAllInfiniteTyping();
+    } catch (e) {}
+    process.exit(0);
+});
 
 // Start the bot
 console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
