@@ -76,7 +76,8 @@ const {
     isAutorecordEnabled, 
     handleAutorecordForMessage, 
     handleAutorecordForCommand, 
-    showRecordingAfterCommand 
+    showRecordingAfterCommand,
+    stopAllInfiniteRecordings 
 } = require('./commands/autorecord');
 const { 
     autotypingCommand, 
@@ -1770,6 +1771,14 @@ async function handleGroupParticipantUpdate(sock, update) {
         console.error('Error in handleGroupParticipantUpdate:', error);
     }
 }
+// Graceful shutdown - clean up infinite recording sessions
+process.on('SIGINT', async () => {
+    console.log('🛑 Shutting down...');
+    const autorecord = require('./commands/autorecord');
+    autorecord.stopAllInfiniteRecordings();
+    console.log('✅ Cleanup complete');
+    process.exit(0);
+});
 
 // Instead, export the handlers along with handleMessages
 module.exports = {
