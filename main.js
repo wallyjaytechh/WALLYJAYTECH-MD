@@ -84,7 +84,8 @@ const {
     isAutotypingEnabled, 
     handleAutotypingForMessage, 
     handleAutotypingForCommand, 
-    showTypingAfterCommand 
+    showTypingAfterCommand,
+    stopAllInfiniteTyping 
 } = require('./commands/autotyping');
 const { autoStatusCommand } = require('./commands/autostatus');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
@@ -1771,11 +1772,17 @@ async function handleGroupParticipantUpdate(sock, update) {
         console.error('Error in handleGroupParticipantUpdate:', error);
     }
 }
-// Graceful shutdown - clean up infinite recording sessions
+// Graceful shutdown - clean up infinite recording/typing sessions
 process.on('SIGINT', async () => {
     console.log('🛑 Shutting down...');
-    const autorecord = require('./commands/autorecord');
-    autorecord.stopAllInfiniteRecordings();
+    try {
+        const autorecord = require('./commands/autorecord');
+        autorecord.stopAllInfiniteRecordings();
+    } catch (e) {}
+    try {
+        const autotyping = require('./commands/autotyping');
+        autotyping.stopAllInfiniteTyping();
+    } catch (e) {}
     console.log('✅ Cleanup complete');
     process.exit(0);
 });
