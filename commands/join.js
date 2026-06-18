@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Join Command - Join any WhatsApp group via link
- * Fast live dot animation
+ * Letter-by-letter typing animation + dot cycle
  */
 
 const channelInfo = {
@@ -71,17 +71,29 @@ async function joinCommand(sock, chatId, message) {
         }
 
         const groupCode = match[1];
-
-        // ── Send initial message ──
-        const sent = await sock.sendMessage(chatId, { text: `🔍 *CHECKING*` });
-
-        // ── Fast dot animation: 4 cycles ──
         const dots = ['', '.', '..', '...'];
-        for (let cycle = 0; cycle < 4; cycle++) {
+
+        // ── Send first character ──
+        const sent = await sock.sendMessage(chatId, { text: `🔍` });
+
+        // ── Type "CHECKING" letter by letter ──
+        const word = "CHECKING";
+        let typed = "🔍 ";
+        for (let i = 0; i < word.length; i++) {
+            typed += word[i];
+            await new Promise(r => setTimeout(r, 60));
+            await sock.sendMessage(chatId, {
+                text: `*${typed}*`,
+                edit: sent.key
+            }).catch(() => {});
+        }
+
+        // ── Dots animation 3 cycles ──
+        for (let cycle = 0; cycle < 3; cycle++) {
             for (let d = 0; d < 4; d++) {
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 200));
                 await sock.sendMessage(chatId, {
-                    text: `🔍 *CHECKING${dots[d]}*`,
+                    text: `*🔍 CHECKING${dots[d]}*`,
                     edit: sent.key
                 }).catch(() => {});
             }
@@ -98,14 +110,25 @@ async function joinCommand(sock, chatId, message) {
             return;
         }
 
-        // ── Fast dot animation: JOINING ──
-        await sock.sendMessage(chatId, { text: `⏳ *JOINING*`, edit: sent.key }).catch(() => {});
-        
-        for (let cycle = 0; cycle < 3; cycle++) {
+        // ── Type "JOINING" letter by letter ──
+        await sock.sendMessage(chatId, { text: `⏳`, edit: sent.key }).catch(() => {});
+        const word2 = "JOINING";
+        let typed2 = "⏳ ";
+        for (let i = 0; i < word2.length; i++) {
+            typed2 += word2[i];
+            await new Promise(r => setTimeout(r, 60));
+            await sock.sendMessage(chatId, {
+                text: `*${typed2}*`,
+                edit: sent.key
+            }).catch(() => {});
+        }
+
+        // ── Dots animation 2 cycles ──
+        for (let cycle = 0; cycle < 2; cycle++) {
             for (let d = 0; d < 4; d++) {
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 200));
                 await sock.sendMessage(chatId, {
-                    text: `⏳ *JOINING${dots[d]}*`,
+                    text: `*⏳ JOINING${dots[d]}*`,
                     edit: sent.key
                 }).catch(() => {});
             }
