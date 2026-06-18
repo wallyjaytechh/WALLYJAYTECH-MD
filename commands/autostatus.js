@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Fixed: strips :0 device suffix from resolved JID
+ * Fixed: LID in key participant, resolved PN as destination
  */
 
 const fs = require('fs');
@@ -84,7 +84,7 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// Resolve @lid to clean phone number JID (strips :0 device suffix)
+// Resolve @lid to clean phone number JID
 async function resolveLidToJid(sock, lidJid) {
     if (!lidJid || !lidJid.endsWith('@lid')) return lidJid;
     
@@ -92,7 +92,6 @@ async function resolveLidToJid(sock, lidJid) {
         if (sock.signalRepository?.lidMapping?.getPNForLID) {
             const pn = await sock.signalRepository.lidMapping.getPNForLID(lidJid);
             if (pn) {
-                // Strip :0 device suffix (2348155763709:0@s.whatsapp.net -> 2348155763709@s.whatsapp.net)
                 const cleanPn = pn.replace(/:\d+@/, '@');
                 console.log(`🔍 Resolved LID: ${cleanPn}`);
                 return cleanPn;
@@ -118,7 +117,7 @@ async function resolveLidToJid(sock, lidJid) {
     return lidJid;
 }
 
-// React to status with 💚
+// React to status with 💚 - FIXED: original LID in key participant, resolved PN as destination
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -127,10 +126,13 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        // Resolve @lid -> clean phone-number JID
+        // Resolve @lid -> clean phone-number JID for destination
         const targetJid = await resolveLidToJid(sock, publisherJid);
+        
+        // IMPORTANT: Keep the ORIGINAL publisherJid (LID) in the key's participant
+        // WhatsApp matches reactions by the exact participant from the status message
 
-        console.log(`💚 Reacting -> ${targetJid.split('@')[0]}${publisherJid !== targetJid ? ' (resolved from LID)' : ''}`);
+        console.log(`💚 Reacting -> to: ${targetJid.split('@')[0]} | key participant: ${publisherJid.split('@')[0]}`);
 
         await sock.sendMessage(targetJid, {
             react: {
@@ -139,7 +141,7 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
                     id: statusId,
-                    participant: publisherJid
+                    participant: publisherJid  // Keep original LID here
                 }
             }
         });
@@ -149,8 +151,29 @@ async function reactToStatus(sock, statusId, publisherJid) {
         return true;
 
     } catch (error) {
-        console.log(`⚠️ Reaction failed: ${error.message}`);
-        return false;
+        // Fallback: try sending to the original LID directly
+        try {
+            console.log(`⚠️ First attempt failed, trying direct LID send...`);
+            
+            await sock.sendMessage(publisherJid, {
+                react: {
+                    text: '💚',
+                    key: {
+                        remoteJid: 'status@broadcast',
+                        fromMe: false,
+                        id: statusId,
+                        participant: publisherJid
+                    }
+                }
+            });
+            
+            reacted.add(reactKey);
+            console.log(`✅ Reaction sent (fallback to LID)`);
+            return true;
+        } catch (err2) {
+            console.log(`⚠️ Reaction failed: ${err2.message}`);
+            return false;
+        }
     }
 }
 
