@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Uses relayMessage for proper status reaction delivery
+ * DEBUG VERSION - Shows full key structure
  */
 
 const fs = require('fs');
@@ -10,7 +10,6 @@ const isOwnerOrSudo = require('../lib/isOwner');
 
 const configPath = path.join(__dirname, '../data/autostatus.json');
 
-// Ensure config file exists
 if (!fs.existsSync(configPath)) {
     if (!fs.existsSync(path.dirname(configPath))) {
         fs.mkdirSync(path.dirname(configPath), { recursive: true });
@@ -55,39 +54,7 @@ async function isStatusReactionEnabled() {
     return readConfig().reactOn;
 }
 
-// THE KEY FIX: Use relayMessage for status reactions
-async function reactToStatus(sock, statusKey) {
-    try {
-        const config = readConfig();
-        if (!config.reactOn) return;
-
-        const participant = statusKey.participant || statusKey.remoteJid;
-
-        await sock.relayMessage(
-            'status@broadcast',
-            {
-                reactionMessage: {
-                    key: {
-                        remoteJid: 'status@broadcast',
-                        id: statusKey.id,
-                        participant: participant,
-                        fromMe: false
-                    },
-                    text: '💚'
-                }
-            },
-            {
-                messageId: statusKey.id,
-                statusJidList: [participant, sock.user.id]
-            }
-        );
-        
-        console.log(`✅ Reacted to status: ${statusKey.id}`);
-    } catch (error) {
-        console.error('❌ Reaction error:', error.message);
-    }
-}
-
+// DEBUG VERSION - Shows full key details
 async function handleStatusUpdate(sock, status) {
     try {
         const config = readConfig();
@@ -95,43 +62,110 @@ async function handleStatusUpdate(sock, status) {
         
         await new Promise(r => setTimeout(r, 1000));
 
-        // Handle messages array
         if (status.messages && status.messages.length > 0) {
             for (const msg of status.messages) {
-                if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
+                if (!msg.key) continue;
+                if (msg.key.remoteJid !== 'status@broadcast') continue;
                 if (msg.key.fromMe === true) continue;
+                
+                // ============ DEBUG ============
+                console.log(`\n🔍 ====== NEW STATUS ======`);
+                console.log(`🔍 FULL KEY:`, JSON.stringify(msg.key, null, 2));
+                console.log(`🔍 participant = ${msg.key.participant}`);
+                console.log(`🔍 remoteJid = ${msg.key.remoteJid}`);
+                console.log(`🔍 id = ${msg.key.id}`);
+                console.log(`🔍 fromMe = ${msg.key.fromMe}`);
+                // ============ END DEBUG ============
                 
                 try {
                     await sock.readMessages([msg.key]);
                     console.log(`✅ Viewed: ${msg.key.id}`);
-                    await reactToStatus(sock, msg.key);
+                    
+                    const config2 = readConfig();
+                    if (config2.reactOn) {
+                        const participant = msg.key.participant;
+                        
+                        console.log(`💚 Trying reaction -> participant: ${participant}`);
+                        console.log(`💚 Trying reaction -> status id: ${msg.key.id}`);
+                        
+                        await sock.sendMessage(participant, {
+                            react: {
+                                text: '💚',
+                                key: {
+                                    remoteJid: 'status@broadcast',
+                                    fromMe: false,
+                                    id: msg.key.id,
+                                    participant: participant
+                                }
+                            }
+                        });
+                        
+                        console.log(`✅ Reaction sent`);
+                    }
                 } catch (err) {
-                    if (err.message?.includes('rate-overlimit')) {
-                        await new Promise(r => setTimeout(r, 3000));
-                        await sock.readMessages([msg.key]);
+                    console.log(`⚠️ Error: ${err.message}`);
+                    
+                    // Try fallback: send to status@broadcast
+                    if (config.reactOn) {
+                        try {
+                            console.log(`💚 Fallback: sending to status@broadcast`);
+                            await sock.sendMessage('status@broadcast', {
+                                react: {
+                                    text: '💚',
+                                    key: {
+                                        remoteJid: 'status@broadcast',
+                                        fromMe: false,
+                                        id: msg.key.id,
+                                        participant: msg.key.participant
+                                    }
+                                }
+                            }, {
+                                statusJidList: [msg.key.participant]
+                            });
+                            console.log(`✅ Fallback sent`);
+                        } catch (e2) {
+                            console.log(`⚠️ Fallback also failed: ${e2.message}`);
+                        }
                     }
                 }
             }
-            return;
         }
 
-        // Handle single key
+        // Single key format
         if (status.key && status.key.remoteJid === 'status@broadcast') {
             if (status.key.fromMe === true) return;
             
+            console.log(`\n🔍 ====== SINGLE KEY STATUS ======`);
+            console.log(`🔍 FULL KEY:`, JSON.stringify(status.key, null, 2));
+            console.log(`🔍 participant = ${status.key.participant}`);
+            
             try {
                 await sock.readMessages([status.key]);
-                console.log(`✅ Viewed: ${status.key.id}`);
-                await reactToStatus(sock, status.key);
-            } catch (err) {
-                if (err.message?.includes('rate-overlimit')) {
-                    await new Promise(r => setTimeout(r, 3000));
-                    await sock.readMessages([status.key]);
+                console.log(`✅ Viewed`);
+                
+                const config2 = readConfig();
+                if (config2.reactOn) {
+                    const participant = status.key.participant;
+                    
+                    await sock.sendMessage(participant, {
+                        react: {
+                            text: '💚',
+                            key: {
+                                remoteJid: 'status@broadcast',
+                                fromMe: false,
+                                id: status.key.id,
+                                participant: participant
+                            }
+                        }
+                    });
+                    console.log(`✅ Reaction sent`);
                 }
+            } catch (err) {
+                console.log(`⚠️ Error: ${err.message}`);
             }
         }
-    } catch (error) {
-        console.error('❌ Status error:', error.message);
+    } catch (e) {
+        console.log('⚠️ Status error:', e.message);
     }
 }
 
@@ -146,12 +180,21 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             
             try {
                 await sock.readMessages([msg.key]);
-                await reactToStatus(sock, msg.key);
-            } catch (err) {
-                if (err.message?.includes('rate-overlimit')) {
-                    await new Promise(r => setTimeout(r, 2000));
+                
+                if (config.reactOn) {
+                    await sock.sendMessage(msg.key.participant, {
+                        react: {
+                            text: '💚',
+                            key: {
+                                remoteJid: 'status@broadcast',
+                                fromMe: false,
+                                id: msg.key.id,
+                                participant: msg.key.participant
+                            }
+                        }
+                    });
                 }
-            }
+            } catch (err) {}
         }
     } catch (e) {}
 }
@@ -180,7 +223,8 @@ async function autoStatusCommand(sock, chatId, message, args) {
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
                       `└ .autostatus on/off\n` +
-                      `└ .autostatus react on/off`,
+                      `└ .autostatus react on/off\n\n` +
+                      `🔍 *DEBUG MODE ACTIVE*`,
                 ...channelInfo
             }, { quoted: message });
             return;
@@ -219,7 +263,6 @@ module.exports = {
     autoStatusCommand,
     isAutoStatusEnabled,
     isStatusReactionEnabled,
-    reactToStatus,
     readConfig,
     writeConfig
 };
