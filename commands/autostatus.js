@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Simplified for Panel Deployment
+ * Now with notification trigger
  */
 
 const fs = require('fs');
@@ -84,7 +84,7 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// React to status with 💚 - SIMPLE VERSION
+// React to status with 💚 - WITH NOTIFICATION TRIGGER
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -93,9 +93,27 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
         
-        console.log(`💚 Sending reaction to: ${publisherJid.split('@')[0]}`);
+        console.log(`💚 Reacting to status: ${publisherJid.split('@')[0]}`);
         
-        // Simple reaction send
+        // Step 1: Remove any existing reaction first
+        try {
+            await sock.sendMessage(publisherJid, {
+                react: {
+                    text: '',
+                    key: {
+                        remoteJid: 'status@broadcast',
+                        fromMe: false,
+                        id: statusId,
+                        participant: publisherJid
+                    }
+                }
+            });
+            await new Promise(r => setTimeout(r, 800));
+        } catch (e) {
+            // Ignore if no existing reaction
+        }
+        
+        // Step 2: Send new reaction with notification
         await sock.sendMessage(publisherJid, {
             react: {
                 text: '💚',
@@ -106,15 +124,36 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     participant: publisherJid
                 }
             }
+        }, {
+            statusJidList: [publisherJid]
         });
         
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent`);
+        console.log(`✅ Reaction sent with notification to user`);
         return true;
         
     } catch (error) {
-        console.log(`⚠️ Reaction error: ${error.message}`);
-        return false;
+        // Fallback: try simple reaction
+        try {
+            await sock.sendMessage(publisherJid, {
+                react: {
+                    text: '💚',
+                    key: {
+                        remoteJid: 'status@broadcast',
+                        fromMe: false,
+                        id: statusId,
+                        participant: publisherJid
+                    }
+                }
+            });
+            
+            reacted.add(reactKey);
+            console.log(`✅ Reaction sent (fallback)`);
+            return true;
+        } catch (err2) {
+            console.log(`⚠️ Reaction failed: ${err2.message}`);
+            return false;
+        }
     }
 }
 
@@ -145,12 +184,13 @@ async function handleStatusUpdate(sock, chatUpdate) {
             if (viewed.has(statusId)) continue;
             if (isOwnStatus(sock, publisher)) continue;
             
-            console.log(`📱 Status: ${publisher.split('@')[0]}`);
+            console.log(`📱 New status: ${publisher.split('@')[0]}`);
             viewed.add(statusId);
             
-            // View status
-            await new Promise(r => setTimeout(r, 1000));
+            // Delay before viewing
+            await new Promise(r => setTimeout(r, 2000));
             
+            // View the status
             try {
                 await sock.readMessages([{
                     remoteJid: 'status@broadcast',
@@ -161,13 +201,13 @@ async function handleStatusUpdate(sock, chatUpdate) {
                 
                 // React after viewing
                 if (config.reactOn) {
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 1500));
                     await reactToStatus(sock, statusId, publisher);
                 }
             } catch (err) {
                 console.log(`⚠️ View error: ${err.message}`);
-                // Still try to react even if view fails
-                if (config.reactOn && err.message?.includes('rate-overlimit')) {
+                // Still try to react
+                if (config.reactOn) {
                     await new Promise(r => setTimeout(r, 3000));
                     await reactToStatus(sock, statusId, publisher);
                 }
@@ -197,7 +237,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             
             viewed.add(statusId);
             
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1500));
             
             try {
                 await sock.readMessages([{
@@ -208,7 +248,7 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                 console.log(`✅ Bulk viewed`);
                 
                 if (config.reactOn) {
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 1000));
                     await reactToStatus(sock, statusId, publisher);
                 }
             } catch (err) {
@@ -291,7 +331,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 config.reactOn = true;
                 saveConfig();
                 await sock.sendMessage(chatId, {
-                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚`,
+                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚\nUsers will receive notification`,
                     ...channelInfo
                 });
             } else {
