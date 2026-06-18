@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Foreign Command - Blocks users from specified countries
- * FIXED: Uses remoteJidAlt/participantAlt for real phone numbers
+ * FINAL FIX: Uses same JID format as working block command
  */
 
 const fs = require('fs');
@@ -258,7 +258,7 @@ function initConfig() {
     }
 }
 
-// Extract country code from phone number string
+// Extract country code from phone number
 function getCountryCodeFromNumber(phoneNumber) {
     if (!phoneNumber) return 'unknown';
     
@@ -274,25 +274,6 @@ function getCountryCodeFromNumber(phoneNumber) {
     }
     
     return 'unknown';
-}
-
-// Block a user
-async function blockUser(sock, jid) {
-    try {
-        // Ensure we have a proper @s.whatsapp.net JID
-        let targetJid = jid;
-        if (!targetJid.includes('@s.whatsapp.net')) {
-            targetJid = jid.replace(/@.*/, '') + '@s.whatsapp.net';
-        }
-        
-        console.log(`🚫 Blocking: ${targetJid}`);
-        await sock.updateBlockStatus(targetJid, 'block');
-        console.log(`✅ Blocked: ${targetJid.split('@')[0]}`);
-        return true;
-    } catch (error) {
-        console.error(`❌ Block failed for ${jid}: ${error.message}`);
-        return false;
-    }
 }
 
 // Toggle antiforeign feature
@@ -523,7 +504,7 @@ async function antiforeignCommand(sock, chatId, message) {
 }
 
 // Handle incoming messages - auto block foreign users
-// FIXED: Uses remoteJidAlt/participantAlt for real phone numbers
+// FINAL FIX: Same JID building as working blockCommand
 async function handleAntiforeign(sock, chatId, message) {
     try {
         const config = initConfig();
@@ -532,23 +513,47 @@ async function handleAntiforeign(sock, chatId, message) {
         if (chatId.endsWith('@g.us')) return false;
         if (message.key.fromMe) return false;
 
-        // PREFER THE ALT JID - this has the real phone number
-        // WhatsApp/Baileys attaches remoteJidAlt when the sender uses @lid
-        const senderJid =
-            message.key.remoteJidAlt ||
-            message.key.participantAlt ||
-            message.key.participant ||
-            message.key.remoteJid;
-
-        // Extract clean phone number from JID
-        const phoneNumber = senderJid.split('@')[0].replace(/[^0-9]/g, '');
+        // Same priority as working block command
+        const senderJid = message.key.participant || message.key.remoteJid;
+        
+        // Extract phone number
+        let phoneNumber = '';
+        
+        // Try to get real JID from alt fields first
+        if (message.key.remoteJidAlt) {
+            phoneNumber = message.key.remoteJidAlt.split('@')[0].replace(/[^0-9]/g, '');
+        }
+        
+        // Fall back to senderJid
+        if (!phoneNumber) {
+            phoneNumber = senderJid.split('@')[0].replace(/[^0-9]/g, '');
+        }
+        
+        // Try store for LID resolution
+        if (!phoneNumber || phoneNumber.length > 15) {
+            try {
+                const store = require('../lib/lightweight_store');
+                const contact = store.contacts[senderJid];
+                if (contact?.id && contact.id.includes('@s.whatsapp.net')) {
+                    phoneNumber = contact.id.split('@')[0].replace(/[^0-9]/g, '');
+                }
+            } catch (e) {}
+        }
+        
+        // Fix short numbers
+        if (phoneNumber.length === 10) {
+            phoneNumber = '234' + phoneNumber;
+        }
+        
         const countryCode = getCountryCodeFromNumber(phoneNumber);
         
-        console.log(`🌍 Anti-Foreign: sender=${senderJid.split('@')[0]} | phone=${phoneNumber} | country=+${countryCode} | raw key=${JSON.stringify(message.key)}`);
+        console.log(`🌍 Anti-Foreign | sender: ${senderJid.split('@')[0]} | phone: ${phoneNumber} | country: +${countryCode} | blocked: ${config.blockedCountries.includes(countryCode)}`);
         
         if (config.blockedCountries.includes(countryCode)) {
             const countryName = countryList[countryCode] || 'Unknown';
-            console.log(`🚫 BLOCKING: +${countryCode} - ${countryName}`);
+            const blockJid = phoneNumber + '@s.whatsapp.net';
+            
+            console.log(`🚫 BLOCKING: +${countryCode} - ${countryName} | JID: ${blockJid}`);
             
             // Send warning
             try {
@@ -563,14 +568,12 @@ async function handleAntiforeign(sock, chatId, message) {
             
             await new Promise(r => setTimeout(r, 2000));
             
-            // Block using the real phone number JID
-            const blockJid = phoneNumber + '@s.whatsapp.net';
-            const blocked = await blockUser(sock, blockJid);
-            
-            if (blocked) {
-                console.log(`✅ Blocked: +${countryCode} (${blockJid})`);
-            } else {
-                console.log(`❌ Failed to block: ${blockJid}`);
+            // Block using EXACT same method as working blockCommand
+            try {
+                await sock.updateBlockStatus(blockJid, "block");
+                console.log(`✅ Blocked: ${blockJid}`);
+            } catch (blockError) {
+                console.error(`❌ Block failed: ${blockError.message}`);
             }
             
             return true;
