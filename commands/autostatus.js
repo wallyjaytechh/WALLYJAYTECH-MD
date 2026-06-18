@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * DEBUG V2 - Shows participant domain
+ * DEBUG V3 - Added bulk handler debug
  */
 
 const fs = require('fs');
@@ -54,37 +54,26 @@ async function isStatusReactionEnabled() {
     return readConfig().reactOn;
 }
 
-// DEBUG V2 - Shows participant domain
 async function handleStatusUpdate(sock, status) {
     try {
         const config = readConfig();
         if (!config.enabled) return;
         
-        await new Promise(r => setTimeout(r, 1000));
+        console.log(`🔍 handleStatusUpdate called`);
 
         if (status.messages && status.messages.length > 0) {
+            console.log(`🔍 Processing ${status.messages.length} messages from chatUpdate`);
+            
             for (const msg of status.messages) {
                 if (!msg.key) continue;
                 if (msg.key.remoteJid !== 'status@broadcast') continue;
                 if (msg.key.fromMe === true) continue;
                 
-                // ============ DETAILED DEBUG ============
-                console.log(`\n========================================`);
-                console.log(`🔍 STATUS ID: ${msg.key.id}`);
-                console.log(`🔍 participant TYPE: ${typeof msg.key.participant}`);
-                console.log(`🔍 participant VALUE: "${msg.key.participant}"`);
+                console.log(`🔍 STATUS MSG - participant: "${msg.key.participant}" | id: ${msg.key.id}`);
                 if (msg.key.participant) {
                     const parts = msg.key.participant.split('@');
-                    console.log(`🔍 participant NUMBER: ${parts[0]}`);
-                    console.log(`🔍 participant DOMAIN: ${parts[1] || 'NONE'}`);
-                    console.log(`🔍 Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
-                    console.log(`🔍 Is s.whatsapp.net: ${parts[1] === 's.whatsapp.net' ? 'YES' : 'NO'}`);
-                } else {
-                    console.log(`🔍 participant IS NULL/UNDEFINED`);
+                    console.log(`🔍 DOMAIN: ${parts[1] || 'NONE'} | Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
                 }
-                console.log(`🔍 remoteJid: ${msg.key.remoteJid}`);
-                console.log(`========================================\n`);
-                // ============ END DEBUG ============
                 
                 try {
                     await sock.readMessages([msg.key]);
@@ -92,8 +81,6 @@ async function handleStatusUpdate(sock, status) {
                     
                     const config2 = readConfig();
                     if (config2.reactOn && msg.key.participant) {
-                        console.log(`💚 Sending reaction to: ${msg.key.participant}`);
-                        
                         await sock.sendMessage(msg.key.participant, {
                             react: {
                                 text: '💚',
@@ -105,51 +92,14 @@ async function handleStatusUpdate(sock, status) {
                                 }
                             }
                         });
-                        
-                        console.log(`✅ Reaction sent`);
+                        console.log(`✅ Reaction sent to ${msg.key.participant}`);
                     }
                 } catch (err) {
                     console.log(`⚠️ Error: ${err.message}`);
                 }
             }
-        }
-
-        // Single key format
-        if (status.key && status.key.remoteJid === 'status@broadcast') {
-            if (status.key.fromMe === true) return;
-            
-            console.log(`\n========================================`);
-            console.log(`🔍 SINGLE KEY - STATUS ID: ${status.key.id}`);
-            if (status.key.participant) {
-                const parts = status.key.participant.split('@');
-                console.log(`🔍 participant NUMBER: ${parts[0]}`);
-                console.log(`🔍 participant DOMAIN: ${parts[1] || 'NONE'}`);
-                console.log(`🔍 Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
-            }
-            console.log(`========================================\n`);
-            
-            try {
-                await sock.readMessages([status.key]);
-                console.log(`✅ Viewed`);
-                
-                const config2 = readConfig();
-                if (config2.reactOn && status.key.participant) {
-                    await sock.sendMessage(status.key.participant, {
-                        react: {
-                            text: '💚',
-                            key: {
-                                remoteJid: 'status@broadcast',
-                                fromMe: false,
-                                id: status.key.id,
-                                participant: status.key.participant
-                            }
-                        }
-                    });
-                    console.log(`✅ Reaction sent`);
-                }
-            } catch (err) {
-                console.log(`⚠️ Error: ${err.message}`);
-            }
+        } else {
+            console.log(`🔍 No messages array in status object`);
         }
     } catch (e) {
         console.log('⚠️ Status error:', e.message);
@@ -158,6 +108,8 @@ async function handleStatusUpdate(sock, status) {
 
 async function handleBulkStatusUpdate(sock, statusMessages) {
     try {
+        console.log(`🔍 BULK STATUS CALLED with ${statusMessages ? statusMessages.length : 0} messages`);
+        
         const config = readConfig();
         if (!config.enabled) return;
         
@@ -165,8 +117,16 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
             if (msg.key.fromMe === true) continue;
             
+            console.log(`🔍 BULK MSG - participant: "${msg.key.participant}" | id: ${msg.key.id}`);
+            if (msg.key.participant) {
+                const parts = msg.key.participant.split('@');
+                console.log(`🔍 DOMAIN: ${parts[1] || 'NONE'} | Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
+            }
+            
             try {
                 await sock.readMessages([msg.key]);
+                console.log(`✅ Bulk viewed`);
+                
                 if (config.reactOn && msg.key.participant) {
                     await sock.sendMessage(msg.key.participant, {
                         react: {
@@ -179,10 +139,15 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
                             }
                         }
                     });
+                    console.log(`✅ Bulk reaction sent`);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.log(`⚠️ Bulk error: ${err.message}`);
+            }
         }
-    } catch (e) {}
+    } catch (e) {
+        console.log('⚠️ Bulk handler error:', e.message);
+    }
 }
 
 async function autoStatusCommand(sock, chatId, message, args) {
@@ -210,7 +175,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                       `📖 *Commands:*\n` +
                       `└ .autostatus on/off\n` +
                       `└ .autostatus react on/off\n\n` +
-                      `🔍 *DEBUG MODE ACTIVE*`,
+                      `🔍 *DEBUG V3*`,
                 ...channelInfo
             }, { quoted: message });
             return;
