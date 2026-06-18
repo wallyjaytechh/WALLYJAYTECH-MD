@@ -2,7 +2,7 @@
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Autotyping Command - Shows fake typing status (with infinite mode)
  */
-
+ 
 const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
