@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Fixed: LID in key participant, resolved PN as destination
+ * Clean version for Baileys v7.0.0-rc.15+
  */
 
 const fs = require('fs');
@@ -84,40 +84,7 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// Resolve @lid to clean phone number JID
-async function resolveLidToJid(sock, lidJid) {
-    if (!lidJid || !lidJid.endsWith('@lid')) return lidJid;
-    
-    try {
-        if (sock.signalRepository?.lidMapping?.getPNForLID) {
-            const pn = await sock.signalRepository.lidMapping.getPNForLID(lidJid);
-            if (pn) {
-                const cleanPn = pn.replace(/:\d+@/, '@');
-                console.log(`🔍 Resolved LID: ${cleanPn}`);
-                return cleanPn;
-            }
-        }
-    } catch (e) {
-        console.log(`⚠️ signalRepository failed: ${e.message}`);
-    }
-    
-    try {
-        if (sock.lidResolver?.resolve) {
-            const pn = await sock.lidResolver.resolve(lidJid);
-            if (pn) {
-                const cleanPn = pn.replace(/:\d+@/, '@');
-                console.log(`🔍 Resolved LID via lidResolver: ${cleanPn}`);
-                return cleanPn;
-            }
-        }
-    } catch (e) {
-        console.log(`⚠️ lidResolver failed: ${e.message}`);
-    }
-    
-    return lidJid;
-}
-
-// React to status with 💚 - FIXED: original LID in key participant, resolved PN as destination
+// React to status with 💚 - SIMPLE
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -126,22 +93,16 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        // Resolve @lid -> clean phone-number JID for destination
-        const targetJid = await resolveLidToJid(sock, publisherJid);
-        
-        // IMPORTANT: Keep the ORIGINAL publisherJid (LID) in the key's participant
-        // WhatsApp matches reactions by the exact participant from the status message
+        console.log(`💚 Reacting to: ${publisherJid.split('@')[0]}`);
 
-        console.log(`💚 Reacting -> to: ${targetJid.split('@')[0]} | key participant: ${publisherJid.split('@')[0]}`);
-
-        await sock.sendMessage(targetJid, {
+        await sock.sendMessage(publisherJid, {
             react: {
                 text: '💚',
                 key: {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
                     id: statusId,
-                    participant: publisherJid  // Keep original LID here
+                    participant: publisherJid
                 }
             }
         });
@@ -151,29 +112,8 @@ async function reactToStatus(sock, statusId, publisherJid) {
         return true;
 
     } catch (error) {
-        // Fallback: try sending to the original LID directly
-        try {
-            console.log(`⚠️ First attempt failed, trying direct LID send...`);
-            
-            await sock.sendMessage(publisherJid, {
-                react: {
-                    text: '💚',
-                    key: {
-                        remoteJid: 'status@broadcast',
-                        fromMe: false,
-                        id: statusId,
-                        participant: publisherJid
-                    }
-                }
-            });
-            
-            reacted.add(reactKey);
-            console.log(`✅ Reaction sent (fallback to LID)`);
-            return true;
-        } catch (err2) {
-            console.log(`⚠️ Reaction failed: ${err2.message}`);
-            return false;
-        }
+        console.log(`⚠️ Reaction failed: ${error.message}`);
+        return false;
     }
 }
 
