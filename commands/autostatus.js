@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FINAL FIX: Preserves @s.whatsapp.net suffix on destination JID
+ * FINAL: Fixed regex to preserve @s.whatsapp.net domain
  */
 
 const fs = require('fs');
@@ -62,9 +62,7 @@ function isReactionMessage(msg) {
     return !!msg.message.reactionMessage;
 }
 
-// React to status with 💚 - FINAL FIXED VERSION
-// Destination MUST include @s.whatsapp.net suffix
-// Key participant MUST be the original LID from the status
+// React to status with 💚 - FIXED: proper regex preserves @s.whatsapp.net
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -73,29 +71,26 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        // Resolve destination JID - MUST keep @s.whatsapp.net suffix
         let targetJid = publisherJid;
         
+        // Resolve @lid to real JID
         if (publisherJid.endsWith('@lid')) {
             try {
                 if (sock.signalRepository?.lidMapping?.getPNForLID) {
                     const pn = await sock.signalRepository.lidMapping.getPNForLID(publisherJid);
                     if (pn) {
-                        // Strip :0 device suffix but KEEP @s.whatsapp.net
-                        targetJid = pn.replace(/:\d+@/, '@');
+                        // pn = "2348155763709:0@s.whatsapp.net"
+                        // target = "2348155763709@s.whatsapp.net"
+                        targetJid = pn.replace(/:\d+@s\.whatsapp\.net/, '@s.whatsapp.net');
+                        console.log(`🔍 Resolved: ${targetJid}`);
                     }
                 }
             } catch (e) {
-                console.log(`⚠️ LID resolution failed: ${e.message}`);
+                console.log(`⚠️ Resolution failed: ${e.message}`);
             }
         }
-        
-        // CRITICAL: Ensure destination has @s.whatsapp.net suffix
-        if (!targetJid.includes('@')) {
-            targetJid = targetJid + '@s.whatsapp.net';
-        }
 
-        console.log(`💚 Reacting -> Destination: ${targetJid} | Key participant: ${publisherJid}`);
+        console.log(`💚 Reacting -> to: ${targetJid} | key: ${publisherJid}`);
 
         await sock.sendMessage(targetJid, {
             react: {
@@ -104,19 +99,19 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
                     id: statusId,
-                    participant: publisherJid  // Original LID stays here
+                    participant: publisherJid
                 }
             }
         });
 
         reacted.add(reactKey);
-        console.log(`✅ Reaction delivered`);
+        console.log(`✅ Reaction sent`);
         return true;
 
     } catch (error) {
-        console.log(`⚠️ Reaction failed: ${error.message}`);
+        console.log(`⚠️ Failed: ${error.message}`);
         
-        // Fallback: try sending directly to the original JID
+        // Fallback
         try {
             await sock.sendMessage(publisherJid, {
                 react: {
@@ -129,10 +124,9 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     }
                 }
             });
-            console.log(`✅ Reaction delivered (fallback)`);
+            console.log(`✅ Fallback sent`);
             return true;
         } catch (e2) {
-            console.log(`⚠️ Fallback failed: ${e2.message}`);
             return false;
         }
     }
@@ -280,8 +274,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 await sock.sendMessage(chatId, { text: `⚠️ Usage: .autostatus react on/off`, ...channelInfo });
                 return;
             }
-            const reactCmd = args[1].toLowerCase();
-            config.reactOn = (reactCmd === 'on' || reactCmd === 'enable');
+            config.reactOn = (args[1].toLowerCase() === 'on' || args[1].toLowerCase() === 'enable');
             saveConfig();
             await sock.sendMessage(chatId, {
                 text: config.reactOn ? `💫 *REACTIONS ENABLED*` : `❌ *REACTIONS DISABLED*`,
