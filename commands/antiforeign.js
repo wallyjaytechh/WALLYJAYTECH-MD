@@ -1,4 +1,3 @@
-```javascript
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Foreign Command - Blocks users from specified countries
@@ -444,4 +443,3 @@ module.exports = {
     antiforeignCommand,
     handleAntiforeign
 };
-```
