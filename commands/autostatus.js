@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Fixed: Sends reaction to status@broadcast with statusJidList
+ * Fixed: broadcast: true + statusJidList for proper status reactions
  */
 
 const fs = require('fs');
@@ -84,7 +84,7 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// React to status with 💚 - FIXED: send to status@broadcast with statusJidList
+// React to status with 💚 - FIXED with broadcast: true
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -95,57 +95,30 @@ async function reactToStatus(sock, statusId, publisherJid) {
 
         console.log(`💚 Reacting to status: ${publisherJid.split('@')[0]}`);
 
-        const baseKey = {
-            remoteJid: 'status@broadcast',
-            fromMe: false,
-            id: statusId,
-            participant: publisherJid
-        };
+        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
 
-        // Step 1: clear any existing reaction
-        try {
-            await sock.sendMessage('status@broadcast', {
-                react: { text: '', key: baseKey }
-            }, {
-                statusJidList: [publisherJid, sock.user.id]
-            });
-            await new Promise(r => setTimeout(r, 800));
-        } catch (e) {}
-
-        // Step 2: send the actual reaction
         await sock.sendMessage('status@broadcast', {
-            react: { text: '💚', key: baseKey }
+            react: {
+                text: '💚',
+                key: {
+                    remoteJid: 'status@broadcast',
+                    fromMe: false,
+                    id: statusId,
+                    participant: publisherJid
+                }
+            }
         }, {
-            statusJidList: [publisherJid, sock.user.id]
+            statusJidList: [publisherJid, myJid],
+            broadcast: true
         });
 
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent, user will get notification`);
+        console.log(`✅ Reaction sent`);
         return true;
 
     } catch (error) {
-        // Fallback
-        try {
-            await sock.sendMessage('status@broadcast', {
-                react: {
-                    text: '💚',
-                    key: {
-                        remoteJid: 'status@broadcast',
-                        fromMe: false,
-                        id: statusId,
-                        participant: publisherJid
-                    }
-                }
-            }, {
-                statusJidList: [publisherJid, sock.user.id]
-            });
-            reacted.add(reactKey);
-            console.log(`✅ Reaction sent (fallback)`);
-            return true;
-        } catch (err2) {
-            console.log(`⚠️ Reaction failed: ${err2.message}`);
-            return false;
-        }
+        console.log(`⚠️ Reaction failed: ${error.message}`);
+        return false;
     }
 }
 
@@ -176,7 +149,7 @@ async function handleStatusUpdate(sock, chatUpdate) {
             if (viewed.has(statusId)) continue;
             if (isOwnStatus(sock, publisher)) continue;
             
-            console.log(`📱 New status: ${publisher.split('@')[0]}`);
+            console.log(`📱 Status: ${publisher.split('@')[0]}`);
             viewed.add(statusId);
             
             await new Promise(r => setTimeout(r, 2000));
@@ -318,7 +291,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 config.reactOn = true;
                 saveConfig();
                 await sock.sendMessage(chatId, {
-                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚\nUsers will receive notification`,
+                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚`,
                     ...channelInfo
                 });
             } else {
