@@ -2,7 +2,7 @@
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Autorecord Command - Shows fake recording status (with infinite mode)
  */
-
+ 
 const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
