@@ -3,7 +3,7 @@
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  * Alternates every 5 seconds for BOTH infinite and timed modes
  */
-
+ 
 const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
