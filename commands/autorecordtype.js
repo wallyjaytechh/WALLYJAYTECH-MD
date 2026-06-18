@@ -1,6 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
+ * Alternates every 5 seconds for BOTH infinite and timed modes
  */
 
 const fs = require('fs');
@@ -40,23 +41,42 @@ function initConfig() {
 function stopAlternatingSession(chatId) { const s = activeSessions.get(chatId); if (s?.intervalId) { clearInterval(s.intervalId); activeSessions.delete(chatId); return true; } return false; }
 function stopAllAlternatingSessions() { let c = 0; for (const [id, s] of activeSessions.entries()) { clearInterval(s.intervalId); activeSessions.delete(id); c++; } return c; }
 
-async function startAlternatingSession(sock, chatId) {
+async function startAlternatingSession(sock, chatId, duration, infinite) {
     stopAlternatingSession(chatId);
     try {
         await sock.presenceSubscribe(chatId);
-        await delay(300);
+        await delay(200);
         await sock.sendPresenceUpdate('available', chatId);
-        await delay(500);
+        await delay(300);
+        
         let isRecording = true;
+        let loopsDone = 0;
+        const switchMs = 5000;
+        const maxLoops = infinite ? Infinity : Math.floor((duration * 1000) / switchMs);
+        
+        await sock.sendPresenceUpdate('recording', chatId);
+        
         const session = { chatId, startTime: Date.now(), refreshCount: 0, isRecording: true };
+        
         session.intervalId = setInterval(async () => {
             try {
-                if (isRecording) await sock.sendPresenceUpdate('recording', chatId);
-                else await sock.sendPresenceUpdate('composing', chatId);
-                isRecording = !isRecording; session.refreshCount++;
+                loopsDone++;
+                if (!infinite && loopsDone >= maxLoops) {
+                    await sock.sendPresenceUpdate('paused', chatId);
+                    stopAlternatingSession(chatId);
+                    return;
+                }
+                
+                isRecording = !isRecording;
+                if (isRecording) {
+                    await sock.sendPresenceUpdate('recording', chatId);
+                } else {
+                    await sock.sendPresenceUpdate('composing', chatId);
+                }
+                session.refreshCount++;
             } catch (e) { stopAlternatingSession(chatId); }
-        }, 5000);
-        await sock.sendPresenceUpdate('recording', chatId);
+        }, switchMs);
+        
         activeSessions.set(chatId, session);
         return true;
     } catch (e) { return false; }
@@ -106,7 +126,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
         const config = initConfig();
 
         if (args.length === 0) {
-            await sock.sendMessage(chatId, { text: `🎙️⌨️ *AUTO-RECORD-TYPE SETTINGS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n🔄 Sessions: ${activeSessions.size}\n\n📖 *Commands:*\n└ .autorecordtype on/off\n└ .autorecordtype mode all/dms/groups\n└ .autorecordtype duration <seconds>\n└ .autorecordtype duration infinite\n└ .autorecordtype status`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🎙️⌨️ *AUTO-RECORD-TYPE SETTINGS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n🔄 Sessions: ${activeSessions.size}\n\n📖 *Commands:*\n└ .autorecordtype on/off\n└ .autorecordtype mode all/dms/groups\n└ .autorecordtype duration <seconds>\n└ .autorecordtype duration infinite\n└ .autorecordtype status\n\n🔄 *Alternates recording/typing every 5s*`, ...channelInfo });
             return;
         }
 
@@ -117,8 +137,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             await updateBothConfigs(config.mode, config.duration, config.infinite);
-            await sock.sendMessage(chatId, { text: `✅ *AUTO-RECORD-TYPE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n\n✅ Auto-typing: ENABLED\n✅ Auto-record: ENABLED\n\n📌 Both indicators active in ${getModeDescription(config.mode)}`, ...channelInfo });
-            if (config.infinite) await startAlternatingSession(sock, chatId);
+            await sock.sendMessage(chatId, { text: `✅ *AUTO-RECORD-TYPE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n\n✅ Auto-typing: ENABLED\n✅ Auto-record: ENABLED\n🔄 Alternating every 5 seconds\n\n📌 Both indicators active in ${getModeDescription(config.mode)}`, ...channelInfo });
+            if (config.infinite) {
+                await startAlternatingSession(sock, chatId, config.duration, true);
+            } else {
+                await startAlternatingSession(sock, chatId, config.duration, false);
+            }
         } else if (action === 'off' || action === 'disable') {
             if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🎙️⌨️ Auto-Record-Type is already *OFF*.\n\n💡 Use .autorecordtype on to enable.`, ...channelInfo }); return; }
             const stopped = stopAllAlternatingSessions();
@@ -146,7 +170,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.duration = DEFAULT_DURATION;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
                 await sock.sendMessage(chatId, { text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Both typing & recording will alternate every 5 seconds indefinitely.\n\n💡 Use .autorecordtype off to stop.`, ...channelInfo });
-                if (config.enabled) await startAlternatingSession(sock, chatId);
+                if (config.enabled) await startAlternatingSession(sock, chatId, config.duration, true);
                 return;
             }
             const d = parseInt(args[1]);
@@ -155,9 +179,10 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.infinite = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             stopAllAlternatingSessions();
-            await sock.sendMessage(chatId, { text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF\n🔄 Alternating every 5 seconds`, ...channelInfo });
+            if (config.enabled) await startAlternatingSession(sock, chatId, d, false);
         } else if (action === 'status') {
-            await sock.sendMessage(chatId, { text: `🎙️⌨️ *AUTO-RECORD-TYPE STATUS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n🔄 Sessions: ${activeSessions.size}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🎙️⌨️ *AUTO-RECORD-TYPE STATUS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n🔄 Sessions: ${activeSessions.size}\n\n🔄 Alternates every 5 seconds`, ...channelInfo });
         } else {
             await sock.sendMessage(chatId, { text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Commands:*\n└ .autorecordtype on/off\n└ .autorecordtype mode all/dms/groups\n└ .autorecordtype duration <seconds>\n└ .autorecordtype duration infinite\n└ .autorecordtype status`, ...channelInfo });
         }
