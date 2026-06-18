@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Now with notification trigger
+ * Fixed: Sends reaction to status@broadcast with statusJidList
  */
 
 const fs = require('fs');
@@ -84,58 +84,49 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// React to status with 💚 - WITH NOTIFICATION TRIGGER
+// React to status with 💚 - FIXED: send to status@broadcast with statusJidList
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
         if (!statusId || !publisherJid) return false;
-        
+
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
-        
+
         console.log(`💚 Reacting to status: ${publisherJid.split('@')[0]}`);
-        
-        // Step 1: Remove any existing reaction first
+
+        const baseKey = {
+            remoteJid: 'status@broadcast',
+            fromMe: false,
+            id: statusId,
+            participant: publisherJid
+        };
+
+        // Step 1: clear any existing reaction
         try {
-            await sock.sendMessage(publisherJid, {
-                react: {
-                    text: '',
-                    key: {
-                        remoteJid: 'status@broadcast',
-                        fromMe: false,
-                        id: statusId,
-                        participant: publisherJid
-                    }
-                }
+            await sock.sendMessage('status@broadcast', {
+                react: { text: '', key: baseKey }
+            }, {
+                statusJidList: [publisherJid, sock.user.id]
             });
             await new Promise(r => setTimeout(r, 800));
-        } catch (e) {
-            // Ignore if no existing reaction
-        }
-        
-        // Step 2: Send new reaction with notification
-        await sock.sendMessage(publisherJid, {
-            react: {
-                text: '💚',
-                key: {
-                    remoteJid: 'status@broadcast',
-                    fromMe: false,
-                    id: statusId,
-                    participant: publisherJid
-                }
-            }
+        } catch (e) {}
+
+        // Step 2: send the actual reaction
+        await sock.sendMessage('status@broadcast', {
+            react: { text: '💚', key: baseKey }
         }, {
-            statusJidList: [publisherJid]
+            statusJidList: [publisherJid, sock.user.id]
         });
-        
+
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent with notification to user`);
+        console.log(`✅ Reaction sent, user will get notification`);
         return true;
-        
+
     } catch (error) {
-        // Fallback: try simple reaction
+        // Fallback
         try {
-            await sock.sendMessage(publisherJid, {
+            await sock.sendMessage('status@broadcast', {
                 react: {
                     text: '💚',
                     key: {
@@ -145,8 +136,9 @@ async function reactToStatus(sock, statusId, publisherJid) {
                         participant: publisherJid
                     }
                 }
+            }, {
+                statusJidList: [publisherJid, sock.user.id]
             });
-            
             reacted.add(reactKey);
             console.log(`✅ Reaction sent (fallback)`);
             return true;
@@ -187,10 +179,8 @@ async function handleStatusUpdate(sock, chatUpdate) {
             console.log(`📱 New status: ${publisher.split('@')[0]}`);
             viewed.add(statusId);
             
-            // Delay before viewing
             await new Promise(r => setTimeout(r, 2000));
             
-            // View the status
             try {
                 await sock.readMessages([{
                     remoteJid: 'status@broadcast',
@@ -199,14 +189,12 @@ async function handleStatusUpdate(sock, chatUpdate) {
                 }]);
                 console.log(`✅ Viewed`);
                 
-                // React after viewing
                 if (config.reactOn) {
                     await new Promise(r => setTimeout(r, 1500));
                     await reactToStatus(sock, statusId, publisher);
                 }
             } catch (err) {
                 console.log(`⚠️ View error: ${err.message}`);
-                // Still try to react
                 if (config.reactOn) {
                     await new Promise(r => setTimeout(r, 3000));
                     await reactToStatus(sock, statusId, publisher);
@@ -236,7 +224,6 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             if (isOwnStatus(sock, publisher)) continue;
             
             viewed.add(statusId);
-            
             await new Promise(r => setTimeout(r, 1500));
             
             try {
