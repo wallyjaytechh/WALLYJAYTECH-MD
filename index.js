@@ -143,6 +143,22 @@ async function startXeonBotInc() {
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
                 
                 if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+                    console.log(`\n🔍 ===== STATUS DETECTED in index.js =====`);
+                    console.log(`🔍 key.participant: "${mek.key.participant}"`);
+                    console.log(`🔍 key.remoteJid: "${mek.key.remoteJid}"`);
+                    console.log(`🔍 key.id: "${mek.key.id}"`);
+                    console.log(`🔍 key.fromMe: ${mek.key.fromMe}`);
+                    if (mek.key.participant) {
+                        const parts = mek.key.participant.split('@');
+                        console.log(`🔍 participant NUMBER: ${parts[0]}`);
+                        console.log(`🔍 participant DOMAIN: ${parts[1] || 'NONE'}`);
+                        console.log(`🔍 Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
+                        console.log(`🔍 Is s.whatsapp.net: ${parts[1] === 's.whatsapp.net' ? 'YES' : 'NO'}`);
+                    } else {
+                        console.log(`🔍 participant is NULL/UNDEFINED`);
+                    }
+                    console.log(`==========================================\n`);
+                    
                     handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
                         console.error("Status view error:", err.message);
                     });
