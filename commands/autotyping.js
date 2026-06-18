@@ -7,13 +7,9 @@ const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
 
-// Path to store the configuration
 const configPath = path.join(__dirname, '..', 'data', 'autotyping.json');
-
-// Store active infinite typing sessions
 const activeInfiniteTypingSessions = new Map();
 
-// Channel info for professional branding
 const channelInfo = {
     contextInfo: {
         forwardingScore: 1,
@@ -26,545 +22,147 @@ const channelInfo = {
     }
 };
 
-// Initialize configuration file if it doesn't exist
 function initConfig() {
     try {
         const dataDir = path.join(__dirname, '..', 'data');
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
         if (!fs.existsSync(configPath)) {
-            fs.writeFileSync(configPath, JSON.stringify({ 
-                enabled: false,
-                mode: 'all',
-                duration: 60,
-                infinite: false
-            }, null, 2));
-            console.log('📁 Created new autotyping config file');
+            fs.writeFileSync(configPath, JSON.stringify({ enabled: false, mode: 'all', duration: 60, infinite: false }, null, 2));
         }
         const config = JSON.parse(fs.readFileSync(configPath));
-        if (config.infinite === undefined) {
-            config.infinite = false;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            console.log('📝 Migrated autotyping config for infinite mode');
-        }
+        if (config.infinite === undefined) { config.infinite = false; fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); }
         return config;
-    } catch (error) {
-        console.error('❌ Error initializing autotyping config:', error);
-        return { enabled: false, mode: 'all', duration: 60, infinite: false };
-    }
+    } catch (error) { return { enabled: false, mode: 'all', duration: 60, infinite: false }; }
 }
 
-// Stop infinite typing for a specific chat
 function stopInfiniteTyping(chatId) {
     const session = activeInfiniteTypingSessions.get(chatId);
-    if (session && session.intervalId) {
-        clearInterval(session.intervalId);
-        activeInfiniteTypingSessions.delete(chatId);
-        console.log(`🛑 Stopped infinite typing for ${chatId}`);
-        return true;
-    }
+    if (session && session.intervalId) { clearInterval(session.intervalId); activeInfiniteTypingSessions.delete(chatId); return true; }
     return false;
 }
 
-// Stop all infinite typing sessions
 function stopAllInfiniteTyping() {
     let count = 0;
-    for (const [chatId, session] of activeInfiniteTypingSessions.entries()) {
-        clearInterval(session.intervalId);
-        activeInfiniteTypingSessions.delete(chatId);
-        count++;
-    }
-    if (count > 0) {
-        console.log(`🛑 Stopped all ${count} infinite typing sessions`);
-    }
+    for (const [chatId, session] of activeInfiniteTypingSessions.entries()) { clearInterval(session.intervalId); activeInfiniteTypingSessions.delete(chatId); count++; }
+    if (count > 0) console.log(`🛑 Stopped ${count} infinite typing sessions`);
     return count;
 }
 
-// Start infinite typing for a specific chat
 async function startInfiniteTyping(sock, chatId) {
     stopInfiniteTyping(chatId);
-    
-    console.log(`⌨️♾️ Starting infinite typing in ${chatId}`);
-    
     try {
         await sock.presenceSubscribe(chatId);
         await delay(300);
         await sock.sendPresenceUpdate('available', chatId);
         await delay(500);
         await sock.sendPresenceUpdate('composing', chatId);
-        console.log(`⌨️♾️ Infinite typing started`);
-        
-        const session = {
-            chatId,
-            startTime: Date.now(),
-            refreshCount: 0
-        };
-        
+        const session = { chatId, startTime: Date.now(), refreshCount: 0 };
         session.intervalId = setInterval(async () => {
-            try {
-                await sock.sendPresenceUpdate('composing', chatId);
-                session.refreshCount++;
-                const runningTime = Math.floor((Date.now() - session.startTime) / 1000);
-                const mins = Math.floor(runningTime / 60);
-                const secs = runningTime % 60;
-                console.log(`⌨️♾️ Infinite typing refreshed (${session.refreshCount}x, ${mins}m ${secs}s)`);
-            } catch (error) {
-                console.error('❌ Error refreshing infinite typing:', error.message);
-                stopInfiniteTyping(chatId);
-            }
+            try { await sock.sendPresenceUpdate('composing', chatId); session.refreshCount++; } catch (e) { stopInfiniteTyping(chatId); }
         }, 10000);
-        
         activeInfiniteTypingSessions.set(chatId, session);
         return true;
-    } catch (error) {
-        console.error('❌ Error starting infinite typing:', error.message);
-        return false;
-    }
+    } catch (e) { return false; }
 }
 
-// Toggle autotyping feature
 async function autotypingCommand(sock, chatId, message) {
     try {
-        console.log('⌨️ AutoTyping command triggered');
-        
         const senderId = message.key.participant || message.key.remoteJid;
         const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
-        
-        if (!message.key.fromMe && !isOwner) {
-            await sock.sendMessage(chatId, {
-                text: '❌ This command is only available for the owner!',
-                ...channelInfo
-            });
-            return;
-        }
+        if (!message.key.fromMe && !isOwner) { await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner!', ...channelInfo }); return; }
 
-        const userMessage = message.message?.conversation || 
-                          message.message?.extendedTextMessage?.text || '';
-        
-        console.log('📝 Raw message:', userMessage);
-        
+        const userMessage = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         let commandPart = userMessage.trim();
-        if (commandPart.startsWith('.')) {
-            commandPart = commandPart.substring(1);
-        }
-        
+        if (commandPart.startsWith('.')) commandPart = commandPart.substring(1);
         const parts = commandPart.split(/\s+/);
-        const commandName = parts[0].toLowerCase();
         const args = parts.slice(1);
-        
-        console.log('🔍 Command:', commandName);
-        console.log('🔍 Args:', args);
-        
         const config = initConfig();
-        
-        // If no arguments, show current status
+
         if (args.length === 0) {
             const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
             const statusIcon = config.enabled ? '🟢' : '🔴';
             const modeText = getModeText(config.mode);
+            const infiniteStatus = config.infinite ? '♾️ ON' : '⏱️ OFF';
             const sessions = activeInfiniteTypingSessions.size;
-            
-            const settingText = `⌨️ *AUTO-TYPING SETTINGS*\n\n` +
-                      `${statusIcon} *Status:* ${status}\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🎯 *Mode:* ${modeText}\n` +
-                      `⏱️ *Duration:* ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}\n` +
-                      `♾️ *Infinite:* ${config.infinite ? 'ON' : 'OFF'}\n` +
-                      `🔄 *Active Sessions:* ${sessions}\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Commands:*\n` +
-                      `└ .autotyping on/off - Enable/disable\n` +
-                      `└ .autotyping mode all/dms/groups\n` +
-                      `└ .autotyping duration <seconds>\n` +
-                      `└ .autotyping duration infinite\n` +
-                      `└ .autotyping infinite on/off/stop\n` +
-                      `└ .autotyping status\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `💡 *Example:*\n` +
-                      `└ .autotyping duration infinite\n` +
-                      `└ .autotyping infinite on`;
-            
-            await sock.sendMessage(chatId, { text: settingText, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `⌨️ *AUTO-TYPING SETTINGS*\n\n${statusIcon} *Status:* ${status}\n━━━━━━━━━━━━━━━━━━━━\n🎯 *Mode:* ${modeText}\n⏱️ *Duration:* ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}\n♾️ *Infinite Mode:* ${infiniteStatus}\n🔄 *Active Sessions:* ${sessions}\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Commands:*\n└ .autotyping on/off\n└ .autotyping mode all/dms/groups\n└ .autotyping duration <seconds>\n└ .autotyping infinite on/off/stop\n└ .autotyping status\n\n💡 *Examples:*\n└ .autotyping duration 30\n└ .autotyping infinite on`, ...channelInfo });
             return;
         }
 
         const action = args[0].toLowerCase();
-        console.log('🎯 Action:', action);
-        
+
         if (action === 'on' || action === 'enable') {
+            if (config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n⌨️ Auto-Typing is already *ON*.\n\n💡 Use .autotyping off to disable.`, ...channelInfo }); return; }
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            console.log('✅ AutoTyping ENABLED');
-            
-            const responseText = `✅ *AUTO-TYPING ENABLED*\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🎯 Mode: ${getModeText(config.mode)}\n` +
-                      `⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}\n` +
-                      `♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📌 Bot will now show typing indicators in ${getModeDescription(config.mode)}.`;
-            
-            await sock.sendMessage(chatId, { text: responseText, ...channelInfo });
-            
-            if (config.infinite && shouldShowTyping(chatId)) {
-                await startInfiniteTyping(sock, chatId);
-            }
-        } 
-        else if (action === 'off' || action === 'disable') {
+            await sock.sendMessage(chatId, { text: `✅ *AUTO-TYPING ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n\n📌 Typing indicators active!`, ...channelInfo });
+            if (config.infinite && shouldShowTyping(chatId)) await startInfiniteTyping(sock, chatId);
+        } else if (action === 'off' || action === 'disable') {
+            if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n⌨️ Auto-Typing is already *OFF*.\n\n💡 Use .autotyping on to enable.`, ...channelInfo }); return; }
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            console.log('❌ AutoTyping DISABLED');
-            
             const stopped = stopAllInfiniteTyping();
-            
-            await sock.sendMessage(chatId, { 
-                text: `❌ *AUTO-TYPING DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🛑 Stopped ${stopped} active session(s)\nBot will no longer show typing indicators.`,
-                ...channelInfo 
-            });
-        }
-        else if (action === 'mode') {
-            if (args.length < 2) {
-                await sock.sendMessage(chatId, {
-                    text: `⚠️ *INVALID OPTION*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autotyping mode groups`,
-                    ...channelInfo
-                });
-                return;
-            }
-            
+            await sock.sendMessage(chatId, { text: `❌ *AUTO-TYPING DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🛑 Stopped ${stopped} active session(s)`, ...channelInfo });
+        } else if (action === 'mode') {
+            if (args.length < 2) { await sock.sendMessage(chatId, { text: `⚠️ Modes: all, dms, groups`, ...channelInfo }); return; }
             const mode = args[1].toLowerCase();
-            console.log('📌 Setting mode to:', mode);
-            
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                
-                await sock.sendMessage(chatId, {
-                    text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 ${getModeDescription(mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}`,
-                    ...channelInfo
-                });
-            } else {
-                await sock.sendMessage(chatId, {
-                    text: `⚠️ *INVALID MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available modes:*\n└ all - Work everywhere\n└ dms - DMs only\n└ groups - Groups only`,
-                    ...channelInfo
-                });
+                await sock.sendMessage(chatId, { text: `🎯 *MODE UPDATED:* ${getModeText(mode)}`, ...channelInfo });
             }
-        }
-        else if (action === 'duration') {
-            if (args.length < 2) {
-                await sock.sendMessage(chatId, {
-                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autotyping duration <seconds>\n\n━━━━━━━━━━━━━━━━━━━━\n✨ *Example:*\n└ .autotyping duration 60\n\n📌 Max: 120s | Min: 5s\n💡 Use 'infinite' for unlimited`,
-                    ...channelInfo
-                });
-                return;
-            }
-            
+        } else if (action === 'duration') {
+            if (args.length < 2) { await sock.sendMessage(chatId, { text: `⚠️ Usage: .autotyping duration <seconds> or infinite`, ...channelInfo }); return; }
             if (args[1].toLowerCase() === 'infinite') {
-                config.infinite = true;
-                config.duration = 999999;
+                if (config.infinite) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY INFINITE*\n\n━━━━━━━━━━━━━━━━━━━━\n♾️ Infinite typing is already *ON*.`, ...channelInfo }); return; }
+                config.infinite = true; config.duration = 999999;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                
-                await sock.sendMessage(chatId, {
-                    text: `♾️ *INFINITE TYPING ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Typing will continue indefinitely\n🔄 Auto-refresh every 10 seconds\n\n💡 Use .autotyping infinite stop to stop`,
-                    ...channelInfo
-                });
+                await sock.sendMessage(chatId, { text: `♾️ *INFINITE MODE ENABLED*`, ...channelInfo });
+                if (config.enabled && shouldShowTyping(chatId)) await startInfiniteTyping(sock, chatId);
                 return;
             }
-            
             const duration = parseInt(args[1]);
-            if (isNaN(duration) || duration < 5 || duration > 120) {
-                await sock.sendMessage(chatId, {
-                    text: `⚠️ *INVALID DURATION*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Duration must be between 5 and 120 seconds.\n💡 Or use 'infinite' for unlimited`,
-                    ...channelInfo
-                });
-                return;
-            }
-            
-            config.duration = duration;
-            config.infinite = false;
+            if (isNaN(duration) || duration < 5 || duration > 120) { await sock.sendMessage(chatId, { text: `⚠️ Duration: 5-120 seconds`, ...channelInfo }); return; }
+            config.duration = duration; config.infinite = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            
-            await sock.sendMessage(chatId, {
-                text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Typing duration: ${duration} seconds\n└ Infinite mode: OFF`,
-                ...channelInfo
-            });
-        }
-        else if (action === 'infinite') {
-            if (args.length < 2) {
-                const infiniteStatus = config.infinite ? '♾️ ENABLED' : '❌ DISABLED';
-                const sessions = activeInfiniteTypingSessions.size;
-                
-                await sock.sendMessage(chatId, {
-                    text: `♾️ *INFINITE TYPING*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Status: ${infiniteStatus}\n🔄 Active Sessions: ${sessions}\n\n📖 *Commands:*\n└ .autotyping infinite on\n└ .autotyping infinite off\n└ .autotyping infinite stop`,
-                    ...channelInfo
-                });
-                return;
-            }
-            
-            const subAction = args[1].toLowerCase();
-            
-            if (subAction === 'on' || subAction === 'enable') {
-                config.infinite = true;
-                config.duration = 999999;
+            stopAllInfiniteTyping();
+            await sock.sendMessage(chatId, { text: `⏱️ *DURATION:* ${duration} seconds`, ...channelInfo });
+        } else if (action === 'infinite') {
+            if (args.length < 2) { await sock.sendMessage(chatId, { text: `♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\nCommands: on/off/stop`, ...channelInfo }); return; }
+            const sub = args[1].toLowerCase();
+            if (sub === 'on' || sub === 'enable') {
+                if (config.infinite) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY INFINITE*\n\n♾️ Infinite is already *ON*.`, ...channelInfo }); return; }
+                config.infinite = true; config.duration = 999999;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                
-                await sock.sendMessage(chatId, {
-                    text: `♾️ *INFINITE TYPING ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Typing will continue indefinitely\n🔄 Auto-refresh every 10 seconds\n\n⚠️ Use .autotyping infinite stop to stop`,
-                    ...channelInfo
-                });
-                
-                if (config.enabled && shouldShowTyping(chatId)) {
-                    await startInfiniteTyping(sock, chatId);
-                }
-            }
-            else if (subAction === 'off' || subAction === 'disable') {
-                config.infinite = false;
-                config.duration = 60;
+                await sock.sendMessage(chatId, { text: `♾️ *INFINITE ENABLED*`, ...channelInfo });
+                if (config.enabled && shouldShowTyping(chatId)) await startInfiniteTyping(sock, chatId);
+            } else if (sub === 'off' || sub === 'disable') {
+                if (!config.infinite) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n♾️ Infinite is already *OFF*.`, ...channelInfo }); return; }
+                config.infinite = false; config.duration = 60;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                
                 const stopped = stopAllInfiniteTyping();
-                
-                await sock.sendMessage(chatId, {
-                    text: `⏱️ *INFINITE TYPING DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🛑 Stopped ${stopped} session(s)\n⏱️ Default duration: 60 seconds`,
-                    ...channelInfo
-                });
-            }
-            else if (subAction === 'stop') {
+                await sock.sendMessage(chatId, { text: `⏱️ *INFINITE DISABLED*\n🛑 Stopped ${stopped} session(s)`, ...channelInfo });
+            } else if (sub === 'stop') {
                 const stopped = stopAllInfiniteTyping();
-                
-                if (stopped > 0) {
-                    await sock.sendMessage(chatId, {
-                        text: `🛑 *STOPPED ${stopped} SESSION(S)*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Typing will resume on next message if autotyping is enabled.`,
-                        ...channelInfo
-                    });
-                } else {
-                    await sock.sendMessage(chatId, {
-                        text: `⚠️ *NO ACTIVE SESSIONS*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 No infinite typing sessions to stop.`,
-                        ...channelInfo
-                    });
-                }
+                await sock.sendMessage(chatId, { text: stopped > 0 ? `🛑 Stopped ${stopped} session(s)` : `⚠️ No active sessions`, ...channelInfo });
             }
-        }
-        else if (action === 'status') {
-            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
-            const statusIcon = config.enabled ? '🟢' : '🔴';
-            const modeText = getModeText(config.mode);
+        } else if (action === 'status') {
             const sessions = activeInfiniteTypingSessions.size;
-            
-            let sessionsInfo = '';
-            if (sessions > 0) {
-                sessionsInfo = '\n\n🔄 *Active Infinite Sessions:*\n';
-                for (const [chat, session] of activeInfiniteTypingSessions.entries()) {
-                    const runningTime = Math.floor((Date.now() - session.startTime) / 1000);
-                    const mins = Math.floor(runningTime / 60);
-                    const secs = runningTime % 60;
-                    sessionsInfo += `└ ${chat.substring(0, 15)}... : ${mins}m ${secs}s\n`;
-                }
-            }
-            
-            await sock.sendMessage(chatId, {
-                text: `⌨️ *AUTO-TYPING STATUS*\n\n` +
-                      `${statusIcon} *Status:* ${status}\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🎯 *Mode:* ${modeText}\n` +
-                      `⏱️ *Duration:* ${config.infinite ? '♾️ Infinite' : config.duration + ' seconds'}\n` +
-                      `♾️ *Infinite:* ${config.infinite ? 'ON' : 'OFF'}\n` +
-                      `🔄 *Sessions:* ${sessions} active\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📌 ${getModeDescription(config.mode)}` +
-                      sessionsInfo,
-                ...channelInfo
-            });
+            await sock.sendMessage(chatId, { text: `⌨️ *AUTO-TYPING STATUS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n🎯 Mode: ${getModeText(config.mode)}\n⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n🔄 Sessions: ${sessions}`, ...channelInfo });
         }
-        else {
-            await sock.sendMessage(chatId, {
-                text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 *Available Commands:*\n` +
-                      `└ .autotyping on/off\n` +
-                      `└ .autotyping mode all/dms/groups\n` +
-                      `└ .autotyping duration <seconds>\n` +
-                      `└ .autotyping duration infinite\n` +
-                      `└ .autotyping infinite on/off/stop\n` +
-                      `└ .autotyping status\n\n` +
-                      `✨ *Examples:*\n` +
-                      `└ .autotyping infinite on\n` +
-                      `└ .autotyping infinite stop`,
-                ...channelInfo
-            });
-        }
-        
-    } catch (error) {
-        console.error('❌ Error in autotyping command:', error);
-        await sock.sendMessage(chatId, {
-            text: '❌ Error processing command!',
-            ...channelInfo
-        });
-    }
+    } catch (error) { console.error('❌ Error:', error); }
 }
 
-// Helper function to get mode text
-function getModeText(mode) {
-    switch(mode) {
-        case 'all': return '🌍 All Chats';
-        case 'dms': return '💬 DMs Only';
-        case 'groups': return '👥 Groups Only';
-        default: return '🌍 All Chats';
-    }
-}
+function getModeText(mode) { switch(mode) { case 'all': return '🌍 All Chats'; case 'dms': return '💬 DMs Only'; case 'groups': return '👥 Groups Only'; default: return '🌍 All Chats'; } }
+function shouldShowTyping(chatId) { try { const config = initConfig(); if (!config.enabled) return false; const isGroup = chatId.endsWith('@g.us'); switch(config.mode) { case 'all': return true; case 'dms': return !isGroup; case 'groups': return isGroup; default: return true; } } catch (e) { return false; } }
+function isAutotypingEnabled() { try { return initConfig().enabled; } catch (e) { return false; } }
 
-// Helper function to get mode description
-function getModeDescription(mode) {
-    switch(mode) {
-        case 'all': return 'Typing indicators will show in both DMs and groups.';
-        case 'dms': return 'Typing indicators will show only in private messages.';
-        case 'groups': return 'Typing indicators will show only in group chats.';
-        default: return 'Typing indicators will show in both DMs and groups.';
-    }
-}
-
-// Function to check if autotyping should work in current chat
-function shouldShowTyping(chatId) {
-    try {
-        const config = initConfig();
-        if (!config.enabled) return false;
-        const isGroup = chatId.endsWith('@g.us');
-        switch(config.mode) {
-            case 'all': return true;
-            case 'dms': return !isGroup;
-            case 'groups': return isGroup;
-            default: return true;
-        }
-    } catch (error) {
-        console.error('Error checking autotyping status:', error);
-        return false;
-    }
-}
-
-// Function to check if autotyping is enabled
-function isAutotypingEnabled() {
-    try {
-        const config = initConfig();
-        return config.enabled;
-    } catch (error) {
-        console.error('Error checking autotyping status:', error);
-        return false;
-    }
-}
-
-// Function to handle autotyping for regular messages
 async function handleAutotypingForMessage(sock, chatId, userMessage) {
     if (!shouldShowTyping(chatId)) return false;
-    
-    try {
-        const config = initConfig();
-        
-        if (config.infinite) {
-            return await startInfiniteTyping(sock, chatId);
-        }
-        
-        const duration = config.duration || 60;
-        const refreshInterval = 10000;
-        const refreshCount = Math.floor(duration * 1000 / refreshInterval);
-        
-        console.log(`⌨️ Showing typing in ${chatId} for ${duration} seconds`);
-        
-        await sock.presenceSubscribe(chatId);
-        await delay(300);
-        await sock.sendPresenceUpdate('available', chatId);
-        await delay(500);
-        await sock.sendPresenceUpdate('composing', chatId);
-        
-        for (let i = 0; i < refreshCount; i++) {
-            await delay(refreshInterval);
-            await sock.sendPresenceUpdate('composing', chatId);
-        }
-        
-        await sock.sendPresenceUpdate('paused', chatId);
-        console.log(`⌨️ Typing finished after ${duration} seconds`);
-        
-        return true;
-    } catch (error) {
-        console.error('❌ Error in handleAutotypingForMessage:', error.message);
-        return false;
-    }
+    try { const config = initConfig(); if (config.infinite) return await startInfiniteTyping(sock, chatId); const duration = config.duration || 60; await sock.presenceSubscribe(chatId); await delay(300); await sock.sendPresenceUpdate('composing', chatId); for (let i = 0; i < Math.floor(duration * 1000 / 10000); i++) { await delay(10000); await sock.sendPresenceUpdate('composing', chatId); } await sock.sendPresenceUpdate('paused', chatId); return true; } catch (e) { return false; }
 }
+async function handleAutotypingForCommand(sock, chatId) { return await handleAutotypingForMessage(sock, chatId, ''); }
+async function showTypingAfterCommand(sock, chatId) { return await handleAutotypingForMessage(sock, chatId, ''); }
 
-// Function to handle autotyping for commands
-async function handleAutotypingForCommand(sock, chatId) {
-    if (!shouldShowTyping(chatId)) return false;
-    
-    try {
-        const config = initConfig();
-        
-        if (config.infinite) {
-            return await startInfiniteTyping(sock, chatId);
-        }
-        
-        const duration = config.duration || 60;
-        const refreshInterval = 10000;
-        const refreshCount = Math.floor(duration * 1000 / refreshInterval);
-        
-        await sock.presenceSubscribe(chatId);
-        await delay(300);
-        await sock.sendPresenceUpdate('available', chatId);
-        await delay(500);
-        await sock.sendPresenceUpdate('composing', chatId);
-        
-        for (let i = 0; i < refreshCount; i++) {
-            await delay(refreshInterval);
-            await sock.sendPresenceUpdate('composing', chatId);
-        }
-        
-        await sock.sendPresenceUpdate('paused', chatId);
-        return true;
-    } catch (error) {
-        console.error('❌ Error in handleAutotypingForCommand:', error.message);
-        return false;
-    }
-}
-
-// Function to show typing status AFTER command execution
-async function showTypingAfterCommand(sock, chatId) {
-    if (!shouldShowTyping(chatId)) return false;
-    
-    try {
-        const config = initConfig();
-        
-        if (config.infinite) {
-            return await startInfiniteTyping(sock, chatId);
-        }
-        
-        const duration = config.duration || 60;
-        const refreshInterval = 10000;
-        const refreshCount = Math.floor(duration * 1000 / refreshInterval);
-        
-        await sock.presenceSubscribe(chatId);
-        await delay(200);
-        await sock.sendPresenceUpdate('composing', chatId);
-        
-        for (let i = 0; i < refreshCount; i++) {
-            await delay(refreshInterval);
-            await sock.sendPresenceUpdate('composing', chatId);
-        }
-        
-        await sock.sendPresenceUpdate('paused', chatId);
-        return true;
-    } catch (error) {
-        console.error('❌ Error in showTypingAfterCommand:', error.message);
-        return false;
-    }
-}
-
-// Delay helper function
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-module.exports = {
-    autotypingCommand,
-    isAutotypingEnabled,
-    shouldShowTyping,
-    handleAutotypingForMessage,
-    handleAutotypingForCommand,
-    showTypingAfterCommand,
-    stopInfiniteTyping,
-    stopAllInfiniteTyping,
-    startInfiniteTyping
-};
+module.exports = { autotypingCommand, isAutotypingEnabled, shouldShowTyping, handleAutotypingForMessage, handleAutotypingForCommand, showTypingAfterCommand, stopInfiniteTyping, stopAllInfiniteTyping, startInfiniteTyping };
