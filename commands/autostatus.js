@@ -1,6 +1,6 @@
 /**
  * WALLYJAYTECH-MD - Auto Status with Reactions
- * FIXED: Converts @lid to @s.whatsapp.net
+ * HYBRID: Status reaction + DM fallback
  */
 
 const fs = require('fs');
@@ -38,21 +38,16 @@ function writeConfig(config) {
 async function isAutoStatusEnabled() { return readConfig().enabled; }
 async function isStatusReactionEnabled() { return readConfig().reactOn; }
 
-// Convert LID to real JID
 async function lidToRealJid(sock, lid) {
     if (!lid || !lid.endsWith('@lid')) return lid;
     try {
         if (sock.signalRepository?.lidMapping?.getPNForLID) {
             const pn = await sock.signalRepository.lidMapping.getPNForLID(lid);
             if (pn) {
-                const clean = pn.replace(/:\d+@s\.whatsapp\.net/, '@s.whatsapp.net');
-                console.log('🔍 LID resolved:', lid, '->', clean);
-                return clean;
+                return pn.replace(/:\d+@s\.whatsapp\.net/, '@s.whatsapp.net');
             }
         }
-    } catch (e) {
-        console.log('⚠️ LID resolution failed:', e.message);
-    }
+    } catch (e) {}
     return lid;
 }
 
@@ -68,29 +63,40 @@ async function handleStatusUpdate(sock, status) {
                 if (msg.key.fromMe === true) continue;
                 
                 const lid = msg.key.participant;
-                console.log('🔍 LID:', lid);
-                
-                // Resolve LID to real JID
                 const realJid = await lidToRealJid(sock, lid);
-                console.log('🔍 Real JID for reaction:', realJid);
                 
                 try {
                     await sock.readMessages([msg.key]);
                     console.log('✅ Viewed:', msg.key.id);
                     
                     if (config.reactOn && realJid) {
-                        await sock.sendMessage(realJid, {
-                            react: {
-                                text: '💚',
-                                key: {
-                                    remoteJid: 'status@broadcast',
-                                    fromMe: false,
-                                    id: msg.key.id,
-                                    participant: lid  // Keep LID in the key
+                        // Method 1: Status reaction (may not show to user)
+                        try {
+                            await sock.sendMessage(realJid, {
+                                react: {
+                                    text: '💚',
+                                    key: {
+                                        remoteJid: 'status@broadcast',
+                                        fromMe: false,
+                                        id: msg.key.id,
+                                        participant: lid
+                                    }
                                 }
-                            }
-                        });
-                        console.log('✅ Reaction sent to:', realJid);
+                            });
+                            console.log('✅ Status reaction sent');
+                        } catch (e1) {
+                            console.log('⚠️ Status reaction failed:', e1.message);
+                        }
+                        
+                        // Method 2: DM notification (user WILL see this)
+                        try {
+                            await sock.sendMessage(realJid, {
+                                text: '💚'
+                            });
+                            console.log('✅ DM heart sent to:', realJid);
+                        } catch (e2) {
+                            console.log('⚠️ DM failed:', e2.message);
+                        }
                     }
                 } catch (err) {
                     console.log('⚠️ Error:', err.message);
@@ -116,17 +122,8 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
             try {
                 await sock.readMessages([msg.key]);
                 if (config.reactOn && realJid) {
-                    await sock.sendMessage(realJid, {
-                        react: {
-                            text: '💚',
-                            key: {
-                                remoteJid: 'status@broadcast',
-                                fromMe: false,
-                                id: msg.key.id,
-                                participant: msg.key.participant
-                            }
-                        }
-                    });
+                    await sock.sendMessage(realJid, { react: { text: '💚', key: { remoteJid: 'status@broadcast', fromMe: false, id: msg.key.id, participant: msg.key.participant } } });
+                    await sock.sendMessage(realJid, { text: '💚' });
                 }
             } catch (err) {}
         }
@@ -143,7 +140,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
         
         if (!args || args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: '👁️ *AUTO-STATUS*\n\n🟢 View: ' + (config.enabled ? '✅ ON' : '❌ OFF') + '\n🟢 React: ' + (config.reactOn ? '✅ ON' : '❌ OFF') + '\n\n📖 .autostatus on/off\n📖 .autostatus react on/off\n\n🔍 LID FIX',
+                text: '👁️ *AUTO-STATUS*\n\n🟢 View: ' + (config.enabled ? '✅ ON' : '❌ OFF') + '\n🟢 React: ' + (config.reactOn ? '✅ ON' : '❌ OFF') + '\n\n📖 .autostatus on/off\n📖 .autostatus react on/off\n\n🔍 HYBRID MODE (react + DM)',
                 ...channelInfo
             }, { quoted: message });
             return;
