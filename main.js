@@ -1,4 +1,4 @@
- // 🧹 Fix for ENOSPC / temp overflow in hosted panels
+// 🧹 Fix for ENOSPC / temp overflow in hosted panels
 const fs = require('fs');
 const path = require('path');
 
@@ -565,145 +565,7 @@ if (!isPublic && !isOwnerOrSudoCheck) {
                 break;
             case userMessage.startsWith('.warnings'):
                 const mentionedJidListWarnings = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
-                 // Read current data first
-let data;
-try {
-    data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-} catch (error) {
-    console.error('Error reading access mode:', error);
-    await sock.sendMessage(chatId, { text: '❌ Failed to read bot mode status' }, { quoted: message });
-    return;
-}
-
-const action = userMessage.split(' ')[1]?.toLowerCase();
-
-// If no argument provided, show current status
-if (!action) {
-    const currentMode = data.isPublic ? 'public' : 'private';
-    const modeEmoji = data.isPublic ? '🌐' : '🔒';
-    const modeColor = data.isPublic ? '🟢' : '🔴';
-    
-    const modeMessage = {
-        text: `${modeEmoji} *BOT ACCESS MODE*\n\n` +
-              `${modeColor} Current Mode: *${currentMode.toUpperCase()}*\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `📖 *Usage:*\n` +
-              `└ ${settings.prefix}mode public\n` +
-              `└ ${settings.prefix}mode private\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `✨ *Examples:*\n` +
-              `└ ${settings.prefix}mode public\n` +
-              `   → Everyone can use bot\n` +
-              `└ ${settings.prefix}mode private\n` +
-              `   → Owner only access\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `🔧 *Current Settings:*\n` +
-              `└ Public Mode: ${data.isPublic ? '✅ Everyone can use' : '❌ Owner only'}\n` +
-              `└ Groups: ${data.isPublic ? '✅ All commands' : '⚠️ Moderation only'}\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `💡 *Tip:* Private mode still allows group moderation features`,
-        contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                serverMessageId: -1
-            }
-        }
-    };
-    
-    await sock.sendMessage(chatId, modeMessage, { quoted: message });
-    return;
-}
-
-if (action !== 'public' && action !== 'private') {
-    await sock.sendMessage(chatId, {
-        text: `⚠️ *Invalid Option*\n\n` +
-              `Usage: ${settings.prefix}mode public or ${settings.prefix}mode private\n\n` +
-              `Example:\n` +
-              `• ${settings.prefix}mode public - Allow everyone\n` +
-              `• ${settings.prefix}mode private - Owner only`,
-        contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                serverMessageId: -1
-            }
-        }
-    }, { quoted: message });
-    return;
-}
-
-// Check if already in requested mode
-if ((action === 'public' && data.isPublic) || (action === 'private' && !data.isPublic)) {
-    const currentMode = data.isPublic ? 'PUBLIC' : 'PRIVATE';
-    const emoji = data.isPublic ? '🌐' : '🔒';
-    await sock.sendMessage(chatId, {
-        text: `⚠️ *ALREADY ${currentMode}*\n\n━━━━━━━━━━━━━━━━━━━━\n${emoji} Bot is already in *${currentMode} MODE*.\n\n💡 No changes needed.`,
-        contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                serverMessageId: -1
-            }
-        }
-    }, { quoted: message });
-    return;
-}
-
-try {
-    // Update access mode
-    data.isPublic = action === 'public';
-    fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
-
-    const successEmoji = action === 'public' ? '🌐' : '🔒';
-    const successText = action === 'public' ? 'PUBLIC MODE' : 'PRIVATE MODE';
-    const description = action === 'public' 
-        ? '✅ Everyone can now use bot commands' 
-        : '🔐 Only bot owner can use commands now';
-    
-    await sock.sendMessage(chatId, {
-        text: `${successEmoji} *${successText} ACTIVATED*\n\n` +
-              `${description}\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `🔄 *Changes Applied:*\n` +
-              `└ Access: ${action === 'public' ? 'Public (Everyone)' : 'Private (Owner Only)'}\n` +
-              `└ Groups: ${action === 'public' ? 'Full access' : 'Moderation only'}\n\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `📌 Use ${settings.prefix}mode to check current status`,
-        contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                serverMessageId: -1
-            }
-        }
-    }, { quoted: message });
-} catch (error) {
-    console.error('Error updating access mode:', error);
-    await sock.sendMessage(chatId, {
-        text: '❌ Failed to update bot access mode',
-        contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: 'WALLYJAYTECH-MD BOTS',
-                serverMessageId: -1
-            }
-        }
-    }, { quoted: message });
-} 
-
-    try {
-        // Update   await warningsCommand(sock, chatId, mentionedJidListWarnings);
+                await warningsCommand(sock, chatId, mentionedJidListWarnings);
                 break;
             case userMessage === '.tempfile':
                await tempfileCommand(sock, chatId, message);
@@ -733,7 +595,96 @@ try {
         await sock.sendMessage(chatId, { text: '❌ Only bot owner can use this command!' }, { quoted: message });
         return;
     }
- access mode
+    // Read current data first
+    let data;
+    try {
+        data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
+    } catch (error) {
+        console.error('Error reading access mode:', error);
+        await sock.sendMessage(chatId, { text: '❌ Failed to read bot mode status' }, { quoted: message });
+        return;
+    }
+
+    const action = userMessage.split(' ')[1]?.toLowerCase();
+
+    if (!action) {
+        const currentMode = data.isPublic ? 'public' : 'private';
+        const modeEmoji = data.isPublic ? '🌐' : '🔒';
+        const modeColor = data.isPublic ? '🟢' : '🔴';
+        
+        const modeMessage = {
+            text: `${modeEmoji} *BOT ACCESS MODE*\n\n` +
+                  `${modeColor} Current Mode: *${currentMode.toUpperCase()}*\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `📖 *Usage:*\n` +
+                  `└ ${settings.prefix}mode public\n` +
+                  `└ ${settings.prefix}mode private\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `✨ *Examples:*\n` +
+                  `└ ${settings.prefix}mode public\n` +
+                  `   → Everyone can use bot\n` +
+                  `└ ${settings.prefix}mode private\n` +
+                  `   → Owner only access\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `🔧 *Current Settings:*\n` +
+                  `└ Public Mode: ${data.isPublic ? '✅ Everyone can use' : '❌ Owner only'}\n` +
+                  `└ Groups: ${data.isPublic ? '✅ All commands' : '⚠️ Moderation only'}\n\n` +
+                  `━━━━━━━━━━━━━━━━━━━━\n` +
+                  `💡 *Tip:* Private mode still allows group moderation features`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        };
+        
+        await sock.sendMessage(chatId, modeMessage, { quoted: message });
+        return;
+    }
+
+    if (action !== 'public' && action !== 'private') {
+        await sock.sendMessage(chatId, {
+            text: `⚠️ *Invalid Option*\n\n` +
+                  `Usage: ${settings.prefix}mode public or ${settings.prefix}mode private\n\n` +
+                  `Example:\n` +
+                  `• ${settings.prefix}mode public - Allow everyone\n` +
+                  `• ${settings.prefix}mode private - Owner only`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        }, { quoted: message });
+        return;
+    }
+
+    if ((action === 'public' && data.isPublic) || (action === 'private' && !data.isPublic)) {
+        const currentMode = data.isPublic ? 'PUBLIC' : 'PRIVATE';
+        const emoji = data.isPublic ? '🌐' : '🔒';
+        await sock.sendMessage(chatId, {
+            text: `⚠️ *ALREADY ${currentMode}*\n\n━━━━━━━━━━━━━━━━━━━━\n${emoji} Bot is already in *${currentMode} MODE*.\n\n💡 No changes needed.`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420618370733@newsletter',
+                    newsletterName: 'WALLYJAYTECH-MD BOTS',
+                    serverMessageId: -1
+                }
+            }
+        }, { quoted: message });
+        return;
+    }
+
+    try {
         data.isPublic = action === 'public';
         fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
 
@@ -887,7 +838,7 @@ case userMessage.startsWith('.getjid @'):
                 if (city) {
                     await weatherCommand(sock, chatId, message, city);
                 } else {
-                    await sock.sendMessage(chatId, { text: '*⛈️Please specify a city, e.g., .weather Akungba⛈️*', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*🌧️Please specify a city, e.g., .weather Akungba🌧️*', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage === '.news':
@@ -1837,6 +1788,7 @@ async function handleGroupParticipantUpdate(sock, update) {
         console.error('Error in handleGroupParticipantUpdate:', error);
     }
 }
+
 // Graceful shutdown - clean up infinite recording/typing sessions
 process.on('SIGINT', async () => {
     console.log('🛑 Shutting down...');
