@@ -87,7 +87,7 @@ const {
     showTypingAfterCommand,
     stopAllInfiniteTyping 
 } = require('./commands/autotyping');
-const { autoStatusCommand } = require('./commands/autostatus');
+const { autoStatusCommand, handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
