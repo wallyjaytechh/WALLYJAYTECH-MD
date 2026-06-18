@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Join Command - Join any WhatsApp group via link
- * Character-by-character animation + proper already-joined detection
+ * Character-by-character edit animation + proper already-joined detection
  */
 
 const channelInfo = {
@@ -22,50 +22,26 @@ function getBotJid(sock) {
 
 async function isBotAlreadyInGroup(sock, groupCode) {
     try {
-        // Try to get invite info
         const inviteInfo = await sock.groupGetInviteInfo(groupCode).catch(() => null);
         if (!inviteInfo || !inviteInfo.id) return false;
         
         const groupId = inviteInfo.id;
-        const botJid = getBotJid(sock);
-        
-        // Get all groups the bot is in
         const groups = await sock.groupFetchAllParticipating();
         
-        // Check if the group ID exists in bot's groups
         for (const [id, group] of Object.entries(groups)) {
-            if (id === groupId) {
-                // Bot is in this group
-                return true;
-            }
+            if (id === groupId) return true;
         }
         
-        // Also try direct metadata check
         try {
             const metadata = await sock.groupMetadata(groupId);
+            const botJid = getBotJid(sock);
             if (metadata && metadata.participants) {
                 return metadata.participants.some(p => p.id === botJid);
             }
-        } catch (e) {
-            // If metadata fails, we're not in the group
-        }
+        } catch (e) {}
         
         return false;
-    } catch (error) {
-        return false;
-    }
-}
-
-// Character-by-character animation
-async function animateText(sock, chatId, msgKey, text, subtitle) {
-    let current = "";
-    for (let i = 0; i < text.length; i++) {
-        current += text[i];
-        await new Promise(r => setTimeout(r, 70));
-        await sock.sendMessage(chatId, {
-            text: `${current}\n\n${subtitle}`
-        }, { edit: msgKey }).catch(() => {});
-    }
+    } catch (error) { return false; }
 }
 
 async function joinCommand(sock, chatId, message) {
@@ -101,24 +77,46 @@ async function joinCommand(sock, chatId, message) {
         const groupCode = match[1];
         const subtitle = `━━━━━━━━━━━━━━━━━━━━\n🔗 ${link}\n📌 Code: ${groupCode}`;
 
-        // ── Send initial message ──
-        const sent = await sock.sendMessage(chatId, { text: `_` });
+        // ── Send first character ──
+        const sent = await sock.sendMessage(chatId, {
+            text: `🔍\n\n${subtitle}`
+        });
 
-        // ── Animate "🔍 CHECKING" ──
-        await animateText(sock, chatId, sent.key, "🔍 CHECKING", subtitle);
+        // ── Animate "🔍 CHECKING" character by character ──
+        const checkingText = "🔍 CHECKING";
+        for (let i = 2; i <= checkingText.length; i++) {
+            await new Promise(r => setTimeout(r, 80));
+            await sock.sendMessage(chatId, {
+                text: checkingText.substring(0, i) + `\n\n${subtitle}`,
+                edit: sent.key
+            }).catch(() => {});
+        }
 
         // ── Check if already joined ──
         const alreadyJoined = await isBotAlreadyInGroup(sock, groupCode);
 
         if (alreadyJoined) {
             await sock.sendMessage(chatId, {
-                text: `⚠️ *ALREADY A MEMBER*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot is already in this group!\n\n🔗 ${link}\n\n💡 No need to join again.`
-            }, { edit: sent.key }).catch(() => {});
+                text: `⚠️ *ALREADY A MEMBER*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot is already in this group!\n\n🔗 ${link}\n\n💡 No need to join again.`,
+                edit: sent.key
+            }).catch(() => {});
             return;
         }
 
         // ── Animate "⏳ JOINING" ──
-        await animateText(sock, chatId, sent.key, "⏳ JOINING", subtitle);
+        await sock.sendMessage(chatId, {
+            text: `⏳\n\n${subtitle}`,
+            edit: sent.key
+        }).catch(() => {});
+
+        const joiningText = "⏳ JOINING";
+        for (let i = 2; i <= joiningText.length; i++) {
+            await new Promise(r => setTimeout(r, 80));
+            await sock.sendMessage(chatId, {
+                text: joiningText.substring(0, i) + `\n\n${subtitle}`,
+                edit: sent.key
+            }).catch(() => {});
+        }
 
         // ── Attempt to join ──
         try {
@@ -126,12 +124,14 @@ async function joinCommand(sock, chatId, message) {
 
             if (result) {
                 await sock.sendMessage(chatId, {
-                    text: `✅ *SUCCESSFULLY JOINED!*\n\n━━━━━━━━━━━━━━━━━━━━\n🎉 Bot has joined the group!\n\n🔗 ${link}\n📛 *Group ID:* ${result}\n\n🤖 Bot is now active in the group!`
-                }, { edit: sent.key }).catch(() => {});
+                    text: `✅ *SUCCESSFULLY JOINED!*\n\n━━━━━━━━━━━━━━━━━━━━\n🎉 Bot has joined the group!\n\n🔗 ${link}\n📛 *Group ID:* ${result}\n\n🤖 Bot is now active in the group!`,
+                    edit: sent.key
+                }).catch(() => {});
             } else {
                 await sock.sendMessage(chatId, {
-                    text: `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Possible reasons:\n└ Invalid or expired link\n└ Group is full\n└ Link requires admin approval\n└ Bot is banned from the group\n\n💡 Please check the link and try again.`
-                }, { edit: sent.key }).catch(() => {});
+                    text: `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Possible reasons:\n└ Invalid or expired link\n└ Group is full\n└ Link requires admin approval\n└ Bot is banned from the group\n\n💡 Please check the link and try again.`,
+                    edit: sent.key
+                }).catch(() => {});
             }
         } catch (error) {
             let errorText = `❌ *FAILED TO JOIN*\n\n━━━━━━━━━━━━━━━━━━━━\n`;
@@ -143,7 +143,10 @@ async function joinCommand(sock, chatId, message) {
             else errorText += `📌 Error: ${error.message}\n`;
             errorText += `\n💡 Please try a different group link.`;
 
-            await sock.sendMessage(chatId, { text: errorText }, { edit: sent.key }).catch(() => {});
+            await sock.sendMessage(chatId, {
+                text: errorText,
+                edit: sent.key
+            }).catch(() => {});
         }
 
     } catch (error) {
