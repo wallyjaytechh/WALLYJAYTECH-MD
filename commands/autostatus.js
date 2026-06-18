@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Fixed: broadcast: true + statusJidList for proper status reactions
+ * Fixed: resolves @lid to phone number JID for proper reaction delivery
  */
 
 const fs = require('fs');
@@ -84,7 +84,78 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// React to status with 💚 - FIXED with broadcast: true
+// Resolve @lid to phone number JID
+async function resolveLidToJid(sock, lidJid) {
+    if (!lidJid || !lidJid.endsWith('@lid')) return lidJid;
+    
+    try {
+        // Method 1: signalRepository
+        if (sock.signalRepository?.lidMapping?.getPNForLID) {
+            const pn = await sock.signalRepository.lidMapping.getPNForLID(lidJid);
+            if (pn) {
+                console.log(`🔍 Resolved LID via signalRepository: ${pn}`);
+                return pn;
+            }
+        }
+    } catch (e) {
+        console.log(`⚠️ signalRepository resolution failed: ${e.message}`);
+    }
+    
+    try {
+        // Method 2: lidResolver
+        if (sock.lidResolver?.resolve) {
+            const pn = await sock.lidResolver.resolve(lidJid);
+            if (pn) {
+                console.log(`🔍 Resolved LID via lidResolver: ${pn}`);
+                return pn;
+            }
+        }
+    } catch (e) {
+        console.log(`⚠️ lidResolver failed: ${e.message}`);
+    }
+    
+    try {
+        // Method 3: store contacts
+        const store = require('../lib/lightweight_store');
+        if (store?.contacts) {
+            for (const [jid, contact] of Object.entries(store.contacts)) {
+                if (contact.lid === lidJid || contact.id === lidJid) {
+                    console.log(`🔍 Resolved LID via store: ${jid}`);
+                    return jid;
+                }
+            }
+        }
+    } catch (e) {
+        console.log(`⚠️ Store resolution failed: ${e.message}`);
+    }
+    
+    // Method 4: Try to extract phone number from LID (last resort)
+    try {
+        const lidNum = lidJid.split('@')[0];
+        // Try common country codes
+        const possibleJids = [
+            `234${lidNum.slice(-10)}@s.whatsapp.net`,  // Nigeria
+            `1${lidNum.slice(-10)}@s.whatsapp.net`,     // US
+            `91${lidNum.slice(-10)}@s.whatsapp.net`,    // India
+            `${lidNum.slice(-12)}@s.whatsapp.net`,       // Raw
+        ];
+        
+        for (const testJid of possibleJids) {
+            try {
+                const exists = await sock.onWhatsApp(testJid);
+                if (exists && exists[0]?.exists) {
+                    console.log(`🔍 Resolved LID via onWhatsApp: ${testJid}`);
+                    return testJid;
+                }
+            } catch (e) {}
+        }
+    } catch (e) {}
+    
+    // Return original if all resolution fails
+    return lidJid;
+}
+
+// React to status with 💚 - FIXED with LID resolution
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -93,11 +164,12 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        console.log(`💚 Reacting to status: ${publisherJid.split('@')[0]}`);
+        // Resolve @lid -> real phone-number JID
+        const targetJid = await resolveLidToJid(sock, publisherJid);
 
-        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        console.log(`💚 Reacting -> target: ${targetJid.split('@')[0]} | raw: ${publisherJid.split('@')[0]}${publisherJid !== targetJid ? ' (RESOLVED)' : ''}`);
 
-        await sock.sendMessage('status@broadcast', {
+        await sock.sendMessage(targetJid, {
             react: {
                 text: '💚',
                 key: {
@@ -107,13 +179,10 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     participant: publisherJid
                 }
             }
-        }, {
-            statusJidList: [publisherJid, myJid],
-            broadcast: true
         });
 
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent`);
+        console.log(`✅ Reaction sent to ${targetJid.split('@')[0]}`);
         return true;
 
     } catch (error) {
