@@ -54,9 +54,9 @@ async function startInfiniteRecording(sock, chatId) {
     stopInfiniteRecording(chatId);
     try {
         await sock.presenceSubscribe(chatId);
-        await delay(300);
+        await delay(200);
         await sock.sendPresenceUpdate('available', chatId);
-        await delay(500);
+        await delay(300);
         await sock.sendPresenceUpdate('recording', chatId);
         const session = { chatId, startTime: Date.now(), refreshCount: 0 };
         session.intervalId = setInterval(async () => {
@@ -173,7 +173,20 @@ function isAutorecordEnabled() { try { return initConfig().enabled; } catch (e) 
 
 async function handleAutorecordForMessage(sock, chatId, userMessage) {
     if (!shouldShowRecording(chatId)) return false;
-    try { const config = initConfig(); if (config.infinite) return await startInfiniteRecording(sock, chatId); const duration = config.duration || DEFAULT_DURATION; await sock.presenceSubscribe(chatId); await delay(300); await sock.sendPresenceUpdate('recording', chatId); for (let i = 0; i < Math.floor(duration * 1000 / 10000); i++) { await delay(10000); await sock.sendPresenceUpdate('recording', chatId); } await sock.sendPresenceUpdate('paused', chatId); return true; } catch (e) { return false; }
+    try {
+        const config = initConfig();
+        if (config.infinite) return await startInfiniteRecording(sock, chatId);
+        const duration = config.duration || DEFAULT_DURATION;
+        const refreshMs = duration <= 10 ? 2000 : 5000;
+        const totalLoops = Math.floor((duration * 1000) / refreshMs);
+        await sock.presenceSubscribe(chatId);
+        await delay(200);
+        await sock.sendPresenceUpdate('recording', chatId);
+        for (let i = 0; i < totalLoops; i++) { await delay(refreshMs); await sock.sendPresenceUpdate('recording', chatId); }
+        await delay(1000);
+        await sock.sendPresenceUpdate('paused', chatId);
+        return true;
+    } catch (e) { return false; }
 }
 async function handleAutorecordForCommand(sock, chatId) { return await handleAutorecordForMessage(sock, chatId, ''); }
 async function showRecordingAfterCommand(sock, chatId) { return await handleAutorecordForMessage(sock, chatId, ''); }
