@@ -286,7 +286,6 @@ async function extractCountryCode(sock, jid) {
         
         if (!phoneNumber) return 'unknown';
         
-        // Sort by length (longest first) to match properly
         const sortedCodes = Object.keys(countryList).sort((a, b) => b.length - a.length);
         
         for (const code of sortedCodes) {
@@ -302,25 +301,55 @@ async function extractCountryCode(sock, jid) {
     }
 }
 
-// Block a user
+// Block a user - MULTIPLE METHODS
 async function blockUser(sock, jid) {
     try {
         const realJid = await resolveLidToJid(sock, jid);
+        console.log(`🚫 Attempting to block: ${realJid}`);
         
+        // Method 1: updateBlockStatus with real JID
         try {
             await sock.updateBlockStatus(realJid, 'block');
-            console.log(`✅ Blocked: ${realJid.split('@')[0]}`);
+            console.log(`✅ Blocked via updateBlockStatus: ${realJid}`);
             return true;
         } catch (e1) {
-            try {
-                await sock.updateBlockStatus(jid, 'block');
-                console.log(`✅ Blocked via LID: ${jid.split('@')[0]}`);
-                return true;
-            } catch (e2) {
-                console.log(`❌ Block failed: ${e2.message}`);
-                return false;
-            }
+            console.log(`⚠️ Method 1 failed: ${e1.message}`);
         }
+        
+        // Method 2: updateBlockStatus with original JID
+        try {
+            await sock.updateBlockStatus(jid, 'block');
+            console.log(`✅ Blocked via LID: ${jid}`);
+            return true;
+        } catch (e2) {
+            console.log(`⚠️ Method 2 failed: ${e2.message}`);
+        }
+        
+        // Method 3: send contact modification
+        try {
+            await sock.query({
+                tag: 'iq',
+                attrs: {
+                    to: 's.whatsapp.net',
+                    type: 'set',
+                    xmlns: 'blocklist'
+                },
+                content: [{
+                    tag: 'item',
+                    attrs: {
+                        action: 'block',
+                        jid: realJid
+                    }
+                }]
+            });
+            console.log(`✅ Blocked via query: ${realJid}`);
+            return true;
+        } catch (e3) {
+            console.log(`⚠️ Method 3 failed: ${e3.message}`);
+        }
+        
+        console.log(`❌ All block methods failed for: ${jid}`);
+        return false;
     } catch (error) {
         console.error('❌ Block error:', error);
         return false;
@@ -384,6 +413,14 @@ async function antiforeignCommand(sock, chatId, message) {
         const action = args[0].toLowerCase();
         
         if (action === 'on' || action === 'enable') {
+            if (config.enabled) {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🟢 Anti-Foreign is already *ON*.\n\n💡 Use .antiforeign off to disable it.`,
+                    ...channelInfo
+                });
+                return;
+            }
+            
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
@@ -401,6 +438,14 @@ async function antiforeignCommand(sock, chatId, message) {
             });
         } 
         else if (action === 'off' || action === 'disable') {
+            if (!config.enabled) {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🔴 Anti-Foreign is already *OFF*.\n\n💡 Use .antiforeign on to enable it.`,
+                    ...channelInfo
+                });
+                return;
+            }
+            
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
@@ -472,33 +517,27 @@ async function antiforeignCommand(sock, chatId, message) {
             }
         }
         else if (action === 'list') {
-            // Show blocked and available in sections
-            let blocked = '';
-            let available = '';
+            let blockedList = '';
+            let availableList = '';
             
             for (const [code, name] of Object.entries(countryList)) {
                 if (config.blockedCountries.includes(code)) {
-                    blocked += `🚫 +${code} - ${name}\n`;
-                }
-            }
-            
-            // Show first 30 available
-            let count = 0;
-            for (const [code, name] of Object.entries(countryList)) {
-                if (!config.blockedCountries.includes(code) && count < 30) {
-                    available += `✅ +${code} - ${name}\n`;
-                    count++;
+                    blockedList += `🚫 +${code} - ${name}\n`;
+                } else {
+                    availableList += `✅ +${code} - ${name}\n`;
                 }
             }
             
             const total = Object.keys(countryList).length;
             
             await sock.sendMessage(chatId, {
-                text: `🌍 *COUNTRY CODES (${total} total)*\n\n` +
+                text: `🌍 *ALL COUNTRY CODES (${total} total)*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🚫 *BLOCKED (${config.blockedCountries.length}):*\n${blocked || '└ None\n'}\n` +
+                      `🚫 *BLOCKED (${config.blockedCountries.length}):*\n\n` +
+                      `${blockedList || '└ None\n'}\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `✅ *AVAILABLE (showing ${count}):*\n${available}\n` +
+                      `✅ *AVAILABLE (${total - config.blockedCountries.length}):*\n\n` +
+                      `${availableList}\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `💡 Use .antiforeign add <code> to block a country`,
                 ...channelInfo
@@ -516,7 +555,8 @@ async function antiforeignCommand(sock, chatId, message) {
                 text: `🚫 *ANTI-FOREIGN STATUS*\n\n` +
                       `${statusIcon} *Status:* ${status}\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🌍 *Blocked Countries (${config.blockedCountries.length}):*\n${blockedInfo}\n\n` +
+                      `🌍 *Blocked Countries (${config.blockedCountries.length}):*\n` +
+                      `${blockedInfo}\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `💡 Use .antiforeign list to see all codes`,
                 ...channelInfo
@@ -561,19 +601,21 @@ async function handleAntiforeign(sock, chatId, message) {
             const countryName = countryList[countryCode] || 'Unknown';
             console.log(`🚫 BLOCKING: +${countryCode} - ${countryName}`);
             
-            // Send warning with full country info
+            // Send warning
             await sock.sendMessage(chatId, { 
                 text: `🚫 *ACCESS DENIED*\n\n━━━━━━━━━━━━━━━━━━━━\n` +
                       `🌍 Your country: *+${countryCode} - ${countryName}*\n` +
                       `⛔ Status: *BLOCKED*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📌 Users from ${countryName} are not allowed to use this bot.\n` +
+                      `📌 Users from ${countryName} are not allowed.\n` +
                       `Contact the owner if you believe this is an error.`
             });
             
             await new Promise(r => setTimeout(r, 2000));
             
+            // Try multiple block methods
             const blocked = await blockUser(sock, senderJid);
+            
             if (blocked) {
                 console.log(`✅ Blocked: +${countryCode}`);
             } else {
