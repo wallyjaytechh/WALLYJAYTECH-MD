@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Foreign Command - Blocks users from specified countries
- * LID Compatible | All World Country Codes
+ * FIXED: Uses remoteJidAlt/participantAlt for real phone numbers
  */
 
 const fs = require('fs');
@@ -258,100 +258,39 @@ function initConfig() {
     }
 }
 
-// Resolve LID to real JID
-async function resolveLidToJid(sock, jid) {
-    if (!jid) return jid;
-    if (jid.endsWith('@s.whatsapp.net')) return jid;
+// Extract country code from phone number string
+function getCountryCodeFromNumber(phoneNumber) {
+    if (!phoneNumber) return 'unknown';
     
-    if (jid.endsWith('@lid')) {
-        try {
-            if (sock.signalRepository?.lidMapping?.getPNForLID) {
-                const pn = await sock.signalRepository.lidMapping.getPNForLID(jid);
-                if (pn) {
-                    return pn.replace(/:\d+@s\.whatsapp\.net/, '@s.whatsapp.net');
-                }
-            }
-        } catch (e) {
-            console.log(`⚠️ LID resolution failed: ${e.message}`);
+    const clean = String(phoneNumber).replace(/[^0-9]/g, '');
+    if (!clean) return 'unknown';
+    
+    const sortedCodes = Object.keys(countryList).sort((a, b) => b.length - a.length);
+    
+    for (const code of sortedCodes) {
+        if (clean.startsWith(code)) {
+            return code;
         }
     }
-    return jid;
+    
+    return 'unknown';
 }
 
-// Extract country code from JID
-async function extractCountryCode(sock, jid) {
-    try {
-        const realJid = await resolveLidToJid(sock, jid);
-        let phoneNumber = realJid.split('@')[0].replace(/[^0-9]/g, '');
-        
-        if (!phoneNumber) return 'unknown';
-        
-        const sortedCodes = Object.keys(countryList).sort((a, b) => b.length - a.length);
-        
-        for (const code of sortedCodes) {
-            if (phoneNumber.startsWith(code)) {
-                return code;
-            }
-        }
-        
-        return 'unknown';
-    } catch (error) {
-        console.error('❌ Error extracting country code:', error);
-        return 'unknown';
-    }
-}
-
-// Block a user - MULTIPLE METHODS
+// Block a user
 async function blockUser(sock, jid) {
     try {
-        const realJid = await resolveLidToJid(sock, jid);
-        console.log(`🚫 Attempting to block: ${realJid}`);
-        
-        // Method 1: updateBlockStatus with real JID
-        try {
-            await sock.updateBlockStatus(realJid, 'block');
-            console.log(`✅ Blocked via updateBlockStatus: ${realJid}`);
-            return true;
-        } catch (e1) {
-            console.log(`⚠️ Method 1 failed: ${e1.message}`);
+        // Ensure we have a proper @s.whatsapp.net JID
+        let targetJid = jid;
+        if (!targetJid.includes('@s.whatsapp.net')) {
+            targetJid = jid.replace(/@.*/, '') + '@s.whatsapp.net';
         }
         
-        // Method 2: updateBlockStatus with original JID
-        try {
-            await sock.updateBlockStatus(jid, 'block');
-            console.log(`✅ Blocked via LID: ${jid}`);
-            return true;
-        } catch (e2) {
-            console.log(`⚠️ Method 2 failed: ${e2.message}`);
-        }
-        
-        // Method 3: send contact modification
-        try {
-            await sock.query({
-                tag: 'iq',
-                attrs: {
-                    to: 's.whatsapp.net',
-                    type: 'set',
-                    xmlns: 'blocklist'
-                },
-                content: [{
-                    tag: 'item',
-                    attrs: {
-                        action: 'block',
-                        jid: realJid
-                    }
-                }]
-            });
-            console.log(`✅ Blocked via query: ${realJid}`);
-            return true;
-        } catch (e3) {
-            console.log(`⚠️ Method 3 failed: ${e3.message}`);
-        }
-        
-        console.log(`❌ All block methods failed for: ${jid}`);
-        return false;
+        console.log(`🚫 Blocking: ${targetJid}`);
+        await sock.updateBlockStatus(targetJid, 'block');
+        console.log(`✅ Blocked: ${targetJid.split('@')[0]}`);
+        return true;
     } catch (error) {
-        console.error('❌ Block error:', error);
+        console.error(`❌ Block failed for ${jid}: ${error.message}`);
         return false;
     }
 }
@@ -468,7 +407,7 @@ async function antiforeignCommand(sock, chatId, message) {
             
             if (!name) {
                 await sock.sendMessage(chatId, {
-                    text: `⚠️ *INVALID COUNTRY CODE*\n\n━━━━━━━━━━━━━━━━━━━━\n└ +${code} is not a recognized country code.\n\n💡 Use .antiforeign list to see all codes.`,
+                    text: `⚠️ *INVALID COUNTRY CODE*\n\n━━━━━━━━━━━━━━━━━━━━\n└ +${code} is not recognized.\n\n💡 Use .antiforeign list to see all codes.`,
                     ...channelInfo
                 });
                 return;
@@ -584,6 +523,7 @@ async function antiforeignCommand(sock, chatId, message) {
 }
 
 // Handle incoming messages - auto block foreign users
+// FIXED: Uses remoteJidAlt/participantAlt for real phone numbers
 async function handleAntiforeign(sock, chatId, message) {
     try {
         const config = initConfig();
@@ -592,34 +532,45 @@ async function handleAntiforeign(sock, chatId, message) {
         if (chatId.endsWith('@g.us')) return false;
         if (message.key.fromMe) return false;
 
-        const senderJid = message.key.participant || message.key.remoteJid;
-        const countryCode = await extractCountryCode(sock, senderJid);
+        // PREFER THE ALT JID - this has the real phone number
+        // WhatsApp/Baileys attaches remoteJidAlt when the sender uses @lid
+        const senderJid =
+            message.key.remoteJidAlt ||
+            message.key.participantAlt ||
+            message.key.participant ||
+            message.key.remoteJid;
+
+        // Extract clean phone number from JID
+        const phoneNumber = senderJid.split('@')[0].replace(/[^0-9]/g, '');
+        const countryCode = getCountryCodeFromNumber(phoneNumber);
         
-        console.log(`🌍 Anti-Foreign: ${senderJid.split('@')[0]} | Country: +${countryCode}`);
+        console.log(`🌍 Anti-Foreign: sender=${senderJid.split('@')[0]} | phone=${phoneNumber} | country=+${countryCode} | raw key=${JSON.stringify(message.key)}`);
         
         if (config.blockedCountries.includes(countryCode)) {
             const countryName = countryList[countryCode] || 'Unknown';
             console.log(`🚫 BLOCKING: +${countryCode} - ${countryName}`);
             
             // Send warning
-            await sock.sendMessage(chatId, { 
-                text: `🚫 *ACCESS DENIED*\n\n━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🌍 Your country: *+${countryCode} - ${countryName}*\n` +
-                      `⛔ Status: *BLOCKED*\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📌 Users from ${countryName} are not allowed.\n` +
-                      `Contact the owner if you believe this is an error.`
-            });
+            try {
+                await sock.sendMessage(chatId, { 
+                    text: `🚫 *ACCESS DENIED*\n\n━━━━━━━━━━━━━━━━━━━━\n` +
+                          `🌍 Your country: *+${countryCode} - ${countryName}*\n` +
+                          `⛔ Status: *BLOCKED*\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━\n` +
+                          `📌 Users from ${countryName} are not allowed.`
+                });
+            } catch (e) {}
             
             await new Promise(r => setTimeout(r, 2000));
             
-            // Try multiple block methods
-            const blocked = await blockUser(sock, senderJid);
+            // Block using the real phone number JID
+            const blockJid = phoneNumber + '@s.whatsapp.net';
+            const blocked = await blockUser(sock, blockJid);
             
             if (blocked) {
-                console.log(`✅ Blocked: +${countryCode}`);
+                console.log(`✅ Blocked: +${countryCode} (${blockJid})`);
             } else {
-                console.log(`❌ Failed to block: +${countryCode}`);
+                console.log(`❌ Failed to block: ${blockJid}`);
             }
             
             return true;
