@@ -22,6 +22,8 @@ try {
     console.log('🧹 Cleaned up stale typing sessions');
 } catch (e) {}
 
+// Clear cache to load latest version
+delete require.cache[require.resolve('./commands/autostatus')];
 const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
 const PhoneNumber = require('awesome-phonenumber');
 const { smsg } = require('./lib/myfunc');
