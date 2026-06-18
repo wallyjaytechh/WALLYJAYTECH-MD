@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FINAL: LID resolution for destination, original LID in key participant
+ * FINAL FIX: Preserves @s.whatsapp.net suffix on destination JID
  */
 
 const fs = require('fs');
@@ -10,7 +10,6 @@ const isOwnerOrSudo = require('../lib/isOwner');
 
 const CONFIG_FILE = path.join(__dirname, '../data/autostatus.json');
 
-// Channel info for professional branding
 const channelInfo = {
     contextInfo: {
         forwardingScore: 1,
@@ -23,19 +22,11 @@ const channelInfo = {
     }
 };
 
-// Ensure directory exists
 const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-// Default config
-let config = { 
-    enabled: false,
-    reactOn: false
-};
+let config = { enabled: false, reactOn: false };
 
-// Load config
 try {
     if (fs.existsSync(CONFIG_FILE)) {
         config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
@@ -44,47 +35,36 @@ try {
     }
 } catch (e) {}
 
-// Save config
 function saveConfig() {
-    try {
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-    } catch (e) {}
+    try { fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2)); } catch (e) {}
 }
 
-// Track viewed/ reacted statuses
 const viewed = new Set();
 const reacted = new Set();
 
-// Clear cache every 30 minutes
-setInterval(() => {
-    viewed.clear();
-    reacted.clear();
-}, 30 * 60 * 1000);
+setInterval(() => { viewed.clear(); reacted.clear(); }, 30 * 60 * 1000);
 
-// Helper: extract publisher
 function getStatusPublisher(msg) {
     if (!msg || !msg.key) return null;
     const participant = msg.key.participant || msg.participant;
-    if (participant && participant !== 'status@broadcast') {
-        return participant;
-    }
+    if (participant && participant !== 'status@broadcast') return participant;
     return null;
 }
 
-// Helper: is own status
 function isOwnStatus(sock, publisher) {
     if (!sock || !sock.user || !publisher) return false;
     const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-    return publisher === botJid;
+    return publisher === botJid || publisher.split(':')[0] === botJid.split(':')[0];
 }
 
-// Helper: is reaction message
 function isReactionMessage(msg) {
     if (!msg || !msg.message) return false;
-    return msg.message.reactionMessage ? true : false;
+    return !!msg.message.reactionMessage;
 }
 
 // React to status with 💚 - FINAL FIXED VERSION
+// Destination MUST include @s.whatsapp.net suffix
+// Key participant MUST be the original LID from the status
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -93,26 +73,30 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        // Resolve @lid -> real phone-number JID for the DESTINATION
+        // Resolve destination JID - MUST keep @s.whatsapp.net suffix
         let targetJid = publisherJid;
+        
         if (publisherJid.endsWith('@lid')) {
             try {
                 if (sock.signalRepository?.lidMapping?.getPNForLID) {
                     const pn = await sock.signalRepository.lidMapping.getPNForLID(publisherJid);
                     if (pn) {
-                        // Strip :0 device suffix (2348155763709:0@s.whatsapp.net -> 2348155763709@s.whatsapp.net)
+                        // Strip :0 device suffix but KEEP @s.whatsapp.net
                         targetJid = pn.replace(/:\d+@/, '@');
-                        console.log(`🔍 Resolved LID: ${targetJid}`);
                     }
                 }
             } catch (e) {
                 console.log(`⚠️ LID resolution failed: ${e.message}`);
             }
         }
+        
+        // CRITICAL: Ensure destination has @s.whatsapp.net suffix
+        if (!targetJid.includes('@')) {
+            targetJid = targetJid + '@s.whatsapp.net';
+        }
 
-        console.log(`💚 Reacting -> send to: ${targetJid.split('@')[0]} | key participant: ${publisherJid.split('@')[0]}`);
+        console.log(`💚 Reacting -> Destination: ${targetJid} | Key participant: ${publisherJid}`);
 
-        // Send to resolved phone JID, but keep original LID in the key's participant
         await sock.sendMessage(targetJid, {
             react: {
                 text: '💚',
@@ -120,22 +104,40 @@ async function reactToStatus(sock, statusId, publisherJid) {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
                     id: statusId,
-                    participant: publisherJid  // MUST be the original LID from the status
+                    participant: publisherJid  // Original LID stays here
                 }
             }
         });
 
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent to user`);
+        console.log(`✅ Reaction delivered`);
         return true;
 
     } catch (error) {
         console.log(`⚠️ Reaction failed: ${error.message}`);
-        return false;
+        
+        // Fallback: try sending directly to the original JID
+        try {
+            await sock.sendMessage(publisherJid, {
+                react: {
+                    text: '💚',
+                    key: {
+                        remoteJid: 'status@broadcast',
+                        fromMe: false,
+                        id: statusId,
+                        participant: publisherJid
+                    }
+                }
+            });
+            console.log(`✅ Reaction delivered (fallback)`);
+            return true;
+        } catch (e2) {
+            console.log(`⚠️ Fallback failed: ${e2.message}`);
+            return false;
+        }
     }
 }
 
-// View and react to status
 async function handleStatusUpdate(sock, chatUpdate) {
     try {
         if (!config.enabled || !sock) return;
@@ -162,7 +164,7 @@ async function handleStatusUpdate(sock, chatUpdate) {
             if (viewed.has(statusId)) continue;
             if (isOwnStatus(sock, publisher)) continue;
             
-            console.log(`📱 Status: ${publisher.split('@')[0]}`);
+            console.log(`📱 Status: ${publisher}`);
             viewed.add(statusId);
             
             await new Promise(r => setTimeout(r, 2000));
@@ -192,7 +194,6 @@ async function handleStatusUpdate(sock, chatUpdate) {
     }
 }
 
-// Bulk status handler
 async function handleBulkStatusUpdate(sock, statusMessages) {
     try {
         if (!config.enabled || !sock || !statusMessages) return;
@@ -236,7 +237,6 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
     }
 }
 
-// Command handler
 async function autoStatusCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
@@ -251,22 +251,15 @@ async function autoStatusCommand(sock, chatId, message, args) {
         }
         
         if (!args || args.length === 0) {
-            const viewStatus = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
-            const reactStatus = config.reactOn ? '✅ ENABLED' : '❌ DISABLED';
-            const viewIcon = config.enabled ? '🟢' : '🔴';
-            const reactIcon = config.reactOn ? '🟢' : '🔴';
-            
             await sock.sendMessage(chatId, {
                 text: `👁️ *AUTO-STATUS SETTINGS*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `${viewIcon} *Auto View:* ${viewStatus}\n` +
-                      `${reactIcon} *Reactions:* ${reactStatus}\n` +
+                      `🟢 *Auto View:* ${config.enabled ? '✅ ENABLED' : '❌ DISABLED'}\n` +
+                      `🟢 *Reactions:* ${config.reactOn ? '✅ ENABLED' : '❌ DISABLED'}\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
-                      `└ .autostatus on - Enable auto view\n` +
-                      `└ .autostatus off - Disable auto view\n` +
-                      `└ .autostatus react on - Enable reactions 💚\n` +
-                      `└ .autostatus react off - Disable reactions`,
+                      `└ .autostatus on/off\n` +
+                      `└ .autostatus react on/off`,
                 ...channelInfo
             }, { quoted: message });
             return;
@@ -277,51 +270,26 @@ async function autoStatusCommand(sock, chatId, message, args) {
         if (command === 'on' || command === 'enable') {
             config.enabled = true;
             saveConfig();
-            await sock.sendMessage(chatId, {
-                text: `✅ *AUTO-VIEW ENABLED*\n\n📌 Viewing all statuses.\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`,
-                ...channelInfo
-            });
-        } 
-        else if (command === 'off' || command === 'disable') {
+            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*`, ...channelInfo });
+        } else if (command === 'off' || command === 'disable') {
             config.enabled = false;
             saveConfig();
-            await sock.sendMessage(chatId, { 
-                text: '❌ *AUTO-VIEW DISABLED*',
-                ...channelInfo
-            });
-        }
-        else if (command === 'react') {
+            await sock.sendMessage(chatId, { text: `❌ *AUTO-VIEW DISABLED*`, ...channelInfo });
+        } else if (command === 'react') {
             if (!args[1]) {
-                await sock.sendMessage(chatId, {
-                    text: `⚠️ Usage: .autostatus react on/off`,
-                    ...channelInfo
-                });
+                await sock.sendMessage(chatId, { text: `⚠️ Usage: .autostatus react on/off`, ...channelInfo });
                 return;
             }
-            
             const reactCmd = args[1].toLowerCase();
-            if (reactCmd === 'on' || reactCmd === 'enable') {
-                config.reactOn = true;
-                saveConfig();
-                await sock.sendMessage(chatId, {
-                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚\nUsers will see the reaction`,
-                    ...channelInfo
-                });
-            } else {
-                config.reactOn = false;
-                saveConfig();
-                await sock.sendMessage(chatId, {
-                    text: `❌ *REACTIONS DISABLED*`,
-                    ...channelInfo
-                });
-            }
+            config.reactOn = (reactCmd === 'on' || reactCmd === 'enable');
+            saveConfig();
+            await sock.sendMessage(chatId, {
+                text: config.reactOn ? `💫 *REACTIONS ENABLED*` : `❌ *REACTIONS DISABLED*`,
+                ...channelInfo
+            });
         }
     } catch (error) {
         console.error('❌ Error:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Error!',
-            ...channelInfo
-        });
     }
 }
 
