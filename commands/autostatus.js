@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Clean version for Baileys v7.0.0-rc.15+
+ * FINAL: LID resolution for destination, original LID in key participant
  */
 
 const fs = require('fs');
@@ -84,7 +84,7 @@ function isReactionMessage(msg) {
     return msg.message.reactionMessage ? true : false;
 }
 
-// React to status with 💚 - SIMPLE
+// React to status with 💚 - FINAL FIXED VERSION
 async function reactToStatus(sock, statusId, publisherJid) {
     try {
         if (!config.reactOn) return false;
@@ -93,22 +93,40 @@ async function reactToStatus(sock, statusId, publisherJid) {
         const reactKey = `${statusId}_${publisherJid}`;
         if (reacted.has(reactKey)) return false;
 
-        console.log(`💚 Reacting to: ${publisherJid.split('@')[0]}`);
+        // Resolve @lid -> real phone-number JID for the DESTINATION
+        let targetJid = publisherJid;
+        if (publisherJid.endsWith('@lid')) {
+            try {
+                if (sock.signalRepository?.lidMapping?.getPNForLID) {
+                    const pn = await sock.signalRepository.lidMapping.getPNForLID(publisherJid);
+                    if (pn) {
+                        // Strip :0 device suffix (2348155763709:0@s.whatsapp.net -> 2348155763709@s.whatsapp.net)
+                        targetJid = pn.replace(/:\d+@/, '@');
+                        console.log(`🔍 Resolved LID: ${targetJid}`);
+                    }
+                }
+            } catch (e) {
+                console.log(`⚠️ LID resolution failed: ${e.message}`);
+            }
+        }
 
-        await sock.sendMessage(publisherJid, {
+        console.log(`💚 Reacting -> send to: ${targetJid.split('@')[0]} | key participant: ${publisherJid.split('@')[0]}`);
+
+        // Send to resolved phone JID, but keep original LID in the key's participant
+        await sock.sendMessage(targetJid, {
             react: {
                 text: '💚',
                 key: {
                     remoteJid: 'status@broadcast',
                     fromMe: false,
                     id: statusId,
-                    participant: publisherJid
+                    participant: publisherJid  // MUST be the original LID from the status
                 }
             }
         });
 
         reacted.add(reactKey);
-        console.log(`✅ Reaction sent`);
+        console.log(`✅ Reaction sent to user`);
         return true;
 
     } catch (error) {
@@ -286,7 +304,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                 config.reactOn = true;
                 saveConfig();
                 await sock.sendMessage(chatId, {
-                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚`,
+                    text: `💫 *REACTIONS ENABLED*\n\nBot will react with 💚\nUsers will see the reaction`,
                     ...channelInfo
                 });
             } else {
