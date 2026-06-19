@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FINAL: Send to LID (session), notify via resolved PN (statusJidList)
+ * BACK TO BASICS: Simple sendMessage to publisher, no extra options
  */
 
 const fs = require('fs');
@@ -34,7 +34,7 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-// FINAL FIX: Send to LID (session lives there), notify via resolved PN in statusJidList
+// BACK TO BASICS: Simple sendMessage to publisher, no statusJidList, no broadcast
 async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
@@ -43,23 +43,8 @@ async function reactToStatus(sock, msgKey) {
         const publisher = msgKey.participant || msgKey.remoteJid;
         if (!publisher || publisher === 'status@broadcast') return;
 
-        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+        console.log(`💚 Reacting | publisher: ${publisher} | id: ${msgKey.id}`);
 
-        // Session lives under @lid — send TO the lid, but notify via resolved PN
-        let notifyJid = publisher;
-        if (publisher.endsWith('@lid')) {
-            try {
-                const pn = await sock.signalRepository?.lidMapping?.getPNForLID(publisher);
-                if (pn) {
-                    notifyJid = pn.replace(/:\d+@/, '@');
-                    console.log(`🔄 LID resolved for notify: ${publisher} -> ${notifyJid}`);
-                }
-            } catch (e) {}
-        }
-
-        console.log(`💚 Reacting | session: ${publisher} | notify: ${notifyJid} | id: ${msgKey.id}`);
-
-        // Send to LID (session exists there), statusJidList uses real PN for delivery
         await sock.sendMessage(publisher, {
             react: {
                 text: '💚',
@@ -70,8 +55,6 @@ async function reactToStatus(sock, msgKey) {
                     participant: publisher
                 }
             }
-        }, {
-            statusJidList: [notifyJid, myJid]
         });
 
         console.log('✅ Reacted:', msgKey.id);
@@ -148,11 +131,11 @@ async function autoStatusCommand(sock, chatId, message, args) {
         const command = args[0].toLowerCase();
 
         if (command === 'on' || command === 'enable') {
-            if (config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n👁️ Auto-Status is already *ON*.`, ...channelInfo }); return; }
+            if (config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*`, ...channelInfo }); return; }
             config.enabled = true; writeConfig(config);
-            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*\n\n📌 Bot will view all statuses.\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*\n\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`, ...channelInfo });
         } else if (command === 'off' || command === 'disable') {
-            if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n👁️ Auto-Status is already *OFF*.`, ...channelInfo }); return; }
+            if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*`, ...channelInfo }); return; }
             config.enabled = false; writeConfig(config);
             await sock.sendMessage(chatId, { text: `❌ *AUTO-VIEW DISABLED*`, ...channelInfo });
         } else if (command === 'react') {
