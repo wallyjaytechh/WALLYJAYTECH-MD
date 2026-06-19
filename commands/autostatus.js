@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FINAL: LID resolution with fallback, no skipping
+ * FINAL: Send to LID (session), notify via resolved PN (statusJidList)
  */
 
 const fs = require('fs');
@@ -34,7 +34,7 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-// FINAL: Resolves LID, falls back to raw LID if not in store yet
+// FINAL FIX: Send to LID (session lives there), notify via resolved PN in statusJidList
 async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
@@ -43,28 +43,24 @@ async function reactToStatus(sock, msgKey) {
         const publisher = msgKey.participant || msgKey.remoteJid;
         if (!publisher || publisher === 'status@broadcast') return;
 
-        let targetJid = publisher;
+        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
+        // Session lives under @lid — send TO the lid, but notify via resolved PN
+        let notifyJid = publisher;
         if (publisher.endsWith('@lid')) {
             try {
-                const lidStore = sock.signalRepository?.lidMapping;
-                if (lidStore?.getPNForLID) {
-                    const pn = await lidStore.getPNForLID(publisher);
-                    if (pn) {
-                        targetJid = pn.replace(/:\d+@/, '@');
-                        console.log(`🔄 Resolved LID: ${publisher} -> ${targetJid}`);
-                    } else {
-                        console.log(`⚠️ LID not in store: ${publisher} — trying with raw LID`);
-                    }
+                const pn = await sock.signalRepository?.lidMapping?.getPNForLID(publisher);
+                if (pn) {
+                    notifyJid = pn.replace(/:\d+@/, '@');
+                    console.log(`🔄 LID resolved for notify: ${publisher} -> ${notifyJid}`);
                 }
-            } catch (e) {
-                console.log(`⚠️ LID resolve error: ${e.message} — trying with raw LID`);
-            }
+            } catch (e) {}
         }
 
-        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        console.log(`💚 Reacting | target: ${targetJid} | id: ${msgKey.id}`);
+        console.log(`💚 Reacting | session: ${publisher} | notify: ${notifyJid} | id: ${msgKey.id}`);
 
-        await sock.sendMessage(targetJid, {
+        // Send to LID (session exists there), statusJidList uses real PN for delivery
+        await sock.sendMessage(publisher, {
             react: {
                 text: '💚',
                 key: {
@@ -75,7 +71,7 @@ async function reactToStatus(sock, msgKey) {
                 }
             }
         }, {
-            statusJidList: [targetJid, myJid]
+            statusJidList: [notifyJid, myJid]
         });
 
         console.log('✅ Reacted:', msgKey.id);
