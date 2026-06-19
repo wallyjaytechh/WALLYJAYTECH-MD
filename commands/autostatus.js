@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * Professional Version
+ * FIXED: sendMessage instead of relayMessage for iOS + self visibility
  */
 
 const fs = require('fs');
@@ -34,25 +34,47 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-async function reactToStatus(sock, statusKey) {
+// FIXED: Uses sendMessage with broadcast:true for proper E2E encryption
+async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
         if (!config.reactOn) return;
-        await sock.relayMessage('status@broadcast', {
-            reactionMessage: {
-                key: { remoteJid: 'status@broadcast', id: statusKey.id, participant: statusKey.participant || statusKey.remoteJid, fromMe: false },
-                text: '💚'
+
+        const publisher = msgKey.participant || msgKey.remoteJid;
+        if (!publisher) return;
+
+        // Use Alt JID (real phone number) if publisher is a @lid
+        const targetJid = msgKey.participantAlt || publisher;
+        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
+        await sock.sendMessage(targetJid, {
+            react: {
+                text: '💚',
+                key: {
+                    remoteJid: 'status@broadcast',
+                    fromMe: false,
+                    id: msgKey.id,
+                    participant: publisher
+                }
             }
-        }, { messageId: statusKey.id, statusJidList: [statusKey.remoteJid, statusKey.participant || statusKey.remoteJid] });
-        console.log('✅ Reacted to status:', statusKey.id);
-    } catch (error) { console.error('❌ Reaction error:', error.message); }
+        }, {
+            statusJidList: [targetJid, myJid],
+            broadcast: true
+        });
+
+        console.log('✅ Reacted to status:', msgKey.id);
+    } catch (error) {
+        console.error('❌ Reaction error:', error.message);
+    }
 }
 
 async function handleStatusUpdate(sock, status) {
     try {
         const config = readConfig();
         if (!config.enabled) return;
+        
         await new Promise(r => setTimeout(r, 1000));
+
         if (status.messages && status.messages.length > 0) {
             const msg = status.messages[0];
             if (msg.key && msg.key.remoteJid === 'status@broadcast' && !msg.key.fromMe) {
@@ -61,7 +83,10 @@ async function handleStatusUpdate(sock, status) {
                     console.log('✅ Viewed:', msg.key.id);
                     await reactToStatus(sock, msg.key);
                 } catch (err) {
-                    if (err.message?.includes('rate-overlimit')) { await new Promise(r => setTimeout(r, 2000)); await sock.readMessages([msg.key]); }
+                    if (err.message?.includes('rate-overlimit')) {
+                        await new Promise(r => setTimeout(r, 2000));
+                        await sock.readMessages([msg.key]);
+                    }
                 }
             }
         }
@@ -75,7 +100,9 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         for (const msg of statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
             if (msg.key.fromMe === true) continue;
-            try { await sock.readMessages([msg.key]); await reactToStatus(sock, msg.key); } catch (err) { if (err.message?.includes('rate-overlimit')) { await new Promise(r => setTimeout(r, 2000)); } }
+            try { await sock.readMessages([msg.key]); await reactToStatus(sock, msg.key); } catch (err) {
+                if (err.message?.includes('rate-overlimit')) { await new Promise(r => setTimeout(r, 2000)); }
+            }
         }
     } catch (e) {}
 }
@@ -109,6 +136,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
                       `📊 *Features:*\n` +
                       `└ Views all contact statuses automatically\n` +
                       `└ Reacts with 💚 emoji\n` +
+                      `└ iOS + Android support\n` +
                       `└ Rate-limit protection\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
@@ -180,7 +208,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
             writeConfig(config);
             await sock.sendMessage(chatId, {
                 text: newState 
-                    ? `💫 *REACTIONS ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will now react to status updates with 💚\n\n💡 Reactions are sent after viewing each status.`
+                    ? `💫 *REACTIONS ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will now react to status updates with 💚\n📱 Works on both Android & iOS\n👁️ You will see your own reactions\n\n💡 Reactions are sent after viewing each status.`
                     : `❌ *REACTIONS DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will no longer react to status updates.\n\n💡 Use .autostatus react on to enable.`,
                 ...channelInfo
             });
