@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FIXED: LID resolution via signalRepository before reacting
+ * FINAL: LID resolution with fallback, no skipping
  */
 
 const fs = require('fs');
@@ -34,7 +34,7 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-// FIXED: Resolves @lid to real phone number before reacting
+// FINAL: Resolves LID, falls back to raw LID if not in store yet
 async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
@@ -43,7 +43,6 @@ async function reactToStatus(sock, msgKey) {
         const publisher = msgKey.participant || msgKey.remoteJid;
         if (!publisher || publisher === 'status@broadcast') return;
 
-        // Resolve @lid -> real phone number JID
         let targetJid = publisher;
         if (publisher.endsWith('@lid')) {
             try {
@@ -51,21 +50,18 @@ async function reactToStatus(sock, msgKey) {
                 if (lidStore?.getPNForLID) {
                     const pn = await lidStore.getPNForLID(publisher);
                     if (pn) {
-                        targetJid = pn.replace(/:\d+@/, '@'); // strip device suffix
+                        targetJid = pn.replace(/:\d+@/, '@');
                         console.log(`🔄 Resolved LID: ${publisher} -> ${targetJid}`);
                     } else {
-                        console.log(`⚠️ LID not in store yet: ${publisher} — skipping react`);
-                        return;
+                        console.log(`⚠️ LID not in store: ${publisher} — trying with raw LID`);
                     }
                 }
             } catch (e) {
-                console.log(`⚠️ LID resolve failed: ${e.message} — skipping react`);
-                return;
+                console.log(`⚠️ LID resolve error: ${e.message} — trying with raw LID`);
             }
         }
 
         const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-
         console.log(`💚 Reacting | target: ${targetJid} | id: ${msgKey.id}`);
 
         await sock.sendMessage(targetJid, {
@@ -140,30 +136,14 @@ async function autoStatusCommand(sock, chatId, message, args) {
         const config = readConfig();
 
         if (!args || args.length === 0) {
-            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
-            const statusIcon = config.enabled ? '🟢' : '🔴';
-            const reactStatus = config.reactOn ? '✅ ENABLED' : '❌ DISABLED';
-            const reactIcon = config.reactOn ? '🟢' : '🔴';
-            
             await sock.sendMessage(chatId, {
                 text: `👁️ *AUTO-STATUS SETTINGS*\n\n` +
-                      `${statusIcon} *Auto View:* ${status}\n` +
-                      `${reactIcon} *Auto React:* ${reactStatus}\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📊 *Features:*\n` +
-                      `└ Views all contact statuses\n` +
-                      `└ Reacts with 💚 emoji\n` +
-                      `└ LID auto-resolution\n` +
-                      `└ Rate-limit protection\n\n` +
+                      `🟢 *Auto View:* ${config.enabled ? '✅ ON' : '❌ OFF'}\n` +
+                      `🟢 *Auto React:* ${config.reactOn ? '✅ ON' : '❌ OFF'}\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
                       `└ .autostatus on/off\n` +
-                      `└ .autostatus react on/off\n` +
-                      `└ .autostatus - Show menu\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `💡 *Example:*\n` +
-                      `└ .autostatus on\n` +
-                      `└ .autostatus react on`,
+                      `└ .autostatus react on/off`,
                 ...channelInfo
             }, { quoted: message });
             return;
@@ -172,32 +152,19 @@ async function autoStatusCommand(sock, chatId, message, args) {
         const command = args[0].toLowerCase();
 
         if (command === 'on' || command === 'enable') {
-            if (config.enabled) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👁️ Auto-Status View is already *ON*.\n\n💡 Use .autostatus off to disable.`, ...channelInfo });
-                return;
-            }
-            config.enabled = true;
-            writeConfig(config);
-            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will view all status updates.\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`, ...channelInfo });
+            if (config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n👁️ Auto-Status is already *ON*.`, ...channelInfo }); return; }
+            config.enabled = true; writeConfig(config);
+            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*\n\n📌 Bot will view all statuses.\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`, ...channelInfo });
         } else if (command === 'off' || command === 'disable') {
-            if (!config.enabled) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👁️ Auto-Status View is already *OFF*.\n\n💡 Use .autostatus on to enable.`, ...channelInfo });
-                return;
-            }
-            config.enabled = false;
-            writeConfig(config);
-            await sock.sendMessage(chatId, { text: `❌ *AUTO-VIEW DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will no longer view statuses.`, ...channelInfo });
+            if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n👁️ Auto-Status is already *OFF*.`, ...channelInfo }); return; }
+            config.enabled = false; writeConfig(config);
+            await sock.sendMessage(chatId, { text: `❌ *AUTO-VIEW DISABLED*`, ...channelInfo });
         } else if (command === 'react') {
-            if (!args[1]) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autostatus react <on/off>\n\n✨ *Example:*\n└ .autostatus react on`, ...channelInfo }); return; }
-            const reactCmd = args[1].toLowerCase();
-            const newState = (reactCmd === 'on' || reactCmd === 'enable');
-            if (config.reactOn === newState) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ${newState ? 'ENABLED' : 'DISABLED'}*\n\n━━━━━━━━━━━━━━━━━━━━\n💚 Reactions are already *${newState ? 'ON' : 'OFF'}*.`, ...channelInfo });
-                return;
-            }
-            config.reactOn = newState;
-            writeConfig(config);
-            await sock.sendMessage(chatId, { text: newState ? `💫 *REACTIONS ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will react with 💚\n🔄 LID auto-resolution active` : `❌ *REACTIONS DISABLED*`, ...channelInfo });
+            if (!args[1]) { await sock.sendMessage(chatId, { text: `⚠️ Usage: .autostatus react on/off`, ...channelInfo }); return; }
+            const newState = (args[1].toLowerCase() === 'on' || args[1].toLowerCase() === 'enable');
+            if (config.reactOn === newState) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ${newState ? 'ENABLED' : 'DISABLED'}*`, ...channelInfo }); return; }
+            config.reactOn = newState; writeConfig(config);
+            await sock.sendMessage(chatId, { text: newState ? `💫 *REACTIONS ENABLED*` : `❌ *REACTIONS DISABLED*`, ...channelInfo });
         }
     } catch (error) { console.error('❌ Error:', error); }
 }
