@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * BACK TO BASICS: Simple sendMessage to publisher, no extra options
+ * DEBUG: Shows full msgKey to find Alt JID fields
  */
 
 const fs = require('fs');
@@ -34,7 +34,7 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-// BACK TO BASICS: Simple sendMessage to publisher, no statusJidList, no broadcast
+// DEBUG VERSION - Shows full msgKey
 async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
@@ -43,9 +43,18 @@ async function reactToStatus(sock, msgKey) {
         const publisher = msgKey.participant || msgKey.remoteJid;
         if (!publisher || publisher === 'status@broadcast') return;
 
-        console.log(`💚 Reacting | publisher: ${publisher} | id: ${msgKey.id}`);
+        // DEBUG: Show full key including Alt JIDs
+        console.log('📦 Full msgKey:', JSON.stringify(msgKey, null, 2));
+        console.log('📦 participant:', msgKey.participant);
+        console.log('📦 participantAlt:', msgKey.participantAlt);
+        console.log('📦 remoteJid:', msgKey.remoteJid);
+        console.log('📦 remoteJidAlt:', msgKey.remoteJidAlt);
 
-        await sock.sendMessage(publisher, {
+        // Try using Alt JID if available (real phone number)
+        const targetJid = msgKey.participantAlt || msgKey.remoteJidAlt || publisher;
+        console.log(`💚 Reacting | target: ${targetJid} | id: ${msgKey.id}`);
+
+        await sock.sendMessage(targetJid, {
             react: {
                 text: '💚',
                 key: {
@@ -106,46 +115,27 @@ async function autoStatusCommand(sock, chatId, message, args) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
         const isOwner = message.key.fromMe || await isOwnerOrSudo(senderId, sock, chatId);
-        
-        if (!isOwner) {
-            await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner!', ...channelInfo });
-            return;
-        }
+        if (!isOwner) { await sock.sendMessage(chatId, { text: '❌ Owner only!', ...channelInfo }); return; }
 
         const config = readConfig();
 
         if (!args || args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `👁️ *AUTO-STATUS SETTINGS*\n\n` +
-                      `🟢 *Auto View:* ${config.enabled ? '✅ ON' : '❌ OFF'}\n` +
-                      `🟢 *Auto React:* ${config.reactOn ? '✅ ON' : '❌ OFF'}\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Commands:*\n` +
-                      `└ .autostatus on/off\n` +
-                      `└ .autostatus react on/off`,
+                text: `👁️ *AUTO-STATUS*\n\n🟢 View: ${config.enabled ? '✅ ON' : '❌ OFF'}\n🟢 React: ${config.reactOn ? '✅ ON' : '❌ OFF'}\n\n📖 .autostatus on/off\n📖 .autostatus react on/off\n\n🔍 DEBUG MODE`,
                 ...channelInfo
             }, { quoted: message });
             return;
         }
 
         const command = args[0].toLowerCase();
-
-        if (command === 'on' || command === 'enable') {
-            if (config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*`, ...channelInfo }); return; }
-            config.enabled = true; writeConfig(config);
-            await sock.sendMessage(chatId, { text: `✅ *AUTO-VIEW ENABLED*\n\n💚 Reactions: ${config.reactOn ? 'ON' : 'OFF'}`, ...channelInfo });
-        } else if (command === 'off' || command === 'disable') {
-            if (!config.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*`, ...channelInfo }); return; }
-            config.enabled = false; writeConfig(config);
-            await sock.sendMessage(chatId, { text: `❌ *AUTO-VIEW DISABLED*`, ...channelInfo });
-        } else if (command === 'react') {
-            if (!args[1]) { await sock.sendMessage(chatId, { text: `⚠️ Usage: .autostatus react on/off`, ...channelInfo }); return; }
-            const newState = (args[1].toLowerCase() === 'on' || args[1].toLowerCase() === 'enable');
-            if (config.reactOn === newState) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ${newState ? 'ENABLED' : 'DISABLED'}*`, ...channelInfo }); return; }
-            config.reactOn = newState; writeConfig(config);
-            await sock.sendMessage(chatId, { text: newState ? `💫 *REACTIONS ENABLED*` : `❌ *REACTIONS DISABLED*`, ...channelInfo });
+        if (command === 'on') { config.enabled = true; writeConfig(config); await sock.sendMessage(chatId, { text: '✅ ON', ...channelInfo }); }
+        else if (command === 'off') { config.enabled = false; writeConfig(config); await sock.sendMessage(chatId, { text: '❌ OFF', ...channelInfo }); }
+        else if (command === 'react' && args[1]) {
+            config.reactOn = (args[1] === 'on');
+            writeConfig(config);
+            await sock.sendMessage(chatId, { text: config.reactOn ? '💫 REACT ON' : '❌ REACT OFF', ...channelInfo });
         }
-    } catch (error) { console.error('❌ Error:', error); }
+    } catch (e) {}
 }
 
 module.exports = { handleStatusUpdate, handleBulkStatusUpdate, autoStatusCommand, isAutoStatusEnabled, isStatusReactionEnabled, readConfig, writeConfig };
