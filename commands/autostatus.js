@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FINAL: Send to LID, notify via realJid in statusJidList
+ * relayMessage method - proven working
  */
 
 const fs = require('fs');
@@ -34,33 +34,30 @@ function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify
 async function isAutoStatusEnabled() { const c = readConfig(); return c.enabled; }
 async function isStatusReactionEnabled() { const c = readConfig(); return c.reactOn; }
 
-// FINAL: Send to LID (session), notify via realJid in statusJidList
+// relayMessage method - the one that actually works
 async function reactToStatus(sock, msgKey) {
     try {
         const config = readConfig();
         if (!config.reactOn) return;
 
-        const publisher = msgKey.participant || msgKey.remoteJid;
-        if (!publisher || publisher === 'status@broadcast') return;
+        const participant = msgKey.participant || msgKey.remoteJid;
+        if (!participant || participant === 'status@broadcast') return;
 
-        // realJid comes from remoteJidAlt (status messages have this field)
-        const realJid = msgKey.remoteJidAlt || msgKey.participantAlt || publisher;
-        
-        console.log(`💚 Reacting | sendTo: ${publisher} | realJid: ${realJid} | id: ${msgKey.id}`);
+        console.log(`💚 Reacting via relayMessage | participant: ${participant} | id: ${msgKey.id}`);
 
-        // Send to LID where session exists, statusJidList uses real PN for delivery
-        await sock.sendMessage(publisher, {
-            react: {
-                text: '💚',
+        await sock.relayMessage('status@broadcast', {
+            reactionMessage: {
                 key: {
                     remoteJid: 'status@broadcast',
-                    fromMe: false,
                     id: msgKey.id,
-                    participant: publisher
-                }
+                    participant: participant,
+                    fromMe: false
+                },
+                text: '💚'
             }
         }, {
-            statusJidList: [realJid]
+            messageId: msgKey.id,
+            statusJidList: [participant]
         });
 
         console.log('✅ Reacted:', msgKey.id);
