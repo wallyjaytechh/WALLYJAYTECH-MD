@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * WORKING VERSION - relayMessage method
+ * FIXED: Android view count + iPhone reaction
  */
 
 const fs = require('fs');
@@ -42,6 +42,8 @@ async function reactToStatus(sock, msgKey) {
         const participant = msgKey.participant || msgKey.remoteJid;
         if (!participant || participant === 'status@broadcast') return;
 
+        const myJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
         await sock.relayMessage('status@broadcast', {
             reactionMessage: {
                 key: {
@@ -54,7 +56,7 @@ async function reactToStatus(sock, msgKey) {
             }
         }, {
             messageId: msgKey.id,
-            statusJidList: [participant]
+            statusJidList: [participant, myJid]
         });
 
         console.log('✅ Reacted:', msgKey.id);
@@ -71,8 +73,28 @@ async function handleStatusUpdate(sock, status) {
         if (status.messages && status.messages.length > 0) {
             const msg = status.messages[0];
             if (msg.key && msg.key.remoteJid === 'status@broadcast' && !msg.key.fromMe) {
+
+                const participant = msg.key.participant || msg.key.remoteJid;
+
                 try {
+                    // View the status
                     await sock.readMessages([msg.key]);
+                    
+                    // Send receipt to update Android view count
+                    const receipt = {
+                        key: {
+                            remoteJid: 'status@broadcast',
+                            id: msg.key.id,
+                            participant: participant
+                        },
+                        receipt: {
+                            userJid: sock.user.id,
+                            readTimestamp: Date.now()
+                        }
+                    };
+                    
+                    await sock.sendReceipt(receipt);
+                    
                     console.log('✅ Viewed:', msg.key.id);
                     await reactToStatus(sock, msg.key);
                 } catch (err) {
@@ -83,9 +105,7 @@ async function handleStatusUpdate(sock, status) {
                 }
             }
         }
-    } catch (e) {
-        console.error('❌ Status error:', e.message);
-    }
+    } catch (e) { console.error('❌ Status error:', e.message); }
 }
 
 async function handleBulkStatusUpdate(sock, statusMessages) {
@@ -95,13 +115,15 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         for (const msg of statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
             if (msg.key.fromMe === true) continue;
-            try {
+            try { 
                 await sock.readMessages([msg.key]);
-                await reactToStatus(sock, msg.key);
+                await sock.sendReceipt({
+                    key: { remoteJid: 'status@broadcast', id: msg.key.id, participant: msg.key.participant || msg.key.remoteJid },
+                    receipt: { userJid: sock.user.id, readTimestamp: Date.now() }
+                });
+                await reactToStatus(sock, msg.key); 
             } catch (err) {
-                if (err.message?.includes('rate-overlimit')) {
-                    await new Promise(r => setTimeout(r, 2000));
-                }
+                if (err.message?.includes('rate-overlimit')) { await new Promise(r => setTimeout(r, 2000)); }
             }
         }
     } catch (e) {}
