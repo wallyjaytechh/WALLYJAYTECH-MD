@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Reactions
- * FIXED: Android view count + iPhone reaction
+ * FIXED: Proper file paths + Android view count + iPhone reaction
  */
 
 const fs = require('fs');
@@ -10,10 +10,12 @@ const isOwnerOrSudo = require('../lib/isOwner');
 
 const configPath = path.join(__dirname, '../data/autostatus.json');
 
+// Ensure config file exists
+const dataDir = path.join(__dirname, '../data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
 if (!fs.existsSync(configPath)) {
-    if (!fs.existsSync(path.dirname(configPath))) {
-        fs.mkdirSync(path.dirname(configPath), { recursive: true });
-    }
     fs.writeFileSync(configPath, JSON.stringify({ enabled: false, reactOn: false }, null, 2));
 }
 
@@ -29,8 +31,31 @@ const channelInfo = {
     }
 };
 
-function readConfig() { try { return JSON.parse(fs.readFileSync(configPath, 'utf8')); } catch (e) { return { enabled: false, reactOn: false }; } }
-function writeConfig(config) { try { fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); } catch (e) {} }
+function readConfig() {
+    try {
+        if (!fs.existsSync(configPath)) {
+            const dir = path.dirname(configPath);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(configPath, JSON.stringify({ enabled: false, reactOn: false }, null, 2));
+        }
+        return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    } catch (e) {
+        return { enabled: false, reactOn: false };
+    }
+}
+
+function writeConfig(config) {
+    try {
+        const dir = path.dirname(configPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        return true;
+    } catch (e) {
+        console.error('❌ Failed to write config:', e.message);
+        return false;
+    }
+}
+
 async function isAutoStatusEnabled() { return readConfig().enabled; }
 async function isStatusReactionEnabled() { return readConfig().reactOn; }
 
@@ -77,24 +102,25 @@ async function handleStatusUpdate(sock, status) {
                 const participant = msg.key.participant || msg.key.remoteJid;
 
                 try {
-                    // View the status
                     await sock.readMessages([msg.key]);
-                    
-                    // Send receipt to update Android view count
-                    const receipt = {
-                        key: {
-                            remoteJid: 'status@broadcast',
-                            id: msg.key.id,
-                            participant: participant
-                        },
-                        receipt: {
-                            userJid: sock.user.id,
-                            readTimestamp: Date.now()
-                        }
-                    };
-                    
-                    await sock.sendReceipt(receipt);
-                    
+
+                    // Send receipt for Android view count
+                    try {
+                        await sock.sendReceipt({
+                            key: {
+                                remoteJid: 'status@broadcast',
+                                id: msg.key.id,
+                                participant: participant
+                            },
+                            receipt: {
+                                userJid: sock.user.id,
+                                readTimestamp: Date.now()
+                            }
+                        });
+                    } catch (receiptErr) {
+                        console.log('⚠️ Receipt error:', receiptErr.message);
+                    }
+
                     console.log('✅ Viewed:', msg.key.id);
                     await reactToStatus(sock, msg.key);
                 } catch (err) {
@@ -105,7 +131,9 @@ async function handleStatusUpdate(sock, status) {
                 }
             }
         }
-    } catch (e) { console.error('❌ Status error:', e.message); }
+    } catch (e) {
+        console.error('❌ Status error:', e.message);
+    }
 }
 
 async function handleBulkStatusUpdate(sock, statusMessages) {
@@ -115,13 +143,15 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         for (const msg of statusMessages) {
             if (!msg.key || msg.key.remoteJid !== 'status@broadcast') continue;
             if (msg.key.fromMe === true) continue;
-            try { 
+            try {
                 await sock.readMessages([msg.key]);
-                await sock.sendReceipt({
-                    key: { remoteJid: 'status@broadcast', id: msg.key.id, participant: msg.key.participant || msg.key.remoteJid },
-                    receipt: { userJid: sock.user.id, readTimestamp: Date.now() }
-                });
-                await reactToStatus(sock, msg.key); 
+                try {
+                    await sock.sendReceipt({
+                        key: { remoteJid: 'status@broadcast', id: msg.key.id, participant: msg.key.participant || msg.key.remoteJid },
+                        receipt: { userJid: sock.user.id, readTimestamp: Date.now() }
+                    });
+                } catch (e) {}
+                await reactToStatus(sock, msg.key);
             } catch (err) {
                 if (err.message?.includes('rate-overlimit')) { await new Promise(r => setTimeout(r, 2000)); }
             }
@@ -146,14 +176,29 @@ async function autoStatusCommand(sock, chatId, message, args) {
         }
 
         const cmd = args[0].toLowerCase();
-        if (cmd === 'on') { config.enabled = true; writeConfig(config); await sock.sendMessage(chatId, { text: '✅ ON', ...channelInfo }); }
-        else if (cmd === 'off') { config.enabled = false; writeConfig(config); await sock.sendMessage(chatId, { text: '❌ OFF', ...channelInfo }); }
-        else if (cmd === 'react' && args[1]) {
+        if (cmd === 'on') {
+            config.enabled = true;
+            writeConfig(config);
+            await sock.sendMessage(chatId, { text: '✅ *AUTO-VIEW ENABLED*', ...channelInfo });
+        } else if (cmd === 'off') {
+            config.enabled = false;
+            config.reactOn = false;
+            writeConfig(config);
+            await sock.sendMessage(chatId, { text: '❌ *AUTO-VIEW DISABLED*', ...channelInfo });
+        } else if (cmd === 'react' && args[1]) {
             config.reactOn = (args[1] === 'on');
             writeConfig(config);
-            await sock.sendMessage(chatId, { text: config.reactOn ? '💫 REACT ON' : '❌ REACT OFF', ...channelInfo });
+            await sock.sendMessage(chatId, { text: config.reactOn ? '💫 *REACTIONS ENABLED*' : '❌ *REACTIONS DISABLED*', ...channelInfo });
         }
     } catch (e) {}
 }
 
-module.exports = { handleStatusUpdate, handleBulkStatusUpdate, autoStatusCommand, isAutoStatusEnabled, isStatusReactionEnabled, readConfig, writeConfig };
+module.exports = {
+    handleStatusUpdate,
+    handleBulkStatusUpdate,
+    autoStatusCommand,
+    isAutoStatusEnabled,
+    isStatusReactionEnabled,
+    readConfig,
+    writeConfig
+};
