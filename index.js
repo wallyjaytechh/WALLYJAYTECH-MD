@@ -22,8 +22,7 @@ try {
     console.log('🧹 Cleaned up stale typing sessions');
 } catch (e) {}
 
-// Clear cache to load latest version
-delete require.cache[require.resolve('./commands/autostatus')];
+// Load status module
 const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
 const PhoneNumber = require('awesome-phonenumber');
 const { smsg } = require('./lib/myfunc');
@@ -52,6 +51,24 @@ const store = require('./lib/lightweight_store');
 store.readFromFile();
 const settings = require('./settings');
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000);
+
+// Helper function to read status config directly from file
+function readStatusConfig() {
+    try {
+        const configPath = path.join(__dirname, 'data', 'autostatus.json');
+        if (fs.existsSync(configPath)) {
+            const data = fs.readFileSync(configPath, 'utf8');
+            const config = JSON.parse(data);
+            return {
+                enabled: config.enabled === true,
+                reactOn: config.reactOn === true
+            };
+        }
+    } catch (e) {
+        console.error('Error reading status config:', e.message);
+    }
+    return { enabled: false, reactOn: false };
+}
 
 // Memory optimization
 setInterval(() => {
@@ -137,50 +154,68 @@ async function startXeonBotInc() {
         XeonBotInc.ev.on('creds.update', saveCreds);
         store.bind(XeonBotInc.ev);
 
-        // Message handling
+        // ═══════════════════════════════════════════
+        // MAIN MESSAGE HANDLER
+        // ═══════════════════════════════════════════
         XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
             try {
                 const mek = chatUpdate.messages[0];
                 if (!mek.message) return;
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
                 
+                // ═══════════════════════════════════════════
+                // STATUS VIEWER HANDLING - CHECK CONFIG FIRST
+                // ═══════════════════════════════════════════
                 if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                    console.log(`\n🔍 ===== STATUS DETECTED in index.js =====`);
-                    console.log(`🔍 key.participant: "${mek.key.participant}"`);
-                    console.log(`🔍 key.remoteJid: "${mek.key.remoteJid}"`);
-                    console.log(`🔍 key.id: "${mek.key.id}"`);
-                    console.log(`🔍 key.fromMe: ${mek.key.fromMe}`);
-                    if (mek.key.participant) {
-                        const parts = mek.key.participant.split('@');
-                        console.log(`🔍 participant NUMBER: ${parts[0]}`);
-                        console.log(`🔍 participant DOMAIN: ${parts[1] || 'NONE'}`);
-                        console.log(`🔍 Is LID: ${parts[1] === 'lid' ? 'YES' : 'NO'}`);
-                        console.log(`🔍 Is s.whatsapp.net: ${parts[1] === 's.whatsapp.net' ? 'YES' : 'NO'}`);
-                    } else {
-                        console.log(`🔍 participant is NULL/UNDEFINED`);
-                    }
-                    console.log(`==========================================\n`);
+                    // Skip own status updates
+                    if (mek.key.fromMe) return;
                     
-                    handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
-                        console.error("Status view error:", err.message);
-                    });
+                    const statusConfig = readStatusConfig();
+                    
+                    if (statusConfig.enabled === true) {
+                        console.log(`\n🔍 ===== STATUS DETECTED =====`);
+                        console.log(`🔍 ID: ${mek.key.id}`);
+                        console.log(`🔍 Participant: ${mek.key.participant || 'N/A'}`);
+                        if (mek.key.participant) {
+                            const parts = mek.key.participant.split('@');
+                            console.log(`🔍 NUMBER: ${parts[0]}`);
+                            console.log(`🔍 DOMAIN: ${parts[1] || 'NONE'}`);
+                        }
+                        console.log(`================================\n`);
+                        
+                        handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
+                            console.error("Status view error:", err.message);
+                        });
+                    } else {
+                        console.log('⏭️ Auto-status DISABLED - skipping status view');
+                    }
+                    
+                    // ⭐ CRITICAL: Return here to prevent status messages 
+                    // from being processed as regular commands
+                    return;
                 }
                 
+                // Skip non-notify messages in private mode
                 if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
                     const isGroup = mek.key?.remoteJid?.endsWith('@g.us');
                     if (!isGroup) return;
                 }
+                
+                // Skip BAEE5 messages
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
+                // Clear retry cache
                 if (XeonBotInc?.msgRetryCounterCache) {
                     XeonBotInc.msgRetryCounterCache.clear();
                 }
 
+                // Process regular messages
                 try {
                     await handleMessages(XeonBotInc, chatUpdate, true);
                 } catch (err) {
                     console.error("Error in handleMessages:", err);
-                    if (mek.key && mek.key.remoteJid) {
+                    // Only send error message for non-status messages
+                    if (mek.key && mek.key.remoteJid && mek.key.remoteJid !== 'status@broadcast') {
                         await XeonBotInc.sendMessage(mek.key.remoteJid, {
                             text: '❌ An error occurred while processing your message.',
                             contextInfo: {
@@ -415,16 +450,30 @@ async function startXeonBotInc() {
             await handleGroupParticipantUpdate(XeonBotInc, update);
         });
 
-        // Bulk status handler
+        // ═══════════════════════════════════════════
+        // BULK STATUS HANDLER - CHECK CONFIG FIRST
+        // ═══════════════════════════════════════════
         XeonBotInc.ev.on('messages.upsert', async (m) => {
-            if (m.messages && m.messages.length > 1) {
-                const statusMessages = m.messages.filter(msg => 
-                    msg.key && msg.key.remoteJid === 'status@broadcast'
-                );
-                if (statusMessages.length > 0) {
+            // Only process if there are multiple messages
+            if (!m.messages || m.messages.length <= 1) return;
+            
+            const statusMessages = m.messages.filter(msg => 
+                msg.key && 
+                msg.key.remoteJid === 'status@broadcast' && 
+                !msg.key.fromMe &&
+                msg.key.participant
+            );
+            
+            if (statusMessages.length > 0) {
+                const statusConfig = readStatusConfig();
+                
+                if (statusConfig.enabled === true) {
+                    console.log(`\n📦 Processing ${statusMessages.length} bulk status updates`);
                     handleBulkStatusUpdate(XeonBotInc, statusMessages).catch(err => {
                         console.error("Bulk status error:", err.message);
                     });
+                } else {
+                    console.log(`⏭️ Auto-status DISABLED - skipping ${statusMessages.length} bulk updates`);
                 }
             }
         });
