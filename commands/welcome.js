@@ -1,11 +1,12 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Welcome Command - Fast welcome with group image
+ * Uses bot's configured timezone
  */
 
 const { isWelcomeOn, getWelcome } = require('../lib/index');
 const { handleWelcome } = require('../lib/welcome');
-const axios = require('axios');
+const settings = require('../settings');
 
 const channelInfo = {
     contextInfo: {
@@ -18,6 +19,24 @@ const channelInfo = {
         }
     }
 };
+
+function getFormattedTime() {
+    const now = new Date();
+    const timezone = settings.timezone || 'Africa/Lagos';
+    try {
+        return now.toLocaleString('en-US', {
+            month: '2-digit', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: true, timeZone: timezone
+        });
+    } catch (e) {
+        return now.toLocaleString('en-US', {
+            month: '2-digit', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: true
+        });
+    }
+}
 
 async function welcomeCommand(sock, chatId, message) {
     try {
@@ -44,11 +63,7 @@ async function handleJoinEvent(sock, id, participants) {
         const groupName = groupMetadata.subject || 'Group';
         const groupDesc = groupMetadata.desc || '';
         const memberCount = groupMetadata.participants.length;
-        const now = new Date();
-        const timeString = now.toLocaleString('en-US', {
-            month: '2-digit', day: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-        });
+        const timeString = getFormattedTime();
 
         // Get group picture once
         let groupPic = null;
@@ -81,7 +96,7 @@ async function handleJoinEvent(sock, id, participants) {
                       `╰━━━━━━━━━━━━━━━╯\n\n` +
                       `*@${displayName}* Welcome to *${groupName}*! 🎉\n\n` +
                       (groupDesc ? `📋 *𝙳𝚎𝚜𝚌𝚛𝚒𝚙𝚝𝚒𝚘𝚗:*\n_${groupDesc}_\n\n` : '') +
-                      `> *🤖 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
+                      `> *🤖 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
             }
 
             // Try to send with group image
