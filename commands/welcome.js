@@ -1,11 +1,11 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Welcome Command - Professional welcome messages for new members
+ * Welcome Command - Fast welcome with group image
  */
 
-const fetch = require('node-fetch');
 const { isWelcomeOn, getWelcome } = require('../lib/index');
 const { handleWelcome } = require('../lib/welcome');
+const axios = require('axios');
 
 const channelInfo = {
     contextInfo: {
@@ -34,9 +34,14 @@ async function handleJoinEvent(sock, id, participants) {
         const isWelcomeEnabled = await isWelcomeOn(id);
         if (!isWelcomeEnabled) return;
 
-        const customMessage = await getWelcome(id);
-        const groupMetadata = await sock.groupMetadata(id);
-        const groupName = groupMetadata.subject;
+        const [customMessage, groupMetadata] = await Promise.all([
+            getWelcome(id),
+            sock.groupMetadata(id).catch(() => null)
+        ]);
+
+        if (!groupMetadata) return;
+
+        const groupName = groupMetadata.subject || 'Group';
         const groupDesc = groupMetadata.desc || '';
         const memberCount = groupMetadata.participants.length;
         const now = new Date();
@@ -45,20 +50,24 @@ async function handleJoinEvent(sock, id, participants) {
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
         });
 
+        // Get group picture once
+        let groupPic = null;
+        try {
+            groupPic = await sock.profilePictureUrl(id, 'image');
+        } catch (e) {}
+
         for (const participant of participants) {
             const pString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
             const user = pString.split('@')[0];
 
-            // Get display name fast
+            // Get name from group participants
             let displayName = user;
-            try {
-                const p = groupMetadata.participants.find(x => x.id === pString);
-                if (p?.name) displayName = p.name;
-            } catch (e) {}
+            const p = groupMetadata.participants.find(x => x.id === pString);
+            if (p?.name && p.name !== user) displayName = p.name;
 
             // Build message
             let msg;
-            if (customMessage) {
+            if (customMessage && !customMessage.startsWith('Welcome {user} to {group}!')) {
                 msg = customMessage
                     .replace(/{user}/g, `@${displayName}`)
                     .replace(/{group}/g, groupName)
@@ -75,30 +84,25 @@ async function handleJoinEvent(sock, id, participants) {
                       `> *🤖 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
             }
 
-            // Try group picture for welcome image - send immediately
-            let sent = false;
-            try {
-                const groupPic = await sock.profilePictureUrl(id, 'image').catch(() => null);
-                const userPic = await sock.profilePictureUrl(pString, 'image').catch(() => null);
-                
-                if (userPic) {
-                    try {
-                        const imgRes = await fetch(`https://api.fluxwavy.com/welcome?username=${encodeURIComponent(displayName)}&guild=${encodeURIComponent(groupName)}&members=${memberCount}&avatar=${encodeURIComponent(userPic)}`);
-                        if (imgRes.ok) {
-                            const buf = await imgRes.buffer();
-                            if (buf.length > 1000) {
-                                await sock.sendMessage(id, { image: buf, caption: msg, mentions: [pString], ...channelInfo });
-                                sent = true;
-                            }
-                        }
-                    } catch (e) {}
-                }
-            } catch (e) {}
-
-            // Text fallback - fast
-            if (!sent) {
-                await sock.sendMessage(id, { text: msg, mentions: [pString], ...channelInfo });
+            // Try to send with group image
+            if (groupPic) {
+                try {
+                    await sock.sendMessage(id, {
+                        image: { url: groupPic },
+                        caption: msg,
+                        mentions: [pString],
+                        ...channelInfo
+                    });
+                    continue;
+                } catch (e) {}
             }
+
+            // Fallback text
+            await sock.sendMessage(id, {
+                text: msg,
+                mentions: [pString],
+                ...channelInfo
+            }).catch(() => {});
         }
     } catch (error) {
         console.error('Error in handleJoinEvent:', error);
