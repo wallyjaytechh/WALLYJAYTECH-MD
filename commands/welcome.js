@@ -1,147 +1,187 @@
- const { handleWelcome } = require('../lib/welcome');
-const { isWelcomeOn, getWelcome } = require('../lib/index');
-const { channelInfo } = require('../lib/messageConfig');
+/**
+ * WALLYJAYTECH-MD - A WhatsApp Bot
+ * Welcome Command - Professional welcome messages for new members
+ * Multiple API fallback for welcome images
+ */
+
 const fetch = require('node-fetch');
+const { isWelcomeOn, getWelcome } = require('../lib/index');
+
+const channelInfo = {
+    contextInfo: {
+        forwardingScore: 1,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363420618370733@newsletter',
+            newsletterName: 'WALLYJAYTECH-MD BOTS',
+            serverMessageId: -1
+        }
+    }
+};
+
+// Welcome image APIs in priority order
+const WELCOME_IMAGE_APIS = [
+    {
+        name: 'SomeRandomAPI',
+        url: (username, groupName, memberCount, avatar) => 
+            `https://api.some-random-api.com/welcome/img/2/gaming3?type=join&textcolor=green&username=${encodeURIComponent(username)}&guildName=${encodeURIComponent(groupName)}&memberCount=${memberCount}&avatar=${encodeURIComponent(avatar)}`
+    },
+    {
+        name: 'FluxWavy',
+        url: (username, groupName, memberCount, avatar) => 
+            `https://api.fluxwavy.com/welcome?username=${encodeURIComponent(username)}&guild=${encodeURIComponent(groupName)}&members=${memberCount}&avatar=${encodeURIComponent(avatar)}`
+    },
+    {
+        name: 'DEGEN',
+        url: (username, groupName, memberCount, avatar) => 
+            `https://api.degen-dev.com/welcome?username=${encodeURIComponent(username)}&group=${encodeURIComponent(groupName)}&count=${memberCount}&avatar=${encodeURIComponent(avatar)}`
+    }
+];
 
 async function welcomeCommand(sock, chatId, message, match) {
-    // Check if it's a group
+    const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+    const matchText = text.split(' ').slice(1).join(' ');
+
     if (!chatId.endsWith('@g.us')) {
-        await sock.sendMessage(chatId, { text: 'This command can only be used in groups.' });
+        await sock.sendMessage(chatId, {
+            text: `👋 *WELCOME COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 This command can only be used in groups.\n\n💡 Use in a group to configure welcome messages.`,
+            ...channelInfo
+        });
         return;
     }
 
-    // Extract match from message
-    const text = message.message?.conversation || 
-                message.message?.extendedTextMessage?.text || '';
-    const matchText = text.split(' ').slice(1).join(' ');
-
+    const { handleWelcome } = require('../lib/welcome');
     await handleWelcome(sock, chatId, message, matchText);
 }
 
-async function handleJoinEvent(sock, id, participants) {
-    // Check if welcome is enabled for this group
-    const isWelcomeEnabled = await isWelcomeOn(id);
-    if (!isWelcomeEnabled) return;
-
-    // Get custom welcome message
-    const customMessage = await getWelcome(id);
-
-    // Get group metadata
-    const groupMetadata = await sock.groupMetadata(id);
-    const groupName = groupMetadata.subject;
-    const groupDesc = groupMetadata.desc || 'No description available';
-
-    // Send welcome message for each new participant
-    for (const participant of participants) {
+async function fetchWelcomeImage(username, groupName, memberCount, avatar) {
+    for (const api of WELCOME_IMAGE_APIS) {
         try {
-            // Handle case where participant might be an object or not a string
-            const participantString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
-            const user = participantString.split('@')[0];
-            
-            // Get user's display name
-            let displayName = user; // Default to phone number
+            console.log(`🖼️ Trying ${api.name} for welcome image...`);
+            const response = await fetch(api.url(username, groupName, memberCount, avatar));
+            if (response.ok) {
+                const buffer = await response.buffer();
+                if (buffer.length > 1000) {
+                    console.log(`✅ ${api.name} success`);
+                    return buffer;
+                }
+            }
+        } catch (e) {
+            console.log(`⚠️ ${api.name} failed: ${e.message}`);
+        }
+    }
+    return null;
+}
+
+async function getUserDisplayName(sock, participantString, groupMetadata) {
+    try {
+        // Try group participants first (fastest)
+        const userParticipant = groupMetadata.participants.find(p => p.id === participantString);
+        if (userParticipant?.name && userParticipant.name !== participantString.split('@')[0]) {
+            return userParticipant.name;
+        }
+
+        // Try contact
+        try {
+            const contact = await sock.getContact(participantString);
+            if (contact?.notify) return contact.notify;
+            if (contact?.name) return contact.name;
+        } catch (e) {}
+
+        // Try profile
+        try {
+            const profile = await sock.getBusinessProfile(participantString);
+            if (profile?.name) return profile.name;
+        } catch (e) {}
+    } catch (e) {}
+
+    return participantString.split('@')[0];
+}
+
+async function handleJoinEvent(sock, id, participants) {
+    try {
+        const isWelcomeEnabled = await isWelcomeOn(id);
+        if (!isWelcomeEnabled) return;
+
+        const customMessage = await getWelcome(id);
+        const groupMetadata = await sock.groupMetadata(id);
+        const groupName = groupMetadata.subject;
+        const groupDesc = groupMetadata.desc || 'No description';
+        const memberCount = groupMetadata.participants.length;
+        const now = new Date();
+        const timeString = now.toLocaleString('en-US', {
+            month: '2-digit', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+        });
+
+        for (const participant of participants) {
             try {
-                const contact = await sock.getBusinessProfile(participantString);
-                if (contact && contact.name) {
-                    displayName = contact.name;
+                const participantString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
+                const user = participantString.split('@')[0];
+                const displayName = await getUserDisplayName(sock, participantString, groupMetadata);
+
+                // Build welcome message
+                let finalMessage;
+                if (customMessage) {
+                    finalMessage = customMessage
+                        .replace(/{user}/g, `@${displayName}`)
+                        .replace(/{group}/g, groupName)
+                        .replace(/{description}/g, groupDesc)
+                        .replace(/{count}/g, memberCount);
                 } else {
-                    // Try to get from group participants
-                    const groupParticipants = groupMetadata.participants;
-                    const userParticipant = groupParticipants.find(p => p.id === participantString);
-                    if (userParticipant && userParticipant.name) {
-                        displayName = userParticipant.name;
-                    }
+                    finalMessage = `╭╼━≪• 𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁 •≫━╾╮\n` +
+                                  `┃ 👋 𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName}\n` +
+                                  `┃ 👥 𝙼𝚎𝚖𝚋𝚎𝚛: #${memberCount}\n` +
+                                  `┃ ⏰ 𝚃𝙸𝙼𝙴: ${timeString}\n` +
+                                  `╰━━━━━━━━━━━━━━━╯\n\n` +
+                                  `*@${displayName}* Welcome to *${groupName}*! 🎉\n\n` +
+                                  `📋 *𝙶𝚛𝚘𝚞𝚙 𝙳𝚎𝚜𝚌𝚛𝚒𝚙𝚝𝚒𝚘𝚗:*\n_${groupDesc}_\n\n` +
+                                  `> *🤖 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
                 }
-            } catch (nameError) {
-                console.log('Could not fetch display name, using phone number');
-            }
-            
-            // Process custom message with variables
-            let finalMessage;
-            if (customMessage) {
-                finalMessage = customMessage
-                    .replace(/{user}/g, `@${displayName}`)
-                    .replace(/{group}/g, groupName)
-                    .replace(/{description}/g, groupDesc);
-            } else {
-                // Default message if no custom message is set
-                const now = new Date();
-                const timeString = now.toLocaleString('en-US', {
-                    month: '2-digit',
-                    day: '2-digit', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true
-                });
-                
-                finalMessage = `╭╼━≪•𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁•≫━╾╮\n┃𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName} 👋\n┃Member count: #${groupMetadata.participants.length}\n┃𝚃𝙸𝙼𝙴: ${timeString}⏰\n╰━━━━━━━━━━━━━━━╯\n\n*@${displayName}* Welcome to *${groupName}*! 🎉\n*Group 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝚃𝙸𝙾𝙽*\n${groupDesc}\n\n> *POWERED BY WALLYJAYTECH-MD*`;
-            }
-            
-            // Try to send with image first (always try images)
-            try {
-                // Get user profile picture
-                let profilePicUrl = `https://img.pyrocdn.com/dbKUgahg.png`; // Default avatar
+
+                // Try to get profile picture
+                let profilePicUrl = null;
                 try {
-                    const profilePic = await sock.profilePictureUrl(participantString, 'image');
-                    if (profilePic) {
-                        profilePicUrl = profilePic;
+                    profilePicUrl = await sock.profilePictureUrl(participantString, 'image');
+                } catch (e) {}
+
+                // Try welcome image APIs
+                let imageSent = false;
+                if (profilePicUrl) {
+                    const welcomeImage = await fetchWelcomeImage(displayName, groupName, memberCount, profilePicUrl);
+                    if (welcomeImage) {
+                        await sock.sendMessage(id, {
+                            image: welcomeImage,
+                            caption: finalMessage,
+                            mentions: [participantString],
+                            ...channelInfo
+                        });
+                        imageSent = true;
                     }
-                } catch (profileError) {
-                    console.log('Could not fetch profile picture, using default');
                 }
-                
-                // Construct API URL for welcome image
-                const apiUrl = `https://api.some-random-api.com/welcome/img/2/gaming3?type=join&textcolor=green&username=${encodeURIComponent(displayName)}&guildName=${encodeURIComponent(groupName)}&memberCount=${groupMetadata.participants.length}&avatar=${encodeURIComponent(profilePicUrl)}`;
-                
-                // Fetch the welcome image
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    const imageBuffer = await response.buffer();
-                    
-                    // Send welcome image with caption (custom or default message)
+
+                // Fallback to text
+                if (!imageSent) {
                     await sock.sendMessage(id, {
-                        image: imageBuffer,
-                        caption: finalMessage,
+                        text: finalMessage,
                         mentions: [participantString],
                         ...channelInfo
                     });
-                    continue; // Skip to next participant
                 }
-            } catch (imageError) {
-                console.log('Image generation failed, falling back to text');
+
+            } catch (error) {
+                console.error('Error sending welcome:', error);
+                // Ultimate fallback
+                const pString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
+                await sock.sendMessage(id, {
+                    text: `👋 Welcome @${pString.split('@')[0]} to *${groupMetadata.subject || 'the group'}*! 🎉\n\n> *🤖 WALLYJAYTECH-MD*`,
+                    mentions: [pString],
+                    ...channelInfo
+                }).catch(() => {});
             }
-            
-            // Send text message (either custom message or fallback)
-            await sock.sendMessage(id, {
-                text: finalMessage,
-                mentions: [participantString],
-                ...channelInfo
-            });
-        } catch (error) {
-            console.error('Error sending welcome message:', error);
-            // Fallback to text message
-            const participantString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
-            const user = participantString.split('@')[0];
-            
-            // Use custom message if available, otherwise use simple fallback
-            let fallbackMessage;
-            if (customMessage) {
-                fallbackMessage = customMessage
-                    .replace(/{user}/g, `@${user}`)
-                    .replace(/{group}/g, groupName)
-                    .replace(/{description}/g, groupDesc);
-            } else {
-                fallbackMessage = `Welcome @${user} to ${groupName}! 🎉`;
-            }
-            
-            await sock.sendMessage(id, {
-                text: fallbackMessage,
-                mentions: [participantString],
-                ...channelInfo
-            });
         }
+    } catch (error) {
+        console.error('Error in handleJoinEvent:', error);
     }
 }
 
