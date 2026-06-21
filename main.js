@@ -193,7 +193,7 @@ const { anticallCommand, readState: readAnticallState } = require('./commands/an
 const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
 const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
-
+const { menuFontCommand } = require('./commands/menufont');
 
 
 // Global settings
@@ -1257,7 +1257,12 @@ case userMessage.startsWith('.join'):
     break;
 case userMessage.startsWith('.autorecord'):
     await autorecordCommand(sock, chatId, message);
-    break;         
+    break;     
+            case userMessage.startsWith('.menufont'):
+    const menuFontArgs = userMessage.split(' ').slice(1);
+    await menuFontCommand(sock, chatId, message, menuFontArgs);
+    commandExecuted = true;
+    break;
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: '*This command can only be used in groups.*', ...channelInfo }, { quoted: message });
