@@ -4,7 +4,6 @@
  */
 
 const { setAntilink, getAntilink, removeAntilink } = require('../lib/index');
-const isAdmin = require('../lib/isAdmin');
 
 const channelInfo = {
     contextInfo: {
@@ -44,9 +43,9 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                       `⚡ *Action:* ${currentAction}\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
-                      `└ .antilink on - Enable link protection\n` +
-                      `└ .antilink off - Disable link protection\n` +
-                      `└ .antilink set delete - Delete links\n` +
+                      `└ .antilink on - Enable protection\n` +
+                      `└ .antilink off - Disable protection\n` +
+                      `└ .antilink set delete - Delete links only\n` +
                       `└ .antilink set kick - Delete + kick user\n` +
                       `└ .antilink set warn - Delete + warn user\n` +
                       `└ .antilink status - Show settings\n\n` +
@@ -64,7 +63,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                 const existingConfig = await getAntilink(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, { 
-                        text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Antilink is already *ON*.\n\n💡 Use .antilink off to disable.`,
+                        text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🔗 Antilink is already *ON*.\n⚡ Action: *${existingConfig.action || 'delete'}*\n\n💡 Use .antilink off to disable.`,
                         ...channelInfo
                     }, { quoted: message });
                     return;
@@ -108,9 +107,20 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                     }, { quoted: message });
                     return;
                 }
+                
+                // Check if already set to this action
+                const currentConfig = await getAntilink(chatId, 'on');
+                if (currentConfig?.action === setAction) {
+                    await sock.sendMessage(chatId, { 
+                        text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n⚡ Antilink action is already *${setAction}*.\n\n💡 Use .antilink set <delete/kick/warn> to change.`,
+                        ...channelInfo
+                    }, { quoted: message });
+                    return;
+                }
+                
                 await setAntilink(chatId, 'on', setAction);
                 await sock.sendMessage(chatId, { 
-                    text: `⚡ *ACTION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Antilink action set to: *${setAction}*`,
+                    text: `⚡ *ACTION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Antilink action set to: *${setAction}*\n\n📋 *${setAction === 'delete' ? 'Links will be deleted with a warning' : setAction === 'kick' ? 'Links will be deleted and user kicked' : 'Links will be deleted and user warned (3 warnings = kick)'}*`,
                     ...channelInfo
                 }, { quoted: message });
                 break;
@@ -118,7 +128,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
             case 'status':
                 const configStatus = await getAntilink(chatId, 'on');
                 await sock.sendMessage(chatId, { 
-                    text: `🔗 *ANTILINK STATUS*\n\n━━━━━━━━━━━━━━━━━━━━\n🟢 Status: ${configStatus?.enabled ? '✅ ON' : '❌ OFF'}\n⚡ Action: ${configStatus?.action || 'Not set'}`,
+                    text: `🔗 *ANTILINK STATUS*\n\n━━━━━━━━━━━━━━━━━━━━\n🟢 *Status:* ${configStatus?.enabled ? '✅ ON' : '❌ OFF'}\n⚡ *Action:* ${configStatus?.action || 'Not set'}`,
                     ...channelInfo
                 }, { quoted: message });
                 break;
