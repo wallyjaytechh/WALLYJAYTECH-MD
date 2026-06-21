@@ -340,6 +340,9 @@ else if (rawMessageText.startsWith('.')) {
 if (!isCommand) {
     // Handle non-command messages - SHOW BOTH TYPING AND RECORDING INDICATORS
     if (rawMessageText.trim()) {
+        // Check for links BEFORE anything else
+        if (isGroup) await Antilink(message, sock);
+        
         // Show typing indicator for non-command messages
         await handleAutotypingForMessage(sock, chatId, rawMessageText);
         
