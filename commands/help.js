@@ -1,538 +1,186 @@
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
-
-// ========== LOCAL USER TRACKING (NO EXTERNAL API) ==========
-// Simple, reliable tracking that works offline
+const { getCurrentFont, applyFont } = require('./menufont');
 
 // Platform detection function
 function getDeploymentPlatform() {
-    if (process.env.RENDER) {
-        return 'Render';
-    } else if (process.env.CODESPACE_NAME) {
-        return 'Codespaces';
-    } else if (process.env.PANEL_APP) {
-        return 'Panel';
-    } else if (process.env.REPL_SLUG) {
-        return 'Replit';
-    } else if (process.env.KOYEB_APP) {
-        return 'Koyeb';
-    } else if (process.env.FLY_APP_NAME) {
-        return 'Fly.io';
-    } else if (process.env.GLITCH_PROJECT_ID) {
-        return 'Glitch';
-    } else if (process.env.VERCEL) {
-        return 'Vercel';
-    } else if (process.env.HEROKU_APP_NAME) {
-        return 'Heroku';
-    } else if (process.env.RAILWAY_ENVIRONMENT) {
-        return 'Railway';
-    } else {
-        return 'Local Machine';
-    }
+    if (process.env.RENDER) return 'Render';
+    if (process.env.CODESPACE_NAME) return 'Codespaces';
+    if (process.env.PANEL_APP) return 'Panel';
+    if (process.env.REPL_SLUG) return 'Replit';
+    if (process.env.KOYEB_APP) return 'Koyeb';
+    if (process.env.FLY_APP_NAME) return 'Fly.io';
+    if (process.env.GLITCH_PROJECT_ID) return 'Glitch';
+    if (process.env.VERCEL) return 'Vercel';
+    if (process.env.HEROKU_APP_NAME) return 'Heroku';
+    if (process.env.RAILWAY_ENVIRONMENT) return 'Railway';
+    return 'Local Machine';
 }
 
-// Update user stats locally
 function updateUserStats(userJid, platform) {
     try {
         const userPhone = userJid.split('@')[0];
         const statsPath = path.join(__dirname, '../data/userStats.json');
-        
-        // Create data directory if it doesn't exist
         const dataDir = path.dirname(statsPath);
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
         
-        // Load existing stats or create new
-        let stats = {
-            totalUsers: 0,
-            activeUsers: {},
-            platforms: {},
-            users: {},
-            lastUpdated: Date.now(),
-            botName: settings.botName || 'WALLYJAYTECH-MD',
-            version: settings.version || '1.0.0'
-        };
+        let stats = { totalUsers: 0, activeUsers: {}, platforms: {}, users: {}, lastUpdated: Date.now(), botName: settings.botName || 'WALLYJAYTECH-MD', version: settings.version || '1.0.0' };
         
         if (fs.existsSync(statsPath)) {
-            try {
-                stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-            } catch (e) {
-                console.error('Error reading stats file, creating new:', e);
-            }
+            try { stats = JSON.parse(fs.readFileSync(statsPath, 'utf8')); } catch (e) {}
         }
         
         const userKey = `user_${userPhone}`;
         const isNewUser = !stats.users[userKey];
         const currentTime = Date.now();
         
-        // Update user data
         stats.users[userKey] = {
-            phone: userPhone,
-            platform: platform,
-            lastActive: currentTime,
+            phone: userPhone, platform: platform, lastActive: currentTime,
             firstSeen: isNewUser ? currentTime : (stats.users[userKey]?.firstSeen || currentTime),
             totalUses: (stats.users[userKey]?.totalUses || 0) + 1
         };
         
-        // Update platform count (only for new users)
         if (isNewUser) {
             stats.platforms[platform] = (stats.platforms[platform] || 0) + 1;
             stats.totalUsers = Object.keys(stats.users).length;
         }
         
-        // Mark as active (within last 30 minutes)
         stats.activeUsers[userKey] = currentTime;
         
-        // Clean up old active users (inactive for 30 minutes)
         const thirtyMinutesAgo = currentTime - (30 * 60 * 1000);
         Object.keys(stats.activeUsers).forEach(key => {
-            if (stats.activeUsers[key] < thirtyMinutesAgo) {
-                delete stats.activeUsers[key];
-            }
+            if (stats.activeUsers[key] < thirtyMinutesAgo) delete stats.activeUsers[key];
         });
         
         stats.lastUpdated = currentTime;
-        
-        // Save stats
         fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
         
-        // Calculate current stats
-        const activeUsers = Object.keys(stats.activeUsers).length;
-        
-        return {
-            totalUsers: stats.totalUsers,
-            activeUsers: activeUsers,
-            platforms: stats.platforms,
-            isGlobal: false,
-            source: 'Local Storage',
-            botName: stats.botName,
-            version: stats.version
-        };
-        
-    } catch (error) {
-        console.error('Error updating user stats:', error);
-        // Return minimal stats on error
-        return {
-            totalUsers: 1,
-            activeUsers: 1,
-            platforms: { [platform]: 1 },
-            isGlobal: false,
-            source: 'Local Error'
-        };
-    }
+        return { totalUsers: stats.totalUsers, activeUsers: Object.keys(stats.activeUsers).length, platforms: stats.platforms, isGlobal: false, source: 'Local Storage', botName: stats.botName, version: stats.version };
+    } catch (error) { return { totalUsers: 1, activeUsers: 1, platforms: { [platform]: 1 }, isGlobal: false, source: 'Local Error' }; }
 }
 
-// Get user stats
 function getUserStats() {
     try {
         const statsPath = path.join(__dirname, '../data/userStats.json');
-        
-        if (!fs.existsSync(statsPath)) {
-            return {
-                totalUsers: 0,
-                activeUsers: 0,
-                platforms: {},
-                isGlobal: false,
-                source: 'Local Storage',
-                botName: settings.botName || 'WALLYJAYTECH-MD',
-                version: settings.version || '1.0.0'
-            };
-        }
-        
+        if (!fs.existsSync(statsPath)) return { totalUsers: 0, activeUsers: 0, platforms: {}, isGlobal: false, source: 'Local Storage', botName: settings.botName || 'WALLYJAYTECH-MD', version: settings.version || '1.0.0' };
         const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-        
-        // Clean up old active users
         const currentTime = Date.now();
         const thirtyMinutesAgo = currentTime - (30 * 60 * 1000);
         Object.keys(stats.activeUsers || {}).forEach(key => {
-            if (stats.activeUsers[key] < thirtyMinutesAgo) {
-                delete stats.activeUsers[key];
-            }
+            if (stats.activeUsers[key] < thirtyMinutesAgo) delete stats.activeUsers[key];
         });
-        
-        const activeUsers = Object.keys(stats.activeUsers || {}).length;
-        
-        return {
-            totalUsers: stats.totalUsers || Object.keys(stats.users || {}).length,
-            activeUsers: activeUsers,
-            platforms: stats.platforms || {},
-            isGlobal: false,
-            source: 'Local Storage',
-            botName: stats.botName || settings.botName || 'WALLYJAYTECH-MD',
-            version: stats.version || settings.version || '1.0.0'
-        };
-        
-    } catch (error) {
-        console.error('Error getting user stats:', error);
-        return {
-            totalUsers: 0,
-            activeUsers: 0,
-            platforms: {},
-            isGlobal: false,
-            source: 'Error'
-        };
-    }
+        return { totalUsers: stats.totalUsers || Object.keys(stats.users || {}).length, activeUsers: Object.keys(stats.activeUsers || {}).length, platforms: stats.platforms || {}, isGlobal: false, source: 'Local Storage', botName: stats.botName || settings.botName || 'WALLYJAYTECH-MD', version: stats.version || settings.version || '1.0.0' };
+    } catch (error) { return { totalUsers: 0, activeUsers: 0, platforms: {}, isGlobal: false, source: 'Error' }; }
 }
 
-// Get prefix from settings
-function getPrefix() {
-    return settings.prefix || '.';
-}
+function getPrefix() { return settings.prefix || '.'; }
 
-// Detect bot mode (public/private)
 function getBotMode() {
     try {
         const messageCountPath = path.join(__dirname, '../data/messageCount.json');
-        
         if (fs.existsSync(messageCountPath)) {
             const data = JSON.parse(fs.readFileSync(messageCountPath, 'utf8'));
-            
-            if (typeof data.isPublic === 'boolean') {
-                return data.isPublic ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
-            }
+            if (typeof data.isPublic === 'boolean') return data.isPublic ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
         }
-        
         return settings.commandMode === 'public' ? 'PUBLIC 🌐' : 'PRIVATE 🔒';
-    } catch (error) {
-        console.error('Error detecting bot mode:', error);
-        return 'PUBLIC 🌐';
-    }
+    } catch (error) { return 'PUBLIC 🌐'; }
 }
 
-// Time-based greetings
 function getTimeBasedGreeting() {
     try {
         const now = new Date();
         const timezone = settings.timezone || 'Africa/Lagos';
-        
-        const timeString = now.toLocaleString('en-US', {
-            timeZone: timezone,
-            hour12: true,
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        const hour = now.toLocaleString('en-US', {
-            timeZone: timezone,
-            hour12: false,
-            hour: '2-digit'
-        });
-        
-        const hourNum = parseInt(hour);
-        
-        if (hourNum >= 5 && hourNum < 12) {
-            return {
-                greeting: '🌅 Good Morning',
-                emoji: '🌅',
-                time: timeString,
-                message: 'Have a wonderful day ahead!'
-            };
-        } else if (hourNum >= 12 && hourNum < 17) {
-            return {
-                greeting: '☀️ Good Afternoon', 
-                emoji: '☀️',
-                time: timeString,
-                message: 'Hope you\'re having a great day!'
-            };
-        } else if (hourNum >= 17 && hourNum < 21) {
-            return {
-                greeting: '🌇 Good Evening',
-                emoji: '🌇',
-                time: timeString,
-                message: 'Hope you had a productive day!'
-            };
-        } else {
-            return {
-                greeting: '🌙 Good Night',
-                emoji: '🌙',
-                time: timeString,
-                message: 'Have a peaceful night!'
-            };
-        }
-    } catch (error) {
-        return {
-            greeting: '👋 Hello',
-            emoji: '👋',
-            time: new Date().toLocaleTimeString(),
-            message: 'Nice to see you!'
-        };
-    }
+        const hour = parseInt(now.toLocaleString('en-US', { timeZone: timezone, hour12: false, hour: '2-digit' }));
+        const time = now.toLocaleString('en-US', { timeZone: timezone, hour12: true, hour: '2-digit', minute: '2-digit' });
+        if (hour >= 5 && hour < 12) return { greeting: '🌅 Good Morning', emoji: '🌅', time, message: 'Have a wonderful day ahead!' };
+        if (hour >= 12 && hour < 17) return { greeting: '☀️ Good Afternoon', emoji: '☀️', time, message: 'Hope you\'re having a great day!' };
+        if (hour >= 17 && hour < 21) return { greeting: '🌇 Good Evening', emoji: '🌇', time, message: 'Hope you had a productive day!' };
+        return { greeting: '🌙 Good Night', emoji: '🌙', time, message: 'Have a peaceful night!' };
+    } catch (error) { return { greeting: '👋 Hello', emoji: '👋', time: new Date().toLocaleTimeString(), message: 'Nice to see you!' }; }
 }
 
-// Get day of week with emoji
 function getDayWithEmoji() {
     try {
         const now = new Date();
         const timezone = settings.timezone || 'Africa/Lagos';
-        
-        const day = now.toLocaleString('en-US', {
-            timeZone: timezone,
-            weekday: 'long'
-        });
-        
-        const dayEmojis = {
-            'Monday': '📅',
-            'Tuesday': '🔥',
-            'Wednesday': '🌎',
-            'Thursday': '🚀',
-            'Friday': '🎉',
-            'Saturday': '🌈',
-            'Sunday': '☀️'
-        };
-        
-        return {
-            day: day,
-            emoji: dayEmojis[day] || '📅'
-        };
-    } catch (error) {
-        return {
-            day: 'Today',
-            emoji: '📅'
-        };
-    }
+        const day = now.toLocaleString('en-US', { timeZone: timezone, weekday: 'long' });
+        const dayEmojis = { 'Monday': '📅', 'Tuesday': '🔥', 'Wednesday': '🌎', 'Thursday': '🚀', 'Friday': '🎉', 'Saturday': '🌈', 'Sunday': '☀️' };
+        return { day, emoji: dayEmojis[day] || '📅' };
+    } catch (error) { return { day: 'Today', emoji: '📅' }; }
 }
 
-// Get user name
 async function getUserName(sock, userId, message) {
     try {
         const pushName = message.pushName || message.key?.pushName;
-        if (pushName) {
-            return pushName;
-        }
-        
+        if (pushName) return pushName;
         const name = await sock.getName(userId);
-        if (name && name !== userId) {
-            return name;
-        }
-        
+        if (name && name !== userId) return name;
         return userId.split('@')[0] || 'User';
-    } catch (error) {
-        console.error('Error getting user name:', error);
-        return userId.split('@')[0] || 'User';
-    }
+    } catch (error) { return userId.split('@')[0] || 'User'; }
 }
 
-// Get platform emoji
 function getPlatformEmoji(platform) {
-    const platformEmojis = {
-        'Render': '☁️',
-        'Codespaces': '💻', 
-        'Panel': '🛠️',
-        'Local Machine': '🏠',
-        'Replit': '⚡',
-        'Koyeb': '🚀',
-        'Fly.io': '✈️',
-        'Glitch': '🌀',
-        'Vercel': '▲',
-        'Heroku': '⚙️',
-        'Railway': '🚂',
-        'Unknown': '❓'
-    };
-    return platformEmojis[platform] || '❓';
+    const map = { 'Render': '☁️', 'Codespaces': '💻', 'Panel': '🛠️', 'Local Machine': '🏠', 'Replit': '⚡', 'Koyeb': '🚀', 'Fly.io': '✈️', 'Glitch': '🌀', 'Vercel': '▲', 'Heroku': '⚙️', 'Railway': '🚂' };
+    return map[platform] || '❓';
 }
 
-// Count total commands
 function countTotalCommands() {
     try {
         const mainJsPath = path.join(__dirname, '../main.js');
-        
-        if (!fs.existsSync(mainJsPath)) {
-            return 157;
-        }
-        
-        const mainJsContent = fs.readFileSync(mainJsPath, 'utf8');
-        let commandCount = 0;
-        
-        // Simple pattern to count case statements
+        if (!fs.existsSync(mainJsPath)) return 157;
+        const content = fs.readFileSync(mainJsPath, 'utf8');
         const casePattern = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g;
-        
-        let match;
-        while ((match = casePattern.exec(mainJsContent)) !== null) {
-            if (match[2]) {
-                commandCount++;
-            }
-        }
-        
-        console.log(`🤖 Auto-detected ${commandCount} commands`);
-        return commandCount;
-        
-    } catch (error) {
-        console.error('Error counting commands:', error);
-        return 157;
-    }
+        let match, count = 0;
+        while ((match = casePattern.exec(content)) !== null) { if (match[2]) count++; }
+        return count || 157;
+    } catch (error) { return 157; }
 }
 
-// Send menu with random media
-async function sendMenu(sock, chatId, message, helpMessage, userId) {
-    try {
-        const mediaOptions = [
-            {
-                type: 'image',
-                path: path.join(__dirname, '../assets/bot_image.jpg'),
-                caption: helpMessage
-            },
-            {
-                type: 'video', 
-                path: path.join(__dirname, '../assets/menu_video.mp4'),
-                caption: helpMessage
-            }
-        ];
-
-        const selectedMedia = mediaOptions[Math.floor(Math.random() * mediaOptions.length)];
-        
-        console.log(`🎲 Selected media type: ${selectedMedia.type}`);
-        
-        if (fs.existsSync(selectedMedia.path)) {
-            const mediaBuffer = fs.readFileSync(selectedMedia.path);
-            
-            if (selectedMedia.type === 'image') {
-                await sock.sendMessage(chatId, {
-                    image: mediaBuffer,
-                    caption: selectedMedia.caption,
-                    mentions: [userId],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }, { quoted: message });
-                console.log(`✅ Menu sent as image to @${userId.split('@')[0]}`);
-                return { success: true, type: 'IMAGE' };
-            } else if (selectedMedia.type === 'video') {
-                await sock.sendMessage(chatId, {
-                    video: mediaBuffer,
-                    caption: selectedMedia.caption,
-                    mentions: [userId],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420618370733@newsletter',
-                            newsletterName: 'WALLYJAYTECH-MD BOTS',
-                            serverMessageId: -1
-                        }
-                    }
-                }, { quoted: message });
-                console.log(`✅ Menu sent as video to @${userId.split('@')[0]}`);
-                return { success: true, type: 'VIDEO' };
-            }
-        } else {
-            console.log(`❌ ${selectedMedia.type} not found, using text fallback`);
-            return { success: false, type: 'TEXT' };
-        }
-    } catch (error) {
-        console.error('Error sending menu:', error);
-        return { success: false, type: 'TEXT' };
-    }
-}
-
-// Send menu audio
 async function sendMenuAudio(sock, chatId, message) {
     try {
         const audioPath = path.join(__dirname, '../assets/menu_audio.mp3');
         if (fs.existsSync(audioPath)) {
-            const audioBuffer = fs.readFileSync(audioPath);
-            await sock.sendMessage(chatId, {
-                audio: audioBuffer,
-                mimetype: 'audio/mpeg',
-                ptt: false
-            }, { quoted: message });
-            console.log('🎵 Menu audio sent');
+            await sock.sendMessage(chatId, { audio: fs.readFileSync(audioPath), mimetype: 'audio/mpeg', ptt: false }, { quoted: message });
             return true;
-        } else {
-            console.log('❌ Menu audio not found, skipping audio');
-            return false;
         }
-    } catch (error) {
-        console.error('Error sending audio:', error);
         return false;
-    }
+    } catch (error) { return false; }
 }
 
-// Main help command
 async function helpCommand(sock, chatId, message) {
     const senderId = message.key.participant || message.key.remoteJid;
     const userName = await getUserName(sock, senderId, message);
-    
     const greeting = getTimeBasedGreeting();
     const dayInfo = getDayWithEmoji();
     const currentBotMode = getBotMode();
     const prefix = getPrefix();
-    
     const userPlatform = getDeploymentPlatform();
-    
-    // DETERMINE MENU TYPE FIRST - before building message
-    let menuType = 'TEXT'; // Default
-    
-    // Check if media files exist
+    const totalCommands = countTotalCommands();
+    const stats = getUserStats();
+    const userStats = updateUserStats(senderId, userPlatform);
+    const fontId = getCurrentFont();
+
+    let menuType = 'TEXT';
     const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
     const videoPath = path.join(__dirname, '../assets/menu_video.mp4');
-    
-    // Randomly choose between image and video if both exist
-    if (fs.existsSync(imagePath) && fs.existsSync(videoPath)) {
-        const random = Math.random();
-        menuType = random < 0.5 ? 'IMAGE' : 'VIDEO';
-    } 
-    // If only one exists, use that
-    else if (fs.existsSync(imagePath)) {
-        menuType = 'IMAGE';
-    }
-    else if (fs.existsSync(videoPath)) {
-        menuType = 'VIDEO';
-    }
-    
-    console.log(`🎬 Selected menu type: ${menuType}`);
-    
-    // Update user stats
-    const userStats = updateUserStats(senderId, userPlatform);
-    
-    // Get stats for display
-    const stats = getUserStats();
-    
+    if (fs.existsSync(imagePath) && fs.existsSync(videoPath)) menuType = Math.random() < 0.5 ? 'IMAGE' : 'VIDEO';
+    else if (fs.existsSync(imagePath)) menuType = 'IMAGE';
+    else if (fs.existsSync(videoPath)) menuType = 'VIDEO';
+
     const getLocalizedTime = () => {
         try {
-            return new Date().toLocaleString('en-US', {
-                timeZone: settings.timezone || 'Africa/Lagos',
-                hour12: true,
-                hour: '2-digit',
-                minute: '2-digit', 
-                second: '2-digit',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        } catch (error) {
-            return new Date().toLocaleString();
-        }
+            return new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch (e) { return new Date().toLocaleString(); }
     };
 
-    const totalCommands = countTotalCommands();
-    
-    // Format platform stats
     let platformStatsText = '';
     const platforms = stats.platforms || {};
     const platformEntries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
-    
-    if (platformEntries.length > 0) {
-        platformStatsText = platformEntries.map(([platform, count]) => 
-            `║     ${getPlatformEmoji(platform)} ${platform}: ${count} users`
-        ).join('\n');
-    } else {
-        platformStatsText = '║     📊 No platform data yet';
-    }
-    
-    // Add your usage info
-    const userUsageInfo = stats.users && stats.users[`user_${senderId.split('@')[0]}`] ? 
-        `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : 
-        '║     📈 Your Usage: First time user';
-    
-    // Build the help message with the CORRECT menu type from the start
+    platformStatsText = platformEntries.length > 0 ? platformEntries.map(([p, c]) => `║     ${getPlatformEmoji(p)} ${p}: ${c} users`).join('\n') : '║     📊 No platform data yet';
+
+    const userUsageInfo = stats.users?.[`user_${senderId.split('@')[0]}`] ? `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : '║     📈 Your Usage: First time user';
+
     const helpMessage = `
 👋 *Hello @${userName}! ${greeting.message}*
 
@@ -547,6 +195,7 @@ async function helpCommand(sock, chatId, message) {
 ║   *📺 YT Channel: [ ${global.ytch} ]*
 ║   *📞 OwnerNumber: [ ${settings.ownerNumber} ]*
 ║   *📥 Prefix: [ ${prefix} ]*
+║   *🎨 Menu Font: [ ${fontId} ]*
 ║   *🎬 Menu Media: [ ${menuType} & AUDIO ]*
 ║   *🌍 TimeZone: [ ${settings.timezone} ]*
 ║   *⏰ Current Time: [ ${greeting.time} ]*
@@ -571,6 +220,7 @@ ${platformStatsText}
 ║  *🔒OWNER CMDS🔒*
 ║
 ║ *🔺${prefix}mode <public/private>*
+║ *🔺${prefix}menufont <1-12>*
 ║ *🔺${prefix}autorecord*
 ║ *🔺${prefix}autotyping*
 ║ *🔺${prefix}autorecordtype*
@@ -696,35 +346,20 @@ ${platformStatsText}
 ║  *🎮GAME CMDS🎮*
 ║
 ║ *◾️${prefix}tictactoe @user*
-║
-║    *HANGMAN* 
 ║ *◾️${prefix}hangman*
-║ *◾️${prefix}guess <letter for hangman>*
-║
-║    *TRIVIA* 
+║ *◾️${prefix}guess <letter>*
 ║ *◾️${prefix}trivia*
-║ *◾️${prefix}answer <answer for trivia>*
-║
-║    *TRUTH&DARE* 
+║ *◾️${prefix}answer <answer>*
 ║ *◾️${prefix}truth*
 ║ *◾️${prefix}dare*
-║
-║    *COINFLIP BASIC*
 ║ *◾️${prefix}coinflip*
 ║ *◾️${prefix}coinflip <heads/tails>*
-║ *◾️${prefix}coinflip <heads/tails> <bet amount>*
+║ *◾️${prefix}coinflip <heads/tails> <bet>*
 ║ *◾️${prefix}coinstats*
 ║ *◾️${prefix}coinleaderboard*
 ║ *◾️${prefix}coindaily*
 ║ *◾️${prefix}buychips*
 ║ *◾️${prefix}coinhelp*
-║
-║    *COINFLIP ADMIN*
-║ *◾️${prefix}unlimitedchips <pass>*
-║ *◾️${prefix}addchips <pass> <user> <amount>*
-║ *◾️${prefix}checkbalance <pass> <user>*
-║ *◾️${prefix}resetchips <pass> <user> <amount>*
-║ *◾️${prefix}transactions <pass>*
 ║
 ╚═══════════════════╝
 
@@ -881,85 +516,35 @@ ${platformStatsText}
 
 *${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*
 
-*⬇️Join our channel below for updates⬇️*`;
+*⬇️Join our channel below for updates⬇️`;
+
+    // Apply font to menu text
+    const styledMessage = applyFont(helpMessage, fontId);
 
     try {
-        // Send the appropriate media based on menuType
         if (menuType === 'IMAGE') {
             const imageBuffer = fs.readFileSync(imagePath);
             await sock.sendMessage(chatId, {
-                image: imageBuffer,
-                caption: helpMessage,
-                mentions: [senderId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                image: imageBuffer, caption: styledMessage, mentions: [senderId],
+                contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } }
             }, { quoted: message });
-            console.log(`✅ Menu sent as IMAGE to @${senderId.split('@')[0]}`);
-        }
-        else if (menuType === 'VIDEO') {
+        } else if (menuType === 'VIDEO') {
             const videoBuffer = fs.readFileSync(videoPath);
             await sock.sendMessage(chatId, {
-                video: videoBuffer,
-                caption: helpMessage,
-                mentions: [senderId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+                video: videoBuffer, caption: styledMessage, mentions: [senderId],
+                contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } }
             }, { quoted: message });
-            console.log(`✅ Menu sent as VIDEO to @${senderId.split('@')[0]}`);
-        }
-        else {
-            // TEXT fallback
-            await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                mentions: [senderId],
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420618370733@newsletter',
-                        newsletterName: 'WALLYJAYTECH-MD BOTS',
-                        serverMessageId: -1
-                    }
-                }
+        } else {
+            await sock.sendMessage(chatId, {
+                text: styledMessage, mentions: [senderId],
+                contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } }
             });
         }
-        
-        // Wait a bit then send audio if available
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(r => setTimeout(r, 1000));
         await sendMenuAudio(sock, chatId, message);
-
-        console.log(`📊 Local Stats: ${stats.activeUsers} active, ${stats.totalUsers} total users (Platform: ${userPlatform})`);
-        console.log(`🎬 Menu Type shown: ${menuType}`);
-
     } catch (error) {
         console.error('Error in help command:', error);
-        await sock.sendMessage(chatId, { 
-            text: helpMessage,
-            mentions: [senderId],
-            contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363420618370733@newsletter',
-                    newsletterName: 'WALLYJAYTECH-MD BOTS',
-                    serverMessageId: -1
-                }
-            }
-        });
+        await sock.sendMessage(chatId, { text: styledMessage, mentions: [senderId], contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } } });
     }
 }
 
