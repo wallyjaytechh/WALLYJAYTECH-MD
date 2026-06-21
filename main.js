@@ -244,7 +244,6 @@ const channelInfo = {
 };
 
 async function handleMessages(sock, messageUpdate, printLog) {
-  let chatId = null;
     try {
         const { messages, type } = messageUpdate;
         if (type !== 'notify') return;
@@ -252,10 +251,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];
         if (!message?.message) return;
         
-
-        
-     const isGroup = chatId ? chatId.endsWith('@g.us') : false;
-
+        const chatId = message.key.remoteJid;
+        const isGroup = chatId ? chatId.endsWith('@g.us') : false;
         // Handle autoread functionality
         await handleAutoread(sock, message);
 
