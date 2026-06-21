@@ -1,10 +1,11 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Welcome/Goodbye Message Handler
- * Professional Version with fast welcome
+ * Welcome Command - Professional welcome messages for new members
  */
 
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn } = require('../lib/index');
+const fetch = require('node-fetch');
+const { isWelcomeOn, getWelcome } = require('../lib/index');
+const { handleWelcome } = require('../lib/welcome');
 
 const channelInfo = {
     contextInfo: {
@@ -18,139 +19,90 @@ const channelInfo = {
     }
 };
 
-async function handleWelcome(sock, chatId, message, match) {
+async function welcomeCommand(sock, chatId, message) {
     try {
-        if (!match) {
-            const isOn = await isWelcomeOn(chatId);
-            await sock.sendMessage(chatId, {
-                text: `👋 *WELCOME MESSAGE SETTINGS*\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🟢 *Status:* ${isOn ? '✅ ENABLED' : '❌ DISABLED'}\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Commands:*\n` +
-                      `└ .welcome on - Enable welcome messages\n` +
-                      `└ .welcome off - Disable welcome messages\n` +
-                      `└ .welcome set <message> - Set custom message\n` +
-                      `└ .welcome - Show this menu\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📋 *Available Variables:*\n` +
-                      `└ {user} - Mentions new member\n` +
-                      `└ {group} - Group name\n` +
-                      `└ {description} - Group description\n` +
-                      `└ {count} - Member count\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `💡 *Example:*\n` +
-                      `└ .welcome set Welcome {user} to {group}! 🎉\n` +
-                      `└ .welcome on`,
-                ...channelInfo
-            }, { quoted: message });
-            return;
-        }
-
-        const [command, ...args] = match.split(' ');
-        const lowerCommand = command.toLowerCase();
-        const customMessage = args.join(' ');
-
-        if (lowerCommand === 'on') {
-            if (await isWelcomeOn(chatId)) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👋 Welcome messages are already *ON*.\n\n💡 Use .welcome off to disable.`, ...channelInfo });
-                return;
-            }
-            await addWelcome(chatId, true, 'Welcome {user} to {group}! 🎉');
-            await sock.sendMessage(chatId, { text: `✅ *WELCOME ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Welcome messages are now *ON*.\n💡 Use .welcome set <message> to customize.\n\n📋 *Variables:* {user}, {group}, {description}, {count}`, ...channelInfo });
-            return;
-        }
-
-        if (lowerCommand === 'off') {
-            if (!(await isWelcomeOn(chatId))) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👋 Welcome messages are already *OFF*.\n\n💡 Use .welcome on to enable.`, ...channelInfo });
-                return;
-            }
-            await delWelcome(chatId);
-            await sock.sendMessage(chatId, { text: `❌ *WELCOME DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Welcome messages are now *OFF*.\n\n💡 Use .welcome on to enable.`, ...channelInfo });
-            return;
-        }
-
-        if (lowerCommand === 'set') {
-            if (!customMessage) {
-                await sock.sendMessage(chatId, { text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .welcome set <message>\n\n✨ *Example:*\n└ .welcome set Welcome {user} to {group}!`, ...channelInfo });
-                return;
-            }
-            await addWelcome(chatId, true, customMessage);
-            await sock.sendMessage(chatId, { text: `✅ *CUSTOM MESSAGE SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Welcome message updated successfully.\n\n📝 *Preview:*\n_${customMessage}_`, ...channelInfo });
-            return;
-        }
-
-        await sock.sendMessage(chatId, { text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Use: .welcome on/off/set`, ...channelInfo });
+        const text = message.message?.conversation?.trim() || message.message?.extendedTextMessage?.text?.trim() || '';
+        const match = text.split(' ').slice(1).join(' ');
+        await handleWelcome(sock, chatId, message, match);
     } catch (error) {
-        console.error('❌ Welcome handler error:', error);
+        console.error('❌ Welcome command error:', error);
     }
 }
 
-async function handleGoodbye(sock, chatId, message, match) {
+async function handleJoinEvent(sock, id, participants) {
     try {
-        const lower = match?.toLowerCase();
+        const isWelcomeEnabled = await isWelcomeOn(id);
+        if (!isWelcomeEnabled) return;
 
-        if (!match) {
-            const isOn = await isGoodByeOn(chatId);
-            await sock.sendMessage(chatId, {
-                text: `👋 *GOODBYE MESSAGE SETTINGS*\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🟢 *Status:* ${isOn ? '✅ ENABLED' : '❌ DISABLED'}\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Commands:*\n` +
-                      `└ .goodbye on - Enable goodbye messages\n` +
-                      `└ .goodbye off - Disable goodbye messages\n` +
-                      `└ .goodbye set <message> - Set custom message\n` +
-                      `└ .goodbye - Show this menu\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📋 *Available Variables:*\n` +
-                      `└ {user} - Mentions leaving member\n` +
-                      `└ {group} - Group name\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `💡 *Example:*\n` +
-                      `└ .goodbye set Goodbye {user} from {group}! 👋\n` +
-                      `└ .goodbye on`,
-                ...channelInfo
-            }, { quoted: message });
-            return;
-        }
+        const customMessage = await getWelcome(id);
+        const groupMetadata = await sock.groupMetadata(id);
+        const groupName = groupMetadata.subject;
+        const groupDesc = groupMetadata.desc || '';
+        const memberCount = groupMetadata.participants.length;
+        const now = new Date();
+        const timeString = now.toLocaleString('en-US', {
+            month: '2-digit', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+        });
 
-        if (lower === 'on') {
-            if (await isGoodByeOn(chatId)) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👋 Goodbye messages are already *ON*.\n\n💡 Use .goodbye off to disable.`, ...channelInfo });
-                return;
+        for (const participant of participants) {
+            const pString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
+            const user = pString.split('@')[0];
+
+            // Get display name fast
+            let displayName = user;
+            try {
+                const p = groupMetadata.participants.find(x => x.id === pString);
+                if (p?.name) displayName = p.name;
+            } catch (e) {}
+
+            // Build message
+            let msg;
+            if (customMessage) {
+                msg = customMessage
+                    .replace(/{user}/g, `@${displayName}`)
+                    .replace(/{group}/g, groupName)
+                    .replace(/{description}/g, groupDesc)
+                    .replace(/{count}/g, memberCount);
+            } else {
+                msg = `╭╼━≪• 𝙽𝙴𝚆 𝙼𝙴𝙼𝙱𝙴𝚁 •≫━╾╮\n` +
+                      `┃ 👋 𝚆𝙴𝙻𝙲𝙾𝙼𝙴: @${displayName}\n` +
+                      `┃ 👥 𝙼𝚎𝚖𝚋𝚎𝚛: #${memberCount}\n` +
+                      `┃ ⏰ 𝚃𝙸𝙼𝙴: ${timeString}\n` +
+                      `╰━━━━━━━━━━━━━━━╯\n\n` +
+                      `*@${displayName}* Welcome to *${groupName}*! 🎉\n\n` +
+                      (groupDesc ? `📋 *𝙳𝚎𝚜𝚌𝚛𝚒𝚙𝚝𝚒𝚘𝚗:*\n_${groupDesc}_\n\n` : '') +
+                      `> *🤖 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
             }
-            await addGoodbye(chatId, true, 'Goodbye {user} 👋');
-            await sock.sendMessage(chatId, { text: `✅ *GOODBYE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Goodbye messages are now *ON*.\n💡 Use .goodbye set <message> to customize.`, ...channelInfo });
-            return;
-        }
 
-        if (lower === 'off') {
-            if (!(await isGoodByeOn(chatId))) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n👋 Goodbye messages are already *OFF*.\n\n💡 Use .goodbye on to enable.`, ...channelInfo });
-                return;
+            // Try group picture for welcome image - send immediately
+            let sent = false;
+            try {
+                const groupPic = await sock.profilePictureUrl(id, 'image').catch(() => null);
+                const userPic = await sock.profilePictureUrl(pString, 'image').catch(() => null);
+                
+                if (userPic) {
+                    try {
+                        const imgRes = await fetch(`https://api.fluxwavy.com/welcome?username=${encodeURIComponent(displayName)}&guild=${encodeURIComponent(groupName)}&members=${memberCount}&avatar=${encodeURIComponent(userPic)}`);
+                        if (imgRes.ok) {
+                            const buf = await imgRes.buffer();
+                            if (buf.length > 1000) {
+                                await sock.sendMessage(id, { image: buf, caption: msg, mentions: [pString], ...channelInfo });
+                                sent = true;
+                            }
+                        }
+                    } catch (e) {}
+                }
+            } catch (e) {}
+
+            // Text fallback - fast
+            if (!sent) {
+                await sock.sendMessage(id, { text: msg, mentions: [pString], ...channelInfo });
             }
-            await delGoodBye(chatId);
-            await sock.sendMessage(chatId, { text: `❌ *GOODBYE DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Goodbye messages are now *OFF*.\n\n💡 Use .goodbye on to enable.`, ...channelInfo });
-            return;
         }
-
-        if (lower.startsWith('set ')) {
-            const customMessage = match.substring(4);
-            if (!customMessage) {
-                await sock.sendMessage(chatId, { text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .goodbye set <message>\n\n✨ *Example:*\n└ .goodbye set Goodbye {user}!`, ...channelInfo });
-                return;
-            }
-            await addGoodbye(chatId, true, customMessage);
-            await sock.sendMessage(chatId, { text: `✅ *CUSTOM MESSAGE SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Goodbye message updated successfully.\n\n📝 *Preview:*\n_${customMessage}_`, ...channelInfo });
-            return;
-        }
-
-        await sock.sendMessage(chatId, { text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Use: .goodbye on/off/set`, ...channelInfo });
     } catch (error) {
-        console.error('❌ Goodbye handler error:', error);
+        console.error('Error in handleJoinEvent:', error);
     }
 }
 
-module.exports = { handleWelcome, handleGoodbye };
+module.exports = { welcomeCommand, handleJoinEvent };
