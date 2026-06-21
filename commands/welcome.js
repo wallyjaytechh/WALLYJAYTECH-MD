@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Welcome Command - Fast welcome with group image
- * Uses bot's configured timezone
+ * Uses bot's configured timezone from settings
  */
 
 const { isWelcomeOn, getWelcome } = require('../lib/index');
@@ -64,23 +64,19 @@ async function handleJoinEvent(sock, id, participants) {
         const groupDesc = groupMetadata.desc || '';
         const memberCount = groupMetadata.participants.length;
         const timeString = getFormattedTime();
+        const botName = settings.botName || 'WALLYJAYTECH-MD';
 
-        // Get group picture once
         let groupPic = null;
-        try {
-            groupPic = await sock.profilePictureUrl(id, 'image');
-        } catch (e) {}
+        try { groupPic = await sock.profilePictureUrl(id, 'image'); } catch (e) {}
 
         for (const participant of participants) {
             const pString = typeof participant === 'string' ? participant : (participant.id || participant.toString());
             const user = pString.split('@')[0];
 
-            // Get name from group participants
             let displayName = user;
             const p = groupMetadata.participants.find(x => x.id === pString);
             if (p?.name && p.name !== user) displayName = p.name;
 
-            // Build message
             let msg;
             if (customMessage && !customMessage.startsWith('Welcome {user} to {group}!')) {
                 msg = customMessage
@@ -96,10 +92,9 @@ async function handleJoinEvent(sock, id, participants) {
                       `╰━━━━━━━━━━━━━━━╯\n\n` +
                       `*@${displayName}* Welcome to *${groupName}*! 🎉\n\n` +
                       (groupDesc ? `📋 *𝙳𝚎𝚜𝚌𝚛𝚒𝚙𝚝𝚒𝚘𝚗:*\n_${groupDesc}_\n\n` : '') +
-                      `> *🤖 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝚆𝙰𝙻𝙻𝚈𝙹𝙰𝚈𝚃𝙴𝙲𝙷-𝙼𝙳*`;
+                      `> *🤖 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 ${botName}*`;
             }
 
-            // Try to send with group image
             if (groupPic) {
                 try {
                     await sock.sendMessage(id, {
@@ -112,7 +107,6 @@ async function handleJoinEvent(sock, id, participants) {
                 } catch (e) {}
             }
 
-            // Fallback text
             await sock.sendMessage(id, {
                 text: msg,
                 mentions: [pString],
