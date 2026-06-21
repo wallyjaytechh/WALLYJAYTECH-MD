@@ -275,7 +275,7 @@ await handleAutoreact(sock, message);
             return;
         }
 
-        chatId = message.key.remoteJid;
+ 
         const senderId = message.key.participant || message.key.remoteJid;
        
         const senderIsSudo = await isSudo(senderId);
