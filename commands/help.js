@@ -125,18 +125,18 @@ async function sendMenuAudio(sock, chatId, message) {
 
 function applyMenuStyle(text, styleId) {
     const styles = {
-        1: { infoTop: '╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖', infoBottom: '╚═══════════════════╝', infoLine: '║', sectionTop: '╔═══════════════════╗', sectionBottom: '╚═══════════════════╝', sectionLine: '║', bullet: '*', cmdSectionStart: '\n*⬇️ ALL COMMANDS ⬇️*\n' },
-        2: { infoTop: '╭──❍「 *WALLYJAYTECH-MD MENU* 」❍', infoBottom: '╰─┬─★─☆─♪♪─❍', infoLine: '├•', sectionTop: '╭─┴❍「 *{section}* 」❍', sectionBottom: '╰─┬─★─☆─♪♪─❍', sectionLine: '◈ •', bullet: '', cmdSectionStart: '' },
-        3: { infoTop: '╭──✤「 *WALLYJAYTECH-MD MENU* 」✤', infoBottom: '╰─✤─✤─✤─✤─✤─✤─✤─✤', infoLine: '├•', sectionTop: '╭──✤「 *{section}* 」✤', sectionBottom: '╰─✤─✤─✤─✤─✤─✤─✤─✤', sectionLine: '├•', bullet: '', cmdSectionStart: '' },
-        4: { infoTop: '╭──⍟「 *WALLYJAYTECH-MD MENU* 」⍟', infoBottom: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', infoLine: '⤚', sectionTop: '╭──⍟「 *{section}* 」⍟', sectionBottom: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
-        5: { infoTop: '━━━❖━⦿━❖━⦿━❖━⦿━❖━⦿━━━\n╭──❖「 *WALLYJAYTECH-MD MENU* 」❖', infoBottom: '╰─❖─❖─❖─❖─❖─❖─❖─❖', infoLine: '⤚', sectionTop: '╭──❖「 *{section}* 」❖', sectionBottom: '╰─❖─❖─❖─❖─❖─❖─❖─❖', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
-        6: { infoTop: '╭──⌬「 *WALLYJAYTECH-MD MENU* 」⌬', infoBottom: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', infoLine: '⤚', sectionTop: '╭──⌬「 *{section}* 」⌬', sectionBottom: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
-        7: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '⤷', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '⤷', bullet: '', cmdSectionStart: '' },
-        8: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▶', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▶', bullet: '', cmdSectionStart: '' },
-        9: { infoTop: '╭──⨁「 *WALLYJAYTECH-MD MENU* 」⨁', infoBottom: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', infoLine: '⤷', sectionTop: '╭──⨁「 *{section}* 」⨁', sectionBottom: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', sectionLine: '⤷', bullet: '', cmdSectionStart: '' },
-        10: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▸', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▸', bullet: '', cmdSectionStart: '' },
-        11: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▸', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▸', bullet: '', cmdSectionStart: '' },
-        12: { infoTop: '╭──⍋「 *WALLYJAYTECH-MD MENU* 」⍋', infoBottom: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', infoLine: '▶', sectionTop: '╭──⍋「 *{section}* 」⍋', sectionBottom: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', sectionLine: '▶', bullet: '', cmdSectionStart: '' }
+        1: { infoTop: '╔═══════════════════════════╗\n║  *WALLYJAYTECH-MD MENU*   ║\n╠═══════════════════════════╣', infoLine: '║', sectionHeader: '╠═══════════════════════════╣\n║  {section}          ║\n║  ───────────────────────── ║', infoBottom: '╚═══════════════════════════╝', bullet: '║  ' },
+        2: { infoTop: '╭──❍「 *USER INFO* 」❍', infoLine: '├•', sectionHeader: '╰─┬─★─☆─♪♪─❍\n╭─┴❍「 *{section}* 」❍', infoBottom: '╰─┬─★─☆─♪♪─❍', bullet: '├• ' },
+        3: { infoTop: '╭──✤「 *USER PANEL* 」✤', infoLine: '├•', sectionHeader: '╰─✤─✤─✤─✤─✤─✤─✤─✤\n╭──✤「 *{section}* 」✤', infoBottom: '╰─✤─✤─✤─✤─✤─✤─✤─✤', bullet: '├• ' },
+        4: { infoTop: '╭──⍟「 *BOT STATUS* 」⍟', infoLine: '⤚', sectionHeader: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟\n╭──⍟「 *{section}* 」⍟', infoBottom: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', bullet: '⤚ ' },
+        5: { infoTop: '━━━❖━⦿━❖━⦿━❖━⦿━❖━⦿━━━\n╭──❖「 *USER INFO* 」❖', infoLine: '⤚', sectionHeader: '╰─❖─❖─❖─❖─❖─❖─❖─❖\n╭──❖「 *{section}* 」❖', infoBottom: '╰─❖─❖─❖─❖─❖─❖─❖─❖', bullet: '⤚ ' },
+        6: { infoTop: '╭──⌬「 *MAIN MENU* 」⌬', infoLine: '⤚', sectionHeader: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬\n╭──⌬「 *{section}* 」⌬', infoBottom: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', bullet: '⤚ ' },
+        7: { infoTop: '╭──⏣「 *DASHBOARD* 」⏣', infoLine: '⤷', sectionHeader: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *{section}* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bullet: '⤷ ' },
+        8: { infoTop: '╭──⏣「 *STATUS* 」⏣', infoLine: '▶', sectionHeader: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *{section}* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bullet: '▶ ' },
+        9: { infoTop: '╭──⨁「 *SYSTEM* 」⨁', infoLine: '⤷', sectionHeader: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁\n╭──⨁「 *{section}* 」⨁', infoBottom: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', bullet: '⤷ ' },
+        10: { infoTop: '╭──⏣「 *MENU HEADER* 」⏣', infoLine: '▸', sectionHeader: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *{section}* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bullet: '▸ ' },
+        11: { infoTop: '╭──⏣「 *PROFILE* 」⏣', infoLine: '▸', sectionHeader: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *{section}* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bullet: '▸ ' },
+        12: { infoTop: '╭──⍋「 *BOT INFO* 」⍋', infoLine: '▶', sectionHeader: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋\n╭──⍋「 *{section}* 」⍋', infoBottom: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', bullet: '▶ ' }
     };
 
     const s = styles[styleId] || styles[1];
@@ -144,25 +144,20 @@ function applyMenuStyle(text, styleId) {
 
     const lines = text.split('\n');
     
-    // Extract greeting
     let greeting = '';
     for (const l of lines) {
-        if (l.startsWith('👋') || l.includes('Good') || l.includes('menu:')) {
-            greeting += l + '\n';
-        }
-        if (l.includes('WALLYJAYTECH-MD MENU')) break;
+        if (l.startsWith('👋') || l.includes('Good') || l.includes('menu:')) greeting += l + '\n';
+        if (l.includes('WALLYJAYTECH-MD MENU') || l.includes('USER INFO') || l.includes('BOT STATUS') || l.includes('MAIN MENU') || l.includes('DASHBOARD') || l.includes('STATUS') || l.includes('SYSTEM') || l.includes('MENU HEADER') || l.includes('PROFILE') || l.includes('BOT INFO')) break;
     }
 
-    // Extract info lines
     const infoLines = [];
     let inInfo = false;
     for (const l of lines) {
-        if (l.includes('WALLYJAYTECH-MD MENU')) { inInfo = true; continue; }
-        if (inInfo && l.trim().startsWith('*')) infoLines.push(l.trim());
+        if (l.includes('WALLYJAYTECH-MD MENU') || l.includes('USER INFO') || l.includes('BOT STATUS') || l.includes('MAIN MENU') || l.includes('DASHBOARD') || l.includes('STATUS') || l.includes('SYSTEM') || l.includes('MENU HEADER') || l.includes('PROFILE') || l.includes('BOT INFO')) { inInfo = true; continue; }
+        if (inInfo && l.trim().startsWith('*')) infoLines.push(l.trim().replace(/^\*\s*/, '').replace(/\*$/, ''));
         if (l.includes('═══════') || l.includes('★─☆─♪♪─❍') || l.includes('✤─✤') || l.includes('⍟─⍟') || l.includes('⌬─⌬') || l.includes('⏣─⏣') || l.includes('⨁─⨁') || l.includes('⍋─⍋') || l.includes('❖─❖')) inInfo = false;
     }
 
-    // Extract command sections
     const sections = text.split('╔═══════════════════╗').slice(1);
     const cmdSections = [];
     for (const sec of sections) {
@@ -170,34 +165,24 @@ function applyMenuStyle(text, styleId) {
         const title = titleMatch ? titleMatch[1].trim() : '';
         const cmdLines = [];
         for (const l of sec.split('\n')) {
-            if (l.includes('*🔺') || l.includes('*🔹') || l.includes('*🔻') || l.includes('*🟤') ||
-                l.includes('*▫️') || l.includes('*◾️') || l.includes('*♦️') || l.includes('*🟢') ||
-                l.includes('*🔴') || l.includes('*🟠') || l.includes('*🟡') || l.includes('*🟣') ||
-                l.includes('*🔵') || l.includes('*🔸')) {
-                cmdLines.push(l.replace(/║\s*\*/, '*').replace(/\*$/, '').trim());
-            }
+            const cmdMatch = l.match(/\*\s*[🔺🔹🔻🟤▫️◾️♦️🟢🔴🟠🟡🟣🔵🔸]\s*\.(\S+.*)/);
+            if (cmdMatch) cmdLines.push('.' + cmdMatch[1].replace(/\*$/, '').trim());
         }
         if (title && cmdLines.length > 0) cmdSections.push({ title, commands: cmdLines });
     }
 
-    // Extract footer
     let footer = '';
     const footerStart = lines.findIndex(l => l.includes('Copyright wallyjaytech'));
-    if (footerStart > 0) {
-        footer = lines.slice(footerStart).join('\n');
-    }
+    if (footerStart > 0) footer = lines.slice(footerStart).join('\n');
 
-    // Build menu
     let menu = greeting + '\n';
     menu += s.infoTop + '\n';
     for (const l of infoLines) menu += s.infoLine + ' ' + l + '\n';
-    menu += s.infoBottom + '\n';
-    if (s.cmdSectionStart) menu += s.cmdSectionStart + '\n';
     for (const sec of cmdSections) {
-        menu += '\n' + s.sectionTop.replace('{section}', sec.title) + '\n';
-        for (const cmd of sec.commands) menu += s.sectionLine + ' ' + cmd + '\n';
-        menu += s.sectionBottom + '\n';
+        menu += s.sectionHeader.replace('{section}', sec.title) + '\n';
+        for (const cmd of sec.commands) menu += s.bullet + cmd + '\n';
     }
+    menu += s.infoBottom + '\n';
     menu += '\n' + footer;
     return menu;
 }
