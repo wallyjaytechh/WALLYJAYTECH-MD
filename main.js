@@ -193,8 +193,8 @@ const { anticallCommand, readState: readAnticallState } = require('./commands/an
 const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
 const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
+const { menuStyleCommand } = require('./commands/menustyle');
 const { menuFontCommand } = require('./commands/menufont');
-
 
 // Global settings
 global.packname = settings.packname;
@@ -1261,6 +1261,11 @@ case userMessage.startsWith('.autorecord'):
             case userMessage.startsWith('.menufont'):
     const menuFontArgs = userMessage.split(' ').slice(1);
     await menuFontCommand(sock, chatId, message, menuFontArgs);
+    commandExecuted = true;
+    break;
+            case userMessage.startsWith('.menustyle'):
+    const menuStyleArgs = userMessage.split(' ').slice(1);
+    await menuStyleCommand(sock, chatId, message, menuStyleArgs);
     commandExecuted = true;
     break;
             case userMessage.startsWith('.antibadword'):
