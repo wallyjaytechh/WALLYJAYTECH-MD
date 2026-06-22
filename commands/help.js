@@ -123,29 +123,83 @@ async function sendMenuAudio(sock, chatId, message) {
     } catch (e) { return false; }
 }
 
-// Build menu with different style borders
 function applyMenuStyle(text, styleId) {
     const styles = {
-        1: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
-        2: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '─', v: '├' },
-        3: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '✤', v: '├' },
-        4: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⍟', v: '⤚' },
-        5: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '❖', v: '⤚' },
-        6: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⌬', v: '⤚' },
-        7: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⏣', v: '⤷' },
-        8: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⏣', v: '▶' },
-        9: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⨁', v: '⤷' },
-        10: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⏣', v: '▸' },
-        11: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⏣', v: '▸' },
-        12: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '⍋', v: '▶' }
+        1: { infoTop: '╔❖🔹 *WALLYJAYTECH-MD MENU* 🔹❖', infoBottom: '╚═══════════════════╝', infoLine: '║', sectionTop: '╔═══════════════════╗', sectionBottom: '╚═══════════════════╝', sectionLine: '║', bullet: '*', cmdSectionStart: '\n*⬇️ ALL COMMANDS ⬇️*\n' },
+        2: { infoTop: '╭──❍「 *WALLYJAYTECH-MD MENU* 」❍', infoBottom: '╰─┬─★─☆─♪♪─❍', infoLine: '├•', sectionTop: '╭─┴❍「 *{section}* 」❍', sectionBottom: '╰─┬─★─☆─♪♪─❍', sectionLine: '◈ •', bullet: '', cmdSectionStart: '' },
+        3: { infoTop: '╭──✤「 *WALLYJAYTECH-MD MENU* 」✤', infoBottom: '╰─✤─✤─✤─✤─✤─✤─✤─✤', infoLine: '├•', sectionTop: '╭──✤「 *{section}* 」✤', sectionBottom: '╰─✤─✤─✤─✤─✤─✤─✤─✤', sectionLine: '├•', bullet: '', cmdSectionStart: '' },
+        4: { infoTop: '╭──⍟「 *WALLYJAYTECH-MD MENU* 」⍟', infoBottom: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', infoLine: '⤚', sectionTop: '╭──⍟「 *{section}* 」⍟', sectionBottom: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
+        5: { infoTop: '━━━❖━⦿━❖━⦿━❖━⦿━❖━⦿━━━\n╭──❖「 *WALLYJAYTECH-MD MENU* 」❖', infoBottom: '╰─❖─❖─❖─❖─❖─❖─❖─❖', infoLine: '⤚', sectionTop: '╭──❖「 *{section}* 」❖', sectionBottom: '╰─❖─❖─❖─❖─❖─❖─❖─❖', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
+        6: { infoTop: '╭──⌬「 *WALLYJAYTECH-MD MENU* 」⌬', infoBottom: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', infoLine: '⤚', sectionTop: '╭──⌬「 *{section}* 」⌬', sectionBottom: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', sectionLine: '⤚', bullet: '', cmdSectionStart: '' },
+        7: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '⤷', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '⤷', bullet: '', cmdSectionStart: '' },
+        8: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▶', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▶', bullet: '', cmdSectionStart: '' },
+        9: { infoTop: '╭──⨁「 *WALLYJAYTECH-MD MENU* 」⨁', infoBottom: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', infoLine: '⤷', sectionTop: '╭──⨁「 *{section}* 」⨁', sectionBottom: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', sectionLine: '⤷', bullet: '', cmdSectionStart: '' },
+        10: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▸', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▸', bullet: '', cmdSectionStart: '' },
+        11: { infoTop: '╭──⏣「 *WALLYJAYTECH-MD MENU* 」⏣', infoBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', infoLine: '▸', sectionTop: '╭──⏣「 *{section}* 」⏣', sectionBottom: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', sectionLine: '▸', bullet: '', cmdSectionStart: '' },
+        12: { infoTop: '╭──⍋「 *WALLYJAYTECH-MD MENU* 」⍋', infoBottom: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', infoLine: '▶', sectionTop: '╭──⍋「 *{section}* 」⍋', sectionBottom: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', sectionLine: '▶', bullet: '', cmdSectionStart: '' }
     };
-    
+
     const s = styles[styleId] || styles[1];
-    let styled = text;
-    if (styleId !== 1) {
-        styled = styled.replace(/╔/g, s.tl).replace(/╗/g, s.tr).replace(/╚/g, s.bl).replace(/╝/g, s.br).replace(/═/g, s.h).replace(/║/g, s.v);
+    if (styleId === 1) return text;
+
+    const lines = text.split('\n');
+    
+    // Extract greeting
+    let greeting = '';
+    for (const l of lines) {
+        if (l.startsWith('👋') || l.includes('Good') || l.includes('menu:')) {
+            greeting += l + '\n';
+        }
+        if (l.includes('WALLYJAYTECH-MD MENU')) break;
     }
-    return styled;
+
+    // Extract info lines
+    const infoLines = [];
+    let inInfo = false;
+    for (const l of lines) {
+        if (l.includes('WALLYJAYTECH-MD MENU')) { inInfo = true; continue; }
+        if (inInfo && l.trim().startsWith('*')) infoLines.push(l.trim());
+        if (l.includes('═══════') || l.includes('★─☆─♪♪─❍') || l.includes('✤─✤') || l.includes('⍟─⍟') || l.includes('⌬─⌬') || l.includes('⏣─⏣') || l.includes('⨁─⨁') || l.includes('⍋─⍋') || l.includes('❖─❖')) inInfo = false;
+    }
+
+    // Extract command sections
+    const sections = text.split('╔═══════════════════╗').slice(1);
+    const cmdSections = [];
+    for (const sec of sections) {
+        const titleMatch = sec.match(/\*([^*]+)\*/);
+        const title = titleMatch ? titleMatch[1].trim() : '';
+        const cmdLines = [];
+        for (const l of sec.split('\n')) {
+            if (l.includes('*🔺') || l.includes('*🔹') || l.includes('*🔻') || l.includes('*🟤') ||
+                l.includes('*▫️') || l.includes('*◾️') || l.includes('*♦️') || l.includes('*🟢') ||
+                l.includes('*🔴') || l.includes('*🟠') || l.includes('*🟡') || l.includes('*🟣') ||
+                l.includes('*🔵') || l.includes('*🔸')) {
+                cmdLines.push(l.replace(/║\s*\*/, '*').replace(/\*$/, '').trim());
+            }
+        }
+        if (title && cmdLines.length > 0) cmdSections.push({ title, commands: cmdLines });
+    }
+
+    // Extract footer
+    let footer = '';
+    const footerStart = lines.findIndex(l => l.includes('Copyright wallyjaytech'));
+    if (footerStart > 0) {
+        footer = lines.slice(footerStart).join('\n');
+    }
+
+    // Build menu
+    let menu = greeting + '\n';
+    menu += s.infoTop + '\n';
+    for (const l of infoLines) menu += s.infoLine + ' ' + l + '\n';
+    menu += s.infoBottom + '\n';
+    if (s.cmdSectionStart) menu += s.cmdSectionStart + '\n';
+    for (const sec of cmdSections) {
+        menu += '\n' + s.sectionTop.replace('{section}', sec.title) + '\n';
+        for (const cmd of sec.commands) menu += s.sectionLine + ' ' + cmd + '\n';
+        menu += s.sectionBottom + '\n';
+    }
+    menu += '\n' + footer;
+    return menu;
 }
 
 async function helpCommand(sock, chatId, message) {
@@ -519,7 +573,6 @@ ${platformStatsText}
 
 *⬇️Join our channel below for updates⬇️`;
 
-    // Apply style then font
     const styledHelp = applyMenuStyle(helpMessage, styleId);
     const finalMessage = applyFont(styledHelp, fontId);
 
