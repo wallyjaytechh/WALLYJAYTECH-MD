@@ -1,7 +1,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Delete Command - Recovers deleted messages instantly
- * Professional Version
+ * Professional Version - All fixes applied
  */
 
 const fs = require('fs');
@@ -31,15 +31,11 @@ const channelInfo = {
 };
 
 function loadConfig() {
-    try {
-        if (fs.existsSync(CONFIG_PATH)) return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-    } catch (e) {}
+    try { if (fs.existsSync(CONFIG_PATH)) return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch (e) {}
     return { enabled: false, route: { private: 'dm', group: 'chat' } };
 }
 
-function saveConfig(config) {
-    try { fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2)); } catch (e) {}
-}
+function saveConfig(config) { try { fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2)); } catch (e) {} }
 
 function formatTimestamp() {
     return new Date().toLocaleString('en-US', { timeZone: 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -110,15 +106,29 @@ async function handleMessageRevocation(sock, revocationMessage) {
         if (!revokedKey?.id) return;
 
         const messageId = revokedKey.id;
-        const deletedBy = revocationMessage.key.participant || revocationMessage.key.remoteJid;
+        const isBotDeleting = revocationMessage.key.fromMe === true;
+        const rawDeleter = revocationMessage.key.participant || revocationMessage.key.remoteJid;
         const originalChat = revokedKey.remoteJid;
         const isGroup = originalChat?.endsWith('@g.us');
         const original = messageStore.get(messageId);
         if (!original) return;
 
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        const isBotDeleter = deletedBy === botJid || deletedBy.includes(botJid.split('@')[0]);
+
+        // Correct deleter name
+        let deleterName, deleterMention;
+        if (isBotDeleting) {
+            deleterName = 'WALLYJAYTECH-MD (Bot)';
+            deleterMention = botJid;
+        } else {
+            deleterName = `@${rawDeleter.split('@')[0]}`;
+            deleterMention = rawDeleter;
+        }
+
+        // Correct sender name
         const isBotSender = original.isBot;
+        const senderName = isBotSender ? 'WALLYJAYTECH-MD (Bot)' : `@${original.sender.split('@')[0]}`;
+        const senderMention = isBotSender ? botJid : original.sender;
 
         let targetChat;
         if (!isGroup) {
@@ -126,13 +136,6 @@ async function handleMessageRevocation(sock, revocationMessage) {
         } else {
             targetChat = config.route.group === 'chat' ? originalChat : botJid;
         }
-
-        // Name the sender and deleter correctly
-        const senderName = isBotSender ? 'WALLYJAYTECH-MD (Bot)' : `@${original.sender.split('@')[0]}`;
-        const deleterName = isBotDeleter ? 'WALLYJAYTECH-MD (Bot)' : `@${deletedBy.split('@')[0]}`;
-        
-        const senderMention = isBotSender ? botJid : original.sender;
-        const deleterMention = isBotDeleter ? botJid : deletedBy;
 
         const time = formatTimestamp();
 
@@ -148,21 +151,37 @@ async function handleMessageRevocation(sock, revocationMessage) {
         recoveryText += `\n🤖 WALLYJAYTECH-MD Antidelete\n`;
         recoveryText += `└──═━┈ *END REPORT* ┈━═──┘`;
 
-        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] });
-
+        // Send recovery
         if (original.mediaType && fs.existsSync(original.mediaPath)) {
+            let sentMedia;
             try {
-                const caption = `📎 Recovered ${original.mediaType} from ${senderName}`;
                 switch (original.mediaType) {
-                    case 'image': await sock.sendMessage(targetChat, { image: { url: original.mediaPath }, caption, mentions: [senderMention] }); break;
-                    case 'video': await sock.sendMessage(targetChat, { video: { url: original.mediaPath }, caption, mentions: [senderMention] }); break;
-                    case 'audio': await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/mpeg' }); break;
-                    case 'voice': await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/ogg; codecs=opus', ptt: true }); break;
-                    case 'sticker': await sock.sendMessage(targetChat, { sticker: { url: original.mediaPath } }); break;
-                    case 'document': await sock.sendMessage(targetChat, { document: { url: original.mediaPath }, fileName: original.fileName || 'document', caption, mentions: [senderMention] }); break;
+                    case 'image':
+                        await sock.sendMessage(targetChat, { image: { url: original.mediaPath }, caption: recoveryText, mentions: [senderMention, deleterMention] });
+                        break;
+                    case 'video':
+                        await sock.sendMessage(targetChat, { video: { url: original.mediaPath }, caption: recoveryText, mentions: [senderMention, deleterMention] });
+                        break;
+                    case 'document':
+                        await sock.sendMessage(targetChat, { document: { url: original.mediaPath }, fileName: original.fileName || 'document', caption: recoveryText, mentions: [senderMention, deleterMention] });
+                        break;
+                    case 'audio':
+                        sentMedia = await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/mpeg' });
+                        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] }, { quoted: sentMedia });
+                        break;
+                    case 'voice':
+                        sentMedia = await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/ogg; codecs=opus', ptt: true });
+                        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] }, { quoted: sentMedia });
+                        break;
+                    case 'sticker':
+                        sentMedia = await sock.sendMessage(targetChat, { sticker: { url: original.mediaPath } });
+                        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] }, { quoted: sentMedia });
+                        break;
                 }
             } catch (err) {}
             try { fs.unlinkSync(original.mediaPath); } catch (err) {}
+        } else {
+            await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] });
         }
 
         console.log(`✅ Recovered ${original.type} from ${original.sender}`);
@@ -204,7 +223,8 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
                       `└ .antidelete private chat - DMs to chat\n` +
                       `└ .antidelete group chat - Group recovery in group\n` +
                       `└ .antidelete group dm - Group recovery to bot\n` +
-                      `└ .antidelete - Show settings\n\n` +
+                      `└ .antidelete status - Show settings\n` +
+                      `└ .antidelete - Show this menu\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `💡 *Example:*\n` +
                       `└ .antidelete on\n` +
@@ -220,7 +240,7 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
                 return;
             }
             config.enabled = true; saveConfig(config);
-            await sock.sendMessage(chatId, { text: `✅ *ANTI-DELETE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Deleted messages will now be recovered.\n📩 Private: ${config.route.private === 'dm' ? 'Bot DM' : 'Original Chat'}\n👥 Group: ${config.route.group === 'chat' ? 'Group Chat' : 'Bot DM'}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `✅ *ANTI-DELETE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Deleted messages will now be recovered.\n📩 Private: ${config.route.private === 'dm' ? 'Bot DM' : 'Original Chat'}\n👥 Group: ${config.route.group === 'chat' ? 'Group Chat' : 'Bot DM'}\n🤖 Bot messages: Also recovered`, ...channelInfo });
         } else if (cmd === 'off') {
             if (!config.enabled) {
                 await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🛡️ Anti-Delete is already *OFF*.\n\n💡 Use .antidelete on to enable.`, ...channelInfo });
@@ -250,6 +270,22 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
                 config.route.group = 'dm'; saveConfig(config);
                 await sock.sendMessage(chatId, { text: `✅ *GROUP ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n👥 Deleted group messages → *Bot DM*`, ...channelInfo });
             }
+        } else if (cmd === 'status') {
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
+            const privateRoute = config.route.private === 'dm' ? 'Bot DM' : 'Original Chat';
+            const groupRoute = config.route.group === 'chat' ? 'Group Chat' : 'Bot DM';
+            await sock.sendMessage(chatId, {
+                text: `🛡️ *ANTI-DELETE STATUS*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `📩 *Private:* ${privateRoute}\n` +
+                      `👥 *Group:* ${groupRoute}\n` +
+                      `🤖 *Bot Messages:* Recovered\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `💡 Use .antidelete to see all commands.`,
+                ...channelInfo
+            });
         }
     } catch (err) { console.error('Command error:', err); }
 }
