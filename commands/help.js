@@ -141,24 +141,23 @@ function buildMenu(styleId, data) {
     ];
 
     const styles = {
-        1: { top: '╔═══════════════════════════╗\n║  *WALLYJAYTECH-MD MENU*   ║\n╠═══════════════════════════╣', line: '║', secHdr: (s) => `╠═══════════════════════════╣\n║  *${s}*          ║\n║  ───────────────────────── ║`, bot: '╚═══════════════════════════╝', bul: '║  ' },
-        2: { top: '╭──❍「 *USER INFO* 」❍', line: '├•', secHdr: (s) => `╰─┬─★─☆─♪♪─❍\n╭─┴❍「 *${s}* 」❍`, bot: '╰─┬─★─☆─♪♪─❍', bul: '├• ' },
-        3: { top: '╭──✤「 *USER PANEL* 」✤', line: '├•', secHdr: (s) => `╰─✤─✤─✤─✤─✤─✤─✤─✤\n╭──✤「 *${s}* 」✤`, bot: '╰─✤─✤─✤─✤─✤─✤─✤─✤', bul: '├• ' },
-        4: { top: '╭──⍟「 *BOT STATUS* 」⍟', line: '⤚', secHdr: (s) => `╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟\n╭──⍟「 *${s}* 」⍟`, bot: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', bul: '⤚ ' },
-        5: { top: '━━━❖━⦿━❖━⦿━❖━⦿━❖━⦿━━━\n╭──❖「 *USER INFO* 」❖', line: '⤚', secHdr: (s) => `╰─❖─❖─❖─❖─❖─❖─❖─❖\n╭──❖「 *${s}* 」❖`, bot: '╰─❖─❖─❖─❖─❖─❖─❖─❖', bul: '⤚ ' },
-        6: { top: '╭──⌬「 *MAIN MENU* 」⌬', line: '⤚', secHdr: (s) => `╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬\n╭──⌬「 *${s}* 」⌬`, bot: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', bul: '⤚ ' },
-        7: { top: '╭──⏣「 *DASHBOARD* 」⏣', line: '⤷', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *${s}* 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '⤷ ' },
-        8: { top: '╭──⏣「 *STATUS* 」⏣', line: '▶', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *${s}* 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▶ ' },
-        9: { top: '╭──⨁「 *SYSTEM* 」⨁', line: '⤷', secHdr: (s) => `╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁\n╭──⨁「 *${s}* 」⨁`, bot: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', bul: '⤷ ' },
-        10: { top: '╭──⏣「 *MENU HEADER* 」⏣', line: '▸', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *${s}* 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▸ ' },
-        11: { top: '╭──⏣「 *PROFILE* 」⏣', line: '▸', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 *${s}* 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▸ ' },
-        12: { top: '╭──⍋「 *BOT INFO* 」⍋', line: '▶', secHdr: (s) => `╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋\n╭──⍋「 *${s}* 」⍋`, bot: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', bul: '▶ ' }
+        2: { top: '╭──❍「 USER INFO 」❍', line: '├•', secHdr: (s) => `╰─┬─★─☆─♪♪─❍\n╭─┴❍「 ${s} 」❍`, bot: '╰─┬─★─☆─♪♪─❍', bul: '├• ' },
+        3: { top: '╭──✤「 USER PANEL 」✤', line: '├•', secHdr: (s) => `╰─✤─✤─✤─✤─✤─✤─✤─✤\n╭──✤「 ${s} 」✤`, bot: '╰─✤─✤─✤─✤─✤─✤─✤─✤', bul: '├• ' },
+        4: { top: '╭──⍟「 BOT STATUS 」⍟', line: '⤚', secHdr: (s) => `╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟\n╭──⍟「 ${s} 」⍟`, bot: '╰─⍟─⍟─⍟─⍟─⍟─⍟─⍟─⍟', bul: '⤚ ' },
+        5: { top: '━━━❖━⦿━❖━⦿━❖━⦿━❖━⦿━━━\n╭──❖「 USER INFO 」❖', line: '⤚', secHdr: (s) => `╰─❖─❖─❖─❖─❖─❖─❖─❖\n╭──❖「 ${s} 」❖`, bot: '╰─❖─❖─❖─❖─❖─❖─❖─❖', bul: '⤚ ' },
+        6: { top: '╭──⌬「 MAIN MENU 」⌬', line: '⤚', secHdr: (s) => `╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬\n╭──⌬「 ${s} 」⌬`, bot: '╰─⌬─⌬─⌬─⌬─⌬─⌬─⌬─⌬', bul: '⤚ ' },
+        7: { top: '╭──⏣「 DASHBOARD 」⏣', line: '⤷', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 ${s} 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '⤷ ' },
+        8: { top: '╭──⏣「 STATUS 」⏣', line: '▶', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 ${s} 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▶ ' },
+        9: { top: '╭──⨁「 SYSTEM 」⨁', line: '⤷', secHdr: (s) => `╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁\n╭──⨁「 ${s} 」⨁`, bot: '╰─⨁─⨁─⨁─⨁─⨁─⨁─⨁─⨁', bul: '⤷ ' },
+        10: { top: '╭──⏣「 MENU HEADER 」⏣', line: '▸', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 ${s} 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▸ ' },
+        11: { top: '╭──⏣「 PROFILE 」⏣', line: '▸', secHdr: (s) => `╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣\n╭──⏣「 ${s} 」⏣`, bot: '╰─⏣─⏣─⏣─⏣─⏣─⏣─⏣─⏣', bul: '▸ ' },
+        12: { top: '╭──⍋「 BOT INFO 」⍋', line: '▶', secHdr: (s) => `╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋\n╭──⍋「 ${s} 」⍋`, bot: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', bul: '▶ ' }
     };
 
-    const s = styles[styleId] || styles[1];
+    const s = styles[styleId] || styles[2];
 
-    let menu = `👋 *Hello @${userName}! ${greeting.message}*\n\n`;
-    menu += `*${greeting.greeting}! Here's your menu:*\n\n`;
+    let menu = `👋 Hello @${userName}! ${greeting.message}\n\n`;
+    menu += `${greeting.greeting}! Here's your menu:\n\n`;
     menu += s.top + '\n';
     for (const l of infoLines) menu += s.line + ' ' + l + '\n';
     
@@ -167,11 +166,11 @@ function buildMenu(styleId, data) {
         for (const cmd of cmds) menu += s.bul + cmd + '\n';
     }
     menu += s.bot + '\n\n';
-    menu += `    🟡 *Copyright wallyjaytech 2025* 🟡\n\n`;
-    menu += `*📊 Total Commands: ${totalCommands}*\n\n`;
-    menu += `*📊 Local Stats: ${stats.activeUsers} active now, ${stats.totalUsers} total users*\n\n`;
-    menu += `*${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}*\n\n`;
-    menu += `*⬇️Join our channel below for updates⬇️*`;
+    menu += `    🟡 Copyright wallyjaytech 2025 🟡\n\n`;
+    menu += `📊 Total Commands: ${totalCommands}\n\n`;
+    menu += `📊 Local Stats: ${stats.activeUsers} active now, ${stats.totalUsers} total users\n\n`;
+    menu += `${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}\n\n`;
+    menu += `⬇️Join our channel below for updates⬇️`;
 
     return menu;
 }
@@ -202,8 +201,359 @@ async function helpCommand(sock, chatId, message) {
         catch (e) { return new Date().toLocaleString(); }
     };
 
-    const menuData = { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, menuType, userPlatform, getLocalizedTime, styleId };
-    const helpMessage = buildMenu(styleId, menuData);
+    let platformStatsText = '';
+    const platforms = stats.platforms || {};
+    const platformEntries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
+    platformStatsText = platformEntries.length > 0 ? platformEntries.map(([p, c]) => `║     ${getPlatformEmoji(p)} ${p}: ${c} users`).join('\n') : '║     📊 No platform data yet';
+
+    const userUsageInfo = stats.users?.[`user_${senderId.split('@')[0]}`] ? `║     📈 Your Usage: ${stats.users[`user_${senderId.split('@')[0]}`].totalUses || 1} commands` : '║     📈 Your Usage: First time user';
+
+    let helpMessage;
+    
+    if (styleId === 1) {
+        // ORIGINAL MENU PRESERVED EXACTLY - with emoji prefixes
+        helpMessage = `
+👋 Hello @${userName}! ${greeting.message}
+
+${greeting.greeting}! Here's your menu:
+
+╔❖🔹 WALLYJAYTECH-MD MENU 🔹❖
+║
+║   👤 User: [ @${userName} ]
+║   🤖 BotName: [ ${settings.botName || 'WALLYJAYTECH-MD'} ]
+║   🧠 Version: [ ${stats.version || settings.version || '1.0.0'} ]
+║   👑 BotOwner: [ ${settings.botOwner || 'Wally Jay Tech'} ]
+║   📺 YT Channel: [ ${global.ytch} ]
+║   📞 OwnerNumber: [ ${settings.ownerNumber} ]
+║   📥 Prefix: [ ${prefix} ]
+║   🎨 Menu Style: [ ${styleId} ]
+║   🎬 Menu Media: [ ${menuType} & AUDIO ]
+║   🌍 TimeZone: [ ${settings.timezone} ]
+║   ⏰ Current Time: [ ${greeting.time} ]
+║   ${dayInfo.emoji} Day: [ ${dayInfo.day} ]
+║   💻 Bot Mode: [ ${currentBotMode} ]
+║   📊 Total Commands: [ ${totalCommands} ]
+║   📅 Date: [ ${getLocalizedTime()} ]
+║   📡 Your Platform: [ ${userPlatform} ]
+║   👥 Active Users Now: [ ${stats.activeUsers} ]
+║   📊 Total Users All Time: [ ${stats.totalUsers} ]
+${userUsageInfo}
+║   🌐 Users by Platform:
+${platformStatsText}
+║   📡 Tracking: Local Storage ✅
+║
+╚═══════════════════╝
+
+⬇️ ALL COMMANDS ⬇️
+
+╔═══════════════════╗
+║
+║  🔒OWNER CMDS🔒
+║
+║ 🔺${prefix}mode <public/private>
+║ 🔺${prefix}menufont <1-12>
+║ 🔺${prefix}menustyle <1-12>
+║ 🔺${prefix}autorecord
+║ 🔺${prefix}autotyping
+║ 🔺${prefix}autorecordtype
+║ 🔺${prefix}autostatus <on/off>
+║ 🔺${prefix}autostatus react <on/off>
+║ 🔺${prefix}autoreact <on/off>
+║ 🔺${prefix}autoread <on/off>
+║ 🔺${prefix}antiforeign
+║ 🔺${prefix}join
+║ 🔺${prefix}poll/${prefix}vote
+║ 🔺${prefix}block
+║ 🔺${prefix}unblock
+║ 🔺${prefix}getpp
+║ 🔺${prefix}leave
+║ 🔺${prefix}clearsession
+║ 🔺${prefix}antidelete
+║ 🔺${prefix}tempfile
+║ 🔺${prefix}cleartmp
+║ 🔺${prefix}checkupdate
+║ 🔺${prefix}updateinfo
+║ 🔺${prefix}update
+║ 🔺${prefix}botinfo
+║ 🔺${prefix}setprefix
+║ 🔺${prefix}setbotname
+║ 🔺${prefix}setbotowner
+║ 🔺${prefix}setownernumber
+║ 🔺${prefix}setytchannel
+║ 🔺${prefix}setpackname
+║ 🔺${prefix}setauthor
+║ 🔺${prefix}settimezone
+║ 🔺${prefix}confighelp
+║ 🔺${prefix}restart
+║ 🔺${prefix}sudo
+║ 🔺${prefix}settings
+║ 🔺${prefix}setpp <reply to image>
+║ 🔺${prefix}anticall <on/off>
+║ 🔺${prefix}pmblocker <on/off/status>
+║ 🔺${prefix}pmblocker setmsg <text>
+║ 🔺${prefix}setmention <reply to msg>
+║ 🔺${prefix}mention <on/off>
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦
+║
+║ 🔹${prefix}ban @user
+║ 🔹${prefix}unban @user
+║ 🔹${prefix}promote @user
+║ 🔹${prefix}demote @user
+║ 🔹${prefix}mute <minutes>
+║ 🔹${prefix}unmute
+║ 🔹${prefix}delete
+║ 🔹${prefix}kick @user
+║ 🔹${prefix}ship
+║ 🔹${prefix}stupid @user <text>
+║ 🔹${prefix}warnings @user
+║ 🔹${prefix}warn @user
+║ 🔹${prefix}antilink
+║ 🔹${prefix}antibadword
+║ 🔹${prefix}antibot
+║ 🔹${prefix}groupinfo
+║ 🔹${prefix}admins
+║ 🔹${prefix}jid
+║ 🔹${prefix}tag <message>
+║ 🔹${prefix}tagall
+║ 🔹${prefix}tagnotadmin
+║ 🔹${prefix}hidetag <message>
+║ 🔹${prefix}chatbot
+║ 🔹${prefix}resetlink
+║ 🔹${prefix}antitag <on/off>
+║ 🔹${prefix}welcome <on/off>
+║ 🔹${prefix}goodbye <on/off>
+║ 🔹${prefix}setgdesc <description>
+║ 🔹${prefix}setgname <new name>
+║ 🔹${prefix}setgpp (reply to image)
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🎨STICKER CMDS🎨
+║
+║ 🔻${prefix}blur <image>
+║ 🔻${prefix}simage <reply to sticker>
+║ 🔻${prefix}sticker <reply to img or vid>
+║ 🔻${prefix}removebg
+║ 🔻${prefix}remini
+║ 🔻${prefix}crop <reply to image>
+║ 🔻${prefix}tgsticker <Link>
+║ 🔻${prefix}meme
+║ 🔻${prefix}take <packname>
+║ 🔻${prefix}emojimix <emj1>+<emj2>
+║ 🔻${prefix}igs <insta link>
+║ 🔻${prefix}igsc <insta link>
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 📩WHATSAPP CMDS📩
+║
+║ 🟤${prefix}clear
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🖼️PIES CMDS🖼️
+║
+║ ▫️${prefix}pies <country>
+║ ▫️${prefix}china
+║ ▫️${prefix}indonesia
+║ ▫️${prefix}japan
+║ ▫️${prefix}korea
+║ ▫️${prefix}hijab
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🎮GAME CMDS🎮
+║
+║ ◾️${prefix}tictactoe @user
+║ ◾️${prefix}hangman
+║ ◾️${prefix}guess <letter>
+║ ◾️${prefix}trivia
+║ ◾️${prefix}answer <answer>
+║ ◾️${prefix}truth
+║ ◾️${prefix}dare
+║ ◾️${prefix}coinflip
+║ ◾️${prefix}coinflip <heads/tails>
+║ ◾️${prefix}coinflip <heads/tails> <bet>
+║ ◾️${prefix}coinstats
+║ ◾️${prefix}coinleaderboard
+║ ◾️${prefix}coindaily
+║ ◾️${prefix}buychips
+║ ◾️${prefix}coinhelp
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🧠AI CMDS🧠
+║
+║ ♦️${prefix}gpt <question>
+║ ♦️${prefix}gemini <question>
+║ ♦️${prefix}imagine <prompt>
+║ ♦️${prefix}flux <prompt>
+║ ♦️${prefix}sora <prompt>
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 😁FUN CMDS😁
+║
+║ 🟢${prefix}compliment @user
+║ 🟢${prefix}insult @user
+║ 🟢${prefix}flirt
+║ 🟢${prefix}poet
+║ 🟢${prefix}goodnight
+║ 🟢${prefix}roseday
+║ 🟢${prefix}character @user
+║ 🟢${prefix}wasted @user
+║ 🟢${prefix}simp @user
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🔤EPHOTO CMDS🔤
+║
+║ 🔴${prefix}metallic <text>
+║ 🔴${prefix}ice <text>
+║ 🔴${prefix}snow <text>
+║ 🔴${prefix}impressive <text>
+║ 🔴${prefix}matrix <text>
+║ 🔴${prefix}light <text>
+║ 🔴${prefix}neon <text>
+║ 🔴${prefix}devil <text>
+║ 🔴${prefix}purple <text>
+║ 🔴${prefix}thunder <text>
+║ 🔴${prefix}leaves <text>
+║ 🔴${prefix}1917 <text>
+║ 🔴${prefix}arena <text>
+║ 🔴${prefix}hacker <text>
+║ 🔴${prefix}sand <text>
+║ 🔴${prefix}blackpink <text>
+║ 🔴${prefix}glitch <text>
+║ 🔴${prefix}fire <text>
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 📥DOWNLOAD CMDS📥
+║
+║ 🟠${prefix}play <song name>
+║ 🟠${prefix}song <song name>
+║ 🟠${prefix}spotify <query>
+║ 🟠${prefix}instagram <link>
+║ 🟠${prefix}facebook <link>
+║ 🟠${prefix}tiktok <link>
+║ 🟠${prefix}video <song name>
+║ 🟠${prefix}ytmp4 <Link>
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🧩MISC CMDS🧩
+║
+║ 🟡${prefix}heart
+║ 🟡${prefix}horny
+║ 🟡${prefix}circle
+║ 🟡${prefix}lgbt
+║ 🟡${prefix}lolice
+║ 🟡${prefix}tonikawa
+║ 🟡${prefix}its-so-stupid
+║ 🟡${prefix}namecard
+║ 🟡${prefix}oogway
+║ 🟡${prefix}oogway2
+║ 🟡${prefix}tweet
+║ 🟡${prefix}ytcomment
+║ 🟡${prefix}comrade
+║ 🟡${prefix}gay
+║ 🟡${prefix}glass
+║ 🟡${prefix}jail
+║ 🟡${prefix}passed
+║ 🟡${prefix}triggered
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🦹‍♀️ANIME CMDS🦹‍♀️
+║
+║ 🟣${prefix}nom
+║ 🟣${prefix}poke
+║ 🟣${prefix}cry
+║ 🟣${prefix}kiss
+║ 🟣${prefix}pat
+║ 🟣${prefix}hug
+║ 🟣${prefix}wink
+║ 🟣${prefix}facepalm
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 💻GITHUB CMDS💻
+║
+║ 🔵${prefix}git
+║ 🔵${prefix}github
+║ 🔵${prefix}sc
+║ 🔵${prefix}script
+║ 🔵${prefix}repo
+║
+╚═══════════════════╝
+
+╔═══════════════════╗
+║
+║ 🌐GENERAL CMDS🌐
+║
+║ 🔸${prefix}help or ${prefix}menu
+║ 🔸${prefix}ping
+║ 🔸${prefix}alive
+║ 🔸${prefix}tts <text>
+║ 🔸${prefix}owner
+║ 🔸${prefix}joke
+║ 🔸${prefix}quote
+║ 🔸${prefix}fact
+║ 🔸${prefix}weather <city>
+║ 🔸${prefix}news
+║ 🔸${prefix}attp <text>
+║ 🔸${prefix}lyrics <songtitle>
+║ 🔸${prefix}8ball <question>
+║ 🔸${prefix}vv
+║ 🔸${prefix}trt <text> <lang>
+║ 🔸${prefix}ss <link>
+║ 🔸${prefix}url
+║ 🔸${prefix}getjid
+║
+╚═══════════════════╝
+
+    🟡 Copyright wallyjaytech 2025 🟡
+
+📊 Total Commands: ${totalCommands}
+
+📊 Local Stats: ${stats.activeUsers} active now, ${stats.totalUsers} total users
+
+${greeting.emoji} ${greeting.greeting}, @${userName}! ${greeting.message}
+
+⬇️Join our channel below for updates⬇️`;
+    } else {
+        const menuData = { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, menuType, userPlatform, getLocalizedTime, styleId };
+        helpMessage = buildMenu(styleId, menuData);
+    }
+
     const finalMessage = applyFont(helpMessage, fontId);
 
     try {
