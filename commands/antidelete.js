@@ -69,7 +69,7 @@ async function storeMessage(sock, message) {
         const isGroup = message.key.remoteJid.endsWith('@g.us');
         const groupJid = isGroup ? message.key.remoteJid : null;
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        if (sender === botJid) return;
+        const isBot = sender === botJid || sender.includes(botJid.split('@')[0]);
 
         let content = '', mediaType = '', mediaPath = '', fileName = '';
         const msg = message.message || {};
@@ -96,7 +96,7 @@ async function storeMessage(sock, message) {
             try { const stream = await downloadContentFromMessage(msg.documentMessage, 'document'); const chunks = []; for await (const chunk of stream) chunks.push(chunk); mediaPath = path.join(TEMP_MEDIA_DIR, `${messageId}_${fileName}`); await writeFile(mediaPath, Buffer.concat(chunks)); } catch (err) {}
         }
 
-        messageStore.set(messageId, { id: messageId, content, mediaType, mediaPath, fileName, sender, group: groupJid, remoteJid: message.key.remoteJid, timestamp: Date.now(), type: msgType.type, emoji: msgType.emoji });
+        messageStore.set(messageId, { id: messageId, content, mediaType, mediaPath, fileName, sender, isBot, group: groupJid, remoteJid: message.key.remoteJid, timestamp: Date.now(), type: msgType.type, emoji: msgType.emoji });
     } catch (err) { console.error('Store error:', err.message); }
 }
 
@@ -117,7 +117,8 @@ async function handleMessageRevocation(sock, revocationMessage) {
         if (!original) return;
 
         const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        if (deletedBy === botJid) return;
+        const isBotDeleter = deletedBy === botJid || deletedBy.includes(botJid.split('@')[0]);
+        const isBotSender = original.isBot;
 
         let targetChat;
         if (!isGroup) {
@@ -126,37 +127,45 @@ async function handleMessageRevocation(sock, revocationMessage) {
             targetChat = config.route.group === 'chat' ? originalChat : botJid;
         }
 
-        const senderNum = original.sender.split('@')[0];
-        const deleterNum = deletedBy.split('@')[0];
+        // Name the sender and deleter correctly
+        const senderName = isBotSender ? 'WALLYJAYTECH-MD (Bot)' : `@${original.sender.split('@')[0]}`;
+        const deleterName = isBotDeleter ? 'WALLYJAYTECH-MD (Bot)' : `@${deletedBy.split('@')[0]}`;
+        
+        const senderMention = isBotSender ? botJid : original.sender;
+        const deleterMention = isBotDeleter ? botJid : deletedBy;
+
         const time = formatTimestamp();
 
-        let recoveryText = `┌──═━┈ *MESSAGE RECOVERED* ┈━═──┐\n\n`;
-        recoveryText += `${original.emoji} *Type:* ${original.type.toUpperCase()}\n`;
-        recoveryText += `👤 *Sender:* @${senderNum}\n`;
-        recoveryText += `🗑️ *Deleted by:* @${deleterNum}\n`;
-        recoveryText += `🕒 *Time:* ${time}\n`;
+        let recoveryText = `┌──═━┈ *RECOVERED* ┈━═──┐\n\n`;
+        recoveryText += `📌 *ID:* ${messageId}\n`;
+        recoveryText += `👤 *From:* ${senderName}\n`;
+        recoveryText += `🗑️ *By:* ${deleterName}\n`;
+        recoveryText += `${original.emoji} *Type:* ${original.type.toUpperCase()}${original.content ? ' + caption' : ''}\n`;
         if (original.fileName) recoveryText += `📎 *File:* ${original.fileName}\n`;
+        recoveryText += `🕒 *Time:* ${time}\n`;
+        recoveryText += `📍 *Chat:* ${isGroup ? 'Group' : 'Private'}\n`;
         if (original.content) recoveryText += `\n💬 *Message:*\n${original.content}\n`;
-        recoveryText += `\n└──═━┈ *WALLYJAYTECH-MD* ┈━═──┘`;
+        recoveryText += `\n🤖 WALLYJAYTECH-MD Antidelete\n`;
+        recoveryText += `└──═━┈ *END REPORT* ┈━═──┘`;
 
-        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [original.sender, deletedBy] });
+        await sock.sendMessage(targetChat, { text: recoveryText, mentions: [senderMention, deleterMention] });
 
         if (original.mediaType && fs.existsSync(original.mediaPath)) {
             try {
-                const caption = `📎 Recovered ${original.mediaType} from @${senderNum}`;
+                const caption = `📎 Recovered ${original.mediaType} from ${senderName}`;
                 switch (original.mediaType) {
-                    case 'image': await sock.sendMessage(targetChat, { image: { url: original.mediaPath }, caption, mentions: [original.sender] }); break;
-                    case 'video': await sock.sendMessage(targetChat, { video: { url: original.mediaPath }, caption, mentions: [original.sender] }); break;
+                    case 'image': await sock.sendMessage(targetChat, { image: { url: original.mediaPath }, caption, mentions: [senderMention] }); break;
+                    case 'video': await sock.sendMessage(targetChat, { video: { url: original.mediaPath }, caption, mentions: [senderMention] }); break;
                     case 'audio': await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/mpeg' }); break;
                     case 'voice': await sock.sendMessage(targetChat, { audio: { url: original.mediaPath }, mimetype: 'audio/ogg; codecs=opus', ptt: true }); break;
                     case 'sticker': await sock.sendMessage(targetChat, { sticker: { url: original.mediaPath } }); break;
-                    case 'document': await sock.sendMessage(targetChat, { document: { url: original.mediaPath }, fileName: original.fileName || 'document', caption, mentions: [original.sender] }); break;
+                    case 'document': await sock.sendMessage(targetChat, { document: { url: original.mediaPath }, fileName: original.fileName || 'document', caption, mentions: [senderMention] }); break;
                 }
             } catch (err) {}
             try { fs.unlinkSync(original.mediaPath); } catch (err) {}
         }
 
-        console.log(`✅ Recovered ${original.type} from ${senderNum}`);
+        console.log(`✅ Recovered ${original.type} from ${original.sender}`);
         messageStore.delete(messageId);
     } catch (err) { console.error('Recovery error:', err.message); }
 }
