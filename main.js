@@ -597,13 +597,20 @@ if (!isPublic && !isOwnerOrSudoCheck) {
     }
     // Read current data first
     let data;
-    try {
+try {
+    if (!fs.existsSync('./data/messageCount.json')) {
+        data = { isPublic: true };
+        const dir = './data';
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
+    } else {
         data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-    } catch (error) {
-        console.error('Error reading access mode:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to read bot mode status' }, { quoted: message });
-        return;
     }
+} catch (error) {
+    console.error('Error reading access mode:', error);
+    data = { isPublic: true };
+    try { fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2)); } catch (e) {}
+}
 
     const action = userMessage.split(' ')[1]?.toLowerCase();
 
