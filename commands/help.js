@@ -243,11 +243,11 @@ ${platformStatsText}
 ║
 ╚═══════════════════╝
 
-⬇️ ALL COMMANDS ⬇️
+   ⬇️ ALL COMMANDS ⬇️
 
 ╔═══════════════════╗
 ║
-║  🔒OWNER CMDS🔒
+║    🔒OWNER CMDS🔒
 ║
 ║ 🔺${prefix}anticall <on/off>
 ║ 🔺${prefix}antidelete
@@ -298,7 +298,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦
+║   👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦
 ║
 ║ 🔹${prefix}admins
 ║ 🔹${prefix}antibadword
@@ -335,7 +335,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🎨STICKER CMDS🎨
+║   🎨STICKER CMDS🎨
 ║
 ║ 🔻${prefix}blur <image>
 ║ 🔻${prefix}crop <reply to image>
@@ -354,7 +354,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 📩WHATSAPP CMDS📩
+║   📩WHATSAPP CMDS📩
 ║
 ║ 🟤${prefix}clear
 ║
@@ -362,7 +362,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🖼️PIES CMDS🖼️
+║     🖼️PIES CMDS🖼️
 ║
 ║ ▫️${prefix}china
 ║ ▫️${prefix}hijab
@@ -375,7 +375,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🎮GAME CMDS🎮
+║     🎮GAME CMDS🎮
 ║
 ║ ◾️${prefix}answer <answer>
 ║ ◾️${prefix}buychips
@@ -397,7 +397,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🧠AI CMDS🧠
+║      🧠AI CMDS🧠
 ║
 ║ ♦️${prefix}flux <prompt>
 ║ ♦️${prefix}gemini <question>
@@ -409,7 +409,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 😁FUN CMDS😁
+║     😁FUN CMDS😁
 ║
 ║ 🟢${prefix}character @user
 ║ 🟢${prefix}compliment @user
@@ -425,7 +425,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🔤EPHOTO CMDS🔤
+║    🔤EPHOTO CMDS🔤
 ║
 ║ 🔴${prefix}1917 <text>
 ║ 🔴${prefix}arena <text>
@@ -450,7 +450,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 📥DOWNLOAD CMDS📥
+║   📥DOWNLOAD CMDS📥
 ║
 ║ 🟠${prefix}facebook <link>
 ║ 🟠${prefix}instagram <link>
@@ -465,7 +465,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🧩MISC CMDS🧩
+║    🧩MISC CMDS🧩
 ║
 ║ 🟡${prefix}circle
 ║ 🟡${prefix}comrade
@@ -490,7 +490,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🦹‍♀️ANIME CMDS🦹‍♀️
+║    🦹‍♀️ANIME CMDS🦹‍♀️
 ║
 ║ 🟣${prefix}cry
 ║ 🟣${prefix}facepalm
@@ -505,7 +505,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 💻GITHUB CMDS💻
+║   💻GITHUB CMDS💻
 ║
 ║ 🔵${prefix}git
 ║ 🔵${prefix}github
@@ -517,7 +517,7 @@ ${platformStatsText}
 
 ╔═══════════════════╗
 ║
-║ 🌐GENERAL CMDS🌐
+║    🌐GENERAL CMDS🌐
 ║
 ║ 🔸${prefix}8ball <question>
 ║ 🔸${prefix}alive
