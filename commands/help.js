@@ -126,18 +126,18 @@ function buildMenu(styleId, data) {
     ];
 
     const allCommands = [
-        ['🔒 OWNER', [`.mode`, `.menufont`, `.menustyle`, `.autorecord`, `.autotyping`, `.autorecordtype`, `.autostatus`, `.autoreact`, `.autoread`, `.antiforeign`, `.join`, `.poll`, `.vote`, `.block`, `.unblock`, `.getpp`, `.leave`, `.clearsession`, `.antidelete`, `.tempfile`, `.cleartmp`, `.checkupdate`, `.update`, `.botinfo`, `.setprefix`, `.setbotname`, `.setbotowner`, `.setownernumber`, `.setytchannel`, `.setpackname`, `.setauthor`, `.settimezone`, `.restart`, `.sudo`, `.settings`, `.setpp`, `.anticall`, `.pmblocker`, `.setmention`, `.mention`]],
-        ['👥 GROUP', [`.ban`, `.unban`, `.promote`, `.demote`, `.mute`, `.unmute`, `.delete`, `.kick`, `.ship`, `.stupid`, `.warnings`, `.warn`, `.antilink`, `.antibadword`, `.antibot`, `.groupinfo`, `.admins`, `.jid`, `.tag`, `.tagall`, `.tagnotadmin`, `.hidetag`, `.chatbot`, `.resetlink`, `.antitag`, `.welcome`, `.goodbye`, `.setgdesc`, `.setgname`, `.setgpp`]],
-        ['🎨 STICKER', [`.blur`, `.simage`, `.sticker`, `.removebg`, `.remini`, `.crop`, `.tgsticker`, `.meme`, `.take`, `.emojimix`, `.igs`, `.igsc`]],
-        ['📥 DOWNLOAD', [`.play`, `.song`, `.spotify`, `.instagram`, `.facebook`, `.tiktok`, `.video`, `.ytmp4`]],
-        ['🧠 AI', [`.gpt`, `.gemini`, `.imagine`, `.flux`, `.sora`]],
-        ['🎮 GAMES', [`.tictactoe`, `.hangman`, `.guess`, `.trivia`, `.answer`, `.truth`, `.dare`, `.coinflip`, `.coinstats`, `.coinleaderboard`, `.coindaily`, `.buychips`, `.coinhelp`]],
-        ['😁 FUN', [`.compliment`, `.insult`, `.flirt`, `.poet`, `.goodnight`, `.roseday`, `.character`, `.wasted`, `.simp`]],
-        ['🔤 EPHOTO', [`.metallic`, `.ice`, `.snow`, `.impressive`, `.matrix`, `.light`, `.neon`, `.devil`, `.purple`, `.thunder`, `.leaves`, `.1917`, `.arena`, `.hacker`, `.sand`, `.blackpink`, `.glitch`, `.fire`]],
-        ['🧩 MISC', [`.heart`, `.horny`, `.circle`, `.lgbt`, `.lolice`, `.tonikawa`, `.its-so-stupid`, `.namecard`, `.oogway`, `.oogway2`, `.tweet`, `.ytcomment`, `.comrade`, `.gay`, `.glass`, `.jail`, `.passed`, `.triggered`]],
-        ['🦹 ANIME', [`.nom`, `.poke`, `.cry`, `.kiss`, `.pat`, `.hug`, `.wink`, `.facepalm`]],
-        ['💻 GITHUB', [`.git`, `.github`, `.sc`, `.script`, `.repo`]],
-        ['🌐 GENERAL', [`.help`, `.menu`, `.ping`, `.alive`, `.tts`, `.owner`, `.joke`, `.quote`, `.fact`, `.weather`, `.news`, `.attp`, `.lyrics`, `.8ball`, `.vv`, `.trt`, `.ss`, `.url`, `.getjid`, `.clear`]]
+        ['🧠 AI', [`.flux`, `.gemini`, `.gpt`, `.imagine`, `.sora`]],
+        ['🦹 ANIME', [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`]],
+        ['📥 DOWNLOAD', [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`]],
+        ['🔤 EPHOTO', [`.1917`, `.arena`, `.blackpink`, `.devil`, `.fire`, `.glitch`, `.hacker`, `.ice`, `.impressive`, `.leaves`, `.light`, `.matrix`, `.metallic`, `.neon`, `.purple`, `.sand`, `.snow`, `.thunder`]],
+        ['😁 FUN', [`.character`, `.compliment`, `.flirt`, `.goodnight`, `.insult`, `.poet`, `.roseday`, `.simp`, `.wasted`]],
+        ['🎮 GAMES', [`.answer`, `.buychips`, `.coindaily`, `.coinflip`, `.coinhelp`, `.coinleaderboard`, `.coinstats`, `.dare`, `.guess`, `.hangman`, `.tictactoe`, `.trivia`, `.truth`]],
+        ['🌐 GENERAL', [`.8ball`, `.alive`, `.attp`, `.clear`, `.fact`, `.getjid`, `.help`, `.joke`, `.lyrics`, `.menu`, `.news`, `.owner`, `.ping`, `.quote`, `.ss`, `.trt`, `.tts`, `.url`, `.vv`, `.weather`]],
+        ['💻 GITHUB', [`.git`, `.github`, `.repo`, `.sc`, `.script`]],
+        ['👥 GROUP', [`.admins`, `.antibadword`, `.antibot`, `.antilink`, `.antitag`, `.ban`, `.chatbot`, `.delete`, `.demote`, `.goodbye`, `.groupinfo`, `.hidetag`, `.jid`, `.kick`, `.mute`, `.promote`, `.resetlink`, `.setgdesc`, `.setgname`, `.setgpp`, `.ship`, `.stupid`, `.tag`, `.tagall`, `.tagnotadmin`, `.unban`, `.unmute`, `.warn`, `.warnings`, `.welcome`]],
+        ['🧩 MISC', [`.circle`, `.comrade`, `.gay`, `.glass`, `.heart`, `.horny`, `.its-so-stupid`, `.jail`, `.lgbt`, `.lolice`, `.namecard`, `.oogway`, `.oogway2`, `.passed`, `.tonikawa`, `.triggered`, `.tweet`, `.ytcomment`]],
+        ['🔒 OWNER', [`.anticall`, `.antidelete`, `.antiforeign`, `.autoreact`, `.autoread`, `.autorecord`, `.autorecordtype`, `.autostatus`, `.autotyping`, `.block`, `.botinfo`, `.checkupdate`, `.clearsession`, `.cleartmp`, `.confighelp`, `.getpp`, `.join`, `.leave`, `.mention`, `.menufont`, `.menustyle`, `.mode`, `.pmblocker`, `.poll`, `.restart`, `.setauthor`, `.setbotname`, `.setbotowner`, `.setmention`, `.setownernumber`, `.setpackname`, `.setpp`, `.setprefix`, `.settings`, `.settimezone`, `.setytchannel`, `.sudo`, `.tempfile`, `.unblock`, `.update`, `.vote`]],
+        ['🎨 STICKER', [`.blur`, `.crop`, `.emojimix`, `.igsc`, `.igs`, `.meme`, `.removebg`, `.remini`, `.simage`, `.sticker`, `.take`, `.tgsticker`]]
     ];
 
     const styles = {
@@ -211,7 +211,6 @@ async function helpCommand(sock, chatId, message) {
     let helpMessage;
     
     if (styleId === 1) {
-        // ORIGINAL MENU PRESERVED EXACTLY - with emoji prefixes
         helpMessage = `
 👋 Hello @${userName}! ${greeting.message}
 
@@ -250,49 +249,50 @@ ${platformStatsText}
 ║
 ║  🔒OWNER CMDS🔒
 ║
-║ 🔺${prefix}mode <public/private>
-║ 🔺${prefix}menufont <1-12>
-║ 🔺${prefix}menustyle <1-12>
+║ 🔺${prefix}anticall <on/off>
+║ 🔺${prefix}antidelete
+║ 🔺${prefix}antiforeign
+║ 🔺${prefix}autoreact <on/off>
+║ 🔺${prefix}autoread <on/off>
 ║ 🔺${prefix}autorecord
-║ 🔺${prefix}autotyping
 ║ 🔺${prefix}autorecordtype
 ║ 🔺${prefix}autostatus <on/off>
 ║ 🔺${prefix}autostatus react <on/off>
-║ 🔺${prefix}autoreact <on/off>
-║ 🔺${prefix}autoread <on/off>
-║ 🔺${prefix}antiforeign
-║ 🔺${prefix}join
-║ 🔺${prefix}poll/${prefix}vote
+║ 🔺${prefix}autotyping
 ║ 🔺${prefix}block
-║ 🔺${prefix}unblock
-║ 🔺${prefix}getpp
-║ 🔺${prefix}leave
-║ 🔺${prefix}clearsession
-║ 🔺${prefix}antidelete
-║ 🔺${prefix}tempfile
-║ 🔺${prefix}cleartmp
-║ 🔺${prefix}checkupdate
-║ 🔺${prefix}updateinfo
-║ 🔺${prefix}update
 ║ 🔺${prefix}botinfo
-║ 🔺${prefix}setprefix
-║ 🔺${prefix}setbotname
-║ 🔺${prefix}setbotowner
-║ 🔺${prefix}setownernumber
-║ 🔺${prefix}setytchannel
-║ 🔺${prefix}setpackname
-║ 🔺${prefix}setauthor
-║ 🔺${prefix}settimezone
+║ 🔺${prefix}checkupdate
+║ 🔺${prefix}clearsession
+║ 🔺${prefix}cleartmp
 ║ 🔺${prefix}confighelp
-║ 🔺${prefix}restart
-║ 🔺${prefix}sudo
-║ 🔺${prefix}settings
-║ 🔺${prefix}setpp <reply to image>
-║ 🔺${prefix}anticall <on/off>
+║ 🔺${prefix}getpp
+║ 🔺${prefix}join
+║ 🔺${prefix}leave
+║ 🔺${prefix}mention <on/off>
+║ 🔺${prefix}menufont <1-12>
+║ 🔺${prefix}menustyle <1-12>
+║ 🔺${prefix}mode <public/private>
 ║ 🔺${prefix}pmblocker <on/off/status>
 ║ 🔺${prefix}pmblocker setmsg <text>
+║ 🔺${prefix}poll
+║ 🔺${prefix}restart
+║ 🔺${prefix}setauthor
+║ 🔺${prefix}setbotname
+║ 🔺${prefix}setbotowner
 ║ 🔺${prefix}setmention <reply to msg>
-║ 🔺${prefix}mention <on/off>
+║ 🔺${prefix}setownernumber
+║ 🔺${prefix}setpackname
+║ 🔺${prefix}setpp <reply to image>
+║ 🔺${prefix}setprefix
+║ 🔺${prefix}settings
+║ 🔺${prefix}settimezone
+║ 🔺${prefix}setytchannel
+║ 🔺${prefix}sudo
+║ 🔺${prefix}tempfile
+║ 🔺${prefix}unblock
+║ 🔺${prefix}update
+║ 🔺${prefix}updateinfo
+║ 🔺${prefix}vote
 ║
 ╚═══════════════════╝
 
@@ -300,36 +300,36 @@ ${platformStatsText}
 ║
 ║ 👨‍👩‍👧‍👦GROUP CMDS👨‍👩‍👧‍👦
 ║
-║ 🔹${prefix}ban @user
-║ 🔹${prefix}unban @user
-║ 🔹${prefix}promote @user
-║ 🔹${prefix}demote @user
-║ 🔹${prefix}mute <minutes>
-║ 🔹${prefix}unmute
-║ 🔹${prefix}delete
-║ 🔹${prefix}kick @user
-║ 🔹${prefix}ship
-║ 🔹${prefix}stupid @user <text>
-║ 🔹${prefix}warnings @user
-║ 🔹${prefix}warn @user
-║ 🔹${prefix}antilink
+║ 🔹${prefix}admins
 ║ 🔹${prefix}antibadword
 ║ 🔹${prefix}antibot
-║ 🔹${prefix}groupinfo
-║ 🔹${prefix}admins
-║ 🔹${prefix}jid
-║ 🔹${prefix}tag <message>
-║ 🔹${prefix}tagall
-║ 🔹${prefix}tagnotadmin
-║ 🔹${prefix}hidetag <message>
-║ 🔹${prefix}chatbot
-║ 🔹${prefix}resetlink
+║ 🔹${prefix}antilink
 ║ 🔹${prefix}antitag <on/off>
-║ 🔹${prefix}welcome <on/off>
+║ 🔹${prefix}ban @user
+║ 🔹${prefix}chatbot
+║ 🔹${prefix}delete
+║ 🔹${prefix}demote @user
 ║ 🔹${prefix}goodbye <on/off>
+║ 🔹${prefix}groupinfo
+║ 🔹${prefix}hidetag <message>
+║ 🔹${prefix}jid
+║ 🔹${prefix}kick @user
+║ 🔹${prefix}mute <minutes>
+║ 🔹${prefix}promote @user
+║ 🔹${prefix}resetlink
 ║ 🔹${prefix}setgdesc <description>
 ║ 🔹${prefix}setgname <new name>
 ║ 🔹${prefix}setgpp (reply to image)
+║ 🔹${prefix}ship
+║ 🔹${prefix}stupid @user <text>
+║ 🔹${prefix}tag <message>
+║ 🔹${prefix}tagall
+║ 🔹${prefix}tagnotadmin
+║ 🔹${prefix}unban @user
+║ 🔹${prefix}unmute
+║ 🔹${prefix}warn @user
+║ 🔹${prefix}warnings @user
+║ 🔹${prefix}welcome <on/off>
 ║
 ╚═══════════════════╝
 
@@ -338,17 +338,17 @@ ${platformStatsText}
 ║ 🎨STICKER CMDS🎨
 ║
 ║ 🔻${prefix}blur <image>
-║ 🔻${prefix}simage <reply to sticker>
-║ 🔻${prefix}sticker <reply to img or vid>
+║ 🔻${prefix}crop <reply to image>
+║ 🔻${prefix}emojimix <emj1>+<emj2>
+║ 🔻${prefix}igsc <insta link>
+║ 🔻${prefix}igs <insta link>
+║ 🔻${prefix}meme
 ║ 🔻${prefix}removebg
 ║ 🔻${prefix}remini
-║ 🔻${prefix}crop <reply to image>
-║ 🔻${prefix}tgsticker <Link>
-║ 🔻${prefix}meme
+║ 🔻${prefix}simage <reply to sticker>
+║ 🔻${prefix}sticker <reply to img or vid>
 ║ 🔻${prefix}take <packname>
-║ 🔻${prefix}emojimix <emj1>+<emj2>
-║ 🔻${prefix}igs <insta link>
-║ 🔻${prefix}igsc <insta link>
+║ 🔻${prefix}tgsticker <Link>
 ║
 ╚═══════════════════╝
 
@@ -364,12 +364,12 @@ ${platformStatsText}
 ║
 ║ 🖼️PIES CMDS🖼️
 ║
-║ ▫️${prefix}pies <country>
 ║ ▫️${prefix}china
+║ ▫️${prefix}hijab
 ║ ▫️${prefix}indonesia
 ║ ▫️${prefix}japan
 ║ ▫️${prefix}korea
-║ ▫️${prefix}hijab
+║ ▫️${prefix}pies <country>
 ║
 ╚═══════════════════╝
 
@@ -377,21 +377,21 @@ ${platformStatsText}
 ║
 ║ 🎮GAME CMDS🎮
 ║
-║ ◾️${prefix}tictactoe @user
-║ ◾️${prefix}hangman
-║ ◾️${prefix}guess <letter>
-║ ◾️${prefix}trivia
 ║ ◾️${prefix}answer <answer>
-║ ◾️${prefix}truth
-║ ◾️${prefix}dare
+║ ◾️${prefix}buychips
+║ ◾️${prefix}coindaily
 ║ ◾️${prefix}coinflip
 ║ ◾️${prefix}coinflip <heads/tails>
 ║ ◾️${prefix}coinflip <heads/tails> <bet>
-║ ◾️${prefix}coinstats
-║ ◾️${prefix}coinleaderboard
-║ ◾️${prefix}coindaily
-║ ◾️${prefix}buychips
 ║ ◾️${prefix}coinhelp
+║ ◾️${prefix}coinleaderboard
+║ ◾️${prefix}coinstats
+║ ◾️${prefix}dare
+║ ◾️${prefix}guess <letter>
+║ ◾️${prefix}hangman
+║ ◾️${prefix}tictactoe @user
+║ ◾️${prefix}trivia
+║ ◾️${prefix}truth
 ║
 ╚═══════════════════╝
 
@@ -399,10 +399,10 @@ ${platformStatsText}
 ║
 ║ 🧠AI CMDS🧠
 ║
-║ ♦️${prefix}gpt <question>
-║ ♦️${prefix}gemini <question>
-║ ♦️${prefix}imagine <prompt>
 ║ ♦️${prefix}flux <prompt>
+║ ♦️${prefix}gemini <question>
+║ ♦️${prefix}gpt <question>
+║ ♦️${prefix}imagine <prompt>
 ║ ♦️${prefix}sora <prompt>
 ║
 ╚═══════════════════╝
@@ -411,15 +411,15 @@ ${platformStatsText}
 ║
 ║ 😁FUN CMDS😁
 ║
-║ 🟢${prefix}compliment @user
-║ 🟢${prefix}insult @user
-║ 🟢${prefix}flirt
-║ 🟢${prefix}poet
-║ 🟢${prefix}goodnight
-║ 🟢${prefix}roseday
 ║ 🟢${prefix}character @user
-║ 🟢${prefix}wasted @user
+║ 🟢${prefix}compliment @user
+║ 🟢${prefix}flirt
+║ 🟢${prefix}goodnight
+║ 🟢${prefix}insult @user
+║ 🟢${prefix}poet
+║ 🟢${prefix}roseday
 ║ 🟢${prefix}simp @user
+║ 🟢${prefix}wasted @user
 ║
 ╚═══════════════════╝
 
@@ -427,24 +427,24 @@ ${platformStatsText}
 ║
 ║ 🔤EPHOTO CMDS🔤
 ║
-║ 🔴${prefix}metallic <text>
-║ 🔴${prefix}ice <text>
-║ 🔴${prefix}snow <text>
-║ 🔴${prefix}impressive <text>
-║ 🔴${prefix}matrix <text>
-║ 🔴${prefix}light <text>
-║ 🔴${prefix}neon <text>
-║ 🔴${prefix}devil <text>
-║ 🔴${prefix}purple <text>
-║ 🔴${prefix}thunder <text>
-║ 🔴${prefix}leaves <text>
 ║ 🔴${prefix}1917 <text>
 ║ 🔴${prefix}arena <text>
-║ 🔴${prefix}hacker <text>
-║ 🔴${prefix}sand <text>
 ║ 🔴${prefix}blackpink <text>
-║ 🔴${prefix}glitch <text>
+║ 🔴${prefix}devil <text>
 ║ 🔴${prefix}fire <text>
+║ 🔴${prefix}glitch <text>
+║ 🔴${prefix}hacker <text>
+║ 🔴${prefix}ice <text>
+║ 🔴${prefix}impressive <text>
+║ 🔴${prefix}leaves <text>
+║ 🔴${prefix}light <text>
+║ 🔴${prefix}matrix <text>
+║ 🔴${prefix}metallic <text>
+║ 🔴${prefix}neon <text>
+║ 🔴${prefix}purple <text>
+║ 🔴${prefix}sand <text>
+║ 🔴${prefix}snow <text>
+║ 🔴${prefix}thunder <text>
 ║
 ╚═══════════════════╝
 
@@ -452,11 +452,11 @@ ${platformStatsText}
 ║
 ║ 📥DOWNLOAD CMDS📥
 ║
+║ 🟠${prefix}facebook <link>
+║ 🟠${prefix}instagram <link>
 ║ 🟠${prefix}play <song name>
 ║ 🟠${prefix}song <song name>
 ║ 🟠${prefix}spotify <query>
-║ 🟠${prefix}instagram <link>
-║ 🟠${prefix}facebook <link>
 ║ 🟠${prefix}tiktok <link>
 ║ 🟠${prefix}video <song name>
 ║ 🟠${prefix}ytmp4 <Link>
@@ -467,24 +467,24 @@ ${platformStatsText}
 ║
 ║ 🧩MISC CMDS🧩
 ║
-║ 🟡${prefix}heart
-║ 🟡${prefix}horny
 ║ 🟡${prefix}circle
-║ 🟡${prefix}lgbt
-║ 🟡${prefix}lolice
-║ 🟡${prefix}tonikawa
-║ 🟡${prefix}its-so-stupid
-║ 🟡${prefix}namecard
-║ 🟡${prefix}oogway
-║ 🟡${prefix}oogway2
-║ 🟡${prefix}tweet
-║ 🟡${prefix}ytcomment
 ║ 🟡${prefix}comrade
 ║ 🟡${prefix}gay
 ║ 🟡${prefix}glass
+║ 🟡${prefix}heart
+║ 🟡${prefix}horny
+║ 🟡${prefix}its-so-stupid
 ║ 🟡${prefix}jail
+║ 🟡${prefix}lgbt
+║ 🟡${prefix}lolice
+║ 🟡${prefix}namecard
+║ 🟡${prefix}oogway
+║ 🟡${prefix}oogway2
 ║ 🟡${prefix}passed
+║ 🟡${prefix}tonikawa
 ║ 🟡${prefix}triggered
+║ 🟡${prefix}tweet
+║ 🟡${prefix}ytcomment
 ║
 ╚═══════════════════╝
 
@@ -492,14 +492,14 @@ ${platformStatsText}
 ║
 ║ 🦹‍♀️ANIME CMDS🦹‍♀️
 ║
-║ 🟣${prefix}nom
-║ 🟣${prefix}poke
 ║ 🟣${prefix}cry
-║ 🟣${prefix}kiss
-║ 🟣${prefix}pat
-║ 🟣${prefix}hug
-║ 🟣${prefix}wink
 ║ 🟣${prefix}facepalm
+║ 🟣${prefix}hug
+║ 🟣${prefix}kiss
+║ 🟣${prefix}nom
+║ 🟣${prefix}pat
+║ 🟣${prefix}poke
+║ 🟣${prefix}wink
 ║
 ╚═══════════════════╝
 
@@ -509,9 +509,9 @@ ${platformStatsText}
 ║
 ║ 🔵${prefix}git
 ║ 🔵${prefix}github
+║ 🔵${prefix}repo
 ║ 🔵${prefix}sc
 ║ 🔵${prefix}script
-║ 🔵${prefix}repo
 ║
 ╚═══════════════════╝
 
@@ -519,24 +519,24 @@ ${platformStatsText}
 ║
 ║ 🌐GENERAL CMDS🌐
 ║
-║ 🔸${prefix}help or ${prefix}menu
-║ 🔸${prefix}ping
-║ 🔸${prefix}alive
-║ 🔸${prefix}tts <text>
-║ 🔸${prefix}owner
-║ 🔸${prefix}joke
-║ 🔸${prefix}quote
-║ 🔸${prefix}fact
-║ 🔸${prefix}weather <city>
-║ 🔸${prefix}news
-║ 🔸${prefix}attp <text>
-║ 🔸${prefix}lyrics <songtitle>
 ║ 🔸${prefix}8ball <question>
-║ 🔸${prefix}vv
-║ 🔸${prefix}trt <text> <lang>
-║ 🔸${prefix}ss <link>
-║ 🔸${prefix}url
+║ 🔸${prefix}alive
+║ 🔸${prefix}attp <text>
+║ 🔸${prefix}fact
 ║ 🔸${prefix}getjid
+║ 🔸${prefix}help or ${prefix}menu
+║ 🔸${prefix}joke
+║ 🔸${prefix}lyrics <songtitle>
+║ 🔸${prefix}news
+║ 🔸${prefix}owner
+║ 🔸${prefix}ping
+║ 🔸${prefix}quote
+║ 🔸${prefix}ss <link>
+║ 🔸${prefix}trt <text> <lang>
+║ 🔸${prefix}tts <text>
+║ 🔸${prefix}url
+║ 🔸${prefix}vv
+║ 🔸${prefix}weather <city>
 ║
 ╚═══════════════════╝
 
