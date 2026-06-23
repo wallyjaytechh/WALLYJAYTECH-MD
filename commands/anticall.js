@@ -1,3 +1,40 @@
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//                                                                                                                                                            //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
+//                                                                                                                                                            //
+//                                                                  𝐕 : 1.0.0                                                                                 //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
+//                                                                                                                                                            //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//* 
+//  * project_name : WALLYJAYTECH-MD
+//  * author : wallyjaytech
+//  * youtube : https://www.youtube.com/wallyjaytechy
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//*
+//*
+//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
+//Instagram: wallyjaytech
+//Telegram: t.me/wallyjaytech
+//GitHub: wallyjaytechh
+//WhatsApp: +2348144317152
+//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+//   * Created By Github: wallyjaytechh.
+//   * Credit To ally jay tech
+//   * © 2025 WALLYJAYTECH-MD.
+// ⛥┌┤
+// */
+
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Call Command - Professional call rejection system
@@ -10,7 +47,7 @@ const ANTICALL_PATH = './data/anticall.json';
 const defaultConfig = {
     enabled: false,
     blockCallers: false,
-    message: `╭──❍「 CALL REJECTED 」❍\n├• 👋 Hello @{caller}\n├• 📞 Your call was auto-declined\n├• 💬 Please send a text message\n├• 🤖 I'll respond when available\n╰───★─☆─♪♪─❍`
+    message: `╭──❍「 CALL REJECTED 」❍\n├• 👋 Hello @{caller}\n├• 📞 Your call was auto-declined\n├• 💬 Please send a text message\n├• 🤖 I'll respond when available\n╰───★─☆─♪♪─❍\n\n╭──❍「 WALLYJAYTECH-MD 」❍\n╰───★─☆─♪♪─❍`
 };
 
 const channelInfo = {
@@ -199,7 +236,6 @@ async function handleAnticall(sock, calls) {
 
             try {
                 const callerNumber = callerJid.split('@')[0];
-                const callerMention = `@${callerNumber}`;
 
                 try {
                     if (typeof sock.rejectCall === 'function' && call.id) {
@@ -216,7 +252,7 @@ async function handleAnticall(sock, calls) {
                     antiCallNotified.add(callerJid);
                     setTimeout(() => antiCallNotified.delete(callerJid), 60000);
 
-                    const customMessage = state.message.replace(/\{caller\}/g, callerMention);
+                    const customMessage = state.message.replace(/\{caller\}/g, callerNumber);
                     await sock.sendMessage(callerJid, {
                         text: customMessage,
                         mentions: [callerJid]
