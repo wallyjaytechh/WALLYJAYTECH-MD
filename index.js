@@ -318,48 +318,52 @@ async function startXeonBotInc() {
                 
                 console.log(chalk.yellow('⚠️ Auto-update checker disabled for stability'));
                 
-                try {
+                                try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-                    await XeonBotInc.sendMessage(botNumber, {
-                        text: `╔═══════════════════╗
-║   🤖 BOT ACTIVATED!   ║
-╠═══════════════════╣
-║  📅 ${new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos' })}
-║  ✅ Status: ONLINE & READY
-║  💻 Version: ${settings.version}
-║  👤 Owner: ${settings.botOwner}
-║  📞 Contact: ${settings.ownerNumber}
-║  🌐 Prefix: ${settings.prefix}
-║  💡 ${getCommandCount()}+ Commands
-╠═══════════════════╣
-║   🚀 GET STARTED   ║
-╠═══════════════════╣
-║  📖 .menu - All commands
-║  ℹ️ .help - Bot guide
-║  👑 .owner - Contact
-║  🐛 .reportbug - Issues
-║  ⚙️ .settings - Settings
-║  🔄 .update - Update
-║  📊 .ping - Check speed
-║  🔍 .mode - Bot status
-╠═══════════════════╣
-║   📢 IMPORTANT    ║
-╠═══════════════════╣
-║  💬 Join support group
-║  📺 Subscribe YouTube
-║  ⭐ Star GitHub repo
-║  🔔 Channel notifications
-║  📚 Read documentation
-║  🛡️ No spam commands
-║  ⚠️ Follow WhatsApp ToS
-╚═══════════════════╝
+                    const time = new Date().toLocaleString('en-US', {
+                        timeZone: settings.timezone || 'Africa/Lagos',
+                        hour12: true,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    
+                    const activationMessage = `╭──❍「 *BOT ACTIVATED* 」❍
+├• 📅 ${time}
+├• ✅ Status: ONLINE & READY
+├• 💻 Version: ${settings.version}
+├• 👤 Owner: ${settings.botOwner}
+├• 📞 Contact: ${settings.ownerNumber}
+├• 🌐 Prefix: ${settings.prefix}
+├• 💡 ${getCommandCount()}+ Commands
+╰─┬─★─☆─♪♪─❍
+╭─┴❍「 *QUICK START* 」❍
+◈ • .menu - All commands
+◈ • .help - Bot guide
+◈ • .owner - Contact owner
+◈ • .settings - Settings
+◈ • .ping - Check speed
+◈ • .update - Update bot
+╰─┬─★─☆─♪♪─❍
+╭─┴❍「 *CONNECT* 」❍
+◈ • 💬 Support Group
+◈ • 📺 YouTube Channel
+◈ • ⭐ GitHub Repo
+◈ • 🔔 Channel Updates
+╰───★─☆─♪♪─❍
 
 *🔗 Channel:* ${global.channelLink}
 *💬 Support:* https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1
 *📺 YouTube:* https://youtube.com/@wallyjaytechy
 *💻 GitHub:* https://github.com/wallyjaytechh
 
-*🛠️ WALLYJAYTECH-MD - Professional WhatsApp Bot*`,
+🤖 WALLYJAYTECH-MD - Professional WhatsApp Bot`;
+                    
+                    await XeonBotInc.sendMessage(botNumber, {
+                        text: activationMessage,
                         contextInfo: {
                             forwardingScore: 1,
                             isForwarded: true,
@@ -372,7 +376,7 @@ async function startXeonBotInc() {
                     });
                 } catch (error) {
                     console.error('Error sending connection message:', error.message);
-                }
+                                }
 
                 await delay(1999);
                 console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'WALLYJAYTECH-MD'} ]`)}\n\n`));
