@@ -113,13 +113,31 @@ function initConfig() {
     try {
         const dataDir = path.join(__dirname, '..', 'data');
         if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-        if (!fs.existsSync(configPath)) {
-            fs.writeFileSync(configPath, JSON.stringify({ enabled: false, mode: 'block', warnLimit: 3, blockedCountries: [] }, null, 2));
+        
+        const defaultConfig = { enabled: false, mode: 'block', warnLimit: 3, blockedCountries: [] };
+        const configHash = JSON.stringify(defaultConfig);
+        
+        let config;
+        if (fs.existsSync(configPath)) {
+            config = JSON.parse(fs.readFileSync(configPath));
+            // Check if old format - migrate if needed
+            if (!config.mode || !config.warnLimit || config._hash !== configHash) {
+                const preserved = { 
+                    enabled: config.enabled || false, 
+                    blockedCountries: config.blockedCountries || [] 
+                };
+                config = { ...defaultConfig, ...preserved, _hash: configHash };
+                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                console.log('📝 Anti-Foreign config migrated to new format');
+            }
+        } else {
+            config = { ...defaultConfig, _hash: configHash };
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         }
-        return JSON.parse(fs.readFileSync(configPath));
+        
+        return config;
     } catch (e) { return { enabled: false, mode: 'block', warnLimit: 3, blockedCountries: [] }; }
 }
-
 function getCountryCodeFromNumber(phoneNumber) {
     if (!phoneNumber) return 'unknown';
     const clean = String(phoneNumber).replace(/[^0-9]/g, '');
