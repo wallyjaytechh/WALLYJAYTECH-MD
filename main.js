@@ -269,10 +269,10 @@ if (!isGroup && !message.key.fromMe) {
         }
 // Handle autoreact for ALL messages
 await handleAutoreact(sock, message);
-        // Handle message revocation
-        if (message.message?.protocolMessage?.type === 0) {
+        // Handle message/status revocation
+        if (message.message?.protocolMessage) {
             await handleMessageRevocation(sock, message);
-            return;
+            if (message.message?.protocolMessage?.type === 0) return;
         }
 
  
