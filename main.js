@@ -270,6 +270,7 @@ if (message.message) {
 
 // Cache LID → real phone mapping for antiforeign
 if (!isGroup && message.key.remoteJid?.endsWith('@lid')) {
+    console.log('🔍 LID KEY:', JSON.stringify(message.key));
     try {
         const store = require('./lib/lightweight_store');
         const realJid = message.key.participant || 
