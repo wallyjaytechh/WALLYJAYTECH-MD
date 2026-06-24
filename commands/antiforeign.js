@@ -229,36 +229,39 @@ async function handleAntiforeign(sock, chatId, message) {
         const isLid = senderJid.endsWith('@lid');
 
         // If LID or number looks invalid, resolve it
-        if (isLid || !phoneNumber || phoneNumber.length > 12 || phoneNumber.length < 7) {
-            let resolved = false;
+if (isLid || !phoneNumber || phoneNumber.length > 12 || phoneNumber.length < 7) {
+    let resolved = false;
 
-            // Try store first (fast)
-            try {
-                const store = require('../lib/lightweight_store');
-                const contact = store.contacts[senderJid];
-                if (contact?.id?.includes('@s.whatsapp.net')) {
-                    phoneNumber = contact.id.split('@')[0].replace(/[^0-9]/g, '');
-                    resolved = true;
-                }
-            } catch (e) {}
-
-            // If store fails, try Baileys onWhatsApp (reliable)
-            if (!resolved) {
-                try {
-                    const results = await sock.onWhatsApp(senderJid);
-                    if (results?.[0]?.jid?.includes('@s.whatsapp.net')) {
-                        phoneNumber = results[0].jid.split('@')[0].replace(/[^0-9]/g, '');
-                        resolved = true;
-                        console.log(`✅ Resolved LID via onWhatsApp: ${phoneNumber}`);
-                    }
-                } catch (e) { console.log('onWhatsApp failed:', e.message); }
-            }
-
-            if (!resolved) {
-                console.log(`⚠️ LID unresolved: ${senderJid} - skipping`);
-                return false;
-            }
+    // Try store first (cached by main.js)
+    try {
+        const store = require('../lib/lightweight_store');
+        const contact = store.contacts[senderJid];
+        if (contact?.id?.includes('@s.whatsapp.net')) {
+            phoneNumber = contact.id.split('@')[0].replace(/[^0-9]/g, '');
+            resolved = true;
+            console.log(`✅ Resolved LID from cache: ${phoneNumber}`);
         }
+    } catch (e) {}
+
+    // Try reading from the message itself (first message)
+    if (!resolved) {
+        try {
+            const realJid = message.key.participant ||
+                            message.participant ||
+                            null;
+            if (realJid?.includes('@s.whatsapp.net')) {
+                phoneNumber = realJid.split('@')[0].replace(/[^0-9]/g, '');
+                resolved = true;
+                console.log(`✅ Resolved LID from message: ${phoneNumber}`);
+            }
+        } catch (e) {}
+    }
+
+    if (!resolved) {
+        console.log(`⚠️ LID unresolved: ${senderJid} - skipping`);
+        return false;
+    }
+}
 
         if (!phoneNumber || phoneNumber.length < 7) return false;
         if (phoneNumber.length === 10) phoneNumber = '234' + phoneNumber;
