@@ -264,13 +264,28 @@ if (!isGroup && !message.key.fromMe) {
     
 }
         // Store message for antidelete feature
-        if (message.message) {
-            storeMessage(sock, message);
+if (message.message) {
+    storeMessage(sock, message);
+}
+
+// Cache LID → real phone mapping for antiforeign
+if (!isGroup && message.key.remoteJid?.endsWith('@lid')) {
+    try {
+        const store = require('./lib/lightweight_store');
+        const realJid = message.key.participant || 
+                        message.participant ||
+                        message.verifiedBizAcc ||
+                        null;
+        if (realJid?.includes('@s.whatsapp.net')) {
+            store.contacts[message.key.remoteJid] = { id: realJid };
+            console.log(`📌 Cached LID: ${message.key.remoteJid} → ${realJid}`);
         }
+    } catch (e) {}
+}
+
 // Handle autoreact for ALL messages
 await handleAutoreact(sock, message);
 
-      
 // Handle antiforeign blocking on ALL private messages
 if (!isGroup && !message.key.fromMe) {
     const wasBlocked = await handleAntiforeign(sock, chatId, message);
