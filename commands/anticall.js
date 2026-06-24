@@ -39,6 +39,7 @@
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Call Command - Professional call rejection system
  * Features: Decline | Block | Warn (configurable) | Auto-update on config change
+ * Mode-specific messages - no duplicates
  */
 
 const fs = require('fs');
@@ -67,30 +68,26 @@ const channelInfo = {
 };
 
 // ═══════════════════════════════════════
-// STATE MANAGEMENT (Auto-update on config change)
+// STATE MANAGEMENT
 // ═══════════════════════════════════════
 
 function readState() {
     try {
-        const currentVersion = settings.version || '1.0.0';
         const configHash = JSON.stringify(defaultConfig);
         let data = { ...defaultConfig };
         let needsUpdate = false;
-
         if (fs.existsSync(ANTICALL_PATH)) {
             data = { ...defaultConfig, ...JSON.parse(fs.readFileSync(ANTICALL_PATH, 'utf8')) };
             if (data._hash !== configHash) needsUpdate = true;
         }
-
         if (!fs.existsSync(ANTICALL_PATH) || needsUpdate) {
             const dir = './data';
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
             const preserved = { enabled: data.enabled, mode: data.mode, warnLimit: data.warnLimit };
-            const updated = { ...defaultConfig, ...preserved, _version: currentVersion, _hash: configHash };
+            const updated = { ...defaultConfig, ...preserved, _version: settings.version || '1.0.0', _hash: configHash };
             fs.writeFileSync(ANTICALL_PATH, JSON.stringify(updated, null, 2));
             return updated;
         }
-
         return data;
     } catch {
         const configHash = JSON.stringify(defaultConfig);
@@ -257,7 +254,7 @@ async function anticallCommand(sock, chatId, message, args) {
 }
 
 // ═══════════════════════════════════════
-// CALL HANDLER
+// CALL HANDLER - Mode-specific messages
 // ═══════════════════════════════════════
 
 const antiCallNotified = new Set();
@@ -278,24 +275,28 @@ async function handleAnticall(sock, calls) {
                 if (!antiCallNotified.has(callerJid)) {
                     antiCallNotified.add(callerJid);
                     setTimeout(() => antiCallNotified.delete(callerJid), 60000);
-                    const msg = state.message.replace(/\{caller\}/g, callerNumber);
-                    await sock.sendMessage(callerJid, { text: msg, mentions: [callerJid] });
-                }
 
-                if (state.mode === 'block') {
-                    setTimeout(async () => { try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {} }, 2000);
-                } else if (state.mode === 'warn') {
-                    const warnCount = addCallWarning(callerJid);
-                    const limit = state.warnLimit || 3;
-                    if (warnCount >= limit) {
-                        await sock.sendMessage(callerJid, { text: `🚫 *BLOCKED*\n\nYou've called ${limit} times. You are now blocked.` });
-                        setTimeout(async () => {
-                            try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {}
-                            resetCallWarnings(callerJid);
-                        }, 2000);
+                    let msg;
+                    if (state.mode === 'block') {
+                        msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• 🚫 Blocking you right away\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
+                        setTimeout(async () => { try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {} }, 2000);
+                    } else if (state.mode === 'warn') {
+                        const warnCount = addCallWarning(callerJid);
+                        const limit = state.warnLimit || 3;
+                        if (warnCount >= limit) {
+                            msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 You've called ${limit} times\n├• 🚫 You are now *BLOCKED*\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
+                            setTimeout(async () => {
+                                try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {}
+                                resetCallWarnings(callerJid);
+                            }, 2000);
+                        } else {
+                            msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• ⚠️ Warning *${warnCount}/${limit}*\n├• 🚫 Blocked after ${limit - warnCount} more call(s)\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
+                        }
                     } else {
-                        await sock.sendMessage(callerJid, { text: `⚠️ *WARNING ${warnCount}/${limit}*\n\nYou'll be blocked after ${limit - warnCount} more call(s).` });
+                        msg = state.message.replace(/\{caller\}/g, callerNumber);
                     }
+                    
+                    await sock.sendMessage(callerJid, { text: msg, mentions: [callerJid] });
                 }
             } catch (e) {}
         }
