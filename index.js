@@ -24,6 +24,7 @@ try {
 
 // Load status module
 const { handleStatusUpdate, handleBulkStatusUpdate } = require('./commands/autostatus');
+const { storeMessage } = require('./commands/antidelete');
 const PhoneNumber = require('awesome-phonenumber');
 const { smsg } = require('./lib/myfunc');
 const {
@@ -162,38 +163,38 @@ async function startXeonBotInc() {
                 const mek = chatUpdate.messages[0];
                 if (!mek.message) return;
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
+               grep -n "status@broadcast\|handleMessageRevocation\|storeMessage\|protocolMessage" main.jsgrep -n "status@broadcast\|handleMessageRevocation\|storeMessage\|protocolMessage" main.jsgrep -n "status@broadcast\|handleMessageRevocation\|storeMessage\|protocolMessage" main.js
                 
-                // ═══════════════════════════════════════════
-                // STATUS VIEWER HANDLING - CHECK CONFIG FIRST
-                // ═══════════════════════════════════════════
-                if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                    // Skip own status updates
-                    if (mek.key.fromMe) return;
-                    
-                    const statusConfig = readStatusConfig();
-                    
-                    if (statusConfig.enabled === true) {
-                        console.log(`\n🔍 ===== STATUS DETECTED =====`);
-                        console.log(`🔍 ID: ${mek.key.id}`);
-                        console.log(`🔍 Participant: ${mek.key.participant || 'N/A'}`);
-                        if (mek.key.participant) {
-                            const parts = mek.key.participant.split('@');
-                            console.log(`🔍 NUMBER: ${parts[0]}`);
-                            console.log(`🔍 DOMAIN: ${parts[1] || 'NONE'}`);
-                        }
-                        console.log(`================================\n`);
-                        
-                        handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
-                            console.error("Status view error:", err.message);
-                        });
-                    } else {
-                        console.log('⏭️ Auto-status DISABLED - skipping status view');
-                    }
-                    
-                    // ⭐ CRITICAL: Return here to prevent status messages 
-                    // from being processed as regular commands
-                    return;
-                }
+// ═══════════════════════════════════════════
+// STATUS VIEWER HANDLING - CHECK CONFIG FIRST
+// ═══════════════════════════════════════════
+if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+    // Skip own status updates
+    if (mek.key.fromMe) return;
+    
+    // Store status for anti-delete recovery
+    storeMessage(XeonBotInc, mek);
+    
+    const statusConfig = readStatusConfig();
+    
+    if (statusConfig.enabled === true) {
+        console.log(`\n🔍 ===== STATUS DETECTED =====`);
+        console.log(`🔍 ID: ${mek.key.id}`);
+        console.log(`🔍 Participant: ${mek.key.participant || 'N/A'}`);
+        if (mek.key.participant) {
+            const parts = mek.key.participant.split('@');
+            console.log(`🔍 NUMBER: ${parts[0]}`);
+            console.log(`🔍 DOMAIN: ${parts[1] || 'NONE'}`);
+        }
+        console.log(`================================\n`);
+        
+        handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => {
+            console.error("Status view error:", err.message);
+        });
+    } else {
+        console.log('⏭️ Auto-status DISABLED - skipping status view');
+    }
+}
                 
                 // Skip non-notify messages in private mode
                 if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
