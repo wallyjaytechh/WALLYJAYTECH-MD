@@ -40,7 +40,6 @@
  * Anti-Delete Command - Recovers deleted messages & statuses
  * Features: Status route (dm/owner) | Bot self-recovery | Professional UI
  */
-
 const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -55,6 +54,18 @@ const statusStore = new Map();
 const dataDir = path.join(__dirname, '../data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(TEMP_MEDIA_DIR)) fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
+
+// Auto-clean temp files older than 30 seconds - runs every 10 seconds
+setInterval(() => {
+    try {
+        const files = fs.readdirSync(TEMP_MEDIA_DIR);
+        const now = Date.now();
+        for (const file of files) {
+            const fp = path.join(TEMP_MEDIA_DIR, file);
+            if (now - fs.statSync(fp).mtimeMs > 30000) fs.unlinkSync(fp);
+        }
+    } catch (e) {}
+}, 10000);
 
 const channelInfo = {
     contextInfo: {
@@ -230,22 +241,8 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
                       `📩 *Private Route:* ${config.route.private === 'dm' ? 'Bot DM' : 'Original Chat'}\n` +
                       `👥 *Group Route:* ${config.route.group === 'chat' ? 'Group Chat' : 'Bot DM'}\n` +
                       `📱 *Status Route:* ${config.statusRoute === 'dm' ? 'Bot DM' : 'Status Owner DM'}\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Commands:*\n` +
-                      `└ .antidelete on - Enable message recovery\n` +
-                      `└ .antidelete off - Disable message recovery\n` +
-                      `└ .antidelete status on - Enable status recovery\n` +
-                      `└ .antidelete status off - Disable status recovery\n` +
-                      `└ .antidelete statusroute dm - Statuses to your DM\n` +
-                      `└ .antidelete statusroute owner - Statuses to owner DM\n` +
-                      `└ .antidelete private dm - Private recovery to Bot DM\n` +
-                      `└ .antidelete private chat - Private recovery to chat\n` +
-                      `└ .antidelete group chat - Group recovery to group\n` +
-                      `└ .antidelete group dm - Group recovery to Bot DM\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `💡 *Example:*\n` +
-                      `└ .antidelete on\n` +
-                      `└ .antidelete statusroute owner`,
+                      `━━━━━━━━━━━━━━━━━━━━\n📖 *Commands:*\n` +
+                      `└ .antidelete on/off\n└ .antidelete status on/off\n└ .antidelete statusroute dm/owner\n└ .antidelete private dm/chat\n└ .antidelete group chat/dm\n\n💡 *Example:*\n└ .antidelete on\n└ .antidelete statusroute owner`,
                 ...channelInfo
             }, { quoted: message });
             return;
@@ -274,37 +271,16 @@ async function handleAntideleteCommand(sock, chatId, message, args) {
             }
         } else if (cmd === 'statusroute') {
             const sub = args[1]?.toLowerCase();
-            if (sub === 'dm') {
-                if (config.statusRoute === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📱 Status route is already *Bot DM*.\n\n💡 Use .antidelete statusroute owner to change.`, ...channelInfo }); return; }
-                config.statusRoute = 'dm'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *STATUS ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📱 Deleted statuses → *Bot DM*`, ...channelInfo });
-            } else if (sub === 'owner') {
-                if (config.statusRoute === 'owner') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📱 Status route is already *Status Owner DM*.\n\n💡 Use .antidelete statusroute dm to change.`, ...channelInfo }); return; }
-                config.statusRoute = 'owner'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *STATUS ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📱 Deleted statuses → *Status Owner DM*`, ...channelInfo });
-            }
+            if (sub === 'dm') { if (config.statusRoute === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.statusRoute = 'dm'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *STATUS → Bot DM*`, ...channelInfo }); }
+            else if (sub === 'owner') { if (config.statusRoute === 'owner') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.statusRoute = 'owner'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *STATUS → Owner DM*`, ...channelInfo }); }
         } else if (cmd === 'private') {
             const sub = args[1]?.toLowerCase();
-            if (sub === 'dm') {
-                if (config.route.private === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📩 Private route is already *Bot DM*.\n\n💡 Use .antidelete private chat to change.`, ...channelInfo }); return; }
-                config.route.private = 'dm'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *PRIVATE ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📩 Deleted private messages → *Bot DM*`, ...channelInfo });
-            } else if (sub === 'chat') {
-                if (config.route.private === 'chat') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📩 Private route is already *Original Chat*.\n\n💡 Use .antidelete private dm to change.`, ...channelInfo }); return; }
-                config.route.private = 'chat'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *PRIVATE ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n📩 Deleted private messages → *Original Chat*`, ...channelInfo });
-            }
+            if (sub === 'dm') { if (config.route.private === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.route.private = 'dm'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *PRIVATE → Bot DM*`, ...channelInfo }); }
+            else if (sub === 'chat') { if (config.route.private === 'chat') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.route.private = 'chat'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *PRIVATE → Original Chat*`, ...channelInfo }); }
         } else if (cmd === 'group') {
             const sub = args[1]?.toLowerCase();
-            if (sub === 'chat') {
-                if (config.route.group === 'chat') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n👥 Group route is already *Group Chat*.\n\n💡 Use .antidelete group dm to change.`, ...channelInfo }); return; }
-                config.route.group = 'chat'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *GROUP ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n👥 Deleted group messages → *Group Chat*`, ...channelInfo });
-            } else if (sub === 'dm') {
-                if (config.route.group === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n👥 Group route is already *Bot DM*.\n\n💡 Use .antidelete group chat to change.`, ...channelInfo }); return; }
-                config.route.group = 'dm'; saveConfig(config);
-                await sock.sendMessage(chatId, { text: `✅ *GROUP ROUTE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n👥 Deleted group messages → *Bot DM*`, ...channelInfo });
-            }
+            if (sub === 'chat') { if (config.route.group === 'chat') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.route.group = 'chat'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *GROUP → Group Chat*`, ...channelInfo }); }
+            else if (sub === 'dm') { if (config.route.group === 'dm') { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; } config.route.group = 'dm'; saveConfig(config); await sock.sendMessage(chatId, { text: `✅ *GROUP → Bot DM*`, ...channelInfo }); }
         }
     } catch (err) { console.error('Command error:', err); }
 }
