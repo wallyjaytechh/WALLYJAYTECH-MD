@@ -35,13 +35,6 @@
 // ⛥┌┤
 // */
 
-/**
- * WALLYJAYTECH-MD - A WhatsApp Bot
- * Anti-Call Command - Professional call rejection system
- * Features: Decline | Block | Warn (configurable) | Auto-update on config change
- * Mode-specific messages - no duplicates
- */
-
 const fs = require('fs');
 const settings = require('../settings');
 
@@ -66,10 +59,6 @@ const channelInfo = {
         }
     }
 };
-
-// ═══════════════════════════════════════
-// STATE MANAGEMENT
-// ═══════════════════════════════════════
 
 function readState() {
     try {
@@ -106,10 +95,6 @@ function writeState(config) {
     } catch (error) { console.error('❌ Error writing anticall config:', error); }
 }
 
-// ═══════════════════════════════════════
-// CALL WARNING SYSTEM
-// ═══════════════════════════════════════
-
 function readWarnings() {
     try { if (fs.existsSync(CALL_WARN_PATH)) return JSON.parse(fs.readFileSync(CALL_WARN_PATH, 'utf8')); } catch (e) {}
     return {};
@@ -134,10 +119,6 @@ function resetCallWarnings(callerJid) {
     const caller = callerJid.split('@')[0];
     if (warnings[caller]) { delete warnings[caller]; writeWarnings(warnings); }
 }
-
-// ═══════════════════════════════════════
-// COMMAND HANDLER
-// ═══════════════════════════════════════
 
 function getModeText(mode, warnLimit) {
     switch(mode) {
@@ -172,7 +153,6 @@ async function anticallCommand(sock, chatId, message, args) {
                       `└ .anticall warncount <1-10>\n` +
                       `└ .anticall message <text>\n` +
                       `└ .anticall status\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
                       `💡 *Example:*\n` +
                       `└ .anticall warncount 5\n` +
                       `└ .anticall warn`,
@@ -182,15 +162,9 @@ async function anticallCommand(sock, chatId, message, args) {
         }
 
         if (action === 'status') {
-            const status = state.enabled ? '✅ ENABLED' : '❌ DISABLED';
             const msgPreview = state.message.substring(0, 80) + (state.message.length > 80 ? '...' : '');
             await sock.sendMessage(chatId, {
-                text: `📞 *ANTI-CALL STATUS*\n\n` +
-                      `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🟢 *Status:* ${status}\n` +
-                      `⚙️ *Mode:* ${getModeText(state.mode, state.warnLimit)}\n` +
-                      `🔢 *Warn Limit:* ${state.warnLimit} calls\n\n` +
-                      `💬 *Message:*\n_${msgPreview}_`,
+                text: `📞 *ANTI-CALL STATUS*\n\n━━━━━━━━━━━━━━━━━━━━\n🟢 *Status:* ${state.enabled ? '✅ ON' : '❌ OFF'}\n⚙️ *Mode:* ${getModeText(state.mode, state.warnLimit)}\n🔢 *Warn Limit:* ${state.warnLimit}\n\n💬 *Msg:* _${msgPreview}_`,
                 ...channelInfo
             });
             return;
@@ -199,7 +173,7 @@ async function anticallCommand(sock, chatId, message, args) {
         if (action === 'on') {
             if (state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*`, ...channelInfo }); return; }
             writeState({ ...state, enabled: true });
-            await sock.sendMessage(chatId, { text: `✅ *ANTI-CALL ENABLED*\n\n⚙️ Mode: ${getModeText(state.mode, state.warnLimit)}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `✅ *ANTI-CALL ENABLED*\n\n⚙️ ${getModeText(state.mode, state.warnLimit)}`, ...channelInfo });
             return;
         }
 
@@ -211,53 +185,44 @@ async function anticallCommand(sock, chatId, message, args) {
         }
 
         if (action === 'decline') {
-            if (state.mode === 'decline' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n📞 Already in *Decline Mode*.`, ...channelInfo }); return; }
+            if (state.mode === 'decline' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; }
             writeState({ ...state, mode: 'decline', enabled: true });
-            await sock.sendMessage(chatId, { text: `📵 *DECLINE MODE ON*\n\n📞 Calls declined. Callers NOT blocked.`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `📵 *DECLINE MODE ON*\n\nCalls declined. Callers NOT blocked.`, ...channelInfo });
             return;
         }
 
         if (action === 'block') {
-            if (state.mode === 'block' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n📞 Already in *Block Mode*.`, ...channelInfo }); return; }
+            if (state.mode === 'block' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; }
             writeState({ ...state, mode: 'block', enabled: true });
-            await sock.sendMessage(chatId, { text: `🚫 *BLOCK MODE ON*\n\n📞 Calls rejected. Callers blocked immediately.`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🚫 *BLOCK MODE ON*\n\nCalls rejected. Callers blocked.`, ...channelInfo });
             return;
         }
 
         if (action === 'warn') {
-            if (state.mode === 'warn' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n📞 Already in *Warn Mode* (${state.warnLimit} calls).`, ...channelInfo }); return; }
+            if (state.mode === 'warn' && state.enabled) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; }
             writeState({ ...state, mode: 'warn', enabled: true });
-            await sock.sendMessage(chatId, { text: `⚠️ *WARN MODE ON*\n\n📞 Blocked after ${state.warnLimit} calls.`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `⚠️ *WARN MODE ON*\n\nBlocked after ${state.warnLimit} calls.`, ...channelInfo });
             return;
         }
 
         if (action === 'warncount') {
             const count = parseInt(parts[1]);
-            if (!count || count < 1 || count > 10) {
-                await sock.sendMessage(chatId, { text: `⚠️ *INVALID COUNT*\n\n📌 Choose between 1-10.\n\n💡 Example: .anticall warncount 5`, ...channelInfo });
-                return;
-            }
-            if (state.warnLimit === count) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n🔢 Warn limit is already *${count}*.`, ...channelInfo }); return; }
+            if (!count || count < 1 || count > 10) { await sock.sendMessage(chatId, { text: `⚠️ Choose 1-10.`, ...channelInfo }); return; }
+            if (state.warnLimit === count) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*`, ...channelInfo }); return; }
             writeState({ ...state, warnLimit: count });
-            await sock.sendMessage(chatId, { text: `🔢 *WARN LIMIT UPDATED*\n\n📞 Blocked after *${count}* calls.`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🔢 *WARN LIMIT UPDATED*\n\nBlocked after *${count}* calls.`, ...channelInfo });
             return;
         }
 
         if (action === 'message') {
             const newMessage = sub.substring(7).trim();
-            if (!newMessage) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .anticall message <text>\n\n💡 Use @{caller} for caller name.`, ...channelInfo }); return; }
+            if (!newMessage) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .anticall message <text>`, ...channelInfo }); return; }
             writeState({ ...state, message: newMessage });
             await sock.sendMessage(chatId, { text: `💬 *MESSAGE SET*\n\n📝 _${newMessage}_`, ...channelInfo });
             return;
         }
     } catch (error) { console.error('❌ Anti-call command error:', error); }
 }
-
-// ═══════════════════════════════════════
-// CALL HANDLER - Mode-specific messages
-// ═══════════════════════════════════════
-
-const antiCallNotified = new Set();
 
 async function handleAnticall(sock, calls) {
     try {
@@ -272,32 +237,24 @@ async function handleAnticall(sock, calls) {
                 const callerNumber = callerJid.split('@')[0];
                 try { if (typeof sock.rejectCall === 'function' && call.id) await sock.rejectCall(call.id, callerJid); else if (typeof sock.sendCallOfferAck === 'function' && call.id) await sock.sendCallOfferAck(call.id, callerJid, 'reject'); } catch (e) {}
 
-                if (!antiCallNotified.has(callerJid)) {
-                    antiCallNotified.add(callerJid);
-                    setTimeout(() => antiCallNotified.delete(callerJid), 60000);
-
-                    let msg;
-                    if (state.mode === 'block') {
-                        msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• 🚫 Blocking you right away\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
-                        setTimeout(async () => { try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {} }, 2000);
-                    } else if (state.mode === 'warn') {
-                        const warnCount = addCallWarning(callerJid);
-                        const limit = state.warnLimit || 3;
-                        if (warnCount >= limit) {
-                            msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 You've called ${limit} times\n├• 🚫 You are now *BLOCKED*\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
-                            setTimeout(async () => {
-                                try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {}
-                                resetCallWarnings(callerJid);
-                            }, 2000);
-                        } else {
-                            msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• ⚠️ Warning *${warnCount}/${limit}*\n├• 🚫 Blocked after ${limit - warnCount} more call(s)\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
-                        }
+                let msg;
+                if (state.mode === 'block') {
+                    msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• 🚫 Blocking you right away\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
+                    setTimeout(async () => { try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {} }, 2000);
+                } else if (state.mode === 'warn') {
+                    const warnCount = addCallWarning(callerJid);
+                    const limit = state.warnLimit || 3;
+                    if (warnCount >= limit) {
+                        msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 You've called ${limit} times\n├• 🚫 You are now *BLOCKED*\n├• 🤖 Owner may unblock you later\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
+                        setTimeout(async () => { try { await sock.updateBlockStatus(callerJid, 'block'); } catch (e) {} resetCallWarnings(callerJid); }, 2000);
                     } else {
-                        msg = state.message.replace(/\{caller\}/g, callerNumber);
+                        msg = `╭──❍「 *CALL DETECTED* 」❍\n├• 👋 Hello @${callerNumber}\n├• 📞 Your call was auto-declined\n├• ⚠️ Warning *${warnCount}/${limit}*\n├• 🚫 Blocked after ${limit - warnCount} more call(s)\n╰───★─☆─♪♪─❍\n\n╭──❍「 *WALLYJAYTECH-MD* 」❍\n╰───★─☆─♪♪─❍`;
                     }
-                    
-                    await sock.sendMessage(callerJid, { text: msg, mentions: [callerJid] });
+                } else {
+                    msg = state.message.replace(/\{caller\}/g, callerNumber);
                 }
+                
+                await sock.sendMessage(callerJid, { text: msg, mentions: [callerJid] });
             } catch (e) {}
         }
     } catch (error) { console.error('Error in handleAnticall:', error); }
