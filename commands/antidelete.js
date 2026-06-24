@@ -34,6 +34,11 @@
 //   * © 2025 WALLYJAYTECH-MD.
 // ⛥┌┤
 // */
+/**
+ * WALLYJAYTECH-MD - A WhatsApp Bot
+ * Anti-Delete Command - Recovers deleted messages & statuses
+ * Features: Status route (dm/owner) | Bot self-recovery | Professional UI
+ */
 const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
