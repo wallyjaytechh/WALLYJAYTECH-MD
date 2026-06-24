@@ -37,7 +37,7 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Anti-Foreign Command - Blocks users from specified countries
- * FIXED: Runs on ALL private messages + Owner/Sudo protection
+ * FIXED: LID resolution via onWhatsApp for reliable blocking
  */
 
 const fs = require('fs');
@@ -197,20 +197,19 @@ async function antiforeignCommand(sock, chatId, message) {
                 if (config.blockedCountries.includes(code)) blockedList += `🚫 +${code} - ${name}\n`;
                 else availableList += `✅ +${code} - ${name}\n`;
             }
-            const total = Object.keys(countryList).length;
-            await sock.sendMessage(chatId, { text: `🌍 *ALL CODES (${total})*\n\n━━━━━━━━━━━━━━━━━━━━\n🚫 *BLOCKED (${config.blockedCountries.length}):*\n\n${blockedList || '└ None\n'}\n━━━━━━━━━━━━━━━━━━━━\n✅ *AVAILABLE:*\n\n${availableList}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🌍 *ALL CODES*\n\n━━━━━━━━━━━━━━━━━━━━\n🚫 *BLOCKED (${config.blockedCountries.length}):*\n\n${blockedList || '└ None\n'}\n━━━━━━━━━━━━━━━━━━━━\n✅ *AVAILABLE:*\n\n${availableList}`, ...channelInfo });
         }
         else if (action === 'status') {
             let blockedInfo = config.blockedCountries.length > 0
                 ? config.blockedCountries.map(c => `└ +${c} - ${countryList[c] || 'Unknown'}`).join('\n')
                 : '└ No countries blocked';
-            await sock.sendMessage(chatId, { text: `🚫 *ANTI-FOREIGN STATUS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🌍 *Blocked (${config.blockedCountries.length}):*\n${blockedInfo}`, ...channelInfo });
+            await sock.sendMessage(chatId, { text: `🚫 *ANTI-FOREIGN STATUS*\n\n${config.enabled ? '🟢 ENABLED' : '🔴 DISABLED'}\n━━━━━━━━━━━━━━━━━━━━\n🌍 *Blocked:*\n${blockedInfo}`, ...channelInfo });
         }
         else { await sock.sendMessage(chatId, { text: `⚠️ *INVALID*\n\n📖 .antiforeign on/off\n📖 .antiforeign add/remove\n📖 .antiforeign list/status`, ...channelInfo }); }
     } catch (error) { console.error('❌ Error:', error); }
 }
 
-// Runs on ALL private messages - with owner/sudo protection
+// Runs on ALL private messages - LID resolution via onWhatsApp
 async function handleAntiforeign(sock, chatId, message) {
     try {
         const config = initConfig();
@@ -227,15 +226,38 @@ async function handleAntiforeign(sock, chatId, message) {
         } catch (e) {}
 
         let phoneNumber = senderJid.split('@')[0].replace(/[^0-9]/g, '');
+        const isLid = senderJid.endsWith('@lid');
 
-        if (!phoneNumber || phoneNumber.length > 15 || phoneNumber.length < 7) {
+        // If LID or number looks invalid, resolve it
+        if (isLid || !phoneNumber || phoneNumber.length > 12 || phoneNumber.length < 7) {
+            let resolved = false;
+
+            // Try store first (fast)
             try {
                 const store = require('../lib/lightweight_store');
                 const contact = store.contacts[senderJid];
                 if (contact?.id?.includes('@s.whatsapp.net')) {
                     phoneNumber = contact.id.split('@')[0].replace(/[^0-9]/g, '');
+                    resolved = true;
                 }
             } catch (e) {}
+
+            // If store fails, try Baileys onWhatsApp (reliable)
+            if (!resolved) {
+                try {
+                    const results = await sock.onWhatsApp(senderJid);
+                    if (results?.[0]?.jid?.includes('@s.whatsapp.net')) {
+                        phoneNumber = results[0].jid.split('@')[0].replace(/[^0-9]/g, '');
+                        resolved = true;
+                        console.log(`✅ Resolved LID via onWhatsApp: ${phoneNumber}`);
+                    }
+                } catch (e) { console.log('onWhatsApp failed:', e.message); }
+            }
+
+            if (!resolved) {
+                console.log(`⚠️ LID unresolved: ${senderJid} - skipping`);
+                return false;
+            }
         }
 
         if (!phoneNumber || phoneNumber.length < 7) return false;
