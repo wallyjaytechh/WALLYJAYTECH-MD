@@ -269,6 +269,13 @@ if (!isGroup && !message.key.fromMe) {
         }
 // Handle autoreact for ALL messages
 await handleAutoreact(sock, message);
+
+      
+// Handle antiforeign blocking on ALL private messages
+if (!isGroup && !message.key.fromMe) {
+    const wasBlocked = await handleAntiforeign(sock, chatId, message);
+    if (wasBlocked) return;
+} 
         // Handle message/status revocation
         if (message.message?.protocolMessage) {
             await handleMessageRevocation(sock, message);
@@ -365,11 +372,7 @@ const rawText = commandWithoutPrefix;
 // Only log command usage
 console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
      
-     // Handle antiforeign blocking (check before processing messages)
-if (!isGroup && !message.key.fromMe) {
-    const wasBlocked = await handleAntiforeign(sock, chatId, message);
-    if (wasBlocked) return; // Stop processing if blocked
-}
+     
         // Only log command usage
         if (userMessage.startsWith('.')) {
             console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
