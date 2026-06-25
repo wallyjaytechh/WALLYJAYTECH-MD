@@ -40,7 +40,8 @@
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
  * FINAL FIX: Continuous alternating for ALL messages, starts with recording
- * DEBUG: Added comprehensive logging
+ * FIXED: LID support for proper phone number extraction
+ * FIXED: Include/Exclude now works with LID contacts
  */
 
 const fs = require('fs');
@@ -151,6 +152,93 @@ function initConfig() {
 // ═══════════════════════════════════════
 // UTILITY FUNCTIONS
 // ═══════════════════════════════════════
+
+// ✅ FIXED: Handle LID addresses properly
+function extractPhoneNumber(jid) {
+    if (!jid) return null;
+    
+    // If it's a LID address, return null - let the caller handle it
+    if (jid.endsWith('@lid')) {
+        return null;
+    }
+    
+    // Handle standard WhatsApp JID formats
+    let phone = jid.split('@')[0];
+    if (phone.includes(':')) {
+        phone = phone.split(':')[0];
+    }
+    // Remove any non-numeric characters
+    phone = phone.replace(/[^0-9]/g, '');
+    return phone.length > 0 ? phone : null;
+}
+
+// ✅ FIXED: Use remoteJidAlt for LID contacts
+function isNumberInList(message) {
+    const config = initConfig();
+    if (!config.numberList || config.numberList.length === 0) return null;
+
+    // Get the actual sender JID
+    const chatId = message.key.remoteJid;
+    const isGroup = chatId.endsWith('@g.us');
+    
+    let senderJid;
+    let phone = null;
+    
+    if (isGroup) {
+        // In groups, participant is the sender
+        senderJid = message.key.participant || message.participant;
+    } else {
+        // In DMs, remoteJid is the sender
+        senderJid = chatId;
+    }
+    
+    if (!senderJid) return null;
+    
+    // ✅ FIXED: Check for LID and use remoteJidAlt
+    if (senderJid.endsWith('@lid')) {
+        // Use remoteJidAlt from the message key
+        const remoteJidAlt = message.key.remoteJidAlt;
+        if (remoteJidAlt && remoteJidAlt.includes('@s.whatsapp.net')) {
+            phone = extractPhoneNumber(remoteJidAlt);
+            console.log(`🔍 DEBUG: Using remoteJidAlt for LID: ${remoteJidAlt} → ${phone}`);
+        } else {
+            // Try to get from participantAlt
+            const participantAlt = message.key.participantAlt;
+            if (participantAlt && participantAlt.includes('@s.whatsapp.net')) {
+                phone = extractPhoneNumber(participantAlt);
+                console.log(`🔍 DEBUG: Using participantAlt for LID: ${participantAlt} → ${phone}`);
+            }
+        }
+        // If still no phone, try to get from the message body or other fields
+        if (!phone) {
+            // Try to extract from the message key directly
+            const keyJid = message.key.remoteJid;
+            if (keyJid && keyJid.includes('@s.whatsapp.net')) {
+                phone = extractPhoneNumber(keyJid);
+                console.log(`🔍 DEBUG: Using key.remoteJid for LID: ${keyJid} → ${phone}`);
+            }
+        }
+    } else {
+        // Standard WhatsApp JID
+        phone = extractPhoneNumber(senderJid);
+    }
+    
+    if (!phone || phone.length < 7) {
+        console.log(`🔍 DEBUG: Could not extract valid phone number from ${senderJid}`);
+        return null;
+    }
+    
+    // Check if the phone number is in the list
+    const found = config.numberList.some(num => {
+        const normalizedNum = num.replace(/[^0-9]/g, '');
+        return phone === normalizedNum || phone.endsWith(normalizedNum) || normalizedNum.endsWith(phone);
+    });
+    
+    console.log(`🔍 DEBUG: Phone ${phone} in list? ${found} (mode: ${config.includeMode ? 'Include' : 'Exclude'})`);
+    
+    // Return based on mode
+    return config.includeMode ? found : !found;
+}
 
 function stopAlternatingSession(chatId) {
     const s = activeSessions.get(chatId);
