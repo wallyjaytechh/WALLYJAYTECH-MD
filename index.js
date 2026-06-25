@@ -1,20 +1,20 @@
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                            //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
-//                                                                                                                                                            //
-//                                                                  𝐕 : 1.0.0                                                                                 //
-//                                                                                                                                                            //
-//                                                                                                                                                            //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
-//                                                                                                                                                            //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
-//                                                                                                                                                            //
-//                                                                                                                                                            //
+//                                                                                                                                                                                        //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
+//                                                                                                                                                                                        //
+//                                                                  𝐕 : 1.0.0                                                                                                             //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
+//                                                                                                                                                                                        //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 //* 
 //  * project_name : WALLYJAYTECH-MD
@@ -34,7 +34,6 @@
 //   * © 2025 WALLYJAYTECH-MD.
 // ⛥┌┤
 // */
-
 global.File = class File {};
 require('./settings');
 const { Boom } = require('@hapi/boom');
@@ -62,7 +61,15 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const store = require('./lib/lightweight_store');
 store.readFromFile();
 const settings = require('./settings');
-setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000);
+
+// ✅ Store write error handling
+setInterval(() => {
+    try {
+        store.writeToFile();
+    } catch (e) {
+        console.error('❌ Store write failed:', e.message);
+    }
+}, settings.storeWriteInterval || 10000);
 
 function readStatusConfig() {
     try {
@@ -79,6 +86,21 @@ function getBotMode() {
         return 'PUBLIC 🌐';
     } catch (e) { return 'PUBLIC 🌐'; }
 }
+
+// ✅ Memory guard
+setInterval(() => {
+    const memMB = process.memoryUsage().rss / 1024 / 1024;
+    console.log(`💾 Memory: ${Math.round(memMB)}MB`);
+    
+    if (memMB > 500) {
+        console.log('⚠️ High memory - forcing garbage collection');
+        if (global.gc) global.gc();
+    }
+    if (memMB > 700) {
+        console.log('🔴 Critical memory - restarting');
+        process.exit(1); // PM2 or panel will restart it
+    }
+}, 5 * 60 * 1000);
 
 setInterval(() => { if (global.gc) global.gc(); }, 60000);
 setInterval(() => { if (process.memoryUsage().rss / 1024 / 1024 > 400) process.exit(1); }, 30000);
@@ -171,9 +193,23 @@ async function startXeonBotInc() {
             const { connection, lastDisconnect, qr } = s;
             if (qr) console.log(chalk.cyan('📱 QR Code generated.'));
             if (connection === 'connecting') console.log(chalk.cyan('🔄 Connecting...'));
+            
             if (connection == "open") {
                 console.log(chalk.cyan(`🌿Connected => ` + JSON.stringify(XeonBotInc.user, null, 2)));
                 reconnectAttempts = 0;
+                
+                // ✅ Session backup every hour
+                setInterval(() => {
+                    try {
+                        const backupDir = './session_backup';
+                        if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
+                        fs.cpSync('./session', backupDir, { recursive: true });
+                        console.log('✅ Session backed up');
+                    } catch (e) {
+                        console.error('❌ Session backup failed:', e.message);
+                    }
+                }, 60 * 60 * 1000);
+                
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -184,10 +220,25 @@ async function startXeonBotInc() {
                 console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'WALLYJAYTECH-MD'} ]`)}\n\n`));
                 console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected! ✅`));
             }
+            
+            // ✅ Connection stability with exponential backoff
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                if (statusCode === DisconnectReason.loggedOut || statusCode === 401) { try { rmSync('./session', { recursive: true, force: true }); } catch (e) {} return; }
-                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { reconnectAttempts++; await delay(5000 * reconnectAttempts); startXeonBotInc(); }
+                // Don't reconnect if logged out
+                if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                    console.log('❌ Logged out - delete session and re-pair');
+                    try { rmSync('./session', { recursive: true, force: true }); } catch (e) {}
+                    return;
+                }
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    const delayMs = Math.min(5000 * reconnectAttempts, 30000); // max 30s
+                    console.log(`🔄 Reconnecting in ${delayMs/1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+                    setTimeout(startXeonBotInc, delayMs);
+                } else {
+                    console.log('❌ Max reconnect attempts reached - restart manually');
+                    process.exit(1);
+                }
             }
         });
 
