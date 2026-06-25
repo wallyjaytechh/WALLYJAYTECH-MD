@@ -39,7 +39,7 @@
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
- * FINAL FIX: Properly enables/disables individual handlers
+ * FINAL FIX: Properly enables BOTH autotyping and autorecord
  */
 
 const fs = require('fs');
@@ -246,30 +246,76 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
     } catch (e) { return false; }
 }
 
-// ✅ FIXED: Enable individual handlers when autorecordtype is on
+// ✅ FIXED: Explicitly enable BOTH autotyping and autorecord
 async function enableIndividualHandlers() {
-    ['autotyping.json', 'autorecord.json'].forEach(f => {
-        const p = path.join(__dirname, '..', 'data', f);
-        if (fs.existsSync(p)) {
-            let c = JSON.parse(fs.readFileSync(p));
-            c.enabled = true;  // ✅ ENABLE them
-            fs.writeFileSync(p, JSON.stringify(c, null, 2));
-            console.log(`✅ Enabled individual handler: ${f}`);
-        }
-    });
+    console.log(`🔍 DEBUG: Enabling individual handlers...`);
+    
+    // Enable autotyping
+    const typingPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+    console.log(`🔍 DEBUG: Checking ${typingPath}`);
+    if (fs.existsSync(typingPath)) {
+        let c = JSON.parse(fs.readFileSync(typingPath));
+        console.log(`🔍 DEBUG: Before: enabled=${c.enabled}`);
+        c.enabled = true;
+        c.mode = 'all';
+        c.duration = DEFAULT_DURATION;
+        c.infinite = false;
+        fs.writeFileSync(typingPath, JSON.stringify(c, null, 2));
+        console.log(`🔍 DEBUG: After: enabled=${c.enabled}`);
+        console.log(`✅ Enabled: autotyping.json`);
+    } else {
+        console.log(`⚠️ autotyping.json not found, creating...`);
+        const defaultTyping = { enabled: true, mode: 'all', duration: DEFAULT_DURATION, infinite: false, includeMode: false, numberList: [] };
+        fs.writeFileSync(typingPath, JSON.stringify(defaultTyping, null, 2));
+        console.log(`✅ Created and enabled: autotyping.json`);
+    }
+
+    // Enable autorecord
+    const recordPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+    console.log(`🔍 DEBUG: Checking ${recordPath}`);
+    if (fs.existsSync(recordPath)) {
+        let c = JSON.parse(fs.readFileSync(recordPath));
+        console.log(`🔍 DEBUG: Before: enabled=${c.enabled}`);
+        c.enabled = true;
+        c.mode = 'all';
+        c.duration = DEFAULT_DURATION;
+        c.infinite = false;
+        fs.writeFileSync(recordPath, JSON.stringify(c, null, 2));
+        console.log(`🔍 DEBUG: After: enabled=${c.enabled}`);
+        console.log(`✅ Enabled: autorecord.json`);
+    } else {
+        console.log(`⚠️ autorecord.json not found, creating...`);
+        const defaultRecord = { enabled: true, mode: 'all', duration: DEFAULT_DURATION, infinite: false, includeMode: false, numberList: [] };
+        fs.writeFileSync(recordPath, JSON.stringify(defaultRecord, null, 2));
+        console.log(`✅ Created and enabled: autorecord.json`);
+    }
 }
 
-// ✅ FIXED: Disable individual handlers when autorecordtype is off
+// ✅ FIXED: Explicitly disable BOTH autotyping and autorecord
 async function disableIndividualHandlers() {
-    ['autotyping.json', 'autorecord.json'].forEach(f => {
-        const p = path.join(__dirname, '..', 'data', f);
-        if (fs.existsSync(p)) {
-            let c = JSON.parse(fs.readFileSync(p));
-            c.enabled = false;  // ❌ DISABLE them
-            fs.writeFileSync(p, JSON.stringify(c, null, 2));
-            console.log(`🔒 Disabled individual handler: ${f}`);
-        }
-    });
+    console.log(`🔍 DEBUG: Disabling individual handlers...`);
+    
+    // Disable autotyping
+    const typingPath = path.join(__dirname, '..', 'data', 'autotyping.json');
+    if (fs.existsSync(typingPath)) {
+        let c = JSON.parse(fs.readFileSync(typingPath));
+        console.log(`🔍 DEBUG: Before: enabled=${c.enabled}`);
+        c.enabled = false;
+        fs.writeFileSync(typingPath, JSON.stringify(c, null, 2));
+        console.log(`🔍 DEBUG: After: enabled=${c.enabled}`);
+        console.log(`🔒 Disabled: autotyping.json`);
+    }
+
+    // Disable autorecord
+    const recordPath = path.join(__dirname, '..', 'data', 'autorecord.json');
+    if (fs.existsSync(recordPath)) {
+        let c = JSON.parse(fs.readFileSync(recordPath));
+        console.log(`🔍 DEBUG: Before: enabled=${c.enabled}`);
+        c.enabled = false;
+        fs.writeFileSync(recordPath, JSON.stringify(c, null, 2));
+        console.log(`🔍 DEBUG: After: enabled=${c.enabled}`);
+        console.log(`🔒 Disabled: autorecord.json`);
+    }
 }
 
 async function syncConfigToIndividual(mode, duration, infinite, includeMode, numberList) {
@@ -341,10 +387,7 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message
             default: break;
         }
         
-        // ✅ FIXED: Individual handlers are ENABLED, so they'll handle each message
-        // We don't need to start a separate alternating session here
-        // Just let autotyping and autorecord handle it
-        
+        // Individual handlers are ENABLED, they will handle each message
         return true;
     } catch (e) { return false; }
 }
@@ -432,9 +475,9 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            // ✅ FIXED: Sync config AND ENABLE individual handlers
+            // Sync config AND ENABLE individual handlers
             await syncConfigToIndividual(config.mode, config.duration, config.infinite, config.includeMode, config.numberList);
-            await enableIndividualHandlers();  // ✅ ENABLE them
+            await enableIndividualHandlers();  // ✅ ENABLE BOTH
             
             await sock.sendMessage(chatId, {
                 text: `✅ *AUTO-RECORD-TYPE ENABLED*\n\n` +
