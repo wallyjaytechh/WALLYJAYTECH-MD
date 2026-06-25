@@ -378,7 +378,7 @@ if (!isGroup && !message.key.fromMe) {
             }
         }
 
-        const rawMessageText = (
+                const rawMessageText = (
     message.message?.conversation?.trim() ||
     message.message?.extendedTextMessage?.text?.trim() ||
     message.message?.imageMessage?.caption?.trim() ||
@@ -386,6 +386,28 @@ if (!isGroup && !message.key.fromMe) {
     message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
     ''
 );
+
+// ✅ INSERT QUOTED MESSAGE CHECK HERE
+if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+    try {
+        const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
+        const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
+        
+        if (!quotedMsg) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
+            });
+            return;
+        }
+    } catch (error) {
+        console.error('❌ Error checking quoted message:', error);
+        await sock.sendMessage(chatId, { 
+            text: '❌ Could not access quoted message. Please try again with a newer message.' 
+        });
+        return;
+    }
+}
+// ✅ END OF INSERTED CODE
 
 // Get current prefix
 delete require.cache[require.resolve('./settings')];
