@@ -40,12 +40,16 @@
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
  * FIXED: Recording shows first, then typing alternates
- * FIXED: Exclude/Include logic now works properly
+ * FIXED: Delegates filter checking to autotyping and autorecord handlers
  */
 
 const fs = require('fs');
 const path = require('path');
 const isOwnerOrSudo = require('../lib/isOwner');
+
+// Import the actual handlers from autotyping and autorecord
+const autotyping = require('./autotyping');
+const autorecord = require('./autorecord');
 
 const configPath = path.join(__dirname, '..', 'data', 'autorecordtype.json');
 const activeSessions = new Map();
@@ -110,32 +114,6 @@ function initConfig() {
 // UTILITY FUNCTIONS
 // ═══════════════════════════════════════
 
-function extractPhoneNumber(jid) {
-    if (!jid) return null;
-    // Extract just the digits part (before @ or :)
-    const match = jid.match(/^(\d+)/);
-    return match ? match[1] : null;
-}
-
-// ✅ FIXED: Properly gets sender JID from message
-function isNumberInList(jid, message) {
-    const config = initConfig();
-    if (!config.numberList || config.numberList.length === 0) return null;
-
-    // Get the actual sender JID - this is the key fix
-    const senderJid = message.key.participant || message.key.remoteJid;
-    const phone = extractPhoneNumber(senderJid);
-
-    if (!phone || phone.length < 7) return null;
-    
-    // Check if the phone number is in the list
-    const found = config.numberList.some(num => phone === num || phone.endsWith(num) || num.endsWith(phone));
-    
-    // Return based on mode: includeMode=true means only listed numbers get the feature
-    // includeMode=false means all except listed numbers get the feature
-    return config.includeMode ? found : !found;
-}
-
 function stopAlternatingSession(chatId) {
     const s = activeSessions.get(chatId);
     if (s?.intervalId) { clearInterval(s.intervalId); activeSessions.delete(chatId); return true; }
@@ -148,6 +126,7 @@ function stopAllAlternatingSessions() {
     return c;
 }
 
+// ✅ FIXED: Start with RECORDING first and properly alternate
 async function startAlternatingSession(sock, chatId, duration, infinite) {
     stopAlternatingSession(chatId);
     try {
@@ -156,7 +135,7 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
         await sock.sendPresenceUpdate('available', chatId);
         await delay(300);
         
-        // ✅ FIXED: Start with RECORDING first (as name suggests "autorecordtype")
+        // Start with RECORDING first
         let isRecording = true;
         let loopsDone = 0;
         const switchMs = 5000;
@@ -175,7 +154,7 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
                     stopAlternatingSession(chatId);
                     return;
                 }
-                // ✅ FIXED: Alternate between recording and typing
+                // Alternate between recording and typing
                 isRecording = !isRecording;
                 if (isRecording) {
                     await sock.sendPresenceUpdate('recording', chatId);
@@ -200,6 +179,10 @@ async function updateBothConfigs(mode, duration, infinite) {
             c.mode = mode;
             c.duration = duration;
             c.infinite = infinite;
+            // ✅ IMPORTANT: Sync the filter settings to both configs
+            const typeConfig = initConfig();
+            c.includeMode = typeConfig.includeMode;
+            c.numberList = typeConfig.numberList;
             fs.writeFileSync(p, JSON.stringify(c, null, 2));
         }
     });
@@ -239,30 +222,6 @@ function getModeDescription(mode) {
     }
 }
 
-// ✅ FIXED: Uses sender JID for number checking
-function shouldShowAutorecordtype(jid, message) {
-    try {
-        const config = initConfig();
-        if (!config.enabled) return false;
-        
-        const chatId = message.key.remoteJid;
-        const isGroup = chatId.endsWith('@g.us');
-        
-        switch(config.mode) {
-            case 'all': break;
-            case 'dms': if (isGroup) return false; break;
-            case 'groups': if (!isGroup) return false; break;
-            default: break;
-        }
-        
-        // Use the sender's JID for number checking
-        const listResult = isNumberInList(jid, message);
-        if (listResult !== null && !listResult) return false;
-        
-        return true;
-    } catch (e) { return false; }
-}
-
 function isAutorecordtypeEnabled() { try { return initConfig().enabled; } catch (e) { return false; } }
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -271,23 +230,29 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // HANDLER FUNCTIONS
 // ═══════════════════════════════════════
 
+// ✅ FIXED: Delegate filtering to autotyping and autorecord handlers
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message) {
-    // Get sender JID properly
-    const senderJid = message.key.participant || message.key.remoteJid;
-    
-    if (!shouldShowAutorecordtype(senderJid, message)) return false;
     try {
         const config = initConfig();
-        if (config.infinite) return await startAlternatingSession(sock, chatId, config.duration, true);
+        if (!config.enabled) return false;
+        
+        // Let autotyping and autorecord handle their own filtering
+        // They will check their own configs which we've synced
+        
+        if (config.infinite) {
+            return await startAlternatingSession(sock, chatId, config.duration, true);
+        }
+        
         const duration = config.duration || DEFAULT_DURATION;
         const refreshMs = 5000; // 5 seconds between switches
         const totalLoops = Math.floor((duration * 1000) / refreshMs);
+        
         await sock.presenceSubscribe(chatId);
         await delay(200);
         await sock.sendPresenceUpdate('available', chatId);
         await delay(300);
         
-        // ✅ FIXED: Start with recording first
+        // Start with recording first
         let isRecording = true;
         await sock.sendPresenceUpdate('recording', chatId);
         
@@ -307,12 +272,10 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message
 }
 
 async function handleAutorecordtypeForCommand(sock, chatId, message) {
-    const senderJid = message.key.participant || message.key.remoteJid;
     return await handleAutorecordtypeForMessage(sock, chatId, '', message);
 }
 
 async function showAutorecordtypeAfterCommand(sock, chatId, message) {
-    const senderJid = message.key.participant || message.key.remoteJid;
     return await handleAutorecordtypeForMessage(sock, chatId, '', message);
 }
 
@@ -445,6 +408,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 }
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                // Also update the individual configs
+                await updateBothConfigs(mode, config.duration, config.infinite);
                 await sock.sendMessage(chatId, {
                     text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n📌 ${getModeDescription(mode)}`,
                     ...channelInfo
@@ -472,6 +437,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.infinite = true;
                 config.duration = DEFAULT_DURATION;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await updateBothConfigs(config.mode, config.duration, true);
                 await sock.sendMessage(chatId, {
                     text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Both typing & recording will alternate every 5 seconds indefinitely.\n🎙️ Starting with RECORDING\n\n💡 Use .autorecordtype off to stop.`,
                     ...channelInfo
@@ -497,6 +463,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.duration = d;
             config.infinite = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await updateBothConfigs(config.mode, d, false);
             stopAllAlternatingSessions();
             await sock.sendMessage(chatId, {
                 text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF\n🔄 Alternating every 5 seconds\n🎙️ Starting with RECORDING`,
@@ -519,6 +486,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const added = [];
                 for (const num of numbers) { if (!config.numberList.includes(num)) { config.numberList.push(num); added.push(num); } }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                // Sync to both configs
+                await updateBothConfigs(config.mode, config.duration, config.infinite);
                 await sock.sendMessage(chatId, {
                     text: `✅ *INCLUDE ADDED*\n\n` +
                           `━━━━━━━━━━━━━━━━━━━━\n📌 *Mode:* Include Only\n🔢 *Added:* ${added.length} number(s)\n${added.map(n => `└ +${n}`).join('\n')}\n\n━━━━━━━━━━━━━━━━━━━━\n📊 *Total:* ${config.numberList.length}\n\n💡 Both indicators will ONLY show for these numbers.`,
@@ -531,6 +500,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await updateBothConfigs(config.mode, config.duration, config.infinite);
                 await sock.sendMessage(chatId, { text: `✅ *INCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}`, ...channelInfo });
             }
             else { await sock.sendMessage(chatId, { text: `📋 *INCLUDE MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 Numbers: ${config.numberList.length}\n\n📖 .autorecordtype include add/remove\n📖 .autorecordtype includelist\n📖 .autorecordtype includeclear`, ...channelInfo }); }
@@ -550,6 +520,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const added = [];
                 for (const num of numbers) { if (!config.numberList.includes(num)) { config.numberList.push(num); added.push(num); } }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await updateBothConfigs(config.mode, config.duration, config.infinite);
                 await sock.sendMessage(chatId, {
                     text: `✅ *EXCLUDE ADDED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Mode:* Exclude\n🔢 *Added:* ${added.length} number(s)\n${added.map(n => `└ +${n}`).join('\n')}\n\n━━━━━━━━━━━━━━━━━━━━\n📊 *Total:* ${config.numberList.length}\n\n💡 Both indicators will NOT show for these numbers.`,
                     ...channelInfo
@@ -561,6 +532,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                await updateBothConfigs(config.mode, config.duration, config.infinite);
                 await sock.sendMessage(chatId, { text: `✅ *EXCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}`, ...channelInfo });
             }
             else { await sock.sendMessage(chatId, { text: `📋 *EXCLUDE MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 Numbers: ${config.numberList.length}\n\n📖 .autorecordtype exclude add/remove\n📖 .autorecordtype excludelist\n📖 .autorecordtype excludeclear`, ...channelInfo }); }
@@ -576,11 +548,13 @@ async function autorecordtypeCommand(sock, chatId, message) {
         else if (action === 'includeclear') {
             if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Include list is already empty.`, ...channelInfo }); return; }
             config.numberList = []; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await updateBothConfigs(config.mode, config.duration, config.infinite);
             await sock.sendMessage(chatId, { text: `✅ *INCLUDE LIST CLEARED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 All numbers removed.\n🌍 Indicators will show for everyone.`, ...channelInfo });
         }
         else if (action === 'excludeclear') {
             if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Exclude list is already empty.`, ...channelInfo }); return; }
             config.numberList = []; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await updateBothConfigs(config.mode, config.duration, config.infinite);
             await sock.sendMessage(chatId, { text: `✅ *EXCLUDE LIST CLEARED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 All numbers removed.\n🌍 Indicators will show for everyone.`, ...channelInfo });
         }
         else if (action === 'status') {
@@ -613,6 +587,5 @@ module.exports = {
     isAutorecordtypeEnabled,
     handleAutorecordtypeForMessage,
     handleAutorecordtypeForCommand,
-    showAutorecordtypeAfterCommand,
-    shouldShowAutorecordtype
+    showAutorecordtypeAfterCommand
 };
