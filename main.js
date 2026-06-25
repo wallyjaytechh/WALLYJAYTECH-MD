@@ -386,35 +386,6 @@ if (!isGroup && !message.key.fromMe) {
     message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
     ''
 );
-// ✅ Even smarter: Check if the command file exists and handle quoted messages
-if (isCommand && message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-    const cmdName = userMessage.split(' ')[0].replace(/^\./, '');
-    try {
-        const commandFile = require(`./commands/${cmdName}`);
-        if (commandFile && commandFile.requiresQuoted) {
-            // This command requires a quoted message
-            try {
-                const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
-                const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
-                
-                if (!quotedMsg) {
-                    await sock.sendMessage(chatId, { 
-                        text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
-                    });
-                    return;
-                }
-            } catch (error) {
-                console.error('❌ Error checking quoted message:', error);
-                await sock.sendMessage(chatId, { 
-                    text: '❌ Could not access quoted message. Please try again with a newer message.' 
-                });
-                return;
-            }
-        }
-    } catch (error) {
-        // Command file doesn't exist, skip check
-    }
-}
 
 // Get current prefix
 delete require.cache[require.resolve('./settings')];
@@ -441,6 +412,26 @@ else if (rawMessageText.startsWith('.')) {
     commandWithoutPrefix = rawMessageText.slice(1).trim();
 }
 
+// ✅ QUOTED MESSAGE CHECK — placed AFTER isCommand is defined
+if (isCommand && message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+    try {
+        const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
+        const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
+        if (!quotedMsg) {
+            await sock.sendMessage(chatId, { 
+                text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
+            });
+            return;
+        }
+    } catch (error) {
+        console.error('❌ Error checking quoted message:', error);
+        await sock.sendMessage(chatId, { 
+            text: '❌ Could not access quoted message. Please try again with a newer message.' 
+        });
+        return;
+    }
+}
+
 // IMPORTANT: Handle non-command messages FIRST
 if (!isCommand) {
     // Handle non-command messages - SHOW BOTH TYPING AND RECORDING INDICATORS
@@ -448,10 +439,10 @@ if (!isCommand) {
         // Check for links BEFORE anything else
         if (isGroup) await Antilink(message, sock);
         
-        // ✅ RECORDING FIRST (swap this)
+        // Show recording FIRST
         await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
         
-        // ✅ TYPING SECOND (swap this)
+        // Show typing SECOND
         await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
         
         // Other non-command handlers
@@ -463,9 +454,10 @@ if (!isCommand) {
 }
 
 // If we get here, it's a command
-// Add dot back for your switch statement
 const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
 const rawText = commandWithoutPrefix;
+
+// ... then your switch statement ...
 
 // Only log command usage
 console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
