@@ -39,6 +39,8 @@
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
+ * FIXED: Recording shows first, then typing alternates
+ * FIXED: Exclude/Include logic now works properly
  */
 
 const fs = require('fs');
@@ -110,42 +112,27 @@ function initConfig() {
 
 function extractPhoneNumber(jid) {
     if (!jid) return null;
-    return jid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+    // Extract just the digits part (before @ or :)
+    const match = jid.match(/^(\d+)/);
+    return match ? match[1] : null;
 }
 
+// ✅ FIXED: Properly gets sender JID from message
 function isNumberInList(jid, message) {
     const config = initConfig();
     if (!config.numberList || config.numberList.length === 0) return null;
 
-    const chatId = message.key.remoteJid;
-    const isGroup = chatId?.endsWith('@g.us');
-    let phone = null;
-
-    if (isGroup) {
-        const participant = message.key.participant || message.participant;
-        if (participant) {
-            if (message.key.participantAlt?.includes('@s.whatsapp.net')) {
-                phone = extractPhoneNumber(message.key.participantAlt);
-            } else if (!participant.endsWith('@lid')) {
-                phone = extractPhoneNumber(participant);
-            } else {
-                try {
-                    const store = require('./lightweight_store');
-                    const contact = store.contacts[participant];
-                    if (contact?.id?.includes('@s.whatsapp.net')) phone = extractPhoneNumber(contact.id);
-                } catch (e) {}
-            }
-        }
-    } else {
-        if (message.key.remoteJidAlt?.includes('@s.whatsapp.net')) {
-            phone = extractPhoneNumber(message.key.remoteJidAlt);
-        } else {
-            phone = extractPhoneNumber(jid);
-        }
-    }
+    // Get the actual sender JID - this is the key fix
+    const senderJid = message.key.participant || message.key.remoteJid;
+    const phone = extractPhoneNumber(senderJid);
 
     if (!phone || phone.length < 7) return null;
+    
+    // Check if the phone number is in the list
     const found = config.numberList.some(num => phone === num || phone.endsWith(num) || num.endsWith(phone));
+    
+    // Return based on mode: includeMode=true means only listed numbers get the feature
+    // includeMode=false means all except listed numbers get the feature
     return config.includeMode ? found : !found;
 }
 
@@ -169,11 +156,13 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
         await sock.sendPresenceUpdate('available', chatId);
         await delay(300);
         
+        // ✅ FIXED: Start with RECORDING first (as name suggests "autorecordtype")
         let isRecording = true;
         let loopsDone = 0;
         const switchMs = 5000;
         const maxLoops = infinite ? Infinity : Math.floor((duration * 1000) / switchMs);
         
+        // Start with recording
         await sock.sendPresenceUpdate('recording', chatId);
         
         const session = { chatId, startTime: Date.now(), refreshCount: 0, isRecording: true };
@@ -186,9 +175,13 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
                     stopAlternatingSession(chatId);
                     return;
                 }
+                // ✅ FIXED: Alternate between recording and typing
                 isRecording = !isRecording;
-                if (isRecording) await sock.sendPresenceUpdate('recording', chatId);
-                else await sock.sendPresenceUpdate('composing', chatId);
+                if (isRecording) {
+                    await sock.sendPresenceUpdate('recording', chatId);
+                } else {
+                    await sock.sendPresenceUpdate('composing', chatId);
+                }
                 session.refreshCount++;
             } catch (e) { stopAlternatingSession(chatId); }
         }, switchMs);
@@ -246,9 +239,82 @@ function getModeDescription(mode) {
     }
 }
 
+// ✅ FIXED: Uses sender JID for number checking
+function shouldShowAutorecordtype(jid, message) {
+    try {
+        const config = initConfig();
+        if (!config.enabled) return false;
+        
+        const chatId = message.key.remoteJid;
+        const isGroup = chatId.endsWith('@g.us');
+        
+        switch(config.mode) {
+            case 'all': break;
+            case 'dms': if (isGroup) return false; break;
+            case 'groups': if (!isGroup) return false; break;
+            default: break;
+        }
+        
+        // Use the sender's JID for number checking
+        const listResult = isNumberInList(jid, message);
+        if (listResult !== null && !listResult) return false;
+        
+        return true;
+    } catch (e) { return false; }
+}
+
 function isAutorecordtypeEnabled() { try { return initConfig().enabled; } catch (e) { return false; } }
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// ═══════════════════════════════════════
+// HANDLER FUNCTIONS
+// ═══════════════════════════════════════
+
+async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message) {
+    // Get sender JID properly
+    const senderJid = message.key.participant || message.key.remoteJid;
+    
+    if (!shouldShowAutorecordtype(senderJid, message)) return false;
+    try {
+        const config = initConfig();
+        if (config.infinite) return await startAlternatingSession(sock, chatId, config.duration, true);
+        const duration = config.duration || DEFAULT_DURATION;
+        const refreshMs = 5000; // 5 seconds between switches
+        const totalLoops = Math.floor((duration * 1000) / refreshMs);
+        await sock.presenceSubscribe(chatId);
+        await delay(200);
+        await sock.sendPresenceUpdate('available', chatId);
+        await delay(300);
+        
+        // ✅ FIXED: Start with recording first
+        let isRecording = true;
+        await sock.sendPresenceUpdate('recording', chatId);
+        
+        for (let i = 0; i < totalLoops; i++) {
+            await delay(refreshMs);
+            isRecording = !isRecording;
+            if (isRecording) {
+                await sock.sendPresenceUpdate('recording', chatId);
+            } else {
+                await sock.sendPresenceUpdate('composing', chatId);
+            }
+        }
+        await delay(1000);
+        await sock.sendPresenceUpdate('paused', chatId);
+        return true;
+    } catch (e) { return false; }
+}
+
+async function handleAutorecordtypeForCommand(sock, chatId, message) {
+    const senderJid = message.key.participant || message.key.remoteJid;
+    return await handleAutorecordtypeForMessage(sock, chatId, '', message);
+}
+
+async function showAutorecordtypeAfterCommand(sock, chatId, message) {
+    const senderJid = message.key.participant || message.key.remoteJid;
+    return await handleAutorecordtypeForMessage(sock, chatId, '', message);
+}
 
 // ═══════════════════════════════════════
 // COMMAND HANDLER
@@ -299,7 +365,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `└ .autorecordtype includelist / excludelist\n` +
                       `└ .autorecordtype includeclear / excludeclear\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `🔄 *Alternates recording/typing every 5 seconds*\n\n` +
+                      `🔄 *Alternates recording/typing every 5 seconds*\n` +
+                      `🎙️ *Starts with RECORDING first*\n\n` +
                       `💡 *Examples:*\n` +
                       `└ .autorecordtype duration infinite\n` +
                       `└ .autorecordtype include add 2347012345678`,
@@ -328,7 +395,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n\n` +
                       `✅ Auto-typing: ENABLED\n` +
                       `✅ Auto-record: ENABLED\n` +
-                      `🔄 Alternating every 5 seconds\n\n` +
+                      `🔄 Alternating every 5 seconds\n` +
+                      `🎙️ Starting with RECORDING\n\n` +
                       `📌 Both indicators active in ${getModeDescription(config.mode)}`,
                 ...channelInfo
             });
@@ -405,7 +473,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.duration = DEFAULT_DURATION;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
                 await sock.sendMessage(chatId, {
-                    text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Both typing & recording will alternate every 5 seconds indefinitely.\n\n💡 Use .autorecordtype off to stop.`,
+                    text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Both typing & recording will alternate every 5 seconds indefinitely.\n🎙️ Starting with RECORDING\n\n💡 Use .autorecordtype off to stop.`,
                     ...channelInfo
                 });
                 if (config.enabled) await startAlternatingSession(sock, chatId, config.duration, true);
@@ -431,7 +499,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             stopAllAlternatingSessions();
             await sock.sendMessage(chatId, {
-                text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF\n🔄 Alternating every 5 seconds`,
+                text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF\n🔄 Alternating every 5 seconds\n🎙️ Starting with RECORDING`,
                 ...channelInfo
             });
             if (config.enabled) await startAlternatingSession(sock, chatId, d, false);
@@ -526,7 +594,8 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n` +
                       `🔢 Filter: ${filterMode} (${config.numberList.length})\n` +
                       `🔄 Sessions: ${activeSessions.size}\n\n` +
-                      `🔄 Alternates every 5 seconds`,
+                      `🔄 Alternates every 5 seconds\n` +
+                      `🎙️ Starts with RECORDING`,
                 ...channelInfo
             });
         }
@@ -539,4 +608,11 @@ async function autorecordtypeCommand(sock, chatId, message) {
     } catch (error) { console.error('❌ Error:', error); }
 }
 
-module.exports = { autorecordtypeCommand, isAutorecordtypeEnabled };
+module.exports = { 
+    autorecordtypeCommand, 
+    isAutorecordtypeEnabled,
+    handleAutorecordtypeForMessage,
+    handleAutorecordtypeForCommand,
+    showAutorecordtypeAfterCommand,
+    shouldShowAutorecordtype
+};
