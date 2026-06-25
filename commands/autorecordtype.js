@@ -40,6 +40,7 @@
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
  * FINAL FIX: Continuous alternating for ALL messages, starts with recording
+ * DEBUG: Added comprehensive logging
  */
 
 const fs = require('fs');
@@ -72,6 +73,45 @@ const defaultConfig = {
     numberList: []
 };
 
+// Auto-create data files if they don't exist
+const dataDir = path.join(__dirname, '..', 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+
+const defaultConfigs = {
+    'autorecordtype.json': {
+        enabled: false,
+        mode: 'all',
+        duration: DEFAULT_DURATION,
+        infinite: false,
+        includeMode: false,
+        numberList: []
+    },
+    'autotyping.json': {
+        enabled: false,
+        mode: 'all',
+        duration: DEFAULT_DURATION,
+        infinite: false,
+        includeMode: false,
+        numberList: []
+    },
+    'autorecord.json': {
+        enabled: false,
+        mode: 'all',
+        duration: DEFAULT_DURATION,
+        infinite: false,
+        includeMode: false,
+        numberList: []
+    }
+};
+
+for (const [file, content] of Object.entries(defaultConfigs)) {
+    const filePath = path.join(dataDir, file);
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, JSON.stringify(content, null, 2));
+        console.log(`📁 Created: ${file}`);
+    }
+}
+
 // ═══════════════════════════════════════
 // CONFIGURATION (Auto-migrate on update)
 // ═══════════════════════════════════════
@@ -102,7 +142,10 @@ function initConfig() {
         }
         
         return config;
-    } catch (error) { return { ...defaultConfig }; }
+    } catch (error) { 
+        console.error('❌ Error reading config:', error);
+        return { ...defaultConfig }; 
+    }
 }
 
 // ═══════════════════════════════════════
@@ -162,10 +205,10 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
                 isRecording = !isRecording;
                 if (isRecording) {
                     await sock.sendPresenceUpdate('recording', chatId);
-                    console.log(`🎙️ Autorecordtype: RECORDING in ${chatId} (${loopsDone}/${maxLoops})`);
+                    console.log(`🎙️ Autorecordtype: RECORDING in ${chatId} (${loopsDone}/${maxLoops === Infinity ? '∞' : maxLoops})`);
                 } else {
                     await sock.sendPresenceUpdate('composing', chatId);
-                    console.log(`⌨️ Autorecordtype: TYPING in ${chatId} (${loopsDone}/${maxLoops})`);
+                    console.log(`⌨️ Autorecordtype: TYPING in ${chatId} (${loopsDone}/${maxLoops === Infinity ? '∞' : maxLoops})`);
                 }
                 session.refreshCount++;
             } catch (e) {
@@ -190,6 +233,7 @@ async function disableIndividualHandlers() {
             let c = JSON.parse(fs.readFileSync(p));
             c.enabled = false;
             fs.writeFileSync(p, JSON.stringify(c, null, 2));
+            console.log(`🔒 Disabled individual handler: ${f}`);
         }
     });
 }
@@ -207,6 +251,7 @@ async function syncConfigToIndividual(mode, duration, infinite, includeMode, num
             c.includeMode = includeMode;
             c.numberList = numberList;
             fs.writeFileSync(p, JSON.stringify(c, null, 2));
+            console.log(`📝 Synced config to: ${f}`);
         }
     });
 }
@@ -255,35 +300,49 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ✅ FINAL FIX: Start alternating session for EVERY message, not just once
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message) {
+    console.log(`🔍 DEBUG: handleAutorecordtypeForMessage called for ${chatId}`);
+    
     try {
         const config = initConfig();
-        if (!config.enabled) return false;
+        console.log(`🔍 DEBUG: Config enabled = ${config.enabled}`);
+        console.log(`🔍 DEBUG: Config = ${JSON.stringify(config)}`);
+        
+        if (!config.enabled) {
+            console.log(`🔍 DEBUG: Autorecordtype is disabled, skipping`);
+            return false;
+        }
         
         // Check mode
         const isGroup = chatId.endsWith('@g.us');
+        console.log(`🔍 DEBUG: isGroup = ${isGroup}, mode = ${config.mode}`);
+        
         switch(config.mode) {
             case 'all': break;
-            case 'dms': if (isGroup) return false; break;
-            case 'groups': if (!isGroup) return false; break;
+            case 'dms': if (isGroup) { console.log(`🔍 DEBUG: DMs only, skipping group`); return false; } break;
+            case 'groups': if (!isGroup) { console.log(`🔍 DEBUG: Groups only, skipping DM`); return false; } break;
             default: break;
         }
         
-        // Check if there's already an active session for this chat
+        // Check if there's already an active session
         if (activeSessions.has(chatId)) {
-            // Session already running, just log it
-            console.log(`🔄 Autorecordtype already running in ${chatId}`);
+            console.log(`🔍 DEBUG: Session already running for ${chatId}`);
             return true;
         }
         
+        console.log(`🔍 DEBUG: Starting new session for ${chatId}`);
+        
         // Disable individual handlers to prevent interference
         await disableIndividualHandlers();
+        console.log(`🔍 DEBUG: Individual handlers disabled`);
         
         // Start the alternating session
         if (config.infinite) {
+            console.log(`🔍 DEBUG: Starting infinite session`);
             return await startAlternatingSession(sock, chatId, config.duration, true);
         }
         
         const duration = config.duration || DEFAULT_DURATION;
+        console.log(`🔍 DEBUG: Starting timed session for ${duration}s`);
         return await startAlternatingSession(sock, chatId, duration, false);
     } catch (e) { 
         console.error(`❌ Error in handleAutorecordtypeForMessage:`, e.message);
@@ -370,11 +429,16 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 });
                 return;
             }
+            
+            // ✅ FIXED: Explicitly set and save
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log(`✅ DEBUG: Config saved with enabled=true`);
+            
             // Sync config but keep individual handlers DISABLED
             await syncConfigToIndividual(config.mode, config.duration, config.infinite, config.includeMode, config.numberList);
             await disableIndividualHandlers();
+            
             await sock.sendMessage(chatId, {
                 text: `✅ *AUTO-RECORD-TYPE ENABLED*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -388,6 +452,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `⚠️ Individual auto-typing/recording handlers disabled to prevent interference`,
                 ...channelInfo
             });
+            
             // Start alternating session immediately for this chat
             await startAlternatingSession(sock, chatId, config.duration, config.infinite);
         }
