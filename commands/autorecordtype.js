@@ -39,8 +39,7 @@
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
- * FINAL FIX: Recording shows first in ALL chats (including DMs)
- * FINAL FIX: Disables individual handlers to prevent interference
+ * FINAL FIX: Continuous alternating for ALL messages, starts with recording
  */
 
 const fs = require('fs');
@@ -122,7 +121,7 @@ function stopAllAlternatingSessions() {
     return c;
 }
 
-// ✅ FINAL FIX: Start with RECORDING first ALWAYS
+// ✅ FINAL FIX: Continuous alternating with recording first
 async function startAlternatingSession(sock, chatId, duration, infinite) {
     stopAlternatingSession(chatId);
     try {
@@ -131,44 +130,60 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
         await sock.sendPresenceUpdate('available', chatId);
         await delay(300);
         
-        // ✅ FORCE: Start with RECORDING first
+        // Start with RECORDING first
         let isRecording = true;
         let loopsDone = 0;
-        const switchMs = 5000;
+        const switchMs = 5000; // 5 seconds between switches
         const maxLoops = infinite ? Infinity : Math.floor((duration * 1000) / switchMs);
         
-        // FORCE recording first
+        // Send initial recording
         await sock.sendPresenceUpdate('recording', chatId);
+        console.log(`🎙️ Autorecordtype started: RECORDING in ${chatId}`);
         
-        const session = { chatId, startTime: Date.now(), refreshCount: 0, isRecording: true };
+        const session = { 
+            chatId, 
+            startTime: Date.now(), 
+            refreshCount: 0, 
+            isRecording: true,
+            isRunning: true
+        };
         
         session.intervalId = setInterval(async () => {
             try {
                 loopsDone++;
                 if (!infinite && loopsDone >= maxLoops) {
                     await sock.sendPresenceUpdate('paused', chatId);
+                    console.log(`⏹️ Autorecordtype finished in ${chatId}`);
                     stopAlternatingSession(chatId);
                     return;
                 }
-                // Alternate: recording -> typing -> recording -> typing
+                
+                // Alternate between recording and typing
                 isRecording = !isRecording;
                 if (isRecording) {
                     await sock.sendPresenceUpdate('recording', chatId);
+                    console.log(`🎙️ Autorecordtype: RECORDING in ${chatId} (${loopsDone}/${maxLoops})`);
                 } else {
                     await sock.sendPresenceUpdate('composing', chatId);
+                    console.log(`⌨️ Autorecordtype: TYPING in ${chatId} (${loopsDone}/${maxLoops})`);
                 }
                 session.refreshCount++;
-            } catch (e) { stopAlternatingSession(chatId); }
+            } catch (e) {
+                console.error(`❌ Autorecordtype error in ${chatId}:`, e.message);
+                stopAlternatingSession(chatId);
+            }
         }, switchMs);
         
         activeSessions.set(chatId, session);
         return true;
-    } catch (e) { return false; }
+    } catch (e) { 
+        console.error(`❌ Failed to start alternating session in ${chatId}:`, e.message);
+        return false; 
+    }
 }
 
 // ✅ FINAL FIX: Disable individual handlers to prevent interference
 async function disableIndividualHandlers() {
-    // Disable autotyping and autorecord handlers
     ['autotyping.json', 'autorecord.json'].forEach(f => {
         const p = path.join(__dirname, '..', 'data', f);
         if (fs.existsSync(p)) {
@@ -185,7 +200,7 @@ async function syncConfigToIndividual(mode, duration, infinite, includeMode, num
         const p = path.join(__dirname, '..', 'data', f);
         if (fs.existsSync(p)) {
             let c = JSON.parse(fs.readFileSync(p));
-            c.enabled = false; // ALWAYS disabled to prevent interference
+            c.enabled = false; // Always disabled to prevent interference
             c.mode = mode;
             c.duration = duration;
             c.infinite = infinite;
@@ -238,7 +253,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // HANDLER FUNCTIONS
 // ═══════════════════════════════════════
 
-// ✅ FINAL FIX: Show recording first in ALL chats
+// ✅ FINAL FIX: Start alternating session for EVERY message, not just once
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message) {
     try {
         const config = initConfig();
@@ -253,39 +268,27 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message
             default: break;
         }
         
+        // Check if there's already an active session for this chat
+        if (activeSessions.has(chatId)) {
+            // Session already running, just log it
+            console.log(`🔄 Autorecordtype already running in ${chatId}`);
+            return true;
+        }
+        
         // Disable individual handlers to prevent interference
         await disableIndividualHandlers();
         
+        // Start the alternating session
         if (config.infinite) {
             return await startAlternatingSession(sock, chatId, config.duration, true);
         }
         
         const duration = config.duration || DEFAULT_DURATION;
-        const refreshMs = 5000; // 5 seconds between switches
-        const totalLoops = Math.floor((duration * 1000) / refreshMs);
-        
-        await sock.presenceSubscribe(chatId);
-        await delay(200);
-        await sock.sendPresenceUpdate('available', chatId);
-        await delay(300);
-        
-        // ✅ FORCE: Start with RECORDING first
-        let isRecording = true;
-        await sock.sendPresenceUpdate('recording', chatId);
-        
-        for (let i = 0; i < totalLoops; i++) {
-            await delay(refreshMs);
-            isRecording = !isRecording;
-            if (isRecording) {
-                await sock.sendPresenceUpdate('recording', chatId);
-            } else {
-                await sock.sendPresenceUpdate('composing', chatId);
-            }
-        }
-        await delay(1000);
-        await sock.sendPresenceUpdate('paused', chatId);
-        return true;
-    } catch (e) { return false; }
+        return await startAlternatingSession(sock, chatId, duration, false);
+    } catch (e) { 
+        console.error(`❌ Error in handleAutorecordtypeForMessage:`, e.message);
+        return false; 
+    }
 }
 
 async function handleAutorecordtypeForCommand(sock, chatId, message) {
@@ -320,6 +323,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
             const statusIcon = config.enabled ? '🟢' : '🔴';
             const filterMode = config.numberList.length > 0 ? (config.includeMode ? '✅ Include Only' : '🚫 Exclude') : '🌍 All Numbers';
+            const activeCount = activeSessions.size;
 
             await sock.sendMessage(chatId, {
                 text: `🎙️⌨️ *AUTO-RECORD-TYPE SETTINGS*\n\n` +
@@ -329,7 +333,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `⏱️ *Duration:* ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n` +
                       `♾️ *Infinite:* ${config.infinite ? 'ON' : 'OFF'}\n` +
                       `🔢 *Filter:* ${filterMode} (${config.numberList.length} numbers)\n` +
-                      `🔄 *Sessions:* ${activeSessions.size}\n\n` +
+                      `🔄 *Active Sessions:* ${activeCount}\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
                       `└ .autorecordtype on - Enable both\n` +
@@ -384,6 +388,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `⚠️ Individual auto-typing/recording handlers disabled to prevent interference`,
                 ...channelInfo
             });
+            // Start alternating session immediately for this chat
             await startAlternatingSession(sock, chatId, config.duration, config.infinite);
         }
         else if (action === 'off' || action === 'disable') {
@@ -580,6 +585,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
         }
         else if (action === 'status') {
             const filterMode = config.numberList.length > 0 ? (config.includeMode ? '✅ Include Only' : '🚫 Exclude') : '🌍 All Numbers';
+            const activeCount = activeSessions.size;
             await sock.sendMessage(chatId, {
                 text: `🎙️⌨️ *AUTO-RECORD-TYPE STATUS*\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -588,7 +594,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
                       `⏱️ Duration: ${config.infinite ? '♾️ Infinite' : config.duration + 's'}\n` +
                       `♾️ Infinite: ${config.infinite ? 'ON' : 'OFF'}\n` +
                       `🔢 Filter: ${filterMode} (${config.numberList.length})\n` +
-                      `🔄 Sessions: ${activeSessions.size}\n\n` +
+                      `🔄 Sessions: ${activeCount}\n\n` +
                       `🔄 Alternates every 5 seconds\n` +
                       `🎙️ Starts with RECORDING`,
                 ...channelInfo
