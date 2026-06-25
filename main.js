@@ -441,13 +441,11 @@ if (!isCommand) {
         // Check for links BEFORE anything else
         if (isGroup) await Antilink(message, sock);
         
-        // Show typing indicator for non-command messages
-        
-        await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
-        
-        // Show recording indicator for non-command messages
-        
+        // ✅ RECORDING FIRST (swap this)
         await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
+        
+        // ✅ TYPING SECOND (swap this)
+        await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
         
         // Other non-command handlers
         if (isGroup) {
