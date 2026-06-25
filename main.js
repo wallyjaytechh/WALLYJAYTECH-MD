@@ -387,8 +387,8 @@ if (!isGroup && !message.key.fromMe) {
     ''
 );
 
-// ✅ INSERT QUOTED MESSAGE CHECK HERE
-if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+// ✅ SMART CHECK: Only run for commands that actually have a quoted message
+if (isCommand && message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
     try {
         const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
         const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
@@ -407,8 +407,6 @@ if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
         return;
     }
 }
-// ✅ END OF INSERTED CODE
-
 // Get current prefix
 delete require.cache[require.resolve('./settings')];
 const settings = require('./settings');
