@@ -386,27 +386,36 @@ if (!isGroup && !message.key.fromMe) {
     message.message?.buttonsResponseMessage?.selectedButtonId?.trim() ||
     ''
 );
-
-// ✅ SMART CHECK: Only run for commands that actually have a quoted message
+// ✅ Even smarter: Check if the command file exists and handle quoted messages
 if (isCommand && message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+    const cmdName = userMessage.split(' ')[0].replace(/^\./, '');
     try {
-        const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
-        const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
-        
-        if (!quotedMsg) {
-            await sock.sendMessage(chatId, { 
-                text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
-            });
-            return;
+        const commandFile = require(`./commands/${cmdName}`);
+        if (commandFile && commandFile.requiresQuoted) {
+            // This command requires a quoted message
+            try {
+                const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
+                const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
+                
+                if (!quotedMsg) {
+                    await sock.sendMessage(chatId, { 
+                        text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
+                    });
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Error checking quoted message:', error);
+                await sock.sendMessage(chatId, { 
+                    text: '❌ Could not access quoted message. Please try again with a newer message.' 
+                });
+                return;
+            }
         }
     } catch (error) {
-        console.error('❌ Error checking quoted message:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Could not access quoted message. Please try again with a newer message.' 
-        });
-        return;
+        // Command file doesn't exist, skip check
     }
 }
+
 // Get current prefix
 delete require.cache[require.resolve('./settings')];
 const settings = require('./settings');
