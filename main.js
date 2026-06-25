@@ -420,9 +420,11 @@ if (!isCommand) {
         if (isGroup) await Antilink(message, sock);
         
         // Show typing indicator for non-command messages
-        await handleAutotypingForMessage(sock, chatId, rawMessageText);
+        
+        await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
         
         // Show recording indicator for non-command messages
+        
         await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
         
         // Other non-command handlers
