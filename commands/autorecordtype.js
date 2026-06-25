@@ -197,7 +197,7 @@ function stopAllAlternatingSessions() {
     return c;
 }
 
-// ✅ FIXED 1 & 2: Recording first, continuous alternating for full duration
+// ✅ Professional: Recording first, continuous alternating for full duration
 async function startAlternatingSession(sock, chatId, duration, infinite) {
     stopAlternatingSession(chatId);
     try {
@@ -206,13 +206,12 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
         await sock.sendPresenceUpdate('available', chatId);
         await delay(300);
         
-        // ✅ FIXED: Start with RECORDING first
+        // Start with RECORDING first
         let isRecording = true;
         let loopsDone = 0;
         const switchMs = 5000; // 5 seconds between switches
         const maxLoops = infinite ? Infinity : Math.floor((duration * 1000) / switchMs);
         
-        // Send initial recording
         await sock.sendPresenceUpdate('recording', chatId);
         console.log(`🎙️ Autorecordtype started: RECORDING in ${chatId} (0/${maxLoops === Infinity ? '∞' : maxLoops})`);
         
@@ -263,14 +262,12 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
     }
 }
 
-// ✅ FIXED: Enable BOTH autotyping and autorecord with full config sync
+// ✅ Enable BOTH autotyping and autorecord with full config sync
 async function enableIndividualHandlers() {
     console.log(`🔍 DEBUG: Enabling individual handlers...`);
     
-    // Get current config
     const config = initConfig();
     
-    // Enable autotyping with full config sync
     const typingPath = path.join(__dirname, '..', 'data', 'autotyping.json');
     if (fs.existsSync(typingPath)) {
         let c = JSON.parse(fs.readFileSync(typingPath));
@@ -295,7 +292,6 @@ async function enableIndividualHandlers() {
         console.log(`✅ Created, enabled & synced: autotyping.json`);
     }
 
-    // Enable autorecord with full config sync
     const recordPath = path.join(__dirname, '..', 'data', 'autorecord.json');
     if (fs.existsSync(recordPath)) {
         let c = JSON.parse(fs.readFileSync(recordPath));
@@ -321,11 +317,10 @@ async function enableIndividualHandlers() {
     }
 }
 
-// ✅ FIXED: Disable BOTH autotyping and autorecord
+// ✅ Disable BOTH autotyping and autorecord
 async function disableIndividualHandlers() {
     console.log(`🔍 DEBUG: Disabling individual handlers...`);
     
-    // Disable autotyping
     const typingPath = path.join(__dirname, '..', 'data', 'autotyping.json');
     if (fs.existsSync(typingPath)) {
         let c = JSON.parse(fs.readFileSync(typingPath));
@@ -334,7 +329,6 @@ async function disableIndividualHandlers() {
         console.log(`🔒 Disabled: autotyping.json`);
     }
 
-    // Disable autorecord
     const recordPath = path.join(__dirname, '..', 'data', 'autorecord.json');
     if (fs.existsSync(recordPath)) {
         let c = JSON.parse(fs.readFileSync(recordPath));
@@ -344,13 +338,12 @@ async function disableIndividualHandlers() {
     }
 }
 
-// ✅ FIXED 3: Full config sync to individual handlers
+// ✅ Full config sync to individual handlers
 async function syncConfigToIndividual(mode, duration, infinite, includeMode, numberList) {
     ['autotyping.json', 'autorecord.json'].forEach(f => {
         const p = path.join(__dirname, '..', 'data', f);
         if (fs.existsSync(p)) {
             let c = JSON.parse(fs.readFileSync(p));
-            // Keep enabled status as is, but sync all other settings
             c.mode = mode;
             c.duration = duration;
             c.infinite = infinite;
@@ -415,7 +408,6 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message
             default: break;
         }
         
-        // Individual handlers are ENABLED and SYNCED, they will handle each message
         return true;
     } catch (e) { return false; }
 }
@@ -503,8 +495,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            // Sync config AND ENABLE individual handlers with full config
-            await enableIndividualHandlers();  // ✅ This now syncs ALL settings
+            await enableIndividualHandlers();
             
             await sock.sendMessage(chatId, {
                 text: `✅ *AUTO-RECORD-TYPE ENABLED*\n\n` +
@@ -519,7 +510,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 ...channelInfo
             });
             
-            // Start alternating session immediately for this chat
             await startAlternatingSession(sock, chatId, config.duration, config.infinite);
         }
         else if (action === 'off' || action === 'disable') {
@@ -535,7 +525,7 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.infinite = false;
             config.duration = DEFAULT_DURATION;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await disableBoth();  // ❌ DISABLE individual handlers too
+            await disableBoth();
             
             await sock.sendMessage(chatId, {
                 text: `❌ *AUTO-RECORD-TYPE DISABLED*\n\n` +
@@ -560,7 +550,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 }
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync mode to individual handlers
                 await syncConfigToIndividual(mode, config.duration, config.infinite, config.includeMode, config.numberList);
                 await sock.sendMessage(chatId, {
                     text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n📌 ${getModeDescription(mode)}`,
@@ -583,13 +572,11 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.infinite = true;
                 config.duration = DEFAULT_DURATION;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync infinite to individual handlers
                 await syncConfigToIndividual(config.mode, config.duration, true, config.includeMode, config.numberList);
                 await sock.sendMessage(chatId, {
                     text: `♾️ *INFINITE MODE ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Both typing & recording will alternate every 5 seconds indefinitely.\n🎙️ Starting with RECORDING`,
                     ...channelInfo
                 });
-                // Restart session with infinite mode
                 if (config.enabled) {
                     stopAllAlternatingSessions();
                     await startAlternatingSession(sock, chatId, config.duration, true);
@@ -608,14 +595,12 @@ async function autorecordtypeCommand(sock, chatId, message) {
             config.duration = d;
             config.infinite = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            // ✅ FIXED 3: Sync duration to individual handlers
             await syncConfigToIndividual(config.mode, d, false, config.includeMode, config.numberList);
             stopAllAlternatingSessions();
             await sock.sendMessage(chatId, {
                 text: `⏱️ *DURATION UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ Both typing & recording: ${d} seconds\n└ Infinite mode: OFF`,
                 ...channelInfo
             });
-            // Restart session with new duration
             if (config.enabled) {
                 await startAlternatingSession(sock, chatId, d, false);
             }
@@ -631,7 +616,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.includeMode = true;
                 for (const num of numbers) { if (!config.numberList.includes(num)) config.numberList.push(num); }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync include to individual handlers
                 await syncConfigToIndividual(config.mode, config.duration, config.infinite, true, config.numberList);
                 await sock.sendMessage(chatId, { text: `✅ *INCLUDE ADDED*\n\n📌 Mode: Include Only\n🔢 Added ${numbers.length} number(s)`, ...channelInfo });
             }
@@ -641,7 +625,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync include removal to individual handlers
                 await syncConfigToIndividual(config.mode, config.duration, config.infinite, true, config.numberList);
                 await sock.sendMessage(chatId, { text: `✅ *INCLUDE REMOVED*\n\n📌 Removed ${before - config.numberList.length} number(s).`, ...channelInfo });
             }
@@ -658,7 +641,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 config.includeMode = false;
                 for (const num of numbers) { if (!config.numberList.includes(num)) config.numberList.push(num); }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync exclude to individual handlers
                 await syncConfigToIndividual(config.mode, config.duration, config.infinite, false, config.numberList);
                 await sock.sendMessage(chatId, { text: `✅ *EXCLUDE ADDED*\n\n📌 Mode: Exclude\n🔢 Added ${numbers.length} number(s)`, ...channelInfo });
             }
@@ -668,7 +650,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                // ✅ FIXED 3: Sync exclude removal to individual handlers
                 await syncConfigToIndividual(config.mode, config.duration, config.infinite, false, config.numberList);
                 await sock.sendMessage(chatId, { text: `✅ *EXCLUDE REMOVED*\n\n📌 Removed ${before - config.numberList.length} number(s).`, ...channelInfo });
             }
@@ -686,7 +667,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
             if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*`, ...channelInfo }); return; }
             config.numberList = [];
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            // ✅ FIXED 3: Sync clear to individual handlers
             await syncConfigToIndividual(config.mode, config.duration, config.infinite, config.includeMode, []);
             await sock.sendMessage(chatId, { text: `✅ *INCLUDE LIST CLEARED*`, ...channelInfo });
         }
@@ -694,7 +674,6 @@ async function autorecordtypeCommand(sock, chatId, message) {
             if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*`, ...channelInfo }); return; }
             config.numberList = [];
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            // ✅ FIXED 3: Sync clear to individual handlers
             await syncConfigToIndividual(config.mode, config.duration, config.infinite, config.includeMode, []);
             await sock.sendMessage(chatId, { text: `✅ *EXCLUDE LIST CLEARED*`, ...channelInfo });
         }
