@@ -39,9 +39,10 @@
  * Autorecordtype Command - Turn on both autotyping AND autorecord with one command
  * Alternates every 5 seconds for BOTH infinite and timed modes
  * Professional Version with Include/Exclude system
- * FINAL FIX: Continuous alternating for ALL messages, starts with recording
+ * FINAL FIX: Continuous alternating for EVERY message, starts with recording
  * FIXED: LID support for proper phone number extraction
  * FIXED: Include/Exclude now works with LID contacts
+ * FIXED: Session restarts for every new message after completion
  */
 
 const fs = require('fs');
@@ -276,7 +277,7 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
             startTime: Date.now(), 
             refreshCount: 0, 
             isRecording: true,
-            isRunning: true
+            isRunning: true  // ✅ Track if session is actively running
         };
         
         session.intervalId = setInterval(async () => {
@@ -285,6 +286,7 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
                 if (!infinite && loopsDone >= maxLoops) {
                     await sock.sendPresenceUpdate('paused', chatId);
                     console.log(`⏹️ Autorecordtype finished in ${chatId}`);
+                    session.isRunning = false;  // ✅ Mark as finished
                     stopAlternatingSession(chatId);
                     return;
                 }
@@ -301,6 +303,7 @@ async function startAlternatingSession(sock, chatId, duration, infinite) {
                 session.refreshCount++;
             } catch (e) {
                 console.error(`❌ Autorecordtype error in ${chatId}:`, e.message);
+                session.isRunning = false;
                 stopAlternatingSession(chatId);
             }
         }, switchMs);
@@ -386,7 +389,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // HANDLER FUNCTIONS
 // ═══════════════════════════════════════
 
-// ✅ FINAL FIX: Start alternating session for EVERY message, not just once
+// ✅ FINAL FIX: Always restart session if it's not running
 async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message) {
     console.log(`🔍 DEBUG: handleAutorecordtypeForMessage called for ${chatId}`);
     
@@ -411,10 +414,17 @@ async function handleAutorecordtypeForMessage(sock, chatId, userMessage, message
             default: break;
         }
         
-        // Check if there's already an active session
-        if (activeSessions.has(chatId)) {
-            console.log(`🔍 DEBUG: Session already running for ${chatId}`);
+        // ✅ FIXED: Check if session exists AND is still running
+        const existingSession = activeSessions.get(chatId);
+        if (existingSession && existingSession.isRunning) {
+            console.log(`🔍 DEBUG: Session already running for ${chatId}, skipping`);
             return true;
+        }
+        
+        // If session exists but is not running (finished), remove it
+        if (existingSession && !existingSession.isRunning) {
+            activeSessions.delete(chatId);
+            console.log(`🔍 DEBUG: Removed finished session for ${chatId}`);
         }
         
         console.log(`🔍 DEBUG: Starting new session for ${chatId}`);
