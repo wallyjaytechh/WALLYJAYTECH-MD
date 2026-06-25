@@ -249,15 +249,15 @@ ${platformStatsText}
 ║
 ║    🔒OWNER CMDS🔒
 ║
-║ 🔺${prefix}anticall <on/off>
+║ 🔺${prefix}anticall
 ║ 🔺${prefix}antidelete
 ║ 🔺${prefix}antiforeign
-║ 🔺${prefix}autoreact <on/off>
-║ 🔺${prefix}autoread <on/off>
+║ 🔺${prefix}autoreact 
+║ 🔺${prefix}autoread 
 ║ 🔺${prefix}autorecord
 ║ 🔺${prefix}autorecordtype
-║ 🔺${prefix}autostatus <on/off>
-║ 🔺${prefix}autostatus react <on/off>
+║ 🔺${prefix}autostatus 
+║ 🔺${prefix}autostatuslike
 ║ 🔺${prefix}autotyping
 ║ 🔺${prefix}block
 ║ 🔺${prefix}botinfo
@@ -268,21 +268,21 @@ ${platformStatsText}
 ║ 🔺${prefix}getpp
 ║ 🔺${prefix}join
 ║ 🔺${prefix}leave
-║ 🔺${prefix}mention <on/off>
-║ 🔺${prefix}menufont <1-12>
-║ 🔺${prefix}menustyle <1-12>
-║ 🔺${prefix}mode <public/private>
-║ 🔺${prefix}pmblocker <on/off/status>
-║ 🔺${prefix}pmblocker setmsg <text>
+║ 🔺${prefix}mention
+║ 🔺${prefix}menufont
+║ 🔺${prefix}menustyle
+║ 🔺${prefix}mode
+║ 🔺${prefix}pmblocker
+║ 🔺${prefix}pmblocker
 ║ 🔺${prefix}poll
 ║ 🔺${prefix}restart
 ║ 🔺${prefix}setauthor
 ║ 🔺${prefix}setbotname
 ║ 🔺${prefix}setbotowner
-║ 🔺${prefix}setmention <reply to msg>
+║ 🔺${prefix}setmention 
 ║ 🔺${prefix}setownernumber
 ║ 🔺${prefix}setpackname
-║ 🔺${prefix}setpp <reply to image>
+║ 🔺${prefix}setpp
 ║ 🔺${prefix}setprefix
 ║ 🔺${prefix}settings
 ║ 🔺${prefix}settimezone
@@ -304,32 +304,32 @@ ${platformStatsText}
 ║ 🔹${prefix}antibadword
 ║ 🔹${prefix}antibot
 ║ 🔹${prefix}antilink
-║ 🔹${prefix}antitag <on/off>
-║ 🔹${prefix}ban @user
+║ 🔹${prefix}antitag 
+║ 🔹${prefix}ban 
 ║ 🔹${prefix}chatbot
 ║ 🔹${prefix}delete
-║ 🔹${prefix}demote @user
-║ 🔹${prefix}goodbye <on/off>
+║ 🔹${prefix}demote
+║ 🔹${prefix}goodbye
 ║ 🔹${prefix}groupinfo
-║ 🔹${prefix}hidetag <message>
+║ 🔹${prefix}hidetag
 ║ 🔹${prefix}jid
-║ 🔹${prefix}kick @user
-║ 🔹${prefix}mute <minutes>
-║ 🔹${prefix}promote @user
+║ 🔹${prefix}kick
+║ 🔹${prefix}mute
+║ 🔹${prefix}promote
 ║ 🔹${prefix}resetlink
-║ 🔹${prefix}setgdesc <description>
-║ 🔹${prefix}setgname <new name>
-║ 🔹${prefix}setgpp (reply to image)
+║ 🔹${prefix}setgdesc
+║ 🔹${prefix}setgname
+║ 🔹${prefix}setgpp
 ║ 🔹${prefix}ship
-║ 🔹${prefix}stupid @user <text>
-║ 🔹${prefix}tag <message>
+║ 🔹${prefix}stupid
+║ 🔹${prefix}tag 
 ║ 🔹${prefix}tagall
 ║ 🔹${prefix}tagnotadmin
-║ 🔹${prefix}unban @user
+║ 🔹${prefix}unban
 ║ 🔹${prefix}unmute
-║ 🔹${prefix}warn @user
-║ 🔹${prefix}warnings @user
-║ 🔹${prefix}welcome <on/off>
+║ 🔹${prefix}warn
+║ 🔹${prefix}warnings
+║ 🔹${prefix}welcome
 ║
 ╚═══════════════════╝
 
@@ -337,18 +337,18 @@ ${platformStatsText}
 ║
 ║   🎨STICKER CMDS🎨
 ║
-║ 🔻${prefix}blur <image>
-║ 🔻${prefix}crop <reply to image>
-║ 🔻${prefix}emojimix <emj1>+<emj2>
-║ 🔻${prefix}igsc <insta link>
-║ 🔻${prefix}igs <insta link>
+║ 🔻${prefix}blur
+║ 🔻${prefix}crop
+║ 🔻${prefix}emojimix
+║ 🔻${prefix}igsc
+║ 🔻${prefix}igs
 ║ 🔻${prefix}meme
 ║ 🔻${prefix}removebg
 ║ 🔻${prefix}remini
-║ 🔻${prefix}simage <reply to sticker>
-║ 🔻${prefix}sticker <reply to img or vid>
-║ 🔻${prefix}take <packname>
-║ 🔻${prefix}tgsticker <Link>
+║ 🔻${prefix}simage
+║ 🔻${prefix}sticker
+║ 🔻${prefix}take
+║ 🔻${prefix}tgsticker
 ║
 ╚═══════════════════╝
 
@@ -369,7 +369,7 @@ ${platformStatsText}
 ║ ▫️${prefix}indonesia
 ║ ▫️${prefix}japan
 ║ ▫️${prefix}korea
-║ ▫️${prefix}pies <country>
+║ ▫️${prefix}pies
 ║
 ╚═══════════════════╝
 
@@ -377,19 +377,19 @@ ${platformStatsText}
 ║
 ║     🎮GAME CMDS🎮
 ║
-║ ◾️${prefix}answer <answer>
+║ ◾️${prefix}answer
 ║ ◾️${prefix}buychips
 ║ ◾️${prefix}coindaily
 ║ ◾️${prefix}coinflip
-║ ◾️${prefix}coinflip <heads/tails>
-║ ◾️${prefix}coinflip <heads/tails> <bet>
+║ ◾️${prefix}coinflip 
+║ ◾️${prefix}coinflip 
 ║ ◾️${prefix}coinhelp
 ║ ◾️${prefix}coinleaderboard
 ║ ◾️${prefix}coinstats
 ║ ◾️${prefix}dare
-║ ◾️${prefix}guess <letter>
+║ ◾️${prefix}guess 
 ║ ◾️${prefix}hangman
-║ ◾️${prefix}tictactoe @user
+║ ◾️${prefix}tictactoe
 ║ ◾️${prefix}trivia
 ║ ◾️${prefix}truth
 ║
@@ -399,11 +399,11 @@ ${platformStatsText}
 ║
 ║      🧠AI CMDS🧠
 ║
-║ ♦️${prefix}flux <prompt>
-║ ♦️${prefix}gemini <question>
-║ ♦️${prefix}gpt <question>
-║ ♦️${prefix}imagine <prompt>
-║ ♦️${prefix}sora <prompt>
+║ ♦️${prefix}flux
+║ ♦️${prefix}gemini
+║ ♦️${prefix}gpt
+║ ♦️${prefix}imagine
+║ ♦️${prefix}sora
 ║
 ╚═══════════════════╝
 
@@ -411,15 +411,15 @@ ${platformStatsText}
 ║
 ║     😁FUN CMDS😁
 ║
-║ 🟢${prefix}character @user
-║ 🟢${prefix}compliment @user
+║ 🟢${prefix}character
+║ 🟢${prefix}compliment
 ║ 🟢${prefix}flirt
 ║ 🟢${prefix}goodnight
-║ 🟢${prefix}insult @user
+║ 🟢${prefix}insult
 ║ 🟢${prefix}poet
 ║ 🟢${prefix}roseday
-║ 🟢${prefix}simp @user
-║ 🟢${prefix}wasted @user
+║ 🟢${prefix}simp
+║ 🟢${prefix}wasted
 ║
 ╚═══════════════════╝
 
@@ -427,24 +427,24 @@ ${platformStatsText}
 ║
 ║    🔤EPHOTO CMDS🔤
 ║
-║ 🔴${prefix}1917 <text>
-║ 🔴${prefix}arena <text>
-║ 🔴${prefix}blackpink <text>
-║ 🔴${prefix}devil <text>
-║ 🔴${prefix}fire <text>
-║ 🔴${prefix}glitch <text>
-║ 🔴${prefix}hacker <text>
-║ 🔴${prefix}ice <text>
-║ 🔴${prefix}impressive <text>
-║ 🔴${prefix}leaves <text>
-║ 🔴${prefix}light <text>
-║ 🔴${prefix}matrix <text>
-║ 🔴${prefix}metallic <text>
-║ 🔴${prefix}neon <text>
-║ 🔴${prefix}purple <text>
-║ 🔴${prefix}sand <text>
-║ 🔴${prefix}snow <text>
-║ 🔴${prefix}thunder <text>
+║ 🔴${prefix}1917
+║ 🔴${prefix}arena
+║ 🔴${prefix}blackpink
+║ 🔴${prefix}devil
+║ 🔴${prefix}fire
+║ 🔴${prefix}glitch
+║ 🔴${prefix}hacker
+║ 🔴${prefix}ice
+║ 🔴${prefix}impressive
+║ 🔴${prefix}leaves
+║ 🔴${prefix}light
+║ 🔴${prefix}matrix
+║ 🔴${prefix}metallic
+║ 🔴${prefix}neon
+║ 🔴${prefix}purple
+║ 🔴${prefix}sand
+║ 🔴${prefix}snow
+║ 🔴${prefix}thunder
 ║
 ╚═══════════════════╝
 
@@ -452,14 +452,14 @@ ${platformStatsText}
 ║
 ║   📥DOWNLOAD CMDS📥
 ║
-║ 🟠${prefix}facebook <link>
-║ 🟠${prefix}instagram <link>
-║ 🟠${prefix}play <song name>
-║ 🟠${prefix}song <song name>
-║ 🟠${prefix}spotify <query>
-║ 🟠${prefix}tiktok <link>
-║ 🟠${prefix}video <song name>
-║ 🟠${prefix}ytmp4 <Link>
+║ 🟠${prefix}facebook
+║ 🟠${prefix}instagram
+║ 🟠${prefix}play
+║ 🟠${prefix}song
+║ 🟠${prefix}spotify
+║ 🟠${prefix}tiktok
+║ 🟠${prefix}video
+║ 🟠${prefix}ytmp4
 ║
 ╚═══════════════════╝
 
@@ -506,12 +506,8 @@ ${platformStatsText}
 ╔═══════════════════╗
 ║
 ║   💻GITHUB CMDS💻
-║
-║ 🔵${prefix}git
-║ 🔵${prefix}github
+║ 
 ║ 🔵${prefix}repo
-║ 🔵${prefix}sc
-║ 🔵${prefix}script
 ║
 ╚═══════════════════╝
 
@@ -519,24 +515,24 @@ ${platformStatsText}
 ║
 ║    🌐GENERAL CMDS🌐
 ║
-║ 🔸${prefix}8ball <question>
+║ 🔸${prefix}8ball
 ║ 🔸${prefix}alive
-║ 🔸${prefix}attp <text>
+║ 🔸${prefix}attp
 ║ 🔸${prefix}fact
 ║ 🔸${prefix}getjid
-║ 🔸${prefix}help or ${prefix}menu
+║ 🔸${prefix}menu
 ║ 🔸${prefix}joke
-║ 🔸${prefix}lyrics <songtitle>
+║ 🔸${prefix}lyrics
 ║ 🔸${prefix}news
 ║ 🔸${prefix}owner
 ║ 🔸${prefix}ping
 ║ 🔸${prefix}quote
-║ 🔸${prefix}ss <link>
-║ 🔸${prefix}trt <text> <lang>
-║ 🔸${prefix}tts <text>
+║ 🔸${prefix}screenshot
+║ 🔸${prefix}translate
+║ 🔸${prefix}tts
 ║ 🔸${prefix}url
 ║ 🔸${prefix}vv
-║ 🔸${prefix}weather <city>
+║ 🔸${prefix}weather
 ║
 ╚═══════════════════╝
 
