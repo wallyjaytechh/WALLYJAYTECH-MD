@@ -423,7 +423,7 @@ if (!isCommand) {
         await handleAutotypingForMessage(sock, chatId, rawMessageText);
         
         // Show recording indicator for non-command messages
-        await handleAutorecordForMessage(sock, chatId, rawMessageText);
+        await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
         
         // Other non-command handlers
         if (isGroup) {
@@ -507,7 +507,7 @@ if (!isGroup && !message.key.fromMe && !senderIsSudo) {
 // Then check for command prefix
 if (!userMessage.startsWith('.')) {
     // Show recording indicator if autorecord is enabled
-    await handleAutorecordForMessage(sock, chatId, userMessage);
+    await handleAutorecordForMessage(sock, chatId, userMessage, message);
 
     if (isGroup) {
         // Always run moderation features (antitag) regardless of mode
