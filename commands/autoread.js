@@ -66,7 +66,7 @@ const defaultConfig = {
 };
 
 // ═══════════════════════════════════════
-// CONFIGURATION (Auto-migrate)
+// CONFIGURATION (Auto-migrate on update)
 // ═══════════════════════════════════════
 
 function initConfig() {
@@ -81,9 +81,8 @@ function initConfig() {
         }
         
         const config = JSON.parse(fs.readFileSync(configPath));
-        
-        // Auto-migrate old configs
         let needsUpdate = false;
+        
         for (const [key, value] of Object.entries(defaultConfig)) {
             if (config[key] === undefined) {
                 config[key] = value;
@@ -95,6 +94,7 @@ function initConfig() {
         if (needsUpdate) {
             config._hash = configHash;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log('📝 Autoread config migrated');
         }
         
         return config;
@@ -152,8 +152,23 @@ function isNumberInList(jid, message) {
     return config.includeMode ? found : !found;
 }
 
-function getModeText(mode) { switch(mode) { case 'all': return '🌍 All Chats'; case 'dms': return '💬 DMs Only'; case 'groups': return '👥 Groups Only'; default: return '🌍 All Chats'; } }
-function getModeDescription(mode) { switch(mode) { case 'all': return 'both DMs and groups.'; case 'dms': return 'private messages only.'; case 'groups': return 'group chats only.'; default: return 'both DMs and groups.'; } }
+function getModeText(mode) {
+    switch(mode) {
+        case 'all': return '🌍 All Chats';
+        case 'dms': return '💬 DMs Only';
+        case 'groups': return '👥 Groups Only';
+        default: return '🌍 All Chats';
+    }
+}
+
+function getModeDescription(mode) {
+    switch(mode) {
+        case 'all': return 'Bot will read messages in both DMs and groups.';
+        case 'dms': return 'Bot will read messages only in private messages.';
+        case 'groups': return 'Bot will read messages only in group chats.';
+        default: return 'Bot will read messages in both DMs and groups.';
+    }
+}
 
 function shouldReadMessage(chatId, message) {
     try {
@@ -162,7 +177,6 @@ function shouldReadMessage(chatId, message) {
         
         const isGroup = chatId.endsWith('@g.us');
         
-        // Check mode
         switch(config.mode) {
             case 'all': break;
             case 'dms': if (isGroup) return false; break;
@@ -170,7 +184,6 @@ function shouldReadMessage(chatId, message) {
             default: break;
         }
         
-        // Check include/exclude list
         const listResult = isNumberInList(chatId, message);
         if (listResult !== null && !listResult) return false;
         
@@ -178,7 +191,9 @@ function shouldReadMessage(chatId, message) {
     } catch (e) { return false; }
 }
 
-function isAutoreadEnabled() { try { return initConfig().enabled; } catch (e) { return false; } }
+function isAutoreadEnabled() {
+    try { return initConfig().enabled; } catch (e) { return false; }
+}
 
 // ═══════════════════════════════════════
 // MESSAGE HANDLER
@@ -206,7 +221,10 @@ async function autoreadCommand(sock, chatId, message) {
         const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
         
         if (!message.key.fromMe && !isOwner) {
-            await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner!', ...channelInfo });
+            await sock.sendMessage(chatId, {
+                text: '❌ This command is only available for the owner!',
+                ...channelInfo
+            });
             return;
         }
 
@@ -233,17 +251,21 @@ async function autoreadCommand(sock, chatId, message) {
                       `└ .autoread mode dms - DMs only\n` +
                       `└ .autoread mode groups - Groups only\n` +
                       `└ .autoread status - Show settings\n` +
-                      `└ .autoread include add <numbers> - Read only these\n` +
+                      `└ .autoread include add <numbers> - Read only these numbers\n` +
                       `└ .autoread include remove <numbers>\n` +
-                      `└ .autoread exclude add <numbers> - Skip these\n` +
+                      `└ .autoread exclude add <numbers> - Skip these numbers\n` +
                       `└ .autoread exclude remove <numbers>\n` +
-                      `└ .autoread includelist / excludelist\n` +
-                      `└ .autoread includeclear / excludeclear\n\n` +
+                      `└ .autoread includelist - Show include list\n` +
+                      `└ .autoread excludelist - Show exclude list\n` +
+                      `└ .autoread includeclear - Clear include list\n` +
+                      `└ .autoread excludeclear - Clear exclude list\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `💡 *Examples:*\n` +
                       `└ .autoread mode groups\n` +
                       `└ .autoread include add 2347012345678\n` +
-                      `└ .autoread exclude add 2348012345678`,
+                      `└ .autoread include add 2347012345678,2349012345678\n` +
+                      `└ .autoread exclude add 2348012345678\n\n` +
+                      `⚠️ Full number with country code is required`,
                 ...channelInfo
             });
             return;
@@ -251,108 +273,251 @@ async function autoreadCommand(sock, chatId, message) {
 
         const action = args[0].toLowerCase();
 
+        // Enable
         if (action === 'on' || action === 'enable') {
             if (config.enabled) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Auto-Read is already *ON*.\n\n💡 Use .autoread off to disable.`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Auto-Read is already *ON*.\n🎯 Mode: ${getModeText(config.mode)}\n\n💡 Use .autoread off to disable.`,
+                    ...channelInfo
+                });
                 return;
             }
             config.enabled = true;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             await sock.sendMessage(chatId, {
-                text: `✅ *AUTO-READ ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode: ${getModeText(config.mode)}\n\n📌 Bot will now automatically read messages in ${getModeDescription(config.mode)}`,
+                text: `✅ *AUTO-READ ENABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will now automatically read messages.\n🎯 Mode: ${getModeText(config.mode)}\n\n💡 Use .autoread mode <all/dms/groups> to change.\n💡 Use .autoread include/exclude to filter numbers.`,
                 ...channelInfo
             });
         }
+        // Disable
         else if (action === 'off' || action === 'disable') {
             if (!config.enabled) {
-                await sock.sendMessage(chatId, { text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Auto-Read is already *OFF*.\n\n💡 Use .autoread on to enable.`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Auto-Read is already *OFF*.\n\n💡 Use .autoread on to enable.`,
+                    ...channelInfo
+                });
                 return;
             }
             config.enabled = false;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { text: `❌ *AUTO-READ DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will no longer automatically read messages.\n\n💡 Use .autoread on to enable.`, ...channelInfo });
+            await sock.sendMessage(chatId, {
+                text: `❌ *AUTO-READ DISABLED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Bot will no longer automatically read messages.\n\n💡 Use .autoread on to enable.`,
+                ...channelInfo
+            });
         }
+        // Mode
         else if (action === 'mode') {
-            if (args.length < 2) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .autoread mode <all/dms/groups>`, ...channelInfo }); return; }
+            if (args.length < 2) {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autoread mode <all/dms/groups>\n\n✨ *Example:*\n└ .autoread mode groups`,
+                    ...channelInfo
+                });
+                return;
+            }
             const mode = args[1].toLowerCase();
             if (mode === 'all' || mode === 'dms' || mode === 'groups') {
-                if (config.mode === mode) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode is already *${getModeText(mode)}*.`, ...channelInfo }); return; }
+                if (config.mode === mode) {
+                    await sock.sendMessage(chatId, {
+                        text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n🎯 Mode is already *${getModeText(mode)}*.\n\n💡 Use .autoread mode <all/dms/groups> to change.`,
+                        ...channelInfo
+                    });
+                    return;
+                }
                 config.mode = mode;
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await sock.sendMessage(chatId, { text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n📌 ${getModeDescription(mode)}`, ...channelInfo });
-            } else { await sock.sendMessage(chatId, { text: `⚠️ *INVALID MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Available: all, dms, groups`, ...channelInfo }); }
+                await sock.sendMessage(chatId, {
+                    text: `🎯 *MODE UPDATED*\n\n━━━━━━━━━━━━━━━━━━━━\n└ New mode: ${getModeText(mode)}\n\n📌 ${getModeDescription(mode)}`,
+                    ...channelInfo
+                });
+            } else {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *INVALID MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Available modes: all, dms, groups`,
+                    ...channelInfo
+                });
+            }
         }
+        // Include commands
         else if (action === 'include') {
             const sub = args[1]?.toLowerCase();
             if (sub === 'add') {
                 const numbers = args.slice(2).join(' ').split(/[, ]+/).map(n => n.replace(/[^0-9]/g, '')).filter(n => n.length >= 7);
-                if (numbers.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .autoread include add 2347012345678`, ...channelInfo }); return; }
+                if (numbers.length === 0) {
+                    await sock.sendMessage(chatId, {
+                        text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autoread include add <numbers>\n\n✨ *Single:* .autoread include add 2347012345678\n✨ *Bulk:* .autoread include add 2347012345678,2349012345678\n\n⚠️ Full number with country code is required`,
+                        ...channelInfo
+                    });
+                    return;
+                }
                 config.includeMode = true;
                 const added = [];
-                for (const num of numbers) { if (!config.numberList.includes(num)) { config.numberList.push(num); added.push(num); } }
+                for (const num of numbers) {
+                    if (!config.numberList.includes(num)) {
+                        config.numberList.push(num);
+                        added.push(num);
+                    }
+                }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await sock.sendMessage(chatId, { text: `✅ *INCLUDE ADDED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Mode: Include Only\n🔢 Added ${added.length} number(s)\n\n💡 Bot will ONLY read messages from these numbers.`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `✅ *INCLUDE ADDED*\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━\n` +
+                          `📌 *Mode:* Include Only\n` +
+                          `🔢 *Added:* ${added.length} number(s)\n` +
+                          `${added.map(n => `└ +${n}`).join('\n')}\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━\n` +
+                          `📊 *Total in list:* ${config.numberList.length}\n\n` +
+                          `💡 Bot will ONLY read messages from these numbers.`,
+                    ...channelInfo
+                });
             }
             else if (sub === 'remove') {
                 const numbers = args.slice(2).join(' ').split(/[, ]+/).map(n => n.replace(/[^0-9]/g, '')).filter(n => n.length >= 7);
-                if (numbers.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .autoread include remove <numbers>`, ...channelInfo }); return; }
+                if (numbers.length === 0) {
+                    await sock.sendMessage(chatId, {
+                        text: `⚠️ *USAGE:* .autoread include remove <numbers>`,
+                        ...channelInfo
+                    });
+                    return;
+                }
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await sock.sendMessage(chatId, { text: `✅ *INCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `✅ *INCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}\n\n💡 Bot will ONLY read messages from listed numbers.`,
+                    ...channelInfo
+                });
             }
-            else { await sock.sendMessage(chatId, { text: `📋 *INCLUDE MODE*\n\n🔢 Numbers: ${config.numberList.length}\n\n📖 .autoread include add/remove\n📖 .autoread includelist\n📖 .autoread includeclear`, ...channelInfo }); }
+            else {
+                await sock.sendMessage(chatId, {
+                    text: `📋 *INCLUDE MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 *Numbers:* ${config.numberList.length}\n\n📖 .autoread include add <numbers>\n📖 .autoread include remove <numbers>\n📖 .autoread includelist\n📖 .autoread includeclear`,
+                    ...channelInfo
+                });
+            }
         }
+        // Exclude commands
         else if (action === 'exclude') {
             const sub = args[1]?.toLowerCase();
             if (sub === 'add') {
                 const numbers = args.slice(2).join(' ').split(/[, ]+/).map(n => n.replace(/[^0-9]/g, '')).filter(n => n.length >= 7);
-                if (numbers.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .autoread exclude add 2347012345678`, ...channelInfo }); return; }
+                if (numbers.length === 0) {
+                    await sock.sendMessage(chatId, {
+                        text: `⚠️ *USAGE*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 .autoread exclude add <numbers>\n\n✨ *Single:* .autoread exclude add 2347012345678\n✨ *Bulk:* .autoread exclude add 2347012345678,2349012345678\n\n⚠️ Full number with country code is required`,
+                        ...channelInfo
+                    });
+                    return;
+                }
                 config.includeMode = false;
                 const added = [];
-                for (const num of numbers) { if (!config.numberList.includes(num)) { config.numberList.push(num); added.push(num); } }
+                for (const num of numbers) {
+                    if (!config.numberList.includes(num)) {
+                        config.numberList.push(num);
+                        added.push(num);
+                    }
+                }
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await sock.sendMessage(chatId, { text: `✅ *EXCLUDE ADDED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Mode: Exclude\n🔢 Added ${added.length} number(s)\n\n💡 Bot will NOT read messages from these numbers.`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `✅ *EXCLUDE ADDED*\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━\n` +
+                          `📌 *Mode:* Exclude\n` +
+                          `🔢 *Added:* ${added.length} number(s)\n` +
+                          `${added.map(n => `└ +${n}`).join('\n')}\n\n` +
+                          `━━━━━━━━━━━━━━━━━━━━\n` +
+                          `📊 *Total excluded:* ${config.numberList.length}\n\n` +
+                          `💡 Bot will NOT read messages from these numbers.`,
+                    ...channelInfo
+                });
             }
             else if (sub === 'remove') {
                 const numbers = args.slice(2).join(' ').split(/[, ]+/).map(n => n.replace(/[^0-9]/g, '')).filter(n => n.length >= 7);
-                if (numbers.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *USAGE:* .autoread exclude remove <numbers>`, ...channelInfo }); return; }
+                if (numbers.length === 0) {
+                    await sock.sendMessage(chatId, {
+                        text: `⚠️ *USAGE:* .autoread exclude remove <numbers>`,
+                        ...channelInfo
+                    });
+                    return;
+                }
                 const before = config.numberList.length;
                 config.numberList = config.numberList.filter(n => !numbers.includes(n));
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-                await sock.sendMessage(chatId, { text: `✅ *EXCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}`, ...channelInfo });
+                await sock.sendMessage(chatId, {
+                    text: `✅ *EXCLUDE REMOVED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Removed ${before - config.numberList.length} number(s).\n📊 Remaining: ${config.numberList.length}`,
+                    ...channelInfo
+                });
             }
-            else { await sock.sendMessage(chatId, { text: `📋 *EXCLUDE MODE*\n\n🔢 Numbers: ${config.numberList.length}\n\n📖 .autoread exclude add/remove\n📖 .autoread excludelist\n📖 .autoread excludeclear`, ...channelInfo }); }
+            else {
+                await sock.sendMessage(chatId, {
+                    text: `📋 *EXCLUDE MODE*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 *Numbers:* ${config.numberList.length}\n\n📖 .autoread exclude add <numbers>\n📖 .autoread exclude remove <numbers>\n📖 .autoread excludelist\n📖 .autoread excludeclear`,
+                    ...channelInfo
+                });
+            }
         }
+        // List commands
         else if (action === 'includelist') {
             const pageNums = config.numberList;
-            await sock.sendMessage(chatId, { text: `📋 *INCLUDE LIST*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 Mode: Include Only\n📊 Total: ${pageNums.length} numbers\n\n${pageNums.length > 0 ? pageNums.map((n, i) => `${i + 1}. +${n}`).join('\n') : '└ No numbers'}`, ...channelInfo });
-        }
-        else if (action === 'excludelist') {
-            const pageNums = config.numberList;
-            await sock.sendMessage(chatId, { text: `📋 *EXCLUDE LIST*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 Mode: Exclude\n📊 Total: ${pageNums.length} numbers\n\n${pageNums.length > 0 ? pageNums.map((n, i) => `${i + 1}. +${n}`).join('\n') : '└ No numbers'}`, ...channelInfo });
-        }
-        else if (action === 'includeclear') {
-            if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*`, ...channelInfo }); return; }
-            config.numberList = [];
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { text: `✅ *INCLUDE LIST CLEARED*`, ...channelInfo });
-        }
-        else if (action === 'excludeclear') {
-            if (config.numberList.length === 0) { await sock.sendMessage(chatId, { text: `⚠️ *ALREADY EMPTY*`, ...channelInfo }); return; }
-            config.numberList = [];
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            await sock.sendMessage(chatId, { text: `✅ *EXCLUDE LIST CLEARED*`, ...channelInfo });
-        }
-        else if (action === 'status') {
-            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
-            const filterMode = config.numberList.length > 0 ? (config.includeMode ? '✅ Include Only' : '🚫 Exclude') : '🌍 All Numbers';
             await sock.sendMessage(chatId, {
-                text: `📖 *AUTO-READ STATUS*\n\n━━━━━━━━━━━━━━━━━━━━\n${config.enabled ? '🟢' : '🔴'} *Status:* ${status}\n🎯 *Mode:* ${getModeText(config.mode)}\n🔢 *Filter:* ${filterMode} (${config.numberList.length})\n\n📌 ${getModeDescription(config.mode)}`,
+                text: `📋 *INCLUDE LIST*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 *Mode:* Include Only\n📊 *Total:* ${pageNums.length} numbers\n\n${pageNums.length > 0 ? pageNums.map((n, i) => `${i + 1}. +${n}`).join('\n') : '└ No numbers in list'}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Use .autoread include add <numbers> to add.`,
                 ...channelInfo
             });
         }
-        else { await sock.sendMessage(chatId, { text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Use .autoread to see all options.`, ...channelInfo }); }
+        else if (action === 'excludelist') {
+            const pageNums = config.numberList;
+            await sock.sendMessage(chatId, {
+                text: `📋 *EXCLUDE LIST*\n\n━━━━━━━━━━━━━━━━━━━━\n🔢 *Mode:* Exclude\n📊 *Total:* ${pageNums.length} numbers\n\n${pageNums.length > 0 ? pageNums.map((n, i) => `${i + 1}. +${n}`).join('\n') : '└ No numbers in list'}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Use .autoread exclude add <numbers> to add.`,
+                ...channelInfo
+            });
+        }
+        // Clear commands
+        else if (action === 'includeclear') {
+            if (config.numberList.length === 0) {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY EMPTY*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Include list is already empty.\n\n💡 Use .autoread include add <numbers> to add numbers.`,
+                    ...channelInfo
+                });
+                return;
+            }
+            config.numberList = [];
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await sock.sendMessage(chatId, {
+                text: `✅ *INCLUDE LIST CLEARED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 All numbers removed from include list.\n🌍 Bot will read messages from everyone again.`,
+                ...channelInfo
+            });
+        }
+        else if (action === 'excludeclear') {
+            if (config.numberList.length === 0) {
+                await sock.sendMessage(chatId, {
+                    text: `⚠️ *ALREADY EMPTY*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Exclude list is already empty.\n\n💡 Use .autoread exclude add <numbers> to add numbers.`,
+                    ...channelInfo
+                });
+                return;
+            }
+            config.numberList = [];
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            await sock.sendMessage(chatId, {
+                text: `✅ *EXCLUDE LIST CLEARED*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 All numbers removed from exclude list.\n🌍 Bot will read messages from everyone again.`,
+                ...channelInfo
+            });
+        }
+        // Status
+        else if (action === 'status') {
+            const status = config.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const statusIcon = config.enabled ? '🟢' : '🔴';
+            const filterMode = config.numberList.length > 0 ? (config.includeMode ? '✅ Include Only' : '🚫 Exclude') : '🌍 All Numbers';
+            await sock.sendMessage(chatId, {
+                text: `📖 *AUTO-READ STATUS*\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `${statusIcon} *Status:* ${status}\n` +
+                      `🎯 *Mode:* ${getModeText(config.mode)}\n` +
+                      `🔢 *Filter:* ${filterMode} (${config.numberList.length} numbers)\n\n` +
+                      `━━━━━━━━━━━━━━━━━━━━\n` +
+                      `📌 ${getModeDescription(config.mode)}`,
+                ...channelInfo
+            });
+        }
+        else {
+            await sock.sendMessage(chatId, {
+                text: `⚠️ *INVALID COMMAND*\n\n━━━━━━━━━━━━━━━━━━━━\n📖 Use .autoread to see all available options.\n\n✨ *Examples:*\n└ .autoread on\n└ .autoread mode groups\n└ .autoread include add 2347012345678`,
+                ...channelInfo
+            });
+        }
     } catch (error) { console.error('❌ Error:', error); }
 }
 
