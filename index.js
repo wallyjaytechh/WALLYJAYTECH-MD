@@ -1,20 +1,20 @@
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                                                        //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
-//                                                                                                                                                                                        //
-//                                                                  𝐕 : 1.0.0                                                                                                             //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
-//                                                                                                                                                                                        //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
+//                                                                                                                                                            //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
+//                                                                                                                                                            //
+//                                                                  𝐕 : 1.0.0                                                                                 //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
+//                                                                                                                                                            //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 //* 
 //  * project_name : WALLYJAYTECH-MD
@@ -34,6 +34,30 @@
 //   * © 2025 WALLYJAYTECH-MD.
 // ⛥┌┤
 // */
+
+// ✅ LOCK FILE — Prevent multiple instances
+const LOCK_FILE = './bot.lock';
+if (fs.existsSync(LOCK_FILE)) {
+    try {
+        const pid = parseInt(fs.readFileSync(LOCK_FILE, 'utf8').trim());
+        process.kill(pid, 0);
+        console.log(`❌ Another instance is running (PID: ${pid}). Exiting...`);
+        process.exit(1);
+    } catch (e) {
+        console.log('⚠️ Stale lock file found, removing...');
+        fs.unlinkSync(LOCK_FILE);
+    }
+}
+fs.writeFileSync(LOCK_FILE, String(process.pid));
+
+const cleanLock = () => {
+    try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
+};
+process.on('exit', cleanLock);
+process.on('SIGINT', cleanLock);
+process.on('SIGTERM', cleanLock);
+// ✅ END LOCK FILE
+
 global.File = class File {};
 require('./settings');
 const { Boom } = require('@hapi/boom');
@@ -74,9 +98,9 @@ setInterval(() => {
 function readStatusConfig() {
     try {
         const p = path.join(__dirname, 'data', 'autostatus.json');
-        if (fs.existsSync(p)) { const c = JSON.parse(fs.readFileSync(p, 'utf8')); return { enabled: c.enabled === true, reactOn: c.reactOn === true }; }
+        if (fs.existsSync(p)) { const c = JSON.parse(fs.readFileSync(p, 'utf8')); return { enabled: c.enabled === true, likeOn: c.likeOn === true }; }
     } catch (e) {}
-    return { enabled: false, reactOn: false };
+    return { enabled: false, likeOn: false };
 }
 
 function getBotMode() {
@@ -98,7 +122,7 @@ setInterval(() => {
     }
     if (memMB > 700) {
         console.log('🔴 Critical memory - restarting');
-        process.exit(1); // PM2 or panel will restart it
+        process.exit(1);
     }
 }, 5 * 60 * 1000);
 
