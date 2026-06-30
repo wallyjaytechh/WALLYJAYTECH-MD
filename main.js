@@ -231,7 +231,7 @@ const { addCommandReaction, handleAreactCommand, handleAutoreact } = require('./
 const goodnightCommand = require('./commands/goodnight');
 const poetCommand = require('./commands/poet');
 const rosedayCommand = require('./commands/roseday');
-const imagineCommand = require('./commands/imagine');
+const generateCommand = require('./commands/generate');
 const videoCommand = require('./commands/video');
 const sudoCommand = require('./commands/sudo');
 const { miscCommand, handleHeart } = require('./commands/misc');
@@ -412,25 +412,7 @@ else if (rawMessageText.startsWith('.')) {
     commandWithoutPrefix = rawMessageText.slice(1).trim();
 }
 
-// ✅ QUOTED MESSAGE CHECK — placed AFTER isCommand is defined
-if (isCommand && message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-    try {
-        const quotedId = message.message.extendedTextMessage.contextInfo.stanzaId;
-        const quotedMsg = await sock.loadMessage(message.key.remoteJid, quotedId);
-        if (!quotedMsg) {
-            await sock.sendMessage(chatId, { 
-                text: '❌ The quoted message has expired or was deleted. Please quote a newer message.' 
-            });
-            return;
-        }
-    } catch (error) {
-        console.error('❌ Error checking quoted message:', error);
-        await sock.sendMessage(chatId, { 
-            text: '❌ Could not access quoted message. Please try again with a newer message.' 
-        });
-        return;
-    }
-}
+
 
 // IMPORTANT: Handle non-command messages FIRST
 if (!isCommand) {
@@ -1618,7 +1600,7 @@ case userMessage.startsWith('.autorecord'):
             case userMessage === '.roseday':
                 await rosedayCommand(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.imagine') || userMessage.startsWith('.flux') || userMessage.startsWith('.dalle'): await imagineCommand(sock, chatId, message);
+            case userMessage.startsWith('.generate'): await generateCommand(sock, chatId, message);
                 break;
             case userMessage === '.jid': await groupJidCommand(sock, chatId, message);
                 break;
