@@ -227,7 +227,7 @@ function buildMenu(styleId, data) {
 
     // ✅ All command categories with their commands
     const allCommandsRaw = {
-        '🧠 AI': [`.flux`, `.gemini`, `.gpt`, `.generate`, `.sora`],
+        '🧠 AI': [`.gemini`, `.gpt`, `.generate`, `.removebg`, `.sora`],
         '🦹 ANIME': [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`],
         '📥 DOWNLOAD': [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`],
         '🔤 EPHOTO': [`.1917`, `.arena`, `.blackpink`, `.devil`, `.fire`, `.glitch`, `.hacker`, `.ice`, `.impressive`, `.leaves`, `.light`, `.matrix`, `.metallic`, `.neon`, `.purple`, `.sand`, `.snow`, `.thunder`],
