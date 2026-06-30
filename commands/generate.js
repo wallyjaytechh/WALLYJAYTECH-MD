@@ -80,19 +80,7 @@ async function generateImage(prompt, style) {
 }
 
 async function sendMsg(sock, chatId, text, quoted) {
-    const opts = { text };
-    if (quoted) {
-        opts.contextInfo = {
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: '‎',
-                serverMessageId: -1
-            }
-        };
-    }
-    return sock.sendMessage(chatId, opts, quoted ? { quoted } : {});
+    return sock.sendMessage(chatId, { text }, quoted ? { quoted } : {});
 }
 
 async function generateCommand(sock, chatId, message) {
@@ -143,15 +131,12 @@ async function generateCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        // Start progress bar
         const loadingMsg = await sock.sendMessage(chatId, { 
             text: `Generating prompt ${BAR_FRAMES[0]}` 
         });
 
-        // Start image generation in background
         const imagePromise = generateImage(prompt, style);
 
-        // Play animation (2s per frame)
         for (let frame = 1; frame < BAR_FRAMES.length; frame++) {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
@@ -162,16 +147,13 @@ async function generateCommand(sock, chatId, message) {
             } catch (e) {}
         }
 
-        // Wait for image (already done if fast, instant if not)
         const imageBuffer = await imagePromise;
 
-        // Show done
         await sock.sendMessage(chatId, {
             edit: loadingMsg.key,
             text: `Generating done ${BAR_FRAMES[10]}`
         });
 
-        // Send result
         await sock.sendMessage(chatId, {
             image: imageBuffer,
             caption: `╭──◆「 *IMAGE GENERATED* 」◆\n` +
