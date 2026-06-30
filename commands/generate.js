@@ -38,7 +38,7 @@
 /**
  * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
  * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Smooth progress bar animation
+ * Features: Multiple styles | Guaranteed smooth progress bar
  * Professional Version
  */
 
@@ -166,46 +166,32 @@ async function generateCommand(sock, chatId, message) {
         // ═══ React ═══
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        // ═══ Start Progress Bar Animation (2s per frame) ═══
+        // ═══ Progress Bar — Animation FIRST, then generate ═══
         const loadingMsg = await sock.sendMessage(chatId, { 
             text: `Generating prompt ${BAR_FRAMES[0]}` 
         });
 
-        let frame = 0;
-        let animationDone = false;
-
-        const interval = setInterval(async () => {
+        // Run animation completely before generating
+        for (let frame = 1; frame < BAR_FRAMES.length; frame++) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
             try {
-                frame++;
-                if (frame < BAR_FRAMES.length) {
-                    await sock.sendMessage(chatId, {
-                        edit: loadingMsg.key,
-                        text: `Generating prompt ${BAR_FRAMES[frame]}`
-                    });
-                } else if (frame === BAR_FRAMES.length) {
-                    await sock.sendMessage(chatId, {
-                        edit: loadingMsg.key,
-                        text: `Generating done ${BAR_FRAMES[10]}`
-                    });
-                    animationDone = true;
-                    clearInterval(interval);
-                }
+                await sock.sendMessage(chatId, {
+                    edit: loadingMsg.key,
+                    text: `Generating prompt ${BAR_FRAMES[frame]}`
+                });
             } catch (e) {
-                clearInterval(interval);
+                // If edit fails, animation continues
             }
-        }, 2000);
-
-        // ═══ Generate Image (runs while animation plays) ═══
-        const imageBuffer = await generateImage(prompt, style);
-
-        // ═══ Wait for animation to finish if still running ═══
-        if (!animationDone) {
-            clearInterval(interval);
-            await sock.sendMessage(chatId, {
-                edit: loadingMsg.key,
-                text: `Generating done ${BAR_FRAMES[10]}`
-            });
         }
+
+        // Show done
+        await sock.sendMessage(chatId, {
+            edit: loadingMsg.key,
+            text: `Generating done ${BAR_FRAMES[10]}`
+        });
+
+        // ═══ NOW generate image ═══
+        const imageBuffer = await generateImage(prompt, style);
 
         // ═══ Send Result ═══
         await sock.sendMessage(chatId, {
