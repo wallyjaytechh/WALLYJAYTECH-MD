@@ -1,20 +1,20 @@
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                            //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
-//                                                                                                                                                            //
-//                                                                  𝐕 : 1.0.0                                                                                 //
-//                                                                                                                                                            //
-//                                                                                                                                                            //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                    //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                   //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                   //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                   //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                   //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                    //
-//                                                                                                                                                            //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
-//                                                                                                                                                            //
-//                                                                                                                                                            //
+//                                                                                                                                                                                        //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
+//                                                                                                                                                                                        //
+//                                                                  𝐕 : 1.0.0                                                                                                             //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
+//                                                                                                                                                                                        //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 //* 
 //  * project_name : WALLYJAYTECH-MD
@@ -36,6 +36,9 @@
 // */
 
 // ✅ LOCK FILE — Prevent multiple instances
+const fs = require('fs');
+const path = require('path');
+
 const LOCK_FILE = './bot.lock';
 if (fs.existsSync(LOCK_FILE)) {
     try {
@@ -58,12 +61,13 @@ process.on('SIGINT', cleanLock);
 process.on('SIGTERM', cleanLock);
 // ✅ END LOCK FILE
 
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+
 global.File = class File {};
 require('./settings');
+require('dotenv').config();
 const { Boom } = require('@hapi/boom');
-const fs = require('fs');
 const chalk = require('chalk');
-const path = require('path');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
 
 try { const autorecord = require('./commands/autorecord'); autorecord.stopAllInfiniteRecordings(); } catch (e) {}
@@ -98,17 +102,24 @@ setInterval(() => {
 function readStatusConfig() {
     try {
         const p = path.join(__dirname, 'data', 'autostatus.json');
-        if (fs.existsSync(p)) { const c = JSON.parse(fs.readFileSync(p, 'utf8')); return { enabled: c.enabled === true, likeOn: c.likeOn === true }; }
+        if (fs.existsSync(p)) { 
+            const c = JSON.parse(fs.readFileSync(p, 'utf8')); 
+            return { 
+                enabled: c.enabled === true, 
+                likeOn: c.likeOn === true,
+                selfOn: c.selfOn === true
+            }; 
+        }
     } catch (e) {}
-    return { enabled: false, likeOn: false };
+    return { enabled: false, likeOn: false, selfOn: false };
 }
 
 function getBotMode() {
     try {
         const p = path.join(__dirname, 'data', 'messageCount.json');
-        if (fs.existsSync(p)) { const d = JSON.parse(fs.readFileSync(p, 'utf8')); if (typeof d.isPublic === 'boolean') return d.isPublic ? 'PUBLIC 🌐' : 'PRIVATE 🔒'; }
-        return 'PUBLIC 🌐';
-    } catch (e) { return 'PUBLIC 🌐'; }
+        if (fs.existsSync(p)) { const d = JSON.parse(fs.readFileSync(p, 'utf8')); if (typeof d.isPublic === 'boolean') return d.isPublic ? 'Public' : 'Private'; }
+        return 'Public';
+    } catch (e) { return 'Public'; }
 }
 
 // ✅ Memory guard
@@ -157,7 +168,7 @@ async function startXeonBotInc() {
 
         const XeonBotInc = makeWASocket({
             version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
-            browser: ["Ubuntu", "Chrome", "20.0.04"],
+            browser: ["WALLYJAYTECH-MD", "Chrome", "20.0.04"],
             auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
             markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
             getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
@@ -174,7 +185,13 @@ async function startXeonBotInc() {
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
 
                 if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                    if (mek.key.fromMe) return;
+                    if (mek.key.fromMe) {
+                        const statusConfig = readStatusConfig();
+                        if (statusConfig.enabled && statusConfig.selfOn) {
+                            handleStatusUpdate(XeonBotInc, chatUpdate).catch(err => console.error("Status view error:", err.message));
+                        }
+                        return;
+                    }
                     storeMessage(XeonBotInc, mek);
                     const statusConfig = readStatusConfig();
                     if (statusConfig.enabled === true) {
@@ -188,7 +205,7 @@ async function startXeonBotInc() {
 
                 try { await handleMessages(XeonBotInc, chatUpdate, true); } catch (err) {
                     if (mek.key?.remoteJid && mek.key.remoteJid !== 'status@broadcast') {
-                        await XeonBotInc.sendMessage(mek.key.remoteJid, { text: '❌ Error processing message.', contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } } }).catch(() => {});
+                        await XeonBotInc.sendMessage(mek.key.remoteJid, { text: '❌ Error processing message.' }).catch(() => {});
                     }
                 }
             } catch (err) {}
@@ -221,8 +238,21 @@ async function startXeonBotInc() {
             if (connection == "open") {
                 console.log(chalk.cyan(`🌿Connected => ` + JSON.stringify(XeonBotInc.user, null, 2)));
                 reconnectAttempts = 0;
-                
-                // ✅ Session backup every hour
+
+                try {
+                    console.log('📂 Pre-loading groups into store...');
+                    const groups = await XeonBotInc.groupFetchAllParticipating();
+                    const groupList = Object.values(groups);
+                    console.log(`✅ Loaded ${groupList.length} groups into store`);
+                    for (const group of groupList) {
+                        if (store.chats) {
+                            store.chats[group.id] = { id: group.id, ...group };
+                        }
+                    }
+                } catch (e) {
+                    console.error('❌ Failed to pre-load groups:', e.message);
+                }
+
                 setInterval(() => {
                     try {
                         const backupDir = './session_backup';
@@ -233,22 +263,117 @@ async function startXeonBotInc() {
                         console.error('❌ Session backup failed:', e.message);
                     }
                 }, 60 * 60 * 1000);
-                
+
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const activationMessage = `╭──❍「 *BOT ACTIVATED* 」❍\n├• 📅 ${time}\n├• ✅ Status: ONLINE & READY\n├• 💻 Version: ${settings.version}\n├• 👤 Owner: ${settings.botOwner}\n├• 📞 Contact: ${settings.ownerNumber}\n├• 🌐 Prefix: ${settings.prefix}\n├• 💻 Mode: ${getBotMode()}\n├• 💡 ${getCommandCount()}+ Commands\n╰─┬─★─☆─♪♪─❍\n╭─┴❍「 *QUICK START* 」❍\n◈ • .menu - All commands\n◈ • .help - Bot guide\n◈ • .owner - Contact owner\n◈ • .settings - Settings\n◈ • .ping - Check speed\n◈ • .update - Update bot\n╰─┬─★─☆─♪♪─❍\n╭─┴❍「 *CONNECT* 」❍\n◈ • 💬 Support Group\n◈ • 📺 YouTube Channel\n◈ • ⭐ GitHub Repo\n◈ • 🔔 Channel Updates\n╰───★─☆─♪♪─❍\n\n*🔗 Channel:* ${global.channelLink}\n*💬 Support:* https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1\n*📺 YouTube:* https://youtube.com/@wallyjaytechy\n*💻 GitHub:* https://github.com/wallyjaytechh\n\n🤖 WALLYJAYTECH-MD - Professional WhatsApp Bot`;
-                    await XeonBotInc.sendMessage(botNumber, { text: activationMessage, contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: 'WALLYJAYTECH-MD BOTS', serverMessageId: -1 } } });
+
+                    const activationMessage = `╭── ◆「 *WALLYJAYTECH-MD* 」◆
+╰───★─☆─♪♪─◆
+
+╭──◆「 *BOT CONNECTED* 」◆
+├
+├◇ *📅 Date:* ${time.split(',')[0] || time}
+├◇ *⌚ Time:* ${time.split(', ')[1] || time}
+├◇ *✅ Status:* Online
+├◇ *💻 Version:* ${settings.version}
+├◇ *👤 Owner:* Sir Wally Jay
+├◇ *📞 Contact:* +2348144317152
+├◇ *🌐 Prefix:* ${settings.prefix}
+├◇ *🔒 Mode:* ${getBotMode()}
+├◇ *💡 Commands:* ${getCommandCount()}+
+├
+╰─┬─★─☆─♪♪─◆
+
+╭──◆「 *QUICK START* 」◆
+├
+├◇ *📂 .menu*    → All commands
+├◇ *📖 .help*    → Bot guide
+├◇ *📞 .owner*   → Contact owner
+├◇ *⚙️ .settings* → Bot settings
+├◇ *📶 .ping*    → Check speed
+├◇ *🔄 .update*  → Update bot
+├
+╰─┬─★─☆─♪♪─◆
+
+╭──◆「 *CONNECT* 」◆
+├
+├◇ 💬 Support Group
+├◇ 📺 YouTube Channel
+├◇ ⭐ GitHub Repo
+├◇ 🔔 Channel Updates
+├
+╰─┬─★─☆─♪♪─◆
+
+╭──◆「 *LINKS* 」◆
+├
+├◇ *🔗 Channel:* ${global.channelLink}
+├
+├◇ *💬 Support:* ${global.supportLink || 'https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1'}
+├
+├◇ *📺 YouTube:* ${global.ytch || 'https://youtube.com/@wallyjaytechy'}
+├
+├◇ *⭐ GitHub:* https://github.com/wallyjaytechh
+├
+╰─┬─★─☆─♪♪─◆
+
+╭──◆「 *COPYRIGHT* 」◆
+├
+├◇ © 2025-2026
+├◇ WALLYJAYTECH-MD
+├◇ All Rights Reserved.
+├
+╰───★─☆─♪♪─◆`;
+
+                    let imageBuffer;
+                    const imgPath = path.join(__dirname, 'assets', 'bot_image.jpg');
+                    const repoImgUrl = 'https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg';
+
+                    if (fs.existsSync(imgPath)) {
+                        imageBuffer = fs.readFileSync(imgPath);
+                    } else {
+                        try {
+                            const res = await fetch(repoImgUrl);
+                            if (res.ok) imageBuffer = await res.buffer();
+                        } catch (e) {}
+                    }
+
+if (imageBuffer) {
+    await XeonBotInc.sendMessage(botNumber, {
+        image: imageBuffer,
+        caption: activationMessage,
+        contextInfo: {
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363420618370733@newsletter',
+                newsletterName: '‎',
+                serverMessageId: -1
+            }
+        }
+    });
+} else {
+    await XeonBotInc.sendMessage(botNumber, { 
+        text: activationMessage,
+        contextInfo: {
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363420618370733@newsletter',
+                newsletterName: '‎',
+                serverMessageId: -1
+            }
+        }
+    });
+}
                 } catch (e) { console.error('Error sending activation:', e.message); }
                 await delay(1999);
                 console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'WALLYJAYTECH-MD'} ]`)}\n\n`));
                 console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected! ✅`));
             }
             
-            // ✅ Connection stability with exponential backoff
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                // Don't reconnect if logged out
                 if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
                     console.log('❌ Logged out - delete session and re-pair');
                     try { rmSync('./session', { recursive: true, force: true }); } catch (e) {}
@@ -256,7 +381,7 @@ async function startXeonBotInc() {
                 }
                 if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                     reconnectAttempts++;
-                    const delayMs = Math.min(5000 * reconnectAttempts, 30000); // max 30s
+                    const delayMs = Math.min(5000 * reconnectAttempts, 30000);
                     console.log(`🔄 Reconnecting in ${delayMs/1000}s (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
                     setTimeout(startXeonBotInc, delayMs);
                 } else {
@@ -295,4 +420,4 @@ process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', 
 process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
 
 let file = require.resolve(__filename);
-fs.watchFile(file, () => { fs.unwatchFile(file); console.log(chalk.redBright(`Update ${__filename}`)); delete require.cache[file]; require(file); });
+fs.watchFile(file, () => { fs.unwatchFile(file); console.log(chalk.redBright(`Update ${__filename}`)); delete require.cache[file]; require(file); }); 
