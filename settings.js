@@ -51,7 +51,7 @@ const settings = {
   updateZipUrl: "https://github.com/wallyjaytechh/WALLYJAYTECH-MD/archive/refs/heads/main.zip",
   
   cloudflareAccountId: '3e0a5169646073a5262706b576633cb3',
-  cloudflareApiToken: 'cfat_S1FtA9KtlJVzWO4OGoBRh36QTl2jRMmH86GJDcDu6ddca57e',
+  cloudflareApiToken: 'cfat_NLLBqOnSRwpjYjX7SQMdPDmF8ffIkU06RBzMCYetc1fcb516',
   
   removeBgApi: {
     enabled: true,
