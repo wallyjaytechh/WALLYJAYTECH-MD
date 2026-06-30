@@ -38,7 +38,7 @@
 /**
  * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
  * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Progress bar loading animation
+ * Features: Multiple styles | Smooth progress bar animation
  * Professional Version
  */
 
@@ -166,12 +166,14 @@ async function generateCommand(sock, chatId, message) {
         // ═══ React ═══
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        // ═══ Progress Bar Loading (2s per frame) ═══
+        // ═══ Start Progress Bar Animation (2s per frame) ═══
         const loadingMsg = await sock.sendMessage(chatId, { 
             text: `Generating prompt ${BAR_FRAMES[0]}` 
         });
 
         let frame = 0;
+        let animationDone = false;
+
         const interval = setInterval(async () => {
             try {
                 frame++;
@@ -185,6 +187,7 @@ async function generateCommand(sock, chatId, message) {
                         edit: loadingMsg.key,
                         text: `Generating done ${BAR_FRAMES[10]}`
                     });
+                    animationDone = true;
                     clearInterval(interval);
                 }
             } catch (e) {
@@ -192,15 +195,17 @@ async function generateCommand(sock, chatId, message) {
             }
         }, 2000);
 
-        // ═══ Generate Image ═══
+        // ═══ Generate Image (runs while animation plays) ═══
         const imageBuffer = await generateImage(prompt, style);
 
-        // ═══ Ensure "done" is shown ═══
-        clearInterval(interval);
-        await sock.sendMessage(chatId, {
-            edit: loadingMsg.key,
-            text: `Generating done ${BAR_FRAMES[10]}`
-        });
+        // ═══ Wait for animation to finish if still running ═══
+        if (!animationDone) {
+            clearInterval(interval);
+            await sock.sendMessage(chatId, {
+                edit: loadingMsg.key,
+                text: `Generating done ${BAR_FRAMES[10]}`
+            });
+        }
 
         // ═══ Send Result ═══
         await sock.sendMessage(chatId, {
