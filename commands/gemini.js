@@ -37,14 +37,13 @@
 
 /**
  * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
- * Powered by Google Gemini 2.5 Flash — Free text generation
+ * Powered by Google Gemini via WALLYJAYTECH Proxy
  * Professional Version
  */
 
 const fetch = require('node-fetch');
-const settings = require('../settings');
 
-const GEMINI_API_KEY = settings.geminiKey || 'AQ.Ab8RN6LwtNwk-ZY_dv1wNKmp5FonpneMgxLmDTNOpqSoh0oBcA';
+const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/chat';
 
 async function geminiCommand(sock, chatId, message) {
     try {
@@ -56,7 +55,7 @@ async function geminiCommand(sock, chatId, message) {
                 text: `╭──◆「 *GEMINI AI* 」◆\n` +
                       `├\n` +
                       `├◇ 🤖 Powered by Google Gemini\n` +
-                      `├◇ 🆓 Free — No limits\n` +
+                      `├◇ 🆓 Free — No key needed\n` +
                       `├\n` +
                       `├◇ *📖 Usage:*\n` +
                       `├  └ .gemini <question>\n` +
@@ -74,23 +73,17 @@ async function geminiCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: query }] }]
-                })
-            }
-        );
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: query })
+        });
 
         const data = await response.json();
-        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const answer = data.reply;
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Format answer with design
         const lines = answer.split('\n');
         let formattedAnswer = '';
         for (const line of lines) {
@@ -108,7 +101,7 @@ async function geminiCommand(sock, chatId, message) {
         }, { quoted: message });
 
     } catch (error) {
-        console.error('Gemini error');
+        console.error('Gemini proxy error');
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *GEMINI AI* 」◆\n` +
                   `├\n` +
