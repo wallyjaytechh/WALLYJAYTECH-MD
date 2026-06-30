@@ -1,105 +1,125 @@
- const axios = require('axios');
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//                                                                                                                                                            //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
+//                                                                                                                                                            //
+//                                                                  𝐕 : 1.0.0                                                                                 //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                 //
+//                                                                                                                                                            //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//* 
+//  * project_name : WALLYJAYTECH-MD
+//  * author : wallyjaytech
+//  * youtube : https://www.youtube.com/wallyjaytechy
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//*
+//*
+//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
+//Instagram: wallyjaytech
+//Telegram: t.me/wallyjaytech
+//GitHub: wallyjaytechh
+//WhatsApp: +2348144317152
+//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+//   * Created By Github: wallyjaytechh.
+//   * Credit To ally jay tech
+//   * © 2025 WALLYJAYTECH-MD.
+// ⛥┌┤
+// */
+
+/**
+ * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
+ * Powered by Google Gemini 2.5 Flash — Free text generation
+ * Professional Version
+ */
+
 const fetch = require('node-fetch');
+const settings = require('../settings');
 
-async function aiCommand(sock, chatId, message) {
+const GEMINI_API_KEY = settings.geminiKey || 'AQ.Ab8RN6LwtNwk-ZY_dv1wNKmp5FonpneMgxLmDTNOpqSoh0oBcA';
+
+async function geminiCommand(sock, chatId, message) {
     try {
-        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
-        
-        if (!text) {
-            return await sock.sendMessage(chatId, { 
-                text: "*Please provide a question after .gpt or .gemini*\n\n*Example: .gpt write a basic html code*"
-            }, {
-                quoted: message
-            });
-        }
-
-        // Get the command and query
-        const parts = text.split(' ');
-        const command = parts[0].toLowerCase();
-        const query = parts.slice(1).join(' ').trim();
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+        const query = text.split(' ').slice(1).join(' ').trim();
 
         if (!query) {
-            return await sock.sendMessage(chatId, { 
-                text: "*Please provide a question after .gpt or .gemini*"
-            }, {quoted:message});
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                      `├\n` +
+                      `├◇ 🤖 Powered by Google Gemini\n` +
+                      `├◇ 🆓 Free — No limits\n` +
+                      `├\n` +
+                      `├◇ *📖 Usage:*\n` +
+                      `├  └ .gemini <question>\n` +
+                      `├\n` +
+                      `├◇ *✨ Examples:*\n` +
+                      `├  └ .gemini write a poem\n` +
+                      `├  └ .gemini explain gravity\n` +
+                      `├  └ .gemini code a login form\n` +
+                      `├\n` +
+                      `╰─┬─★─☆─♪♪─◆\n\n` +
+                      `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                      `╰───★─☆─♪♪─◆`
+            }, { quoted: message });
         }
 
-        try {
-            // Show processing message
-            await sock.sendMessage(chatId, {
-                react: { text: '🤖', key: message.key }
-            });
+        await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-            if (command === '.gpt') {
-                // Call the GPT API
-                const response = await axios.get(`https://zellapi.autos/ai/chatbot?text=${encodeURIComponent(query)}`);
-                
-                if (response.data && response.data.status && response.data.result) {
-                    const answer = response.data.result;
-                    await sock.sendMessage(chatId, {
-                        text: answer
-                    }, {
-                        quoted: message
-                    });
-                    
-                } else {
-                    throw new Error('Invalid response from API');
-                }
-            } else if (command === '.gemini') {
-                const apis = [
-                    `https://vapis.my.id/api/gemini?q=${encodeURIComponent(query)}`,
-                    `https://api.siputzx.my.id/api/ai/gemini-pro?content=${encodeURIComponent(query)}`,
-                    `https://api.ryzendesu.vip/api/ai/gemini?text=${encodeURIComponent(query)}`,
-                    `https://zellapi.autos/ai/chatbot?text=${encodeURIComponent(query)}`,
-                    `https://api.giftedtech.my.id/api/ai/geminiai?apikey=gifted&q=${encodeURIComponent(query)}`,
-                    `https://api.giftedtech.my.id/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(query)}`
-                ];
-
-                for (const api of apis) {
-                    try {
-                        const response = await fetch(api);
-                        const data = await response.json();
-
-                        if (data.message || data.data || data.answer || data.result) {
-                            const answer = data.message || data.data || data.answer || data.result;
-                            await sock.sendMessage(chatId, {
-                                text: answer
-                            }, {
-                                quoted: message
-                            });
-                            
-                            return;
-                        }
-                    } catch (e) {
-                        continue;
-                    }
-                }
-                throw new Error('All Gemini APIs failed');
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: query }] }]
+                })
             }
-        } catch (error) {
-            console.error('API Error:', error);
-            await sock.sendMessage(chatId, {
-                text: "*❌ Failed to get response. Please try again later.*",
-                contextInfo: {
-                    mentionedJid: [message.key.participant || message.key.remoteJid],
-                    quotedMessage: message.message
-                }
-            }, {
-                quoted: message
-            });
+        );
+
+        const data = await response.json();
+        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!answer) throw new Error('NO_RESPONSE');
+
+        // Format answer with design
+        const lines = answer.split('\n');
+        let formattedAnswer = '';
+        for (const line of lines) {
+            formattedAnswer += `├◇ ${line}\n`;
         }
-    } catch (error) {
-        console.error('AI Command Error:', error);
+
         await sock.sendMessage(chatId, {
-            text: "*❌ An error occurred. Please try again later.*",
-            contextInfo: {
-                mentionedJid: [message.key.participant || message.key.remoteJid],
-                quotedMessage: message.message
-            }
-        }, {
-            quoted: message
-        });
+            text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                  `├\n` +
+                  formattedAnswer +
+                  `├\n` +
+                  `╰─┬─★─☆─♪♪─◆\n\n` +
+                  `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                  `╰───★─☆─♪♪─◆`
+        }, { quoted: message });
+
+    } catch (error) {
+        console.error('Gemini error');
+        await sock.sendMessage(chatId, {
+            text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                  `├\n` +
+                  `├◇ ❌ Failed to get response\n` +
+                  `├◇ 💡 Try again later\n` +
+                  `├\n` +
+                  `╰─┬─★─☆─♪♪─◆\n\n` +
+                  `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                  `╰───★─☆─♪♪─◆`
+        }, { quoted: message });
     }
 }
 
-module.exports = aiCommand; 
+module.exports = geminiCommand;
