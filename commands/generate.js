@@ -38,15 +38,11 @@
 /**
  * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
  * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Fast generation
+ * Features: Multiple styles | Loading animation
  * Professional Version
  */
 
 const fetch = require('node-fetch');
-
-// ═══════════════════════════════════════
-// STYLES
-// ═══════════════════════════════════════
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
@@ -54,9 +50,19 @@ const STYLES = [
     'watercolor', 'sketch', 'cinematic', 'portrait'
 ];
 
-// ═══════════════════════════════════════
-// IMAGE GENERATION
-// ═══════════════════════════════════════
+const BAR_FRAMES = [
+    '[□□□□□□□□□□] 0%',
+    '[■□□□□□□□□□] 10%',
+    '[■■□□□□□□□□] 20%',
+    '[■■■□□□□□□□] 30%',
+    '[■■■■□□□□□□] 40%',
+    '[■■■■■□□□□□] 50%',
+    '[■■■■■■□□□□] 60%',
+    '[■■■■■■■□□□] 70%',
+    '[■■■■■■■■□□] 80%',
+    '[■■■■■■■■■□] 90%',
+    '[■■■■■■■■■■] 100%'
+];
 
 async function generateImage(prompt, style) {
     const fullPrompt = style 
@@ -73,10 +79,6 @@ async function generateImage(prompt, style) {
     return Buffer.from(arrayBuffer);
 }
 
-// ═══════════════════════════════════════
-// SEND MESSAGE
-// ═══════════════════════════════════════
-
 async function sendMsg(sock, chatId, text, quoted) {
     const opts = { text };
     if (quoted) {
@@ -92,10 +94,6 @@ async function sendMsg(sock, chatId, text, quoted) {
     }
     return sock.sendMessage(chatId, opts, quoted ? { quoted } : {});
 }
-
-// ═══════════════════════════════════════
-// COMMAND HANDLER
-// ═══════════════════════════════════════
 
 async function generateCommand(sock, chatId, message) {
     try {
@@ -145,21 +143,44 @@ async function generateCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        await sendMsg(sock, chatId,
-            `╭──◆「 *GENERATING IMAGE* 」◆\n` +
-            `├\n` +
-            `├◇ 🎨 *Prompt:* ${prompt}\n` +
-            `${style ? `├◇ 🎯 *Style:* ${style}\n` : ''}` +
-            `├◇ 🤖 *Engine:* FLUX\n` +
-            `├\n` +
-            `├◇ ⏳ Creating your masterpiece...\n` +
-            `├\n` +
-            `╰─┬─★─☆─♪♪─◆\n\n` +
-            `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-            `╰───★─☆─♪♪─◆`, message);
+        // Progress bar loading
+        const loadingMsg = await sock.sendMessage(chatId, { 
+            text: `Generating prompt ${BAR_FRAMES[0]}` 
+        });
 
+        let frame = 0;
+        const interval = setInterval(async () => {
+            try {
+                if (frame < BAR_FRAMES.length) {
+                    const isDone = frame === BAR_FRAMES.length - 1;
+                    await sock.sendMessage(chatId, {
+                        edit: loadingMsg.key,
+                        text: `${isDone ? 'Generating done' : 'Generating prompt'} ${BAR_FRAMES[frame]}`
+                    });
+                    frame++;
+                } else {
+                    clearInterval(interval);
+                }
+            } catch (e) {
+                clearInterval(interval);
+            }
+        }, 400);
+
+        // Generate image
         const imageBuffer = await generateImage(prompt, style);
 
+        // Complete loading
+        clearInterval(interval);
+        await sock.sendMessage(chatId, {
+            edit: loadingMsg.key,
+            text: `Generating done ${BAR_FRAMES[10]}`
+        });
+        await new Promise(r => setTimeout(r, 500));
+
+        // Delete loading
+        await sock.sendMessage(chatId, { delete: loadingMsg.key });
+
+        // Send result
         await sock.sendMessage(chatId, {
             image: imageBuffer,
             caption: `╭──◆「 *IMAGE GENERATED* 」◆\n` +
