@@ -49,10 +49,7 @@ const settings = {
   description: "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
   version: "1.0.0",
   updateZipUrl: "https://github.com/wallyjaytechh/WALLYJAYTECH-MD/archive/refs/heads/main.zip",
-  
-  cloudflareAccountId: '3e0a5169646073a5262706b576633cb3',
-  cloudflareApiToken: 'cfut_qsXYzIcczNtQc7QJDpQijHaDw1DMa9QUeEQqqSMN3ba2c5d4',
-  
+ 
   removeBgApi: {
     enabled: true,
     apiKey: "dyrbNSNtMf1CE84he61DR7Wx",
