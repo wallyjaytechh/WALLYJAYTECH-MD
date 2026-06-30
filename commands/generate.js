@@ -37,25 +37,16 @@
 
 /**
  * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
- * Powered by Cloudflare Workers AI — Free, generous daily limits
- * Models: SDXL | FLUX Schnell
+ * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
+ * Features: Multiple styles | Fast generation
  * Professional Version
  */
 
 const fetch = require('node-fetch');
-const settings = require('../settings');
 
 // ═══════════════════════════════════════
-// CLOUDFLARE CONFIG (from settings.js)
+// STYLES
 // ═══════════════════════════════════════
-
-const CF_ACCOUNT_ID = settings.cloudflareAccountId;
-const CF_API_TOKEN = settings.cloudflareApiToken;
-
-const MODELS = {
-    sdxl: '@cf/stabilityai/stable-diffusion-xl-base-1.0',
-    flux: '@cf/black-forest-labs/flux-1-schnell'
-};
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
@@ -67,41 +58,23 @@ const STYLES = [
 // IMAGE GENERATION
 // ═══════════════════════════════════════
 
-async function generateImage(prompt, style, model) {
-    const fullPrompt = style ? `${prompt}, ${style} style` : prompt;
-    const modelPath = MODELS[model] || MODELS.sdxl;
+async function generateImage(prompt, style) {
+    const fullPrompt = style 
+        ? `${prompt}, ${style} style, high quality, detailed` 
+        : `${prompt}, high quality, detailed`;
 
     const response = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${modelPath}`,
-        {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${CF_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt: fullPrompt })
-        }
+        `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1024&height=1024&nologo=true&model=flux&seed=${Math.floor(Math.random() * 1000000)}`
     );
 
     if (!response.ok) throw new Error('GENERATION_FAILED');
 
-    const data = await response.json();
-
-    if (!data.success) {
-        const errorMsg = data.errors?.[0]?.message || 'Unknown error';
-        if (errorMsg.includes('NSFW')) throw new Error('NSFW_BLOCKED');
-        if (errorMsg.includes('Authentication')) throw new Error('AUTH_FAILED');
-        throw new Error('GENERATION_FAILED');
-    }
-
-    const base64 = data.result?.image;
-    if (!base64) throw new Error('NO_IMAGE');
-
-    return Buffer.from(base64, 'base64');
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
 }
 
 // ═══════════════════════════════════════
-// SEND MESSAGE (NO NEWSLETTER)
+// SEND MESSAGE
 // ═══════════════════════════════════════
 
 async function sendMsg(sock, chatId, text, quoted) {
@@ -135,17 +108,12 @@ async function generateCommand(sock, chatId, message) {
                 `╭──◆「 *AI IMAGE GENERATION* 」◆\n` +
                 `├\n` +
                 `├◇ 🎨 Generate stunning AI images\n` +
-                `├◇ ☁️ Powered by Cloudflare AI\n` +
-                `├◇ 🆓 Free — Generous daily limits\n` +
+                `├◇ 🤖 Powered by FLUX AI\n` +
+                `├◇ 🆓 Free forever — No limits\n` +
                 `├\n` +
                 `├◇ *📖 Usage:*\n` +
                 `├  └ .generate <prompt>\n` +
                 `├  └ .generate <prompt> | <style>\n` +
-                `├  └ .generate <prompt> | <style> | <model>\n` +
-                `├\n` +
-                `├◇ *🤖 Models:*\n` +
-                `├  └ sdxl (default)\n` +
-                `├  └ flux\n` +
                 `├\n` +
                 `├◇ *🎨 Styles:*\n` +
                 `├  └ photorealistic, anime, 3d\n` +
@@ -157,29 +125,21 @@ async function generateCommand(sock, chatId, message) {
                 `├◇ *✨ Examples:*\n` +
                 `├  └ .generate a beautiful sunset\n` +
                 `├  └ .generate dragon warrior | anime\n` +
-                `├  └ .generate futuristic city | cyberpunk | flux\n` +
+                `├  └ .generate futuristic city | cyberpunk\n` +
                 `├\n` +
                 `╰─┬─★─☆─♪♪─◆\n\n` +
                 `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
                 `╰───★─☆─♪♪─◆`, message);
         }
 
-        // Parse: prompt | style | model
         let prompt = fullInput;
         let style = '';
-        let model = 'sdxl';
 
         if (fullInput.includes('|')) {
             const parts = fullInput.split('|').map(p => p.trim());
-            prompt = parts[0] || prompt;
-            
-            for (let i = 1; i < parts.length; i++) {
-                const part = parts[i].toLowerCase();
-                if (STYLES.includes(part)) {
-                    style = part;
-                } else if (MODELS[part]) {
-                    model = part;
-                }
+            prompt = parts[0];
+            if (parts[1] && STYLES.includes(parts[1].toLowerCase())) {
+                style = parts[1].toLowerCase();
             }
         }
 
@@ -190,8 +150,7 @@ async function generateCommand(sock, chatId, message) {
             `├\n` +
             `├◇ 🎨 *Prompt:* ${prompt}\n` +
             `${style ? `├◇ 🎯 *Style:* ${style}\n` : ''}` +
-            `├◇ 🤖 *Model:* ${model.toUpperCase()}\n` +
-            `├◇ ☁️ *Engine:* Cloudflare AI\n` +
+            `├◇ 🤖 *Engine:* FLUX\n` +
             `├\n` +
             `├◇ ⏳ Creating your masterpiece...\n` +
             `├\n` +
@@ -199,7 +158,7 @@ async function generateCommand(sock, chatId, message) {
             `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
             `╰───★─☆─♪♪─◆`, message);
 
-        const imageBuffer = await generateImage(prompt, style, model);
+        const imageBuffer = await generateImage(prompt, style);
 
         await sock.sendMessage(chatId, {
             image: imageBuffer,
@@ -207,7 +166,6 @@ async function generateCommand(sock, chatId, message) {
                      `├\n` +
                      `├◇ 🎨 *Prompt:* ${prompt}\n` +
                      `${style ? `├◇ 🎯 *Style:* ${style}\n` : ''}` +
-                     `├◇ 🤖 *Model:* ${model.toUpperCase()}\n` +
                      `├◇ ✅ *Status:* Success!\n` +
                      `├\n` +
                      `╰─┬─★─☆─♪♪─◆\n\n` +
@@ -217,18 +175,17 @@ async function generateCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('❌ Generate error');
-        
-        let errorMsg = `╭──◆「 *GENERATION FAILED* 」◆\n├\n├◇ ❌ Unable to generate image\n├◇ 💡 Try a different prompt\n├◇ 🔄 Wait a moment & retry\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        
-        if (error.message === 'NSFW_BLOCKED') {
-            errorMsg = `╭──◆「 *CONTENT BLOCKED* 」◆\n├\n├◇ 🚫 Prompt blocked by filter\n├◇ 💡 Try a different description\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        }
-        
-        if (error.message === 'AUTH_FAILED') {
-            errorMsg = `╭──◆「 *AUTH FAILED* 」◆\n├\n├◇ 🔑 Cloudflare token invalid\n├◇ 💡 Check settings.js\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        }
-        
-        await sendMsg(sock, chatId, errorMsg, message);
+
+        await sendMsg(sock, chatId,
+            `╭──◆「 *GENERATION FAILED* 」◆\n` +
+            `├\n` +
+            `├◇ ❌ Unable to generate image\n` +
+            `├◇ 💡 Try a different prompt\n` +
+            `├◇ 🔄 Wait a moment & retry\n` +
+            `├\n` +
+            `╰─┬─★─☆─♪♪─◆\n\n` +
+            `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+            `╰───★─☆─♪♪─◆`, message);
     }
 }
 
