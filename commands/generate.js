@@ -38,25 +38,17 @@
 /**
  * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
  * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Guaranteed smooth progress bar
+ * Features: Multiple styles | Background generation | Smooth progress bar
  * Professional Version
  */
 
 const fetch = require('node-fetch');
-
-// ═══════════════════════════════════════
-// STYLES
-// ═══════════════════════════════════════
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
     'oil-painting', 'pixel-art', 'cyberpunk', 'fantasy', 
     'watercolor', 'sketch', 'cinematic', 'portrait'
 ];
-
-// ═══════════════════════════════════════
-// PROGRESS BAR FRAMES
-// ═══════════════════════════════════════
 
 const BAR_FRAMES = [
     '[□□□□□□□□□□] 0%',
@@ -72,10 +64,6 @@ const BAR_FRAMES = [
     '[■■■■■■■■■■] 100%'
 ];
 
-// ═══════════════════════════════════════
-// IMAGE GENERATION
-// ═══════════════════════════════════════
-
 async function generateImage(prompt, style) {
     const fullPrompt = style 
         ? `${prompt}, ${style} style, high quality, detailed` 
@@ -90,10 +78,6 @@ async function generateImage(prompt, style) {
     const arrayBuffer = await response.arrayBuffer();
     return Buffer.from(arrayBuffer);
 }
-
-// ═══════════════════════════════════════
-// SEND MESSAGE (NO NEWSLETTER)
-// ═══════════════════════════════════════
 
 async function sendMsg(sock, chatId, text, quoted) {
     const opts = { text };
@@ -111,17 +95,12 @@ async function sendMsg(sock, chatId, text, quoted) {
     return sock.sendMessage(chatId, opts, quoted ? { quoted } : {});
 }
 
-// ═══════════════════════════════════════
-// COMMAND HANDLER
-// ═══════════════════════════════════════
-
 async function generateCommand(sock, chatId, message) {
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const args = text.split(' ').slice(1);
         const fullInput = args.join(' ').trim();
 
-        // ═══ Help Menu ═══
         if (!fullInput) {
             return sendMsg(sock, chatId,
                 `╭──◆「 *AI IMAGE GENERATION* 」◆\n` +
@@ -151,7 +130,6 @@ async function generateCommand(sock, chatId, message) {
                 `╰───★─☆─♪♪─◆`, message);
         }
 
-        // ═══ Parse prompt & style ═══
         let prompt = fullInput;
         let style = '';
 
@@ -163,15 +141,17 @@ async function generateCommand(sock, chatId, message) {
             }
         }
 
-        // ═══ React ═══
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        // ═══ Progress Bar — Animation FIRST, then generate ═══
+        // Start progress bar
         const loadingMsg = await sock.sendMessage(chatId, { 
             text: `Generating prompt ${BAR_FRAMES[0]}` 
         });
 
-        // Run animation completely before generating
+        // Start image generation in background
+        const imagePromise = generateImage(prompt, style);
+
+        // Play animation (2s per frame)
         for (let frame = 1; frame < BAR_FRAMES.length; frame++) {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
@@ -179,10 +159,11 @@ async function generateCommand(sock, chatId, message) {
                     edit: loadingMsg.key,
                     text: `Generating prompt ${BAR_FRAMES[frame]}`
                 });
-            } catch (e) {
-                // If edit fails, animation continues
-            }
+            } catch (e) {}
         }
+
+        // Wait for image (already done if fast, instant if not)
+        const imageBuffer = await imagePromise;
 
         // Show done
         await sock.sendMessage(chatId, {
@@ -190,10 +171,7 @@ async function generateCommand(sock, chatId, message) {
             text: `Generating done ${BAR_FRAMES[10]}`
         });
 
-        // ═══ NOW generate image ═══
-        const imageBuffer = await generateImage(prompt, style);
-
-        // ═══ Send Result ═══
+        // Send result
         await sock.sendMessage(chatId, {
             image: imageBuffer,
             caption: `╭──◆「 *IMAGE GENERATED* 」◆\n` +
