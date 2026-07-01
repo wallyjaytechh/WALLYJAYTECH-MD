@@ -38,6 +38,7 @@
 /**
  * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
  * Powered by Google Gemini via WALLYJAYTECH Proxy
+ * Features: Reply support | WhatsApp formatting fix | Loading animation
  * Professional Version
  */
 
@@ -71,6 +72,31 @@ function wrapText(text, maxLen = 30) {
     }
     if (current) lines.push(current.trim());
     return lines;
+}
+
+function fixFormattingPerLine(text) {
+    const lines = text.split('\n');
+    return lines.map(line => {
+        // Fix italic: ensure _ pairs on same line
+        const italicMatches = line.match(/(?<!\w)_(?!\w)/g);
+        if (italicMatches && italicMatches.length % 2 !== 0) {
+            line += '_';
+        }
+
+        // Fix strikethrough: ensure ~ pairs on same line
+        const strikeMatches = line.match(/~/g);
+        if (strikeMatches && strikeMatches.length % 2 !== 0) {
+            line += '~';
+        }
+
+        // Fix code: ensure ``` pairs on same line
+        const codeMatches = line.match(/```/g);
+        if (codeMatches && codeMatches.length % 2 !== 0) {
+            line += '```';
+        }
+
+        return line;
+    }).join('\n');
 }
 
 async function geminiCommand(sock, chatId, message) {
@@ -141,12 +167,15 @@ async function geminiCommand(sock, chatId, message) {
             body: JSON.stringify({ prompt: query })
         });
         const data = await response.json();
-        const answer = data.reply;
+        let answer = data.reply;
 
         clearInterval(interval);
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
         if (!answer) throw new Error('NO_RESPONSE');
+
+        // Fix formatting per line (close unclosed _ ~ ```)
+        answer = fixFormattingPerLine(answer);
 
         const rawLines = answer.split('\n');
         let output = '';
@@ -154,7 +183,7 @@ async function geminiCommand(sock, chatId, message) {
             if (line.trim().length === 0) {
                 output += '├\n';
             } else {
-                const wrapped = wrapText(line, 30);
+                const wrapped = wrapText(line.trim(), 30);
                 for (const w of wrapped) {
                     output += `├◇ ${w}\n`;
                 }
