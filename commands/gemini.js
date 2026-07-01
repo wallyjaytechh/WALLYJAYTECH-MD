@@ -176,6 +176,9 @@ async function geminiCommand(sock, chatId, message) {
         // Convert --- dividers to spaced underscores
         answer = answer.replace(/^---$/gm, '         ____________________');
         
+        // Strip any leftover markdown links: [text](url) → text
+        answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+        
         // Fix formatting per line
         answer = fixFormattingPerLine(answer);
 
