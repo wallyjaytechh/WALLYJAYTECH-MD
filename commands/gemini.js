@@ -173,6 +173,9 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
+        // Convert --- dividers to spaced underscores
+        answer = answer.replace(/^---$/gm, '         ____________________');
+        
         // Fix formatting per line
         answer = fixFormattingPerLine(answer);
 
