@@ -1,24 +1,17 @@
-// Auto-install dependencies
+// Auto-install sharp
 const { execSync } = require('child_process');
 try {
-    require.resolve('jimp');
+    require.resolve('sharp');
 } catch (e) {
-    console.log('Installing jimp...');
-    execSync('npm install jimp@1.6.1', { stdio: 'inherit' });
-    console.log('jimp installed successfully!');
+    console.log('Installing sharp...');
+    execSync('npm install sharp', { stdio: 'inherit' });
+    console.log('sharp installed successfully!');
 }
 
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
-
-// Correct import for Jimp v1.6.1
-let Jimp;
-try {
-    Jimp = require('jimp').Jimp;
-} catch (e) {
-    console.log('Jimp not available, watermark disabled');
-}
+const sharp = require('sharp');
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
@@ -58,47 +51,36 @@ async function generateImage(prompt, style) {
 }
 
 async function addWatermark(imageBuffer) {
-    if (!Jimp) {
-        console.log('Jimp not loaded');
-        return imageBuffer;
-    }
-    
     try {
         if (!fs.existsSync(LOGO_PATH)) {
-            console.log('Logo file not found at:', LOGO_PATH);
+            console.log('Logo not found, skipping watermark');
             return imageBuffer;
         }
 
-        console.log('Applying watermark...');
+        // Get image dimensions
+        const metadata = await sharp(imageBuffer).metadata();
+        const imgWidth = metadata.width;
+        const imgHeight = metadata.height;
 
-        const image = await Jimp.read(imageBuffer);
-        const logo = await Jimp.read(LOGO_PATH);
+        // Resize logo to 200px wide
+        const logoBuffer = await sharp(LOGO_PATH)
+            .resize(200)
+            .toBuffer();
 
-        console.log('Image size:', image.width, 'x', image.height);
-        console.log('Logo size:', logo.width, 'x', logo.height);
-
-        // Resize logo (max 200px wide)
-        const maxWidth = 200;
-        if (logo.width > maxWidth) {
-            logo.resize({ w: maxWidth });
-            console.log('Logo resized to:', logo.width, 'x', logo.height);
-        }
+        // Get logo dimensions
+        const logoMeta = await sharp(logoBuffer).metadata();
+        const logoWidth = logoMeta.width;
+        const logoHeight = logoMeta.height;
 
         // Position bottom right with 30px padding
-        const x = image.width - logo.width - 30;
-        const y = image.height - logo.height - 30;
-
-        console.log('Logo position:', x, ',', y);
-
-        // Higher opacity for visibility
-        logo.opacity(1);
+        const x = imgWidth - logoWidth - 30;
+        const y = imgHeight - logoHeight - 30;
 
         // Composite logo onto image
-        image.composite(logo, x, y);
-
-        console.log('Watermark applied');
-
-        return await image.getBuffer('image/jpeg');
+        return await sharp(imageBuffer)
+            .composite([{ input: logoBuffer, top: y, left: x }])
+            .jpeg()
+            .toBuffer();
 
     } catch (err) {
         console.error('Watermark error:', err.message);
@@ -190,11 +172,9 @@ async function generateCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
 
-        // Start progress bar + image generation at same time
         const loadingMsg = await sock.sendMessage(chatId, { text: `Generating prompt ${BAR_FRAMES[0]}` });
         const imagePromise = generateImage(prompt, style);
 
-        // Play animation (1 second per bar)
         for (let frame = 1; frame < BAR_FRAMES.length; frame++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             try {
@@ -202,18 +182,14 @@ async function generateCommand(sock, chatId, message) {
             } catch (e) {}
         }
 
-        // Wait for image
         let imageBuffer = await imagePromise;
 
-        // Add watermark unless clean mode
         if (!cleanMode) {
             imageBuffer = await addWatermark(imageBuffer);
         }
 
-        // Done
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: `Generating done ${BAR_FRAMES[10]}` });
 
-        // Send result
         await sock.sendMessage(chatId, {
             image: imageBuffer,
             caption: `╭──◆「 *IMAGE GENERATED* 」◆\n` +
