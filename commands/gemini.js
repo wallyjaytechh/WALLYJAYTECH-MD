@@ -213,10 +213,6 @@ async function geminiCommand(sock, chatId, message) {
 
         if (loadingMsg) {
             try {
-                for (let i = 0; i < LOADING_FRAMES.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[i] });
-                }
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
