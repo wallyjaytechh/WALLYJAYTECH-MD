@@ -1,40 +1,3 @@
-//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                                                        //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
-//                                                                                                                                                                                        //
-//                                                                  𝐕 : 1.0.0                                                                                                             //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
-//                                                                                                                                                                                        //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//* 
-//  * project_name : WALLYJAYTECH-MD
-//  * author : wallyjaytech
-//  * youtube : https://www.youtube.com/wallyjaytechy
-//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
-//*
-//*
-//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
-//Instagram: wallyjaytech
-//Telegram: t.me/wallyjaytech
-//GitHub: wallyjaytechh
-//WhatsApp: +2348144317152
-//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
-//   * Created By Github: wallyjaytechh.
-//   * Credit To ally jay tech
-//   * © 2025 WALLYJAYTECH-MD.
-// ⛥┌┤
-// */
-
 // Auto-install dependencies
 const { execSync } = require('child_process');
 try {
@@ -45,16 +8,10 @@ try {
     console.log('jimp installed successfully!');
 }
 
-/**
- * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
- * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Background generation | Smooth progress bar | Logo watermark
- * Professional Version
- */
-
 const fetch = require('node-fetch');
 const Jimp = require('jimp');
 const path = require('path');
+const fs = require('fs');
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
@@ -94,26 +51,37 @@ async function generateImage(prompt, style) {
 }
 
 async function addWatermark(imageBuffer) {
-    const image = await Jimp.read(imageBuffer);
-    const logo = await Jimp.read(LOGO_PATH);
+    try {
+        // Check if logo exists
+        if (!fs.existsSync(LOGO_PATH)) {
+            console.log('Logo not found, skipping watermark');
+            return imageBuffer;
+        }
 
-    // Resize logo to moderate size (max 180px wide, maintain aspect ratio)
-    const maxWidth = 180;
-    if (logo.getWidth() > maxWidth) {
-        logo.resize(maxWidth, Jimp.AUTO);
+        const image = await Jimp.read(imageBuffer);
+        const logo = await Jimp.read(LOGO_PATH);
+
+        // Resize logo to moderate size (max 180px wide, maintain aspect ratio)
+        const maxWidth = 180;
+        if (logo.getWidth() > maxWidth) {
+            logo.resize(maxWidth, Jimp.AUTO);
+        }
+
+        // Position at bottom right with 20px padding
+        const x = image.getWidth() - logo.getWidth() - 20;
+        const y = image.getHeight() - logo.getHeight() - 20;
+
+        // Set logo opacity to 80%
+        logo.opacity(0.8);
+
+        // Composite logo onto image
+        image.composite(logo, x, y);
+
+        return await image.getBufferAsync(Jimp.MIME_JPEG);
+    } catch (err) {
+        console.error('Watermark error:', err.message);
+        return imageBuffer; // Return original if watermark fails
     }
-
-    // Position at bottom right with 20px padding
-    const x = image.getWidth() - logo.getWidth() - 20;
-    const y = image.getHeight() - logo.getHeight() - 20;
-
-    // Set logo opacity to 80%
-    logo.opacity(0.8);
-
-    // Composite logo onto image
-    image.composite(logo, x, y);
-
-    return image.getBufferAsync(Jimp.MIME_JPEG);
 }
 
 async function sendMsg(sock, chatId, text, quoted) {
@@ -180,7 +148,7 @@ async function generateCommand(sock, chatId, message) {
                 `├◇ *💡 Note:*\n` +
                 `├  └ .generate = image with watermark\n` +
                 `├  └ .generate clean = image without\n` +
-                `├     watermark\n` +
+                `├        watermark\n` +
                 `├\n` +
                 `╰─┬─★─☆─♪♪─◆\n\n` +
                 `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
@@ -239,7 +207,7 @@ async function generateCommand(sock, chatId, message) {
         }, { quoted: message });
 
     } catch (error) {
-        console.error('Generate error');
+        console.error('Generate error:', error.message);
         await sendMsg(sock, chatId,
             `╭──◆「 *GENERATION FAILED* 」◆\n` +
             `├\n` +
