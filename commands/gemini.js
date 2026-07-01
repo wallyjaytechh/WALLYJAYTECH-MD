@@ -150,21 +150,18 @@ async function geminiCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        // Start animation
-        let animationRunning = true;
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
 
         interval = setInterval(async () => {
             try {
-                if (animationRunning && frame < LOADING_FRAMES.length - 1) {
+                if (frame < LOADING_FRAMES.length - 1) {
                     frame++;
                     await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] });
                 }
             } catch (e) {}
         }, 600);
 
-        // Fetch from proxy
         const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -173,13 +170,7 @@ async function geminiCommand(sock, chatId, message) {
         const data = await response.json();
         let answer = data.reply;
 
-        // Stop animation safely
-        animationRunning = false;
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-        }
-
+        clearInterval(interval);
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
         if (!answer) throw new Error('NO_RESPONSE');
@@ -215,7 +206,6 @@ async function geminiCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Gemini error');
 
-        animationRunning = false;
         if (interval) {
             clearInterval(interval);
             interval = null;
@@ -223,6 +213,10 @@ async function geminiCommand(sock, chatId, message) {
 
         if (loadingMsg) {
             try {
+                for (let i = 0; i < LOADING_FRAMES.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[i] });
+                }
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
