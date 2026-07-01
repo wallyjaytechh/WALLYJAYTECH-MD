@@ -168,7 +168,7 @@ async function startXeonBotInc() {
 
         const XeonBotInc = makeWASocket({
             version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
-            browser: ["WALLYJAYTECH-MD", "Chrome", "20.0.04"],
+            browser: ["Android", "Chrome", "20.0.04"],
             auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
             markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
             getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
