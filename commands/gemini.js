@@ -43,7 +43,7 @@
 
 const fetch = require('node-fetch');
 
-const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/chat';
+const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
 
 async function geminiCommand(sock, chatId, message) {
     try {
