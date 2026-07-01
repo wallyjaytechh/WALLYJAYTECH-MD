@@ -35,12 +35,6 @@
 // ⛥┌┤
 // */
 
-/**
- * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
- * Powered by Google Gemini via WALLYJAYTECH Proxy
- * Professional Version
- */
-
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
@@ -73,34 +67,9 @@ function wrapText(text, maxLen = 30) {
     return lines;
 }
 
-function formatForWhatsApp(text) {
-    // Convert **bold** → *bold* (WhatsApp)
-    text = text.replace(/\*\*(.+?)\*\*/g, '*$1*');
-    
-    // Convert headings
-    text = text.replace(/^#### (.+)$/gm, '_$1_');
-    text = text.replace(/^### (.+)$/gm, '_$1_');
-    text = text.replace(/^## (.+)$/gm, '*$1*');
-    text = text.replace(/^# (.+)$/gm, '*$1*');
-    
-    // Convert * bullets (after bold conversion)
-    text = text.replace(/^\* (.+)$/gm, '• $1');
-    
-    // Convert code
-    text = text.replace(/`(.+?)`/g, '```$1```');
-    
-    // Divider
-    text = text.replace(/^---$/gm, '―'.repeat(12));
-    
-    // Remove leftover **
-    text = text.replace(/\*\*/g, '');
-    
-    return text;
-}
-
 async function geminiCommand(sock, chatId, message) {
     let loadingMsg;
-    
+
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const query = text.split(' ').slice(1).join(' ').trim();
@@ -128,7 +97,6 @@ async function geminiCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        // Start loading animation
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
 
@@ -141,7 +109,6 @@ async function geminiCommand(sock, chatId, message) {
             } catch (e) {}
         }, 600);
 
-        // Call Gemini proxy
         const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -150,15 +117,12 @@ async function geminiCommand(sock, chatId, message) {
         const data = await response.json();
         const answer = data.reply;
 
-        // Success — show Done
         clearInterval(interval);
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Format and wrap
-        const formatted = formatForWhatsApp(answer);
-        const rawLines = formatted.split('\n');
+        const rawLines = answer.split('\n');
         let output = '';
         for (const line of rawLines) {
             if (line.trim().length === 0) {
@@ -183,14 +147,13 @@ async function geminiCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Gemini error');
-        
-        // Show Failed animation
+
         if (loadingMsg) {
             try {
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
-        
+
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *GEMINI AI* 」◆\n` +
                   `├\n` +
