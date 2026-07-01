@@ -78,7 +78,26 @@ async function geminiCommand(sock, chatId, message) {
 
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-        const query = text.split(' ').slice(1).join(' ').trim();
+        const args = text.split(' ').slice(1);
+        let query = args.join(' ').trim();
+
+        // Check if replying to a quoted message
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        let quotedText = '';
+
+        if (quotedMessage) {
+            quotedText = quotedMessage.conversation || 
+                        quotedMessage.extendedTextMessage?.text || 
+                        quotedMessage.imageMessage?.caption || 
+                        quotedMessage.videoMessage?.caption || '';
+        }
+
+        // Build final prompt
+        if (quotedText && query) {
+            query = `Regarding this: "${quotedText}"\n\n${query}`;
+        } else if (quotedText) {
+            query = quotedText;
+        }
 
         if (!query) {
             return sock.sendMessage(chatId, {
@@ -89,11 +108,12 @@ async function geminiCommand(sock, chatId, message) {
                       `├\n` +
                       `├◇ *📖 Usage:*\n` +
                       `├  └ .gemini <question>\n` +
+                      `├  └ Reply to a message with .gemini\n` +
+                      `├  └ Reply with .gemini <question>\n` +
                       `├\n` +
                       `├◇ *✨ Examples:*\n` +
                       `├  └ .gemini write a poem\n` +
                       `├  └ .gemini explain gravity\n` +
-                      `├  └ .gemini code a login form\n` +
                       `├\n` +
                       `╰─┬─★─☆─♪♪─◆\n\n` +
                       `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
