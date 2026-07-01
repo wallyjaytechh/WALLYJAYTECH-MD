@@ -74,7 +74,6 @@ function fixFormattingPerLine(text) {
     for (const line of lines) {
         let l = line;
 
-        // Close unclosed formatting
         const boldMatches = l.match(/\*/g);
         if (boldMatches && boldMatches.length % 2 !== 0) l += '*';
 
@@ -87,7 +86,6 @@ function fixFormattingPerLine(text) {
         const codeMatches = l.match(/```/g);
         if (codeMatches && codeMatches.length % 2 !== 0) l += '```';
 
-        // Split long formatted text so * _ stay on same line
         if (l.length > 35 && (l.includes('*') || l.includes('_'))) {
             const splitPoint = l.lastIndexOf(' ', 35);
             if (splitPoint > 10) {
@@ -177,7 +175,6 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Convert dividers to two empty lines
         answer = answer.replace(/\n---\n/g, '\n\n');
         answer = answer.replace(/\n[-_]{3,}\n/g, '\n\n');
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -209,7 +206,6 @@ async function geminiCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Gemini error');
 
-        // STOP any running animation FIRST
         if (interval) {
             clearInterval(interval);
             interval = null;
@@ -217,12 +213,10 @@ async function geminiCommand(sock, chatId, message) {
 
         if (loadingMsg) {
             try {
-                // Play full 9-bar animation (2s each = 18s)
                 for (let i = 0; i < LOADING_FRAMES.length; i++) {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[i] });
                 }
-                // Show failed
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
