@@ -173,8 +173,9 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Convert --- dividers to spaced underscores
-        answer = answer.replace(/^---$/gm, '         ____________________');
+        // Hardcode divider format — catch ANY variation
+        answer = answer.replace(/^[-_]{3,}$/gm, '         ____________________');
+        answer = answer.replace(/^[_\s]{10,}$/gm, '         ____________________');
         
         // Strip any leftover markdown links: [text](url) → text
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
