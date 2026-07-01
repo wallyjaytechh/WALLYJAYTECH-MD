@@ -48,7 +48,8 @@ const LOADING_FRAMES = [
     'Thinking [■■■■■■□□□□]',
     'Thinking [■■■■■■■□□□]',
     'Thinking [■■■■■■■■□□]',
-    'Thinking [■■■■■■■■■□]'
+    'Thinking [■■■■■■■■■□]',
+    'Done [■■■■■■■■■■]'
 ];
 
 function wrapText(text, maxLen = 30) {
@@ -65,6 +66,31 @@ function wrapText(text, maxLen = 30) {
     }
     if (current) lines.push(current.trim());
     return lines;
+}
+
+function formatForWhatsApp(text) {
+    // Convert **bold** → *bold* (WhatsApp bold)
+    text = text.replace(/\*\*(.+?)\*\*/g, '*$1*');
+    
+    // Convert ### Heading → *bold heading*
+    text = text.replace(/^### (.+)$/gm, '*$1*');
+    text = text.replace(/^## (.+)$/gm, '*$1*');
+    text = text.replace(/^# (.+)$/gm, '*$1*');
+    
+    // Convert * item → • item (WhatsApp doesn't do nested bold well)
+    text = text.replace(/^\* \*\*(.+?)\*\*/gm, '• *$1*');
+    text = text.replace(/^\* (.+)$/gm, '• $1');
+    
+    // Convert `code` → ```code```
+    text = text.replace(/`(.+?)`/g, '```$1```');
+    
+    // Convert --- to a divider
+    text = text.replace(/^---$/gm, '―'.repeat(10));
+    
+    // Remove leftover **
+    text = text.replace(/\*\*/g, '');
+    
+    return text;
 }
 
 async function geminiCommand(sock, chatId, message) {
@@ -95,14 +121,15 @@ async function geminiCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        // Loading animation
+        // Start loading animation
         const loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
+
         const interval = setInterval(async () => {
             try {
-                if (frame < LOADING_FRAMES.length) {
-                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] });
+                if (frame < LOADING_FRAMES.length - 1) {
                     frame++;
+                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] });
                 }
             } catch (e) {}
         }, 600);
@@ -116,21 +143,23 @@ async function geminiCommand(sock, chatId, message) {
         const data = await response.json();
         const answer = data.reply;
 
+        // Jump to Done
         clearInterval(interval);
-        await sock.sendMessage(chatId, { delete: loadingMsg.key });
+        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Wrap lines to max 30 chars
-        const rawLines = answer.split('\n');
-        let formattedAnswer = '';
+        // Format and wrap
+        const formatted = formatForWhatsApp(answer);
+        const rawLines = formatted.split('\n');
+        let output = '';
         for (const line of rawLines) {
             if (line.trim().length === 0) {
-                formattedAnswer += '├\n';
+                output += '├\n';
             } else {
                 const wrapped = wrapText(line, 30);
                 for (const w of wrapped) {
-                    formattedAnswer += `├◇ ${w}\n`;
+                    output += `├◇ ${w}\n`;
                 }
             }
         }
@@ -138,7 +167,7 @@ async function geminiCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *GEMINI AI* 」◆\n` +
                   `├\n` +
-                  formattedAnswer +
+                  output +
                   `├\n` +
                   `╰─┬─★─☆─♪♪─◆\n\n` +
                   `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
