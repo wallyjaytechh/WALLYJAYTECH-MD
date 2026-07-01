@@ -177,9 +177,9 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Fix dividers — add spacing before and after
-        answer = answer.replace(/\n---\n/g, '\n├\n├◇         ____________________\n├\n');
-        answer = answer.replace(/\n[-_]{3,}\n/g, '\n├\n├◇         ____________________\n├\n');
+        // Convert dividers to two empty lines
+        answer = answer.replace(/\n---\n/g, '\n\n');
+        answer = answer.replace(/\n[-_]{3,}\n/g, '\n\n');
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
         answer = fixFormattingPerLine(answer);
 
