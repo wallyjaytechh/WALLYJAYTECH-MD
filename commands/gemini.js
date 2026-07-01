@@ -70,29 +70,17 @@ function wrapText(text, maxLen = 30) {
 function fixFormattingPerLine(text) {
     const lines = text.split('\n');
     return lines.map(line => {
-        // Fix bold: ensure * pairs on same line
         const boldMatches = line.match(/\*/g);
-        if (boldMatches && boldMatches.length % 2 !== 0) {
-            line += '*';
-        }
+        if (boldMatches && boldMatches.length % 2 !== 0) line += '*';
 
-        // Fix italic: ensure _ pairs on same line
         const italicMatches = line.match(/(?<!\w)_(?!\w)/g);
-        if (italicMatches && italicMatches.length % 2 !== 0) {
-            line += '_';
-        }
+        if (italicMatches && italicMatches.length % 2 !== 0) line += '_';
 
-        // Fix strikethrough: ensure ~ pairs on same line
         const strikeMatches = line.match(/~/g);
-        if (strikeMatches && strikeMatches.length % 2 !== 0) {
-            line += '~';
-        }
+        if (strikeMatches && strikeMatches.length % 2 !== 0) line += '~';
 
-        // Fix code: ensure ``` pairs on same line
         const codeMatches = line.match(/```/g);
-        if (codeMatches && codeMatches.length % 2 !== 0) {
-            line += '```';
-        }
+        if (codeMatches && codeMatches.length % 2 !== 0) line += '```';
 
         return line;
     }).join('\n');
@@ -106,7 +94,6 @@ async function geminiCommand(sock, chatId, message) {
         const args = text.split(' ').slice(1);
         let query = args.join(' ').trim();
 
-        // Check if replying to a quoted message
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         let quotedText = '';
 
@@ -117,7 +104,6 @@ async function geminiCommand(sock, chatId, message) {
                         quotedMessage.videoMessage?.caption || '';
         }
 
-        // Build final prompt
         if (quotedText && query) {
             query = `Regarding this: "${quotedText}"\n\n${query}`;
         } else if (quotedText) {
@@ -173,14 +159,10 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Hardcode divider format — catch ANY variation
+        // Fix dividers — add spacing
         answer = answer.replace(/^[-_]{3,}$/gm, '         ____________________');
         answer = answer.replace(/^[_\s]{10,}$/gm, '         ____________________');
-        
-        // Strip any leftover markdown links: [text](url) → text
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-        
-        // Fix formatting per line
         answer = fixFormattingPerLine(answer);
 
         const rawLines = answer.split('\n');
@@ -211,6 +193,11 @@ async function geminiCommand(sock, chatId, message) {
 
         if (loadingMsg) {
             try {
+                // Play full 9-bar animation (2s each = 18s)
+                for (let i = 0; i < LOADING_FRAMES.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[i] });
+                }
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
