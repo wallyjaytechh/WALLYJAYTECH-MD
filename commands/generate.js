@@ -180,7 +180,7 @@ async function generateCommand(sock, chatId, message) {
                 `├◇ *💡 Note:*\n` +
                 `├  └ .generate = image with watermark\n` +
                 `├  └ .generate clean = image without\n` +
-                `├        watermark\n` +
+                `├     watermark\n` +
                 `├\n` +
                 `╰─┬─★─☆─♪♪─◆\n\n` +
                 `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
