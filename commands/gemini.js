@@ -69,21 +69,38 @@ function wrapText(text, maxLen = 30) {
 
 function fixFormattingPerLine(text) {
     const lines = text.split('\n');
-    return lines.map(line => {
-        const boldMatches = line.match(/\*/g);
-        if (boldMatches && boldMatches.length % 2 !== 0) line += '*';
+    const fixed = [];
 
-        const italicMatches = line.match(/(?<!\w)_(?!\w)/g);
-        if (italicMatches && italicMatches.length % 2 !== 0) line += '_';
+    for (const line of lines) {
+        let l = line;
 
-        const strikeMatches = line.match(/~/g);
-        if (strikeMatches && strikeMatches.length % 2 !== 0) line += '~';
+        // Close unclosed formatting
+        const boldMatches = l.match(/\*/g);
+        if (boldMatches && boldMatches.length % 2 !== 0) l += '*';
 
-        const codeMatches = line.match(/```/g);
-        if (codeMatches && codeMatches.length % 2 !== 0) line += '```';
+        const italicMatches = l.match(/(?<!\w)_(?!\w)/g);
+        if (italicMatches && italicMatches.length % 2 !== 0) l += '_';
 
-        return line;
-    }).join('\n');
+        const strikeMatches = l.match(/~/g);
+        if (strikeMatches && strikeMatches.length % 2 !== 0) l += '~';
+
+        const codeMatches = l.match(/```/g);
+        if (codeMatches && codeMatches.length % 2 !== 0) l += '```';
+
+        // Split long formatted text so * _ stay on same line
+        if (l.length > 35 && (l.includes('*') || l.includes('_'))) {
+            const splitPoint = l.lastIndexOf(' ', 35);
+            if (splitPoint > 10) {
+                fixed.push(l.substring(0, splitPoint).trim());
+                fixed.push(l.substring(splitPoint + 1).trim());
+                continue;
+            }
+        }
+
+        fixed.push(l);
+    }
+
+    return fixed.join('\n');
 }
 
 async function geminiCommand(sock, chatId, message) {
@@ -160,9 +177,9 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Fix dividers
-        answer = answer.replace(/^[-_]{3,}$/gm, '         ____________________');
-        answer = answer.replace(/^[_\s]{10,}$/gm, '         ____________________');
+        // Fix dividers — add spacing before and after
+        answer = answer.replace(/\n---\n/g, '\n├\n├◇         ____________________\n├\n');
+        answer = answer.replace(/\n[-_]{3,}\n/g, '\n├\n├◇         ____________________\n├\n');
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
         answer = fixFormattingPerLine(answer);
 
@@ -192,8 +209,11 @@ async function geminiCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Gemini error');
 
-        // Stop any running animation first
-        if (interval) clearInterval(interval);
+        // STOP any running animation FIRST
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+        }
 
         if (loadingMsg) {
             try {
