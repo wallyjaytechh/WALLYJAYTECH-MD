@@ -1,20 +1,20 @@
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                                                        //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
-//                                                                                                                                                                                        //
-//                                                                  𝐕 : 1.0.0                                                                                                             //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
-//                                                                                                                                                                                        //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
+//                                                                                                                                                            //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                         //
+//                                                                                                                                                            //
+//                                                                  𝐕 : 1.0.0                                                                                 //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                 //
+//                                                                                                                                                            //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                            //
+//                                                                                                                                                            //
+//                                                                                                                                                            //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 //* 
 //  * project_name : WALLYJAYTECH-MD
@@ -36,151 +36,158 @@
 // */
 
 /**
- * WALLYJAYTECH-MD - AI Image Generation Command (.generate)
- * Powered by FLUX AI (Pollinations) — Free forever, no limits, no token
- * Features: Multiple styles | Background generation | Smooth progress bar
+ * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
+ * Powered by Google Gemini via WALLYJAYTECH Proxy
  * Professional Version
  */
 
 const fetch = require('node-fetch');
 
-const STYLES = [
-    'photorealistic', 'anime', '3d', 'digital-painting', 
-    'oil-painting', 'pixel-art', 'cyberpunk', 'fantasy', 
-    'watercolor', 'sketch', 'cinematic', 'portrait'
+const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
+
+const LOADING_FRAMES = [
+    'Thinking [■□□□□□□□□□]',
+    'Thinking [■■□□□□□□□□]',
+    'Thinking [■■■□□□□□□□]',
+    'Thinking [■■■■□□□□□□]',
+    'Thinking [■■■■■□□□□□]',
+    'Thinking [■■■■■■□□□□]',
+    'Thinking [■■■■■■■□□□]',
+    'Thinking [■■■■■■■■□□]',
+    'Thinking [■■■■■■■■■□]',
+    'Done [■■■■■■■■■■]'
 ];
 
-const BAR_FRAMES = [
-    '[□□□□□□□□□□] 0%',
-    '[■□□□□□□□□□] 10%',
-    '[■■□□□□□□□□] 20%',
-    '[■■■□□□□□□□] 30%',
-    '[■■■■□□□□□□] 40%',
-    '[■■■■■□□□□□] 50%',
-    '[■■■■■■□□□□] 60%',
-    '[■■■■■■■□□□] 70%',
-    '[■■■■■■■■□□] 80%',
-    '[■■■■■■■■■□] 90%',
-    '[■■■■■■■■■■] 100%'
-];
-
-async function generateImage(prompt, style) {
-    const fullPrompt = style 
-        ? `${prompt}, ${style} style, high quality, detailed` 
-        : `${prompt}, high quality, detailed`;
-
-    const response = await fetch(
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1024&height=1024&nologo=true&model=flux&seed=${Math.floor(Math.random() * 1000000)}`
-    );
-
-    if (!response.ok) throw new Error('GENERATION_FAILED');
-
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+function wrapText(text, maxLen = 30) {
+    const words = text.split(' ');
+    const lines = [];
+    let current = '';
+    for (const word of words) {
+        if ((current + word).length > maxLen && current.length > 0) {
+            lines.push(current.trim());
+            current = word;
+        } else {
+            current += (current ? ' ' : '') + word;
+        }
+    }
+    if (current) lines.push(current.trim());
+    return lines;
 }
 
-async function sendMsg(sock, chatId, text, quoted) {
-    return sock.sendMessage(chatId, { text }, quoted ? { quoted } : {});
+function formatForWhatsApp(text) {
+    // Convert **bold** → *bold*
+    text = text.replace(/\*\*(.+?)\*\*/g, '*$1*');
+    
+    // Convert # Headings to bold
+    text = text.replace(/^### (.+)$/gm, '_$1_');
+    text = text.replace(/^## (.+)$/gm, '*$1*');
+    text = text.replace(/^# (.+)$/gm, '*$1*');
+    
+    // Convert `code` → ```code```
+    text = text.replace(/`(.+?)`/g, '```$1```');
+    
+    // Remove leftover **
+    text = text.replace(/\*\*/g, '');
+    
+    return text;
 }
 
-async function generateCommand(sock, chatId, message) {
+async function geminiCommand(sock, chatId, message) {
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-        const args = text.split(' ').slice(1);
-        const fullInput = args.join(' ').trim();
+        const query = text.split(' ').slice(1).join(' ').trim();
 
-        if (!fullInput) {
-            return sendMsg(sock, chatId,
-                `╭──◆「 *AI IMAGE GENERATION* 」◆\n` +
-                `├\n` +
-                `├◇ 🎨 Generate stunning AI images\n` +
-                `├◇ 🤖 Powered by FLUX AI\n` +
-                `├◇ 🆓 Free forever — No limits\n` +
-                `├\n` +
-                `├◇ *📖 Usage:*\n` +
-                `├  └ .generate <prompt>\n` +
-                `├  └ .generate <prompt> | <style>\n` +
-                `├\n` +
-                `├◇ *🎨 Styles:*\n` +
-                `├  └ photorealistic, anime, 3d\n` +
-                `├  └ digital-painting, oil-painting\n` +
-                `├  └ pixel-art, cyberpunk, fantasy\n` +
-                `├  └ watercolor, sketch, cinematic\n` +
-                `├  └ portrait\n` +
-                `├\n` +
-                `├◇ *✨ Examples:*\n` +
-                `├  └ .generate a beautiful sunset\n` +
-                `├  └ .generate dragon warrior | anime\n` +
-                `├  └ .generate futuristic city | cyberpunk\n` +
-                `├\n` +
-                `╰─┬─★─☆─♪♪─◆\n\n` +
-                `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                `╰───★─☆─♪♪─◆`, message);
+        if (!query) {
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                      `├\n` +
+                      `├◇ 🤖 Powered by Google Gemini\n` +
+                      `├◇ 🆓 Free — No key needed\n` +
+                      `├\n` +
+                      `├◇ *📖 Usage:*\n` +
+                      `├  └ .gemini <question>\n` +
+                      `├\n` +
+                      `├◇ *✨ Examples:*\n` +
+                      `├  └ .gemini write a poem\n` +
+                      `├  └ .gemini explain gravity\n` +
+                      `├  └ .gemini code a login form\n` +
+                      `├\n` +
+                      `╰─┬─★─☆─♪♪─◆\n\n` +
+                      `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                      `╰───★─☆─♪♪─◆`
+            }, { quoted: message });
         }
 
-        let prompt = fullInput;
-        let style = '';
+        await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        if (fullInput.includes('|')) {
-            const parts = fullInput.split('|').map(p => p.trim());
-            prompt = parts[0];
-            if (parts[1] && STYLES.includes(parts[1].toLowerCase())) {
-                style = parts[1].toLowerCase();
+        // Start loading animation
+        const loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
+        let frame = 0;
+        let animationDone = false;
+
+        const interval = setInterval(async () => {
+            try {
+                if (frame < LOADING_FRAMES.length - 1) {
+                    frame++;
+                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] });
+                }
+            } catch (e) {}
+        }, 600);
+
+        // Call Gemini proxy in background
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: query })
+        });
+        const data = await response.json();
+        const answer = data.reply;
+
+        // Jump to "Done" frame
+        clearInterval(interval);
+        animationDone = true;
+        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[9] });
+
+        if (!answer) throw new Error('NO_RESPONSE');
+
+        // Format for WhatsApp
+        const formatted = formatForWhatsApp(answer);
+        const rawLines = formatted.split('\n');
+        let output = '';
+        for (const line of rawLines) {
+            if (line.trim().length === 0) {
+                output += '├\n';
+            } else {
+                const wrapped = wrapText(line, 30);
+                for (const w of wrapped) {
+                    output += `├◇ ${w}\n`;
+                }
             }
         }
 
-        await sock.sendMessage(chatId, { react: { text: '🎨', key: message.key } });
-
-        const loadingMsg = await sock.sendMessage(chatId, { 
-            text: `Generating prompt ${BAR_FRAMES[0]}` 
-        });
-
-        const imagePromise = generateImage(prompt, style);
-
-        for (let frame = 1; frame < BAR_FRAMES.length; frame++) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            try {
-                await sock.sendMessage(chatId, {
-                    edit: loadingMsg.key,
-                    text: `Generating prompt ${BAR_FRAMES[frame]}`
-                });
-            } catch (e) {}
-        }
-
-        const imageBuffer = await imagePromise;
-
         await sock.sendMessage(chatId, {
-            edit: loadingMsg.key,
-            text: `Generating done ${BAR_FRAMES[10]}`
-        });
-
-        await sock.sendMessage(chatId, {
-            image: imageBuffer,
-            caption: `╭──◆「 *IMAGE GENERATED* 」◆\n` +
-                     `├\n` +
-                     `├◇ 🎨 *Prompt:* ${prompt}\n` +
-                     `${style ? `├◇ 🎯 *Style:* ${style}\n` : ''}` +
-                     `├◇ ✅ *Status:* Success!\n` +
-                     `├\n` +
-                     `╰─┬─★─☆─♪♪─◆\n\n` +
-                     `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                     `╰───★─☆─♪♪─◆`,
+            text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                  `├\n` +
+                  output +
+                  `├\n` +
+                  `╰─┬─★─☆─♪♪─◆\n\n` +
+                  `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                  `╰───★─☆─♪♪─◆`
         }, { quoted: message });
 
     } catch (error) {
-        console.error('❌ Generate error');
-
-        await sendMsg(sock, chatId,
-            `╭──◆「 *GENERATION FAILED* 」◆\n` +
-            `├\n` +
-            `├◇ ❌ Unable to generate image\n` +
-            `├◇ 💡 Try a different prompt\n` +
-            `├◇ 🔄 Wait a moment & retry\n` +
-            `├\n` +
-            `╰─┬─★─☆─♪♪─◆\n\n` +
-            `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-            `╰───★─☆─♪♪─◆`, message);
+        console.error('Gemini error');
+        await sock.sendMessage(chatId, {
+            text: `╭──◆「 *GEMINI AI* 」◆\n` +
+                  `├\n` +
+                  `├◇ ❌ Failed to get response\n` +
+                  `├◇ 💡 Try again later\n` +
+                  `├\n` +
+                  `╰─┬─★─☆─♪♪─◆\n\n` +
+                  `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                  `╰───★─☆─♪♪─◆`
+        }, { quoted: message });
     }
 }
 
-module.exports = generateCommand;
+module.exports = geminiCommand;
