@@ -52,7 +52,6 @@ async function generateImage(prompt, style) {
 
 async function addWatermark(imageBuffer) {
     try {
-        // Check if logo exists
         if (!fs.existsSync(LOGO_PATH)) {
             console.log('Logo not found, skipping watermark');
             return imageBuffer;
@@ -62,10 +61,8 @@ async function addWatermark(imageBuffer) {
         const logo = await Jimp.read(LOGO_PATH);
 
         // Resize logo to moderate size (max 180px wide, maintain aspect ratio)
-        const logoWidth = logo.bitmap.width;
-        const logoHeight = logo.bitmap.height;
         const maxWidth = 180;
-        if (logoWidth > maxWidth) {
+        if (logo.bitmap.width > maxWidth) {
             logo.resize(maxWidth, Jimp.AUTO);
         }
 
@@ -79,7 +76,18 @@ async function addWatermark(imageBuffer) {
         // Composite logo onto image
         image.composite(logo, x, y);
 
-        return await image.getBufferAsync(Jimp.MIME_JPEG);
+        // Get buffer - works with both old and new Jimp
+        const buffer = await image.getBufferAsync 
+            ? image.getBufferAsync(Jimp.MIME_JPEG) 
+            : new Promise((resolve, reject) => {
+                image.getBuffer(Jimp.MIME_JPEG, (err, buf) => {
+                    if (err) reject(err);
+                    else resolve(buf);
+                });
+            });
+        
+        return buffer;
+
     } catch (err) {
         console.error('Watermark error:', err.message);
         return imageBuffer;
