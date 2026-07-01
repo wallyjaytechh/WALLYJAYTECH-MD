@@ -62,14 +62,16 @@ async function addWatermark(imageBuffer) {
         const logo = await Jimp.read(LOGO_PATH);
 
         // Resize logo to moderate size (max 180px wide, maintain aspect ratio)
+        const logoWidth = logo.bitmap.width;
+        const logoHeight = logo.bitmap.height;
         const maxWidth = 180;
-        if (logo.getWidth() > maxWidth) {
+        if (logoWidth > maxWidth) {
             logo.resize(maxWidth, Jimp.AUTO);
         }
 
         // Position at bottom right with 20px padding
-        const x = image.getWidth() - logo.getWidth() - 20;
-        const y = image.getHeight() - logo.getHeight() - 20;
+        const x = image.bitmap.width - logo.bitmap.width - 20;
+        const y = image.bitmap.height - logo.bitmap.height - 20;
 
         // Set logo opacity to 80%
         logo.opacity(0.8);
@@ -80,7 +82,7 @@ async function addWatermark(imageBuffer) {
         return await image.getBufferAsync(Jimp.MIME_JPEG);
     } catch (err) {
         console.error('Watermark error:', err.message);
-        return imageBuffer; // Return original if watermark fails
+        return imageBuffer;
     }
 }
 
