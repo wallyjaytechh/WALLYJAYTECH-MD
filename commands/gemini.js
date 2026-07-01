@@ -35,13 +35,6 @@
 // ⛥┌┤
 // */
 
-/**
- * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
- * Powered by Google Gemini via WALLYJAYTECH Proxy
- * Features: Reply support | WhatsApp formatting fix | Loading animation
- * Professional Version
- */
-
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
@@ -77,6 +70,12 @@ function wrapText(text, maxLen = 30) {
 function fixFormattingPerLine(text) {
     const lines = text.split('\n');
     return lines.map(line => {
+        // Fix bold: ensure * pairs on same line
+        const boldMatches = line.match(/\*/g);
+        if (boldMatches && boldMatches.length % 2 !== 0) {
+            line += '*';
+        }
+
         // Fix italic: ensure _ pairs on same line
         const italicMatches = line.match(/(?<!\w)_(?!\w)/g);
         if (italicMatches && italicMatches.length % 2 !== 0) {
@@ -174,7 +173,7 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Fix formatting per line (close unclosed _ ~ ```)
+        // Fix formatting per line
         answer = fixFormattingPerLine(answer);
 
         const rawLines = answer.split('\n');
