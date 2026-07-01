@@ -35,12 +35,6 @@
 // ⛥┌┤
 // */
 
-/**
- * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
- * Powered by Google Gemini via WALLYJAYTECH Proxy
- * Professional Version
- */
-
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
@@ -75,16 +69,23 @@ function wrapText(text, maxLen = 30) {
 }
 
 function formatForWhatsApp(text) {
-    // Convert **bold** → *bold*
+    // Convert **bold** → *bold* (WhatsApp bold)
     text = text.replace(/\*\*(.+?)\*\*/g, '*$1*');
     
-    // Convert # Headings to bold
-    text = text.replace(/^### (.+)$/gm, '_$1_');
+    // Convert ### Heading → *bold heading*
+    text = text.replace(/^### (.+)$/gm, '*$1*');
     text = text.replace(/^## (.+)$/gm, '*$1*');
     text = text.replace(/^# (.+)$/gm, '*$1*');
     
+    // Convert * item → • item (WhatsApp doesn't do nested bold well)
+    text = text.replace(/^\* \*\*(.+?)\*\*/gm, '• *$1*');
+    text = text.replace(/^\* (.+)$/gm, '• $1');
+    
     // Convert `code` → ```code```
     text = text.replace(/`(.+?)`/g, '```$1```');
+    
+    // Convert --- to a divider
+    text = text.replace(/^---$/gm, '―'.repeat(10));
     
     // Remove leftover **
     text = text.replace(/\*\*/g, '');
@@ -123,7 +124,6 @@ async function geminiCommand(sock, chatId, message) {
         // Start loading animation
         const loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
-        let animationDone = false;
 
         const interval = setInterval(async () => {
             try {
@@ -134,7 +134,7 @@ async function geminiCommand(sock, chatId, message) {
             } catch (e) {}
         }, 600);
 
-        // Call Gemini proxy in background
+        // Call Gemini proxy
         const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -143,14 +143,13 @@ async function geminiCommand(sock, chatId, message) {
         const data = await response.json();
         const answer = data.reply;
 
-        // Jump to "Done" frame
+        // Jump to Done
         clearInterval(interval);
-        animationDone = true;
-        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[9] });
+        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Format for WhatsApp
+        // Format and wrap
         const formatted = formatForWhatsApp(answer);
         const rawLines = formatted.split('\n');
         let output = '';
