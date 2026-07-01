@@ -4,14 +4,21 @@ try {
     require.resolve('jimp');
 } catch (e) {
     console.log('Installing jimp...');
-    execSync('npm install jimp', { stdio: 'inherit' });
+    execSync('npm install jimp@1.6.1', { stdio: 'inherit' });
     console.log('jimp installed successfully!');
 }
 
 const fetch = require('node-fetch');
-const Jimp = require('jimp');
 const path = require('path');
 const fs = require('fs');
+
+// Correct import for Jimp v1.6.1
+let Jimp;
+try {
+    Jimp = require('jimp').Jimp;
+} catch (e) {
+    console.log('Jimp not available, watermark disabled');
+}
 
 const STYLES = [
     'photorealistic', 'anime', '3d', 'digital-painting', 
@@ -51,42 +58,30 @@ async function generateImage(prompt, style) {
 }
 
 async function addWatermark(imageBuffer) {
+    if (!Jimp) return imageBuffer;
+    
     try {
-        if (!fs.existsSync(LOGO_PATH)) {
-            console.log('Logo not found, skipping watermark');
-            return imageBuffer;
-        }
+        if (!fs.existsSync(LOGO_PATH)) return imageBuffer;
 
         const image = await Jimp.read(imageBuffer);
         const logo = await Jimp.read(LOGO_PATH);
 
-        // Resize logo to moderate size (max 180px wide, maintain aspect ratio)
+        // Resize logo (max 180px wide)
         const maxWidth = 180;
-        if (logo.bitmap.width > maxWidth) {
-            logo.resize(maxWidth, Jimp.AUTO);
+        if (logo.width > maxWidth) {
+            logo.resize({ w: maxWidth });
         }
 
-        // Position at bottom right with 20px padding
-        const x = image.bitmap.width - logo.bitmap.width - 20;
-        const y = image.bitmap.height - logo.bitmap.height - 20;
+        // Position bottom right
+        const x = image.width - logo.width - 20;
+        const y = image.height - logo.height - 20;
 
-        // Set logo opacity to 80%
+        // Apply logo
         logo.opacity(0.8);
-
-        // Composite logo onto image
         image.composite(logo, x, y);
 
-        // Get buffer - works with both old and new Jimp
-        const buffer = await image.getBufferAsync 
-            ? image.getBufferAsync(Jimp.MIME_JPEG) 
-            : new Promise((resolve, reject) => {
-                image.getBuffer(Jimp.MIME_JPEG, (err, buf) => {
-                    if (err) reject(err);
-                    else resolve(buf);
-                });
-            });
-        
-        return buffer;
+        // Get buffer
+        return await image.getBuffer('image/jpeg');
 
     } catch (err) {
         console.error('Watermark error:', err.message);
