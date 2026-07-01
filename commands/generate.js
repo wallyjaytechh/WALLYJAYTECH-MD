@@ -58,29 +58,46 @@ async function generateImage(prompt, style) {
 }
 
 async function addWatermark(imageBuffer) {
-    if (!Jimp) return imageBuffer;
+    if (!Jimp) {
+        console.log('Jimp not loaded');
+        return imageBuffer;
+    }
     
     try {
-        if (!fs.existsSync(LOGO_PATH)) return imageBuffer;
+        if (!fs.existsSync(LOGO_PATH)) {
+            console.log('Logo file not found at:', LOGO_PATH);
+            return imageBuffer;
+        }
+
+        console.log('Applying watermark...');
 
         const image = await Jimp.read(imageBuffer);
         const logo = await Jimp.read(LOGO_PATH);
 
-        // Resize logo (max 180px wide)
-        const maxWidth = 180;
+        console.log('Image size:', image.width, 'x', image.height);
+        console.log('Logo size:', logo.width, 'x', logo.height);
+
+        // Resize logo (max 200px wide)
+        const maxWidth = 200;
         if (logo.width > maxWidth) {
             logo.resize({ w: maxWidth });
+            console.log('Logo resized to:', logo.width, 'x', logo.height);
         }
 
-        // Position bottom right
-        const x = image.width - logo.width - 20;
-        const y = image.height - logo.height - 20;
+        // Position bottom right with 30px padding
+        const x = image.width - logo.width - 30;
+        const y = image.height - logo.height - 30;
 
-        // Apply logo
-        logo.opacity(0.8);
+        console.log('Logo position:', x, ',', y);
+
+        // Higher opacity for visibility
+        logo.opacity(1);
+
+        // Composite logo onto image
         image.composite(logo, x, y);
 
-        // Get buffer
+        console.log('Watermark applied');
+
         return await image.getBuffer('image/jpeg');
 
     } catch (err) {
