@@ -35,6 +35,12 @@
 // ⛥┌┤
 // */
 
+/**
+ * WALLYJAYTECH-MD - Gemini AI Command (.gemini)
+ * Powered by Google Gemini via WALLYJAYTECH Proxy
+ * Professional Version
+ */
+
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gemini';
@@ -48,8 +54,7 @@ const LOADING_FRAMES = [
     'Thinking [■■■■■■□□□□]',
     'Thinking [■■■■■■■□□□]',
     'Thinking [■■■■■■■■□□]',
-    'Thinking [■■■■■■■■■□]',
-    'Done [■■■■■■■■■■]'
+    'Thinking [■■■■■■■■■□]'
 ];
 
 function wrapText(text, maxLen = 30) {
@@ -69,23 +74,23 @@ function wrapText(text, maxLen = 30) {
 }
 
 function formatForWhatsApp(text) {
-    // Convert **bold** → *bold* (WhatsApp bold)
+    // Convert **bold** → *bold* (WhatsApp)
     text = text.replace(/\*\*(.+?)\*\*/g, '*$1*');
     
-    // Convert ### Heading → *bold heading*
-    text = text.replace(/^### (.+)$/gm, '*$1*');
+    // Convert headings
+    text = text.replace(/^#### (.+)$/gm, '_$1_');
+    text = text.replace(/^### (.+)$/gm, '_$1_');
     text = text.replace(/^## (.+)$/gm, '*$1*');
     text = text.replace(/^# (.+)$/gm, '*$1*');
     
-    // Convert * item → • item (WhatsApp doesn't do nested bold well)
-    text = text.replace(/^\* \*\*(.+?)\*\*/gm, '• *$1*');
+    // Convert * bullets (after bold conversion)
     text = text.replace(/^\* (.+)$/gm, '• $1');
     
-    // Convert `code` → ```code```
+    // Convert code
     text = text.replace(/`(.+?)`/g, '```$1```');
     
-    // Convert --- to a divider
-    text = text.replace(/^---$/gm, '―'.repeat(10));
+    // Divider
+    text = text.replace(/^---$/gm, '―'.repeat(12));
     
     // Remove leftover **
     text = text.replace(/\*\*/g, '');
@@ -94,6 +99,8 @@ function formatForWhatsApp(text) {
 }
 
 async function geminiCommand(sock, chatId, message) {
+    let loadingMsg;
+    
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const query = text.split(' ').slice(1).join(' ').trim();
@@ -122,7 +129,7 @@ async function geminiCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
         // Start loading animation
-        const loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
+        loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
 
         const interval = setInterval(async () => {
@@ -143,7 +150,7 @@ async function geminiCommand(sock, chatId, message) {
         const data = await response.json();
         const answer = data.reply;
 
-        // Jump to Done
+        // Success — show Done
         clearInterval(interval);
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
@@ -176,6 +183,14 @@ async function geminiCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Gemini error');
+        
+        // Show Failed animation
+        if (loadingMsg) {
+            try {
+                await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
+            } catch (e) {}
+        }
+        
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *GEMINI AI* 」◆\n` +
                   `├\n` +
