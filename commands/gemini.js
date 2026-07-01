@@ -88,6 +88,7 @@ function fixFormattingPerLine(text) {
 
 async function geminiCommand(sock, chatId, message) {
     let loadingMsg;
+    let interval;
 
     try {
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
@@ -137,7 +138,7 @@ async function geminiCommand(sock, chatId, message) {
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
 
-        const interval = setInterval(async () => {
+        interval = setInterval(async () => {
             try {
                 if (frame < LOADING_FRAMES.length - 1) {
                     frame++;
@@ -159,7 +160,7 @@ async function geminiCommand(sock, chatId, message) {
 
         if (!answer) throw new Error('NO_RESPONSE');
 
-        // Fix dividers — add spacing
+        // Fix dividers
         answer = answer.replace(/^[-_]{3,}$/gm, '         ____________________');
         answer = answer.replace(/^[_\s]{10,}$/gm, '         ____________________');
         answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -191,6 +192,9 @@ async function geminiCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Gemini error');
 
+        // Stop any running animation first
+        if (interval) clearInterval(interval);
+
         if (loadingMsg) {
             try {
                 // Play full 9-bar animation (2s each = 18s)
@@ -198,6 +202,7 @@ async function geminiCommand(sock, chatId, message) {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[i] });
                 }
+                // Show failed
                 await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' });
             } catch (e) {}
         }
