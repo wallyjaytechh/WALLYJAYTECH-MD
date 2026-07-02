@@ -43,7 +43,7 @@ const settings = {
   prefix: '.',
   ownerNumber: '2348144317152',
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
-  commandMode: "public",
+  commandMode: "private",
   maxStoreMessages: 20, 
   storeWriteInterval: 10000,
   description: "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
