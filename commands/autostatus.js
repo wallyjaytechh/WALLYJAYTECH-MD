@@ -38,6 +38,7 @@
  * WALLYJAYTECH-MD - A WhatsApp Bot
  * Auto Status Viewer with Likes (💚 Green Heart)
  * Professional Version with Include/Exclude & Self-View
+ * FULLY FIXED: Self-View now works by comparing bot's own JID/LID
  */
 
 const fs = require('fs');
@@ -133,47 +134,71 @@ function isNumberInList(message) {
     const config = readConfig();
     if (!config.numberList || config.numberList.length === 0) return null;
 
-    const chatId = message.key.remoteJid;
-    const isGroup = chatId.endsWith('@g.us');
-    let senderJid = isGroup ? (message.key.participant || message.participant) : chatId;
-    if (!senderJid) return null;
-    
+    const isStatus = message.key.remoteJid === 'status@broadcast';
     let phone = null;
-    if (senderJid.endsWith('@lid')) {
-        const remoteJidAlt = message.key.remoteJidAlt;
-        const participantAlt = message.key.participantAlt;
-        if (remoteJidAlt?.includes('@s.whatsapp.net')) {
-            phone = extractPhoneNumber(remoteJidAlt);
-        } else if (participantAlt?.includes('@s.whatsapp.net')) {
-            phone = extractPhoneNumber(participantAlt);
+
+    if (isStatus) {
+        const participant = message.key.participant;
+        if (!participant) return null;
+
+        if (participant.endsWith('@lid')) {
+            if (message.key.remoteJidAlt?.includes('@s.whatsapp.net')) {
+                phone = extractPhoneNumber(message.key.remoteJidAlt);
+            }
+        } else {
+            phone = extractPhoneNumber(participant);
         }
     } else {
-        phone = extractPhoneNumber(senderJid);
+        const chatId = message.key.remoteJid;
+        const isGroup = chatId.endsWith('@g.us');
+        let senderJid = isGroup ? (message.key.participant || message.participant) : chatId;
+        if (!senderJid) return null;
+
+        if (senderJid.endsWith('@lid')) {
+            if (message.key.remoteJidAlt?.includes('@s.whatsapp.net')) {
+                phone = extractPhoneNumber(message.key.remoteJidAlt);
+            } else if (message.key.participantAlt?.includes('@s.whatsapp.net')) {
+                phone = extractPhoneNumber(message.key.participantAlt);
+            }
+        } else {
+            phone = extractPhoneNumber(senderJid);
+        }
     }
-    
+
     if (!phone || phone.length < 7) return null;
+
     const found = config.numberList.some(num => {
         const normalizedNum = num.replace(/[^0-9]/g, '');
         return phone === normalizedNum || phone.endsWith(normalizedNum) || normalizedNum.endsWith(phone);
     });
+
     return config.includeMode ? found : !found;
 }
 
-function shouldViewStatus(message) {
+// ✅ FIXED: Detects self-status by comparing participant LID to bot's own number
+function shouldViewStatus(message, botJid) {
     try {
         const config = readConfig();
         if (!config.enabled) return false;
-        
-        // Check if it's a status broadcast
         if (!message.key || message.key.remoteJid !== 'status@broadcast') return false;
-        
-        // Check self-view
-        if (message.key.fromMe && !config.selfOn) return false;
-        
-        // Check number filter
-        const listResult = isNumberInList(message);
-        if (listResult !== null && !listResult) return false;
-        
+
+        const participant = message.key.participant || '';
+        const participantNumber = participant.split('@')[0];
+        const botNumber = botJid ? botJid.split('@')[0] : null;
+
+        // Detect self-status: fromMe OR participant number matches bot's own number
+        const isSelf = message.key.fromMe === true || 
+                       (botNumber && participantNumber === botNumber);
+
+        // Self-view check
+        if (isSelf && !config.selfOn) return false;
+
+        // Skip number filter for own status (always view own)
+        if (!isSelf) {
+            const listResult = isNumberInList(message);
+            if (listResult !== null && !listResult) return false;
+        }
+
         return true;
     } catch (e) { return false; }
 }
@@ -208,7 +233,7 @@ async function likeStatus(sock, msgKey) {
                     participant: participant,
                     fromMe: false
                 },
-                text: '💚'  // 💚 Green Heart
+                text: '💚'
             }
         }, {
             messageId: msgKey.id,
@@ -226,7 +251,13 @@ async function handleStatusUpdate(sock, status) {
         if (!status.messages || status.messages.length === 0) return;
         
         const msg = status.messages[0];
-        if (!shouldViewStatus(msg)) {
+        const config = readConfig();
+        const botJid = sock.user?.id ? sock.user.id.split(':')[0] + '@s.whatsapp.net' : null;
+
+        // Debug log
+        console.log(`📱 Status received | from: ${msg.key.participant} | fromMe: ${msg.key.fromMe} | id: ${msg.key.id}`);
+
+        if (!shouldViewStatus(msg, botJid)) {
             console.log('⏭️ Status skipped (filtered)');
             return;
         }
@@ -277,10 +308,12 @@ async function handleBulkStatusUpdate(sock, statusMessages) {
         const config = readConfig();
         if (!config.enabled) return;
 
+        const botJid = sock.user?.id ? sock.user.id.split(':')[0] + '@s.whatsapp.net' : null;
+
         console.log(`\n📦 Processing ${statusMessages.length} status updates...`);
 
         for (const msg of statusMessages) {
-            if (!shouldViewStatus(msg)) continue;
+            if (!shouldViewStatus(msg, botJid)) continue;
 
             try {
                 await sock.readMessages([msg.key]);
