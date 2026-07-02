@@ -349,37 +349,39 @@ if (!isGroup && !message.key.fromMe) {
     if (wasBlocked) return;
 } 
         // Handle message/status revocation
-        if (message.message?.protocolMessage) {
-            await handleMessageRevocation(sock, message);
-            if (message.message?.protocolMessage?.type === 0) return;
-        }
+if (message.message?.protocolMessage) {
+    await handleMessageRevocation(sock, message);
+    if (message.message?.protocolMessage?.type === 0) return;
+}
 
- 
-        const senderId = message.key.participant || message.key.remoteJid;
-       
-        const senderIsSudo = await isSudo(senderId);
-        const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
+const rawJid = message.key.participant || message.key.remoteJid;
+const senderId = rawJid.endsWith('@lid') 
+    ? (message.key.remoteJidAlt || sock.decodeJid(rawJid) || rawJid)
+    : rawJid;
+   
+const senderIsSudo = await isSudo(senderId);
+const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
 
-        // Handle button responses
-        if (message.message?.buttonsResponseMessage) {
-            const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
+// Handle button responses
+if (message.message?.buttonsResponseMessage) {
+    const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
   
-            if (buttonId === 'channel') {
-                await sock.sendMessage(chatId, { 
-                    text: '📢 *Join our Channel:*\nhttps://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I' 
-                }, { quoted: message });
-                return;
-            } else if (buttonId === 'owner') {
-                const ownerCommand = require('./commands/owner');
-                await ownerCommand(sock, chatId);
-                return;
-            } else if (buttonId === 'support') {
-                await sock.sendMessage(chatId, { 
-                    text: `🔗 *Support*\n\nhttps://chat.whatsapp.com/KWr561NJbHGGrT8YCSRibi?mode=wwt` 
-                }, { quoted: message });
-                return;
-            }
-        }
+    if (buttonId === 'channel') {
+        await sock.sendMessage(chatId, { 
+            text: '📢 *Join our Channel:*\nhttps://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I' 
+        }, { quoted: message });
+        return;
+    } else if (buttonId === 'owner') {
+        const ownerCommand = require('./commands/owner');
+        await ownerCommand(sock, chatId);
+        return;
+    } else if (buttonId === 'support') {
+        await sock.sendMessage(chatId, { 
+            text: `🔗 *Support*\n\nhttps://chat.whatsapp.com/KWr561NJbHGGrT8YCSRibi?mode=wwt` 
+        }, { quoted: message });
+        return;
+    }
+}
 
                 const rawMessageText = (
     message.message?.conversation?.trim() ||
