@@ -49,8 +49,6 @@ const settings = {
   description: "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
   version: "1.0.0",
   updateZipUrl: "https://github.com/wallyjaytechh/WALLYJAYTECH-MD/archive/refs/heads/main.zip",
-  geminiKey: 'AQ.Ab8RN6IBSmqigYIIYiNsvksQ2BOokAk-R4bu7pFsjquHJ3Nw2Q',
-  
   removeBgApi: {
     enabled: true,
     apiKey: "dyrbNSNtMf1CE84he61DR7Wx",
