@@ -306,9 +306,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
         
         const chatId = message.key.remoteJid;
         const isGroup = chatId ? chatId.endsWith('@g.us') : false;
+        
+        // 👇 ADD THIS LINE
+        console.log(`📨 MSG | chatId: ${chatId} | isLID: ${chatId?.endsWith('@lid')} | alt: ${message.key.remoteJidAlt}`);
+        
         // Handle autoread functionality
         await handleAutoread(sock, message);
-
         // Handle autoread functionality
         await handleAutoread(sock, message);
 
