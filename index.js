@@ -35,31 +35,10 @@
 // ⛥┌┤
 // */
 
-// ✅ LOCK FILE — Prevent multiple instances
 const fs = require('fs');
 const path = require('path');
 
-const LOCK_FILE = './bot.lock';
-if (fs.existsSync(LOCK_FILE)) {
-    try {
-        const pid = parseInt(fs.readFileSync(LOCK_FILE, 'utf8').trim());
-        process.kill(pid, 0);
-        console.log(`❌ Another instance is running (PID: ${pid}). Exiting...`);
-        process.exit(1);
-    } catch (e) {
-        console.log('⚠️ Stale lock file found, removing...');
-        fs.unlinkSync(LOCK_FILE);
-    }
-}
-fs.writeFileSync(LOCK_FILE, String(process.pid));
 
-const cleanLock = () => {
-    try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
-};
-process.on('exit', cleanLock);
-process.on('SIGINT', cleanLock);
-process.on('SIGTERM', cleanLock);
-// ✅ END LOCK FILE
 
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 
