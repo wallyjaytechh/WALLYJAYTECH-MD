@@ -163,16 +163,16 @@ async function startXeonBotInc() {
         reconnectAttempts = 0;
         let { version } = await fetchLatestBaileysVersion();
         const { state, saveCreds } = await useMultiFileAuthState('./session');
-        const msgRetryCounterCache = new NodeCache();
+const msgRetryCounterCache = new NodeCache();
 
-        const XeonBotInc = makeWASocket({
-            version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
-          browser: ["WALLYJAYTECH-MD", "Safari", "1.0.0"],
-            auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
-            markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
-            getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
-            msgRetryCounterCache, defaultQueryTimeoutMs: 60000, connectTimeoutMs: 60000, keepAliveIntervalMs: 10000,
-        });
+const XeonBotInc = makeWASocket({
+    version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
+    browser: ["Android", "Chrome", "20.0.04"],
+    auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
+    markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
+    getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
+    msgRetryCounterCache, defaultQueryTimeoutMs: 60000, connectTimeoutMs: 60000, keepAliveIntervalMs: 10000,
+});
 
         XeonBotInc.ev.on('creds.update', saveCreds);
         store.bind(XeonBotInc.ev);
