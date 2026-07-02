@@ -140,11 +140,10 @@ setInterval(() => {
 setInterval(() => { if (global.gc) global.gc(); }, 60000);
 setInterval(() => { if (process.memoryUsage().rss / 1024 / 1024 > 400) process.exit(1); }, 30000);
 
-let phoneNumber = "2348155763709";
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'));
 global.botname = "WALLYJAYTECH-MD";
 global.themeemoji = "🤖";
-const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
+const pairingCode = process.argv.includes("--pairing-code");
 const useMobile = process.argv.includes("--mobile");
 
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null;
@@ -224,7 +223,7 @@ async function startXeonBotInc() {
 
         if (pairingCode && !XeonBotInc.authState.creds.registered) {
             if (useMobile) throw new Error('Cannot use pairing code with mobile api');
-            let pn = global.phoneNumber || await question(chalk.bgBlack(chalk.greenBright(`WhatsApp number (2348155763709): `)));
+            let pn = global.phoneNumber || await question(chalk.bgBlack(chalk.greenBright(`WhatsApp number (2348155763708): `)));
             pn = pn.replace(/[^0-9]/g, '');
             if (!require('awesome-phonenumber')('+' + pn).isValid()) { console.log(chalk.red('Invalid number.')); process.exit(1); }
             setTimeout(async () => { try { let code = await XeonBotInc.requestPairingCode(pn); code = code?.match(/.{1,4}/g)?.join("-") || code; console.log(chalk.black(chalk.bgGreen(`Code: `)), chalk.black(chalk.white(code))); } catch (e) { console.error('Error:', e); } }, 3000);
