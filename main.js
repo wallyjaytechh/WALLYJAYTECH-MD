@@ -355,13 +355,19 @@ if (message.message?.protocolMessage) {
 }
 
 const rawJid = message.key.participant || message.key.remoteJid;
-const senderId = rawJid.endsWith('@lid') 
+let senderId = rawJid.endsWith('@lid') 
     ? (message.key.remoteJidAlt || sock.decodeJid(rawJid) || rawJid)
     : rawJid;
+
+// Fix: When fromMe is true but alt JID is not owner, use alt JID
+if (message.key.fromMe && message.key.remoteJidAlt && 
+    message.key.remoteJidAlt !== '2348144317152@s.whatsapp.net' &&
+    message.key.remoteJidAlt !== '2348155763709@s.whatsapp.net') {
+    senderId = message.key.remoteJidAlt;
+}
    
 const senderIsSudo = await isSudo(senderId);
 const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
-
 // Handle button responses
 if (message.message?.buttonsResponseMessage) {
     const buttonId = message.message.buttonsResponseMessage.selectedButtonId;
