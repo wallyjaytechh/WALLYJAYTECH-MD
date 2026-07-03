@@ -352,11 +352,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ? (message.key.remoteJidAlt || sock.decodeJid(rawJid) || rawJid)
             : rawJid;
 
-        // Fix chatId for LID users - use real JID for replies
-        if (chatId.endsWith('@lid') && message.key.remoteJidAlt) {
-            console.log(`🔄 Resolving LID chatId: ${chatId} → ${message.key.remoteJidAlt}`);
-            chatId = message.key.remoteJidAlt;
-        }
    
         const senderIsSudo = await isSudo(senderId);
         const senderIsOwnerOrSudo = await isOwnerOrSudo(senderId, sock, chatId);
