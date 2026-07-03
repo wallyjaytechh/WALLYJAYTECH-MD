@@ -553,7 +553,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
             }
         }
 
-        let commandExecuted = false;
+        console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
+
+if (commandExecuted !== false) {
 
         switch (true) {
             case userMessage === '.simage': {
@@ -1755,10 +1757,12 @@ case userMessage.startsWith('.autorecord'):
                 break;
         }
 
-        if (commandExecuted !== false) {
-            console.log('✅ Command executed, showing typing indicator');
-            await showTypingAfterCommand(sock, chatId);
-        }
+        console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
+
+if (commandExecuted !== false) {
+    console.log('✅ Command executed, showing typing indicator');
+    await showTypingAfterCommand(sock, chatId);
+}
 
         async function groupJidCommand(sock, chatId, message) {
             const groupJid = message.key.remoteJid;
