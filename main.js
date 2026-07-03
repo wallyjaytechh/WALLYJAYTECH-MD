@@ -1742,7 +1742,7 @@ case userMessage.startsWith('.autorecord'):
             case userMessage.startsWith('.remini') || userMessage.startsWith('.enhance') || userMessage.startsWith('.upscale'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 break;
-            case userMessage.startsWith('.sora'):
+                        case userMessage.startsWith('.sora'):
                 await soraCommand(sock, chatId, message);
                 break;
             default:
@@ -1759,25 +1759,9 @@ case userMessage.startsWith('.autorecord'):
 
         console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
 
-if (commandExecuted !== false) {
-    console.log('✅ Command executed, showing typing indicator');
-    await showTypingAfterCommand(sock, chatId);
-}
-
-        async function groupJidCommand(sock, chatId, message) {
-            const groupJid = message.key.remoteJid;
-
-            if (!groupJid.endsWith('@g.us')) {
-                return await sock.sendMessage(chatId, {
-                    text: "*❌ This command can only be used in a group.*"
-                });
-            }
-
-            await sock.sendMessage(chatId, {
-                text: `*✅ Group JID: ${groupJid}*`
-            }, {
-                quoted: message
-            });
+        if (commandExecuted !== false) {
+            console.log('✅ Command executed, showing typing indicator');
+            await showTypingAfterCommand(sock, chatId);
         }
 
         if (userMessage.startsWith('.')) {
@@ -1792,6 +1776,22 @@ if (commandExecuted !== false) {
             });
         }
     }
+}
+
+async function groupJidCommand(sock, chatId, message) {
+    const groupJid = message.key.remoteJid;
+
+    if (!groupJid.endsWith('@g.us')) {
+        return await sock.sendMessage(chatId, {
+            text: "*❌ This command can only be used in a group.*"
+        });
+    }
+
+    await sock.sendMessage(chatId, {
+        text: `*✅ Group JID: ${groupJid}*`
+    }, {
+        quoted: message
+    });
 }
 
 async function handleGroupParticipantUpdate(sock, update) {
