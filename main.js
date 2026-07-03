@@ -547,17 +547,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         if (isOwnerCommand) {
-            if (!message.key.fromMe && !senderIsOwnerOrSudo) {
-                await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner or sudo!' }, { quoted: message });
-                return;
-            }
-        }
+    if (!message.key.fromMe && !senderIsOwnerOrSudo) {
+        await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner or sudo!' }, { quoted: message });
+        return;
+    }
+}
 
-        console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
+let commandExecuted = false;
 
-if (commandExecuted !== false) {
-
-        switch (true) {
+switch (true) {
             case userMessage === '.simage': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
