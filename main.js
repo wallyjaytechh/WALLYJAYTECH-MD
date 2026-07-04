@@ -249,6 +249,7 @@ const soraCommand = require('./commands/sora');
 const { menuStyleCommand } = require('./commands/menustyle');
 const { menuFontCommand } = require('./commands/menufont');
 const totalUsersCommand = require('./commands/totaluser');
+const userInfoCommand = require('./commands/userinfo');
 
 // Global settings
 global.packname = settings.packname;
@@ -1743,6 +1744,10 @@ case userMessage.startsWith('.autorecord'):
                 break;
             case userMessage.startsWith('.totalusers'):
     await totalUsersCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+        case userMessage.startsWith('.userinfo'):
+    await userInfoCommand(sock, chatId, message);
     commandExecuted = true;
     break;
             case userMessage.startsWith('.sora'):
