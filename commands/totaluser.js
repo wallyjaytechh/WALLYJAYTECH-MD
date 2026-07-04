@@ -44,9 +44,13 @@ async function totalUsersCommand(sock, chatId, message) {
         const senderId = message.key.participant || message.key.remoteJid;
         const senderNumber = senderId.split('@')[0].split(':')[0];
 
+        console.log('Sender number:', senderNumber);
+
         const res = await fetch(`${PROXY_URL}/v1/admin/users`, {
             headers: { 'x-user-number': senderNumber }
         });
+
+        console.log('Response status:', res.status);
 
         if (res.status === 401) {
             return sock.sendMessage(chatId, {
@@ -73,6 +77,7 @@ async function totalUsersCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, { text: msg }, { quoted: message });
 
     } catch (error) {
+        console.error('Total users error:', error);
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *ERROR* 」◆\n├\n├◇ ❌ Failed to fetch stats\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
         }, { quoted: message });
