@@ -38,19 +38,22 @@
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com';
+const ADMIN_NUMBER = '2348144317152';
 
 async function totalUsersCommand(sock, chatId, message) {
     try {
         const senderId = message.key.participant || message.key.remoteJid;
-        const senderNumber = senderId.split('@')[0].split(':')[0];
+        const isOwner = senderId.includes('2348144317152') || senderId.includes('2348155763709');
 
-        console.log('Sender number:', senderNumber);
+        if (!isOwner) {
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *ADMIN ONLY* 」◆\n├\n├◇ ❌ This command is for bot owners only\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
+            }, { quoted: message });
+        }
 
         const res = await fetch(`${PROXY_URL}/v1/admin/users`, {
-            headers: { 'x-user-number': senderNumber }
+            headers: { 'x-user-number': ADMIN_NUMBER }
         });
-
-        console.log('Response status:', res.status);
 
         if (res.status === 401) {
             return sock.sendMessage(chatId, {
@@ -77,7 +80,6 @@ async function totalUsersCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, { text: msg }, { quoted: message });
 
     } catch (error) {
-        console.error('Total users error:', error);
         await sock.sendMessage(chatId, {
             text: `╭──◆「 *ERROR* 」◆\n├\n├◇ ❌ Failed to fetch stats\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
         }, { quoted: message });
