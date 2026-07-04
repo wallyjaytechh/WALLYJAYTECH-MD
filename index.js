@@ -145,13 +145,13 @@ async function startXeonBotInc() {
         const msgRetryCounterCache = new NodeCache();
 
         const XeonBotInc = makeWASocket({
-            version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
-            browser: ["ubuntu", "Chrome", "20.0.04"],
-            auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
-            markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
-            getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
-            msgRetryCounterCache, defaultQueryTimeoutMs: 60000, connectTimeoutMs: 60000, keepAliveIntervalMs: 10000,
-        });
+    version, logger: pino({ level: 'silent' }), printQRInTerminal: !pairingCode,
+    browser: ["Ubuntu", "Chrome", "120.0.6099.109"],
+    auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })) },
+    markOnlineOnConnect: true, generateHighQualityLinkPreview: true, syncFullHistory: false,
+    getMessage: async (key) => { let j = jidNormalizedUser(key.remoteJid); let m = await store.loadMessage(j, key.id); return m?.message || ""; },
+    msgRetryCounterCache, defaultQueryTimeoutMs: 60000, connectTimeoutMs: 60000, keepAliveIntervalMs: 10000,
+});
 
         XeonBotInc.ev.on('creds.update', saveCreds);
         store.bind(XeonBotInc.ev);
