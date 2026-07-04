@@ -1741,11 +1741,10 @@ case userMessage.startsWith('.autorecord'):
             case userMessage.startsWith('.remini') || userMessage.startsWith('.enhance') || userMessage.startsWith('.upscale'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 break;
-        case '.totalusers':
-case userMessage.startsWith('.totalusers'):
-    await totalUsersCommand(sock, chatId, message);
-    break;
-                        case userMessage.startsWith('.sora'):
+            case userMessage.startsWith('.totalusers'):
+                await totalUsersCommand(sock, chatId, message);
+                break;
+            case userMessage.startsWith('.sora'):
                 await soraCommand(sock, chatId, message);
                 break;
             default:
