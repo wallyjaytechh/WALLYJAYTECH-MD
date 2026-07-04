@@ -42,15 +42,6 @@ const ADMIN_NUMBER = '2348144317152';
 
 async function totalUsersCommand(sock, chatId, message) {
     try {
-        const senderId = message.key.participant || message.key.remoteJid;
-        const isOwner = senderId.includes('2348144317152') || senderId.includes('2348155763709');
-
-        if (!isOwner) {
-            return sock.sendMessage(chatId, {
-                text: `╭──◆「 *ADMIN ONLY* 」◆\n├\n├◇ ❌ This command is for bot owners only\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
-            }, { quoted: message });
-        }
-
         const res = await fetch(`${PROXY_URL}/v1/admin/users`, {
             headers: { 'x-user-number': ADMIN_NUMBER }
         });
