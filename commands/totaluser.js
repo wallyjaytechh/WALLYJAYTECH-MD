@@ -41,14 +41,8 @@ const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com';
 
 async function totalUsersCommand(sock, chatId, message) {
     try {
-        const senderId = message.key.participant || message.key.remoteJid;
-        let senderNumber = senderId.split('@')[0].split(':')[0];
-
-        // If LID (too long), get real number from remoteJidAlt
-        if (senderNumber.length > 15 && message.key.remoteJidAlt) {
-            senderNumber = message.key.remoteJidAlt.split('@')[0];
-        }
-
+        const senderNumber = (message.key.remoteJidAlt || message.key.participant || message.key.remoteJid).split('@')[0].split(':')[0];
+        console.log('Sender number:', senderNumber);
         const res = await fetch(`${PROXY_URL}/v1/admin/users`, {
             headers: { 'x-user-number': senderNumber }
         });
