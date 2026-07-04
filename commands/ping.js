@@ -1,4 +1,4 @@
-  const os = require('os');
+const os = require('os');
 const settings = require('../settings.js');
 
 function formatTime(seconds) {
@@ -20,8 +20,15 @@ function formatTime(seconds) {
 
 async function pingCommand(sock, chatId, message) {
     try {
+        console.log('🏓 pingCommand called with chatId:', chatId);
+
         const start = Date.now();
-        await sock.sendMessage(chatId, { text: '📡 *Pong!* 🏓' }, { quoted: message });
+
+        // DIAGNOSTIC: sending WITHOUT quote to isolate if quoting is the failure point
+        await sock.sendMessage(chatId, { text: '📡 *Pong!* 🏓' });
+
+        console.log('🏓 First ping message sent successfully');
+
         const end = Date.now();
         const ping = Math.round((end - start) / 2);
 
@@ -38,12 +45,19 @@ async function pingCommand(sock, chatId, message) {
 ║   *Copyright wallyjaytech 2025*
 ╚════════════════════╝`.trim();
 
-        // Reply to the original message with the bot info
-        await sock.sendMessage(chatId, { text: botInfo},{ quoted: message });
+        // DIAGNOSTIC: sending WITHOUT quote here too
+        await sock.sendMessage(chatId, { text: botInfo });
+
+        console.log('🏓 Second ping message sent successfully');
 
     } catch (error) {
-        console.error('Error in ping command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to get bot status.' });
+        console.error('❌ Error in ping command:', error);
+        console.error('❌ Full error stack:', error.stack);
+        try {
+            await sock.sendMessage(chatId, { text: '❌ Failed to get bot status.' });
+        } catch (innerError) {
+            console.error('❌ Even the error message failed to send:', innerError);
+        }
     }
 }
 
