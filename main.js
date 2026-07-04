@@ -1742,8 +1742,9 @@ case userMessage.startsWith('.autorecord'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 break;
             case userMessage.startsWith('.totalusers'):
-                await totalUsersCommand(sock, chatId, message);
-                break;
+    await totalUsersCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
             case userMessage.startsWith('.sora'):
                 await soraCommand(sock, chatId, message);
                 break;
