@@ -35,14 +35,31 @@
 // ⛥┌┤
 // */
 
-
 const fs = require('fs');
 const path = require('path');
+
+// ═══════════════════════════════════════
+// DEPLOYMENT PLATFORM DETECTION
+// ═══════════════════════════════════════
+function getDeploymentPlatform() {
+    if (process.env.RENDER) return 'Render';
+    if (process.env.CODESPACE_NAME) return 'Codespaces';
+    if (process.env.PANEL_APP) return 'Panel';
+    if (process.env.REPL_SLUG) return 'Replit';
+    if (process.env.KOYEB_APP) return 'Koyeb';
+    if (process.env.FLY_APP_NAME) return 'Fly.io';
+    if (process.env.GLITCH_PROJECT_ID) return 'Glitch';
+    if (process.env.VERCEL) return 'Vercel';
+    if (process.env.HEROKU_APP_NAME) return 'Heroku';
+    if (process.env.RAILWAY_ENVIRONMENT) return 'Railway';
+    return 'Local Machine';
+}
 
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
 
 global.File = class File {};
 require('./settings');
+
 require('dotenv').config();
 const { Boom } = require('@hapi/boom');
 const chalk = require('chalk');
