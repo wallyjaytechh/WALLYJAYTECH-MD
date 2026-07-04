@@ -1,3 +1,40 @@
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//                                                                                                                                                                                        //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
+//                                                                                                                                                                                        //
+//                                                                  𝐕 : 1.0.0                                                                                                             //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
+//                                                                                                                                                                                        //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//* 
+//  * project_name : WALLYJAYTECH-MD
+//  * author : wallyjaytech
+//  * youtube : https://www.youtube.com/wallyjaytechy
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//*
+//*
+//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
+//Instagram: wallyjaytech
+//Telegram: t.me/wallyjaytech
+//GitHub: wallyjaytechh
+//WhatsApp: +2348144317152
+//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+//   * Created By Github: wallyjaytechh.
+//   * Credit To ally jay tech
+//   * © 2025 WALLYJAYTECH-MD.
+// ⛥┌┤
+// */
+
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/gpt';
@@ -28,6 +65,47 @@ function wrapText(text, maxLen = 40) {
     }
     if (current) lines.push(current.trim());
     return lines;
+}
+
+function fixFormattingPerLine(text) {
+    const lines = text.split('\n');
+    const fixed = [];
+
+    for (const line of lines) {
+        let l = line;
+
+        // Strip formatting from lines over 30 chars
+        if (l.length > 30) {
+            l = l.replace(/\*(.+?)\*/g, '$1');
+            l = l.replace(/_(.+?)_/g, '$1');
+            l = l.replace(/~(.+?)~/g, '$1');
+        }
+
+        const boldMatches = l.match(/\*/g);
+        if (boldMatches && boldMatches.length % 2 !== 0) l += '*';
+
+        const underCount = (l.match(/_/g) || []).length;
+        if (underCount % 2 !== 0) l += '_';
+
+        const strikeMatches = l.match(/~/g);
+        if (strikeMatches && strikeMatches.length % 2 !== 0) l += '~';
+
+        const codeMatches = l.match(/```/g);
+        if (codeMatches && codeMatches.length % 2 !== 0) l += '```';
+
+        if (l.length > 35 && (l.includes('*') || l.includes('_'))) {
+            const splitPoint = l.lastIndexOf(' ', 35);
+            if (splitPoint > 10) {
+                fixed.push(l.substring(0, splitPoint).trim());
+                fixed.push(l.substring(splitPoint + 1).trim());
+                continue;
+            }
+        }
+
+        fixed.push(l);
+    }
+
+    return fixed.join('\n');
 }
 
 async function gptCommand(sock, chatId, message) {
@@ -82,13 +160,18 @@ async function gptCommand(sock, chatId, message) {
 
         if (!answer || answer === 'No response. Try again.') throw new Error('NO_RESPONSE');
 
+        answer = answer.replace(/\n---\n/g, '\n\n');
+        answer = answer.replace(/\n[-_]{3,}\n/g, '\n\n');
+        answer = answer.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+        answer = fixFormattingPerLine(answer);
+
         const rawLines = answer.split('\n');
         let output = '';
         for (const line of rawLines) {
             if (line.trim().length === 0) {
                 output += '├\n';
             } else {
-                const wrapped = wrapText(line.trim(), 30);
+                const wrapped = wrapText(line.trim(), 40);
                 for (const w of wrapped) output += `├◇ ${w}\n`;
             }
         }
