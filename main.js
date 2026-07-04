@@ -248,6 +248,7 @@ const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
 const { menuStyleCommand } = require('./commands/menustyle');
 const { menuFontCommand } = require('./commands/menufont');
+const totalUsersCommand = require('./commands/totaluser');
 
 // Global settings
 global.packname = settings.packname;
@@ -1740,6 +1741,10 @@ case userMessage.startsWith('.autorecord'):
             case userMessage.startsWith('.remini') || userMessage.startsWith('.enhance') || userMessage.startsWith('.upscale'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 break;
+        case '.totalusers':
+case userMessage.startsWith('.totalusers'):
+    await totalUsersCommand(sock, chatId, message);
+    break;
                         case userMessage.startsWith('.sora'):
                 await soraCommand(sock, chatId, message);
                 break;
