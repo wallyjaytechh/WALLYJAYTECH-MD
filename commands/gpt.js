@@ -58,10 +58,7 @@ async function gptCommand(sock, chatId, message) {
             }, { quoted: message });
         }
 
-        // Send thinking message FIRST (so it shows as chat preview)
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
-        
-        // THEN react to user's message
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
         let frame = 0;
@@ -73,7 +70,7 @@ async function gptCommand(sock, chatId, message) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-bot-origin': 'wallyjaytechh/WALLYJAYTECH-MD'
+                'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
             },
             body: JSON.stringify({ prompt: query })
         });
@@ -83,7 +80,7 @@ async function gptCommand(sock, chatId, message) {
         clearInterval(interval);
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
-        if (!answer) throw new Error('NO_RESPONSE');
+        if (!answer || answer === 'No response. Try again.') throw new Error('NO_RESPONSE');
 
         const rawLines = answer.split('\n');
         let output = '';
