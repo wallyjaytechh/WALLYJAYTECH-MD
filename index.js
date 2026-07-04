@@ -419,22 +419,21 @@ process.on('SIGTERM', async () => {
 
 console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
 startXeonBotInc().catch(error => { console.error('Fatal error:', error); process.exit(1); });
-
-// ═══════════════════════════════════════
-// HEARTBEAT TO PROXY
-// ═══════════════════════════════════════
-const BOT_ID = settings.ownerNumber;
-
+// Immediate heartbeat
 fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
         botId: BOT_ID,
         userId: settings.ownerNumber,
-        platform: getDeploymentPlatform()
+        platform: getDeploymentPlatform(),
+        botOwner: settings.botOwner || 'Unknown',
+        timezone: settings.timezone || 'Africa/Lagos',
+        botName: settings.botName || 'WALLYJAYTECH-MD'
     })
 }).catch(() => {});
 
+// Interval heartbeat
 setInterval(async () => {
     try {
         await fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
@@ -443,11 +442,15 @@ setInterval(async () => {
             body: JSON.stringify({
                 botId: BOT_ID,
                 userId: settings.ownerNumber,
-                platform: getDeploymentPlatform()
+                platform: getDeploymentPlatform(),
+                botOwner: settings.botOwner || 'Unknown',
+                timezone: settings.timezone || 'Africa/Lagos',
+                botName: settings.botName || 'WALLYJAYTECH-MD'
             })
         });
     } catch (e) {}
-}, 1000); 
+}, 1000);
+
 process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', err); });
 process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
 
