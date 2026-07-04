@@ -404,6 +404,11 @@ if (imageBuffer) {
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { reconnectAttempts++; await delay(5000 * reconnectAttempts); startXeonBotInc(); }
     }
 }
+// ═══════════════════════════════════════
+// HEARTBEAT TO PROXY
+// ═══════════════════════════════════════
+const BOT_ID = settings.ownerNumber;
+
 process.on('SIGINT', async () => {
     try { await fetch('https://gemini-proxy-10a1.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: BOT_ID }) }); } catch (e) {}
     try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
@@ -417,9 +422,6 @@ process.on('SIGTERM', async () => {
     process.exit(0);
 });
 
-console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
-startXeonBotInc().catch(error => { console.error('Fatal error:', error); process.exit(1); });
-// Immediate heartbeat
 fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -432,7 +434,6 @@ fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
         botName: settings.botName || 'WALLYJAYTECH-MD'
     })
 }).catch(() => {});
-
 // Interval heartbeat
 setInterval(async () => {
     try {
