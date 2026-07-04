@@ -422,18 +422,6 @@ process.on('SIGTERM', async () => {
     process.exit(0);
 });
 
-fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        botId: BOT_ID,
-        userId: settings.ownerNumber,
-        platform: getDeploymentPlatform(),
-        botOwner: settings.botOwner || 'Unknown',
-        timezone: settings.timezone || 'Africa/Lagos',
-        botName: settings.botName || 'WALLYJAYTECH-MD'
-    })
-}).catch(() => {});
 // Interval heartbeat
 setInterval(async () => {
     try {
