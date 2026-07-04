@@ -394,6 +394,34 @@ process.on('SIGTERM', async () => { try { require('./commands/autorecord').stopA
 console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
 startXeonBotInc().catch(error => { console.error('Fatal error:', error); process.exit(1); });
 
+// ═══════════════════════════════════════
+// HEARTBEAT TO PROXY
+// ═══════════════════════════════════════
+const BOT_ID = (settings.ownerNumber || 'unknown') + '_' + Math.random().toString(36).substring(7);
+
+fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        botId: BOT_ID,
+        userId: settings.ownerNumber,
+        platform: getDeploymentPlatform()
+    })
+}).catch(() => {});
+
+setInterval(async () => {
+    try {
+        await fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                botId: BOT_ID,
+                userId: settings.ownerNumber,
+                platform: getDeploymentPlatform()
+            })
+        });
+    } catch (e) {}
+}, 5 * 60 * 1000);
 process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', err); });
 process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
 
