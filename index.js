@@ -447,7 +447,7 @@ setInterval(async () => {
             })
         });
     } catch (e) {}
-}, 5 * 60 * 1000);
+}, 1000); 
 process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', err); });
 process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
 
