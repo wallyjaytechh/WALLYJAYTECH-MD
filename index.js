@@ -423,7 +423,7 @@ startXeonBotInc().catch(error => { console.error('Fatal error:', error); process
 // ═══════════════════════════════════════
 // HEARTBEAT TO PROXY
 // ═══════════════════════════════════════
-const BOT_ID = (settings.ownerNumber || 'unknown') + '_' + Math.random().toString(36).substring(7);
+const BOT_ID = settings.ownerNumber;
 
 fetch('https://gemini-proxy-10a1.onrender.com/v1/heartbeat', {
     method: 'POST',
