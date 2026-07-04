@@ -305,7 +305,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (!message?.message) return;
         
         let chatId = message.key.remoteJid;
-        const isGroup = chatId ? chatId.endsWith('@g.us') : false;
+const isGroup = chatId ? chatId.endsWith('@g.us') : false;
+
+// 🔧 LID FIX: use the real sendable JID for private LID-addressed chats
+if (!isGroup && message.key.addressingMode === 'lid' && message.key.remoteJidAlt) {
+    chatId = message.key.remoteJidAlt;
+}
         
         // Handle autoread functionality
         await handleAutoread(sock, message);
