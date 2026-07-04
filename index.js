@@ -404,9 +404,18 @@ if (imageBuffer) {
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { reconnectAttempts++; await delay(5000 * reconnectAttempts); startXeonBotInc(); }
     }
 }
-
-process.on('SIGINT', async () => { try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
-process.on('SIGTERM', async () => { try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
+process.on('SIGINT', async () => {
+    try { await fetch('https://gemini-proxy-10a1.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: BOT_ID }) }); } catch (e) {}
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {}
+    process.exit(0);
+});
+process.on('SIGTERM', async () => {
+    try { await fetch('https://gemini-proxy-10a1.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: BOT_ID }) }); } catch (e) {}
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {}
+    process.exit(0);
+});
 
 console.log(chalk.cyan('🚀 Starting WALLYJAYTECH-MD Bot...'));
 startXeonBotInc().catch(error => { console.error('Fatal error:', error); process.exit(1); });
