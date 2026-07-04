@@ -38,17 +38,24 @@
 const fetch = require('node-fetch');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com';
-const ADMIN_NUMBER = '2348144317152';
 
 async function totalUsersCommand(sock, chatId, message) {
     try {
+        const senderId = message.key.participant || message.key.remoteJid;
+        let senderNumber = senderId.split('@')[0].split(':')[0];
+
+        // If LID (too long), get real number from remoteJidAlt
+        if (senderNumber.length > 15 && message.key.remoteJidAlt) {
+            senderNumber = message.key.remoteJidAlt.split('@')[0];
+        }
+
         const res = await fetch(`${PROXY_URL}/v1/admin/users`, {
-            headers: { 'x-user-number': ADMIN_NUMBER }
+            headers: { 'x-user-number': senderNumber }
         });
 
         if (res.status === 401) {
             return sock.sendMessage(chatId, {
-                text: `╭──◆「 *ADMIN ONLY* 」◆\n├\n├◇ ❌ This command is for bot owners only\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
+                text: `╭──◆「 *ADMIN ONLY* 」◆\n├\n├◇ ❌ Developer access only\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
             }, { quoted: message });
         }
 
