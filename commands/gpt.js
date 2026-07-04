@@ -58,11 +58,13 @@ async function gptCommand(sock, chatId, message) {
             }, { quoted: message });
         }
 
+        // Send thinking message FIRST (so it shows as chat preview)
+        loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
+        
+        // THEN react to user's message
         await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
 
-        loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
         let frame = 0;
-
         interval = setInterval(async () => {
             try { if (frame < LOADING_FRAMES.length - 1) { frame++; await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] }); } } catch (e) {}
         }, 600);
