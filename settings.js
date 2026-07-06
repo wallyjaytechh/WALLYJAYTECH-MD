@@ -49,15 +49,6 @@ const settings = {
   description: "WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot",
   version: "1.0.0",
   updateZipUrl: "https://github.com/wallyjaytechh/WALLYJAYTECH-MD/archive/refs/heads/main.zip",
-  
-  // Gemini Proxy URL (keep private)
-  geminiProxyUrl: 'https://gemini-proxy-10a1.onrender.com/v1/gemini',
-  
-  removeBgApi: {
-    enabled: true,
-    apiKey: "dyrbNSNtMf1CE84he61DR7Wx",
-    apiUrl: "https://api.remove.bg/v1.0/removebg"
-  }
 };
 
 module.exports = settings;
