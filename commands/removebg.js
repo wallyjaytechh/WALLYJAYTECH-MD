@@ -90,19 +90,33 @@ module.exports = {
         const chatId = message.key.remoteJid;
         let loadingMsg;
         let interval;
-        
+
         try {
             const imageBuffer = await getImageBuffer(sock, message);
-            
+
             if (!imageBuffer) {
-                return await sock.sendMessage(chatId, { 
-                    text: `╭──◆「 *REMOVE BACKGROUND* 」◆\n├\n├◇ 📸 Remove image backgrounds\n├◇ 🎯 Powered by Remove.BG API\n├\n├◇ *📖 Usage:*\n├  └ Reply to an image with .removebg\n├  └ Send image with .removebg caption\n├\n├◇ *✨ Example:*\n├  └ Reply to a photo → .removebg\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
+                return await sock.sendMessage(chatId, {
+                    text: `╭──◆「 *REMOVE BACKGROUND* 」◆\n` +
+                          `├\n` +
+                          `├◇ 📸 Remove image backgrounds\n` +
+                          `├◇ 🎯 Powered by Remove.BG API\n` +
+                          `├\n` +
+                          `├◇ *📖 Usage:*\n` +
+                          `├  └ Reply to an image with .removebg\n` +
+                          `├  └ Send image with .removebg caption\n` +
+                          `├\n` +
+                          `├◇ *✨ Example:*\n` +
+                          `├  └ Reply to a photo → .removebg\n` +
+                          `├\n` +
+                          `╰─┬─★─☆─♪♪─◆\n\n` +
+                          `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                          `╰───★─☆─♪♪─◆`
                 }, { quoted: message });
             }
 
             // Progress bar animation (1 second per frame)
-            loadingMsg = await sock.sendMessage(chatId, { 
-                text: `Removing bg ${BAR_FRAMES[0]}` 
+            loadingMsg = await sock.sendMessage(chatId, {
+                text: `Removing bg ${BAR_FRAMES[0]}`
             });
 
             let frame = 0;
@@ -147,19 +161,40 @@ module.exports = {
 
             await sock.sendMessage(chatId, {
                 image: resultBuffer,
-                caption: `╭──◆「 *BACKGROUND REMOVED* 」◆\n├\n├◇ ✅ Successfully processed!\n├◇ 🎯 Powered by Remove.BG\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
+                caption: `╭──◆「 *BACKGROUND REMOVED* 」◆\n` +
+                         `├\n` +
+                         `├◇ ✅ Successfully processed!\n` +
+                         `├◇ 🎯 Powered by Remove.BG\n` +
+                         `├\n` +
+                         `╰─┬─★─☆─♪♪─◆\n\n` +
+                         `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                         `╰───★─☆─♪♪─◆`
             }, { quoted: message });
 
         } catch (error) {
             if (interval) { clearInterval(interval); interval = null; }
             if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' }); } catch (e) {} }
-            
-            let errorMsg = `╭──◆「 *REMOVAL FAILED* 」◆\n├\n├◇ ❌ Unable to remove background\n├◇ 💡 Try a different image\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-            
+
+            let errorMsg = `╭──◆「 *REMOVAL FAILED* 」◆\n` +
+                          `├\n` +
+                          `├◇ ❌ Unable to remove background\n` +
+                          `├◇ 💡 Try a different image\n` +
+                          `├\n` +
+                          `╰─┬─★─☆─♪♪─◆\n\n` +
+                          `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                          `╰───★─☆─♪♪─◆`;
+
             if (error.message === 'LIMIT') {
-                errorMsg = `╭──◆「 *API LIMIT* 」◆\n├\n├◇ 💳 Remove.BG credits exhausted\n├◇ 💡 Try again later\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+                errorMsg = `╭──◆「 *API LIMIT* 」◆\n` +
+                          `├\n` +
+                          `├◇ 💳 Remove.BG credits exhausted\n` +
+                          `├◇ 💡 Try again later\n` +
+                          `├\n` +
+                          `╰─┬─★─☆─♪♪─◆\n\n` +
+                          `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                          `╰───★─☆─♪♪─◆`;
             }
-            
+
             await sock.sendMessage(chatId, { text: errorMsg }, { quoted: message });
         }
     }
