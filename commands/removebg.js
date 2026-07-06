@@ -150,13 +150,13 @@ module.exports = {
 
             // Send to proxy
             const response = await fetch(PROXY_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
-                },
-                body: JSON.stringify({ image: base64Image })
-            });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/octet-stream',
+        'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
+    },
+    body: imageBuffer
+});
 
             console.log('Proxy response status:', response.status);
 
