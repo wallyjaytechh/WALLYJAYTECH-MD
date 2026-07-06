@@ -149,7 +149,7 @@ module.exports = {
             console.log('Base64 image length:', base64Image.length);
 
             // Send to proxy
-            const response = await fetch(PROXY_URL, {
+const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: {
         'Content-Type': 'application/octet-stream',
@@ -157,7 +157,6 @@ module.exports = {
     },
     body: imageBuffer
 });
-
             console.log('Proxy response status:', response.status);
 
             clearInterval(interval);
