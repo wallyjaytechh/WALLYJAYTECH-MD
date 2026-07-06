@@ -1739,6 +1739,7 @@ case userMessage.startsWith('.autorecord'):
                 break;
             case userMessage.startsWith('.removebg'):
     await removebgCommand.exec(sock, message, userMessage.split(' ').slice(1));
+    commandExecuted = true;
     break;
             case userMessage.startsWith('.remini') || userMessage.startsWith('.enhance') || userMessage.startsWith('.upscale'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
