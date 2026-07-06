@@ -63,20 +63,33 @@ const BAR_FRAMES = [
 async function getImageBuffer(sock, message) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        console.log('Quoted message exists:', !!quoted);
+        console.log('Quoted has image:', !!quoted?.imageMessage);
+
         if (quoted?.imageMessage) {
+            console.log('Downloading quoted image...');
             const stream = await downloadContentFromMessage(quoted.imageMessage, 'image');
             const chunks = [];
             for await (const chunk of stream) chunks.push(chunk);
-            return Buffer.concat(chunks);
+            const buffer = Buffer.concat(chunks);
+            console.log('Quoted image downloaded, size:', buffer.length);
+            return buffer;
         }
+        
         if (message.message?.imageMessage) {
+            console.log('Downloading caption image...');
             const stream = await downloadContentFromMessage(message.message.imageMessage, 'image');
             const chunks = [];
             for await (const chunk of stream) chunks.push(chunk);
-            return Buffer.concat(chunks);
+            const buffer = Buffer.concat(chunks);
+            console.log('Caption image downloaded, size:', buffer.length);
+            return buffer;
         }
+
+        console.log('No image found');
         return null;
     } catch (error) {
+        console.error('getImageBuffer error:', error.message);
         return null;
     }
 }
@@ -132,6 +145,9 @@ module.exports = {
                 } catch (e) {}
             }, 1000);
 
+            const base64Image = imageBuffer.toString('base64');
+            console.log('Base64 image length:', base64Image.length);
+
             // Send to proxy
             const response = await fetch(PROXY_URL, {
                 method: 'POST',
@@ -139,18 +155,22 @@ module.exports = {
                     'Content-Type': 'application/json',
                     'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
                 },
-                body: JSON.stringify({ image: imageBuffer.toString('base64') })
+                body: JSON.stringify({ image: base64Image })
             });
+
+            console.log('Proxy response status:', response.status);
 
             clearInterval(interval);
 
             if (!response.ok) {
+                console.log('Proxy error:', response.status);
                 if (response.status === 401) throw new Error('UNAUTHORIZED');
                 if (response.status === 402) throw new Error('LIMIT');
                 throw new Error('FAILED');
             }
 
             const data = await response.json();
+            console.log('Proxy response has image:', !!data.image);
             const resultBuffer = Buffer.from(data.image, 'base64');
 
             // Show done
@@ -172,6 +192,7 @@ module.exports = {
             }, { quoted: message });
 
         } catch (error) {
+            console.error('Removebg error:', error.message);
             if (interval) { clearInterval(interval); interval = null; }
             if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' }); } catch (e) {} }
 
