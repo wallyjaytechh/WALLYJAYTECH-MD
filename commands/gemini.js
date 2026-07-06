@@ -157,7 +157,7 @@ async function geminiCommand(sock, chatId, message) {
         }
 
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
-        await sock.sendMessage(chatId, { react: { text: '🤖', key: message.key } });
+        
 
         let frame = 0;
         interval = setInterval(async () => {
