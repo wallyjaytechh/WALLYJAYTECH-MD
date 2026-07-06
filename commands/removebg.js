@@ -42,6 +42,7 @@
  */
 
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/removebg';
@@ -63,33 +64,20 @@ const BAR_FRAMES = [
 async function getImageBuffer(sock, message) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-        console.log('Quoted message exists:', !!quoted);
-        console.log('Quoted has image:', !!quoted?.imageMessage);
-
         if (quoted?.imageMessage) {
-            console.log('Downloading quoted image...');
             const stream = await downloadContentFromMessage(quoted.imageMessage, 'image');
             const chunks = [];
             for await (const chunk of stream) chunks.push(chunk);
-            const buffer = Buffer.concat(chunks);
-            console.log('Quoted image downloaded, size:', buffer.length);
-            return buffer;
+            return Buffer.concat(chunks);
         }
-        
         if (message.message?.imageMessage) {
-            console.log('Downloading caption image...');
             const stream = await downloadContentFromMessage(message.message.imageMessage, 'image');
             const chunks = [];
             for await (const chunk of stream) chunks.push(chunk);
-            const buffer = Buffer.concat(chunks);
-            console.log('Caption image downloaded, size:', buffer.length);
-            return buffer;
+            return Buffer.concat(chunks);
         }
-
-        console.log('No image found');
         return null;
     } catch (error) {
-        console.error('getImageBuffer error:', error.message);
         return null;
     }
 }
@@ -127,7 +115,6 @@ module.exports = {
                 }, { quoted: message });
             }
 
-            // Progress bar animation (1 second per frame)
             loadingMsg = await sock.sendMessage(chatId, {
                 text: `Removing bg ${BAR_FRAMES[0]}`
             });
@@ -145,34 +132,30 @@ module.exports = {
                 } catch (e) {}
             }, 1000);
 
-            const base64Image = imageBuffer.toString('base64');
-            console.log('Base64 image length:', base64Image.length);
+            // Send as multipart form data
+            const formData = new FormData();
+            formData.append('image', imageBuffer, { filename: 'image.jpg' });
 
-            // Send to proxy
-const response = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/octet-stream',
-        'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
-    },
-    body: imageBuffer
-});
-            console.log('Proxy response status:', response.status);
+            const response = await fetch(PROXY_URL, {
+                method: 'POST',
+                headers: {
+                    ...formData.getHeaders(),
+                    'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
+                },
+                body: formData
+            });
 
             clearInterval(interval);
 
             if (!response.ok) {
-                console.log('Proxy error:', response.status);
                 if (response.status === 401) throw new Error('UNAUTHORIZED');
                 if (response.status === 402) throw new Error('LIMIT');
                 throw new Error('FAILED');
             }
 
             const data = await response.json();
-            console.log('Proxy response has image:', !!data.image);
             const resultBuffer = Buffer.from(data.image, 'base64');
 
-            // Show done
             await sock.sendMessage(chatId, {
                 edit: loadingMsg.key,
                 text: `Removing done ${BAR_FRAMES[10]}`
@@ -191,7 +174,6 @@ const response = await fetch(PROXY_URL, {
             }, { quoted: message });
 
         } catch (error) {
-            console.error('Removebg error:', error.message);
             if (interval) { clearInterval(interval); interval = null; }
             if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' }); } catch (e) {} }
 
