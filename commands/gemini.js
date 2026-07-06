@@ -52,7 +52,7 @@ const LOADING_FRAMES = [
     'Thinking [■■■■■■■■■□]'
 ];
 
-function wrapText(text, maxLen = 30) {
+function wrapText(text, maxLen = 25) {
     const words = text.split(' ');
     const lines = [];
     let current = '';
