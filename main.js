@@ -245,7 +245,7 @@ const { igsCommand } = require('./commands/igs');
 const { anticallCommand, readState: readAnticallState } = require('./commands/anticall');
 const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
 const settingsCommand = require('./commands/settings');
-const soraCommand = require('./commands/sora');
+const aivideoCommand = require('./commands/aivideo');
 const { menuStyleCommand } = require('./commands/menustyle');
 const { menuFontCommand } = require('./commands/menufont');
 const totalUsersCommand = require('./commands/totaluser');
@@ -1756,9 +1756,10 @@ case userMessage.startsWith('.autorecord'):
     await gptCommand(sock, chatId, message);
     commandExecuted = true;
     break;
-            case userMessage.startsWith('.sora'):
-                await soraCommand(sock, chatId, message);
-                break;
+            case userMessage.startsWith('.aivideo'):
+    await aivideoCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
             default:
                 if (isGroup) {
                     if (userMessage) {
