@@ -132,18 +132,15 @@ module.exports = {
                 } catch (e) {}
             }, 1000);
 
-            // Send as multipart form data
-            const formData = new FormData();
-            formData.append('image', imageBuffer, { filename: 'image.jpg' });
-
-            const response = await fetch(PROXY_URL, {
-                method: 'POST',
-                headers: {
-                    ...formData.getHeaders(),
-                    'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
-                },
-                body: formData
-            });
+            // Send as raw binary (no base64)
+const response = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/octet-stream',
+        'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
+    },
+    body: imageBuffer
+});
 
             clearInterval(interval);
 
