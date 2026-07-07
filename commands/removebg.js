@@ -36,16 +36,17 @@
 // */
 /**
  * WALLYJAYTECH-MD - Remove Background Command (.removebg)
- * Powered by Remove.BG via WALLYJAYTECH Proxy
+ * Powered by Remove.BG API — Key from Proxy
  * Features: Reply to image | Send with caption | Loading animation
  * Professional Version
  */
 
+const axios = require('axios');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com/v1/removebg';
+const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com';
 
 const BAR_FRAMES = [
     '[□□□□□□□□□□] 0%',
@@ -60,6 +61,18 @@ const BAR_FRAMES = [
     '[■■■■■■■■■□] 90%',
     '[■■■■■■■■■■] 100%'
 ];
+
+async function getKey() {
+    try {
+        const res = await fetch(`${PROXY_URL}/v1/removebg-key`, {
+            headers: { 'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD' }
+        });
+        const data = await res.json();
+        return data.key;
+    } catch (e) {
+        return null;
+    }
+}
 
 async function getImageBuffer(sock, message) {
     try {
@@ -132,42 +145,52 @@ module.exports = {
                 } catch (e) {}
             }, 1000);
 
-            // Send as raw binary (no base64)
-const response = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/octet-stream',
-        'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
-    },
-    body: imageBuffer
-});
-            clearInterval(interval);
+            // Get API key from proxy
+            const apiKey = await getKey();
+            if (!apiKey) throw new Error('NO_KEY');
 
-            if (!response.ok) {
-                if (response.status === 401) throw new Error('UNAUTHORIZED');
-                if (response.status === 402) throw new Error('LIMIT');
-                throw new Error('FAILED');
-            }
+            // Call remove.bg directly
+            const formData = new FormData();
+            formData.append('image_file', imageBuffer, {
+                filename: 'image.jpg',
+                contentType: 'image/jpeg'
+            });
+            formData.append('size', 'auto');
 
-            const data = await response.json();
-            const resultBuffer = Buffer.from(data.image, 'base64');
-
-            await sock.sendMessage(chatId, {
-                edit: loadingMsg.key,
-                text: `Removing done ${BAR_FRAMES[10]}`
+            const response = await axios({
+                method: 'POST',
+                url: 'https://api.remove.bg/v1.0/removebg',
+                data: formData,
+                headers: {
+                    'X-Api-Key': apiKey,
+                    ...formData.getHeaders()
+                },
+                responseType: 'arraybuffer',
+                timeout: 60000
             });
 
-            await sock.sendMessage(chatId, {
-                image: resultBuffer,
-                caption: `╭──◆「 *BACKGROUND REMOVED* 」◆\n` +
-                         `├\n` +
-                         `├◇ ✅ Successfully processed!\n` +
-                         `├◇ 🎯 Powered by Remove.BG\n` +
-                         `├\n` +
-                         `╰─┬─★─☆─♪♪─◆\n\n` +
-                         `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                         `╰───★─☆─♪♪─◆`
-            }, { quoted: message });
+            clearInterval(interval);
+
+            if (response.status === 200 && response.data && response.data.length > 5000) {
+                await sock.sendMessage(chatId, {
+                    edit: loadingMsg.key,
+                    text: `Removing done ${BAR_FRAMES[10]}`
+                });
+
+                await sock.sendMessage(chatId, {
+                    image: response.data,
+                    caption: `╭──◆「 *BACKGROUND REMOVED* 」◆\n` +
+                             `├\n` +
+                             `├◇ ✅ Successfully processed!\n` +
+                             `├◇ 🎯 Powered by Remove.BG\n` +
+                             `├\n` +
+                             `╰─┬─★─☆─♪♪─◆\n\n` +
+                             `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                             `╰───★─☆─♪♪─◆`
+                }, { quoted: message });
+            } else {
+                throw new Error('Invalid response');
+            }
 
         } catch (error) {
             if (interval) { clearInterval(interval); interval = null; }
@@ -182,11 +205,20 @@ const response = await fetch(PROXY_URL, {
                           `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
                           `╰───★─☆─♪♪─◆`;
 
-            if (error.message === 'LIMIT') {
+            if (error.response?.status === 402) {
                 errorMsg = `╭──◆「 *API LIMIT* 」◆\n` +
                           `├\n` +
                           `├◇ 💳 Remove.BG credits exhausted\n` +
                           `├◇ 💡 Try again later\n` +
+                          `├\n` +
+                          `╰─┬─★─☆─♪♪─◆\n\n` +
+                          `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                          `╰───★─☆─♪♪─◆`;
+            } else if (error.response?.status === 403) {
+                errorMsg = `╭──◆「 *INVALID KEY* 」◆\n` +
+                          `├\n` +
+                          `├◇ 🔑 Remove.BG API key invalid\n` +
+                          `├◇ 💡 Contact bot owner\n` +
                           `├\n` +
                           `╰─┬─★─☆─♪♪─◆\n\n` +
                           `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
