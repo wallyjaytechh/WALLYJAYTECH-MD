@@ -141,7 +141,6 @@ const response = await fetch(PROXY_URL, {
     },
     body: imageBuffer
 });
-
             clearInterval(interval);
 
             if (!response.ok) {
