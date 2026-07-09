@@ -251,6 +251,7 @@ const { menuFontCommand } = require('./commands/menufont');
 const totalUsersCommand = require('./commands/totaluser');
 const userInfoCommand = require('./commands/userinfo');
 const gptCommand = require('./commands/gpt');
+const codeCommand = require('./commands/code');
 
 // Global settings
 global.packname = settings.packname;
@@ -1758,6 +1759,10 @@ case userMessage.startsWith('.autorecord'):
     break;
             case userMessage.startsWith('.aivideo'):
     await aivideoCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+        case userMessage.startsWith('.code'):
+    await codeCommand(sock, chatId, message);
     commandExecuted = true;
     break;
             default:
