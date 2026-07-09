@@ -252,6 +252,9 @@ const totalUsersCommand = require('./commands/totaluser');
 const userInfoCommand = require('./commands/userinfo');
 const gptCommand = require('./commands/gpt');
 const codeCommand = require('./commands/code');
+const summariseCommand = require('./commands/summarise');
+
+
 
 // Global settings
 global.packname = settings.packname;
@@ -1763,6 +1766,10 @@ case userMessage.startsWith('.autorecord'):
     break;
         case userMessage.startsWith('.code'):
     await codeCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+        case userMessage.startsWith('.summarise'):
+    await summariseCommand(sock, chatId, message);
     commandExecuted = true;
     break;
             default:
