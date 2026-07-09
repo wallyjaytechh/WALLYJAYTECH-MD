@@ -231,25 +231,26 @@ async function chatbotCommand(sock, chatId, message) {
 
 async function handleChatbotResponse(sock, chatId, message, userMessage, senderId) {
     try {
-        if (chatId === 'status@broadcast') {
-            const data = loadChatbotData();
-            if (!data.status) return;
-        }
-        
         const data = loadChatbotData();
         const isGroup = chatId.endsWith('@g.us');
         
-        const chatSetting = data.chats[chatId];
-        if (chatSetting === false) return;
-        if (chatSetting === true) { /* proceed */ }
-        else if (isGroup && !data.groups) return;
-        else if (!isGroup && !data.dms) return;
+        // For status broadcasts, ONLY check status setting (ignore DM/group)
+        if (chatId === 'status@broadcast') {
+            if (!data.status) return;
+        } else {
+            // For regular chats, check DM/group/per-chat settings
+            const chatSetting = data.chats[chatId];
+            if (chatSetting === false) return;
+            if (chatSetting !== true) {
+                if (isGroup && !data.groups) return;
+                if (!isGroup && !data.dms) return;
+            }
+        }
 
         if (userMessage.startsWith('.') || message.key.fromMe) return;
 
-        const prompt = `You are a friendly WhatsApp user chatting casually. Be short, natural, use emojis. Match the vibe. Don't sound like AI, talk like a real person.\n\nMessage from ${isGroup ? 'group' : 'DM'}: ${userMessage}`;
+        const prompt = `You are a friendly WhatsApp user chatting casually. Be short, natural, use emojis. Match the vibe. Don't sound like AI, talk like a real person.\n\nMessage from ${chatId === 'status@broadcast' ? 'status' : isGroup ? 'group' : 'DM'}: ${userMessage}`;
 
-        // Show typing indicator
         await sock.sendPresenceUpdate('composing', chatId);
 
         const response = await fetch('https://text.pollinations.ai/openai', {
@@ -258,7 +259,6 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
             body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: prompt }] })
         });
 
-        // Stop typing
         await sock.sendPresenceUpdate('paused', chatId);
 
         const result = await response.json();
