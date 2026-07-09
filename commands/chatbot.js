@@ -75,7 +75,7 @@ async function chatbotCommand(sock, chatId, message) {
         const data = loadChatbotData();
 
         if (!isOwner) {
-            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Only bot owner\n├◇ can use this\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Only bot owner can use this\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
         }
 
         // .chatbot usage / help
@@ -83,40 +83,31 @@ async function chatbotCommand(sock, chatId, message) {
             return reply(sock, chatId, `╭──◆「 *CHATBOT USAGE* 」◆\n` +
                   `├\n` +
                   `├◇ .chatbot dms on\n` +
-                  `├  └ Enable auto-reply\n` +
-                  `├     in all private chats\n` +
+                  `├  └ Enable auto-reply in all private chats\n` +
                   `├\n` +
                   `├◇ .chatbot dms off\n` +
-                  `├  └ Disable auto-reply\n` +
-                  `├     in all private chats\n` +
+                  `├  └ Disable auto-reply in all private chats\n` +
                   `├\n` +
                   `├◇ .chatbot group on\n` +
-                  `├  └ Enable auto-reply\n` +
-                  `├     in all groups\n` +
+                  `├  └ Enable auto-reply in all groups\n` +
                   `├\n` +
                   `├◇ .chatbot group off\n` +
-                  `├  └ Disable auto-reply\n` +
-                  `├     in all groups\n` +
+                  `├  └ Disable auto-reply in all groups\n` +
                   `├\n` +
                   `├◇ .chatbot status on\n` +
-                  `├  └ Reply to status\n` +
-                  `├     captions\n` +
+                  `├  └ Reply to status captions\n` +
                   `├\n` +
                   `├◇ .chatbot status off\n` +
-                  `├  └ Don't reply to\n` +
-                  `├     status captions\n` +
+                  `├  └ Don't reply to status captions\n` +
                   `├\n` +
                   `├◇ .chatbot on\n` +
-                  `├  └ Enable for this\n` +
-                  `├     chat only\n` +
+                  `├  └ Enable for this chat only\n` +
                   `├\n` +
                   `├◇ .chatbot off\n` +
-                  `├  └ Disable for this\n` +
-                  `├     chat only\n` +
+                  `├  └ Disable for this chat only\n` +
                   `├\n` +
                   `├◇ .chatbot\n` +
-                  `├  └ Show current\n` +
-                  `├     settings\n` +
+                  `├  └ Show current settings\n` +
                   `├\n` +
                   `├◇ .chatbot usage\n` +
                   `├  └ Show this guide\n` +
@@ -129,7 +120,7 @@ async function chatbotCommand(sock, chatId, message) {
         // .chatbot dms on
         if (subCommand === 'dms on') {
             if (data.dms) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ DMs are\n├◇ already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ DMs are already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.dms = true;
             saveChatbotData(data);
@@ -139,7 +130,7 @@ async function chatbotCommand(sock, chatId, message) {
         // .chatbot dms off
         if (subCommand === 'dms off') {
             if (!data.dms) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ DMs are\n├◇ already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ DMs are already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.dms = false;
             saveChatbotData(data);
@@ -149,7 +140,7 @@ async function chatbotCommand(sock, chatId, message) {
         // .chatbot group on
         if (subCommand === 'group on' || subCommand === 'groups on') {
             if (data.groups) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Groups are\n├◇ already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Groups are already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.groups = true;
             saveChatbotData(data);
@@ -159,7 +150,7 @@ async function chatbotCommand(sock, chatId, message) {
         // .chatbot group off
         if (subCommand === 'group off' || subCommand === 'groups off') {
             if (!data.groups) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Groups are\n├◇ already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Groups are already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.groups = false;
             saveChatbotData(data);
@@ -169,41 +160,41 @@ async function chatbotCommand(sock, chatId, message) {
         // .chatbot status on
         if (subCommand === 'status on') {
             if (data.status) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Status replies\n├◇ are already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Status replies are already ON\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.status = true;
             saveChatbotData(data);
-            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ✅ Status replies\n├◇ enabled\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ✅ Status replies enabled\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
         }
 
         // .chatbot status off
         if (subCommand === 'status off') {
             if (!data.status) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Status replies\n├◇ are already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Status replies are already OFF\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.status = false;
             saveChatbotData(data);
-            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Status replies\n├◇ disabled\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Status replies disabled\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
         }
 
         // .chatbot on (this chat)
         if (subCommand === 'on') {
             if (data.chats[chatId] === true) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Already ON\n├◇ for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Already ON for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.chats[chatId] = true;
             saveChatbotData(data);
-            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ✅ Enabled for\n├◇ this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ✅ Enabled for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
         }
 
         // .chatbot off (this chat)
         if (subCommand === 'off') {
             if (data.chats[chatId] === false) {
-                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Already OFF\n├◇ for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+                return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ⚠️ Already OFF for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
             }
             data.chats[chatId] = false;
             saveChatbotData(data);
-            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Disabled for\n├◇ this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
+            return reply(sock, chatId, `╭──◆「 *CHATBOT* 」◆\n├\n├◇ ❌ Disabled for this chat\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`, message);
         }
 
         // Show status
@@ -256,7 +247,7 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
 
         if (userMessage.startsWith('.') || message.key.fromMe) return;
 
-        const prompt = `You are a friendly WhatsApp user chatting casually. Be short, natural, use emojis. Match the vibe. Don't sound like AI, talk like a real person. Never use double asterisks ** for formatting — only use single *asterisk* for bold.\n\nMessage from ${isGroup ? 'group' : 'DM'}: ${userMessage}`;
+        const prompt = `You are a friendly WhatsApp user chatting casually. Be short, natural, use emojis. Match the vibe. Don't sound like AI, talk like a real person.\n\nMessage from ${isGroup ? 'group' : 'DM'}: ${userMessage}`;
 
         // Show typing indicator
         await sock.sendPresenceUpdate('composing', chatId);
@@ -271,10 +262,9 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
         await sock.sendPresenceUpdate('paused', chatId);
 
         const result = await response.json();
-        let replyText = result.choices?.[0]?.message?.content;
+        const replyText = result.choices?.[0]?.message?.content;
 
         if (replyText && replyText.length > 2) {
-            replyText = replyText.replace(/\*\*/g, '*');
             await sock.sendMessage(chatId, { text: replyText.trim() }, { quoted: message });
         }
 
