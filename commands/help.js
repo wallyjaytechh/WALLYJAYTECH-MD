@@ -193,7 +193,7 @@ function buildMenu(styleId, data) {
     ];
 
     const allCommandsRaw = {
-        '🧠 AI': [`.code`, `.gemini`, `.gpt`, `.generate`, `.summarise`],
+        '🧠 AI': [`.chatbot`, `.code`, `.gemini`, `.gpt`, `.generate`, `.summarise`],
         '🦹 ANIME': [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`],
         '👨‍💻 DEVELOPER': [`.totalusers`],
         '📥 DOWNLOAD': [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`],
