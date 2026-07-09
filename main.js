@@ -435,7 +435,8 @@ if (!isCommand) {
         if (isGroup) await Antilink(message, sock);
         await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
         await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
-        await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
+  if (chatId !== 'status@broadcast') {
+    await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
     }
     return;
 }
@@ -1760,8 +1761,8 @@ case userMessage.startsWith('.autorecord'):
     commandExecuted = true;
     break;
                 default:
-        if (userMessage) {
-            await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
+    if (userMessage && chatId !== 'status@broadcast') {
+        await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
         }
         if (isGroup) {
             await handleTagDetection(sock, chatId, message, senderId);
