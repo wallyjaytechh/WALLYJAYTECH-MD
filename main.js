@@ -429,18 +429,16 @@ if (!isGroup && message.key.addressingMode === 'lid' && message.key.remoteJidAlt
             commandWithoutPrefix = rawMessageText.slice(1).trim();
         }
 
-        // IMPORTANT: Handle non-command messages FIRST
-        if (!isCommand) {
-            if (rawMessageText.trim()) {
-                if (isGroup) await Antilink(message, sock);
-                await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
-                await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
-                if (isGroup) {
-                    await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
-                }
-            }
-            return;
-        }
+// IMPORTANT: Handle non-command messages FIRST
+if (!isCommand) {
+    if (rawMessageText.trim()) {
+        if (isGroup) await Antilink(message, sock);
+        await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
+        await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
+        await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
+    }
+    return;
+}
 
         // If we get here, it's a command
         const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
@@ -1761,17 +1759,17 @@ case userMessage.startsWith('.autorecord'):
     await summariseCommand(sock, chatId, message);
     commandExecuted = true;
     break;
-            default:
-                if (isGroup) {
-                    if (userMessage) {
-                        await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
-                    }
-                    await handleTagDetection(sock, chatId, message, senderId);
-                    await handleMentionDetection(sock, chatId, message);
-                }
-                commandExecuted = false;
-                break;
+                default:
+        if (userMessage) {
+            await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
         }
+        if (isGroup) {
+            await handleTagDetection(sock, chatId, message, senderId);
+            await handleMentionDetection(sock, chatId, message);
+        }
+        commandExecuted = false;
+        break;
+}
 
         console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
 
