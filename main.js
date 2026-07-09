@@ -435,8 +435,9 @@ if (!isCommand) {
         if (isGroup) await Antilink(message, sock);
         await handleAutorecordForMessage(sock, chatId, rawMessageText, message);
         await handleAutotypingForMessage(sock, chatId, rawMessageText, message);
-  if (chatId !== 'status@broadcast') {
-    await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
+        if (chatId !== 'status@broadcast') {
+            await handleChatbotResponse(sock, chatId, message, rawMessageText.toLowerCase(), senderId);
+        }
     }
     return;
 }
