@@ -1763,13 +1763,13 @@ case userMessage.startsWith('.autorecord'):
                 default:
     if (userMessage && chatId !== 'status@broadcast') {
         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
-        }
-        if (isGroup) {
-            await handleTagDetection(sock, chatId, message, senderId);
-            await handleMentionDetection(sock, chatId, message);
-        }
-        commandExecuted = false;
-        break;
+    }
+    if (isGroup) {
+        await handleTagDetection(sock, chatId, message, senderId);
+        await handleMentionDetection(sock, chatId, message);
+    }
+    commandExecuted = false;
+    break;
 }
 
         console.log('📤 SWITCH END. commandExecuted:', commandExecuted);
