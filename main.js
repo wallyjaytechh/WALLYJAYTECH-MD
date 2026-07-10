@@ -313,9 +313,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
         
         let chatId = message.key.remoteJid;
 const isGroup = chatId ? chatId.endsWith('@g.us') : false;
+const isStatus = chatId === 'status@broadcast';
 
 // 🔧 LID FIX: use the real sendable JID for private LID-addressed chats
-if (!isGroup && message.key.addressingMode === 'lid' && message.key.remoteJidAlt) {
+if (!isGroup && !isStatus && message.key.addressingMode === 'lid' && message.key.remoteJidAlt) {
     chatId = message.key.remoteJidAlt;
 }
         
