@@ -35,6 +35,21 @@
 // ⛥┌┤
 // */
 
+const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
+
+// ANSI color codes
+const c = {
+    reset: '\x1b[0m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    cyan: '\x1b[36m',
+    white: '\x1b[37m',
+    bgGreen: '\x1b[42m',
+    bgBlack: '\x1b[40m',
+    bold: '\x1b[1m',
+};
+
 const fs = require('fs');
 const path = require('path');
 
@@ -56,7 +71,6 @@ global.File = class File {};
 require('./settings');
 require('dotenv').config();
 const { Boom } = require('@hapi/boom');
-const chalk = require('chalk');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
 
 try { const autorecord = require('./commands/autorecord'); autorecord.stopAllInfiniteRecordings(); } catch (e) {}
@@ -155,22 +169,21 @@ async function startXeonBotInc() {
 
         if (pairingCode && !XeonBotInc.authState.creds.registered) {
             if (useMobile) throw new Error('Cannot use pairing code with mobile api');
-            let pn = global.phoneNumber || await question(chalk.bgBlack(chalk.greenBright(`WhatsApp number (2348155763709): `)));
+            let pn = global.phoneNumber || await question(c.bgBlack + c.bgGreen + 'WhatsApp number (2348155763709): ' + c.reset);
             pn = pn.replace(/[^0-9]/g, '');
-            if (!require('awesome-phonenumber')('+' + pn).isValid()) { console.log(chalk.red('Invalid number.')); process.exit(1); }
-            setTimeout(async () => { try { let code = await XeonBotInc.requestPairingCode(pn); code = code?.match(/.{1,4}/g)?.join("-") || code; console.log(chalk.black(chalk.bgGreen(`Code: `)), chalk.black(chalk.white(code))); } catch (e) {} }, 3000);
+            if (!require('awesome-phonenumber')('+' + pn).isValid()) { log(c.red + 'Invalid number.' + c.reset); process.exit(1); }
+            setTimeout(async () => { try { let code = await XeonBotInc.requestPairingCode(pn); code = code?.match(/.{1,4}/g)?.join("-") || code; log(c.bgGreen + c.black + 'Code: ' + code + c.reset); } catch (e) {} }, 3000);
         }
 
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
-            if (qr) console.log(chalk.cyan('QR Code generated.'));
-            if (connection === 'connecting') console.log(chalk.cyan('Connecting...'));
+            if (qr) log(c.cyan + 'QR Code generated.' + c.reset);
+            if (connection === 'connecting') log(c.cyan + 'Connecting...' + c.reset);
             
             if (connection == "open") {
-                console.log(chalk.cyan(`Connected => ` + JSON.stringify(XeonBotInc.user, null, 2)));
+                log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
 
-                // ═══ HEARTBEAT STARTS HERE ═══
                 const BOT_ID = settings.ownerNumber;
                 setInterval(async () => {
                     try {
@@ -193,7 +206,7 @@ async function startXeonBotInc() {
                     if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: activationMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
                     else await XeonBotInc.sendMessage(botNumber, { text: activationMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
                 } catch (e) {}
-                console.log(chalk.green('Bot Connected!'));
+                log(c.green + 'Bot Connected!' + c.reset);
             }
             if (connection === 'close') {
                 if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut || lastDisconnect?.error?.output?.statusCode === 401) { try { rmSync('./session', { recursive: true, force: true }); } catch (e) {} return; }
@@ -214,13 +227,13 @@ async function startXeonBotInc() {
     } catch (error) { if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { reconnectAttempts++; await delay(5000 * reconnectAttempts); startXeonBotInc(); } }
 }
 
-console.log(chalk.cyan('Starting WALLYJAYTECH-MD Bot...'));
-startXeonBotInc().catch(error => { console.error('Fatal error:', error); process.exit(1); });
+log(c.cyan + 'Starting WALLYJAYTECH-MD Bot...' + c.reset);
+startXeonBotInc().catch(error => { log(c.red + 'Fatal error: ' + error.message + c.reset); process.exit(1); });
 
 process.on('SIGINT', async () => { try { await fetch('https://gemini-proxy-10a1.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
 process.on('SIGTERM', async () => { try { await fetch('https://gemini-proxy-10a1.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
-process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', err); });
-process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
+process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
+process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
 
 let file = require.resolve(__filename);
-fs.watchFile(file, () => { fs.unwatchFile(file); console.log(chalk.redBright(`Update ${__filename}`)); delete require.cache[file]; require(file); });
+fs.watchFile(file, () => { fs.unwatchFile(file); log(c.red + 'Update ' + __filename + c.reset); delete require.cache[file]; require(file); });
