@@ -1281,13 +1281,9 @@ case userMessage.startsWith('.unblock'):
     await unblockCommand(sock, chatId, message);
     commandExecuted = true;
     break;
-            case userMessage === '.git':
-            case userMessage === '.github':
-            case userMessage === '.sc':
             case userMessage === '.script':
-            case userMessage === '.repo':
-                await githubCommand(sock, chatId, message);
-                break;
+    await githubCommand(sock, chatId, message);
+    break;
           case userMessage.startsWith('.poll'):
     await pollCommand(sock, chatId, message);
     commandExecuted = true;
