@@ -255,7 +255,7 @@ const userInfoCommand = require('./commands/userinfo');
 const gptCommand = require('./commands/gpt');
 const codeCommand = require('./commands/code');
 const summariseCommand = require('./commands/summarise');
-
+const subscribeCommand = require('./commands/subscribe');
 
 
 // Global settings
@@ -1762,6 +1762,10 @@ case userMessage.startsWith('.autorecord'):
     break;
         case userMessage.startsWith('.summarise'):
     await summariseCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+        case userMessage === '.subscribe':
+    await subscribeCommand(sock, chatId, message);
     commandExecuted = true;
     break;
                 default:
