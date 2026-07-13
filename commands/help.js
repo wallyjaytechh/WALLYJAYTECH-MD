@@ -195,7 +195,7 @@ function buildMenu(styleId, data) {
     const allCommandsRaw = {
         '🧠 AI': [`.chatbot`, `.code`, `.gemini`, `.gpt`, `.generate`, `.summarise`],
         '🦹 ANIME': [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`],
-        '👨‍💻 DEVELOPER': [`.totalusers`],
+        '👨‍💻 DEVELOPER': [`.checkplan`, `.listpremium`, `.repremium`, `.setpremium`, `.totalusers`],
         '📥 DOWNLOAD': [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`],
         '🔤 EPHOTO': [`.1917`, `.arena`, `.blackpink`, `.devil`, `.fire`, `.glitch`, `.hacker`, `.ice`, `.impressive`, `.leaves`, `.light`, `.matrix`, `.metallic`, `.neon`, `.purple`, `.sand`, `.snow`, `.thunder`],
         '😁 FUN': [`.character`, `.compliment`, `.flirt`, `.goodnight`, `.insult`, `.poet`, `.roseday`, `.simp`, `.wasted`],
