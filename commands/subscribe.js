@@ -27,25 +27,24 @@ async function subscribeCommand(sock, chatId, message) {
             '╰──★─☆─♪♪─◆\n\n' +
             '🔗 *Click below to pay safely:*';
 
-        log('📤 Sending subscribe message with card button...');
+        log('📤 Sending subscribe message with card...');
 
         await sock.sendMessage(chatId, {
             text: caption,
             contextInfo: {
                 externalAdReply: {
                     title: "💎 Tap to Subscribe Now",
-                    body: "Secure payment gateway powered by Selar",
+                    body: "Secure payment via Selar",
                     sourceUrl: "https://selar.com/b32x1354lk",
                     mediaType: 1,
-                    // FIXED: Used a working public image URL for testing
-                    thumbnailUrl: "https://imgur.com", 
+                    thumbnailUrl: "https://cdn.jsdelivr.net/gh/wallyjaytechh/WALLYJAYTECH-MD@main/assets/bot_image.jpg",
                     renderLargerThumbnail: true,
                     showAdAttribution: true
                 }
             }
         }, { quoted: message });
 
-        log('✅ Subscribe message sent successfully');
+        log('✅ Subscribe message sent');
 
     } catch (error) {
         log('❌ Error:', error.message);
