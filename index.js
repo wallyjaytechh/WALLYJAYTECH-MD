@@ -200,7 +200,60 @@ async function startXeonBotInc() {
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const activationMessage = `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆\n\n╭──◆「 *BOT CONNECTED* 」◆\n├\n├◇ *📅 Date:* ${time.split(',')[0] || time}\n├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n├◇ *✅ Status:* Online\n├◇ *💻 Version:* ${settings.version}\n├◇ *👤 Owner:* Sir Wally Jay\n├◇ *📞 Contact:* +2348144317152\n├◇ *🌐 Prefix:* ${settings.prefix}\n├◇ *🔒 Mode:* ${getBotMode()}\n├◇ *💡 Commands:* ${getCommandCount()}+\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *QUICK START* 」◆\n├\n├◇ *📂 .menu*    → All commands\n├◇ *📖 .help*    → Bot guide\n├◇ *📞 .owner*   → Contact owner\n├◇ *⚙️ .settings* → Bot settings\n├◇ *📶 .ping*    → Check speed\n├◇ *🔄 .update*  → Update bot\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *CONNECT* 」◆\n├\n├◇ 💬 Support Group\n├◇ 📺 YouTube Channel\n├◇ ⭐ GitHub Repo\n├◇ 🔔 Channel Updates\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *LINKS* 」◆\n├\n├◇ *🔗 Channel:* ${global.channelLink}\n├\n├◇ *💬 Support:* ${global.supportLink || 'https://chat.whatsapp.com/HggBPlh2UEMEHaGwOcaVkE?mode=hqrt1'}\n├\n├◇ *📺 YouTube:* ${global.ytch || 'https://youtube.com/@wallyjaytechy'}\n├\n├◇ *⭐ GitHub:* https://github.com/wallyjaytechh\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *COPYRIGHT* 」◆\n├\n├◇ © 2025-2026\n├◇ WALLYJAYTECH-MD\n├◇ All Rights Reserved.\n├\n╰───★─☆─♪♪─◆`;
+                    const activationMessage = `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆\n\n` +
+    `╭──◆「 *BOT CONNECTED* 」◆\n` +
+    `├\n` +
+    `├◇ *📅 Date:* ${time.split(',')[0] || time}\n` +
+    `├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n` +
+    `├◇ *✅ Status:* Online\n` +
+    `├◇ *💻 Version:* ${settings.version}\n` +
+    `├◇ *👤 Owner:* Sir Wally Jay\n` +
+    `├◇ *📞 Contact:* +2348144317152\n` +
+    `├◇ *🌐 Prefix:* ${settings.prefix}\n` +
+    `├◇ *🔒 Mode:* ${getBotMode()}\n` +
+    `├◇ *💡 Commands:* ${getCommandCount()}+\n` +
+    `├\n` +
+    `╰─┬─★─☆─♪♪─◆\n\n` +
+    `╭──◆「 *QUICK START* 」◆\n` +
+    `├\n` +
+    `├◇ *📂 .menu*    → All commands\n` +
+    `├◇ *📖 .help*    → Bot guide\n` +
+    `├◇ *📞 .owner*   → Contact owner\n` +
+    `├◇ *⚙️ .settings* → Bot settings\n` +
+    `├◇ *📶 .ping*    → Check speed\n` +
+    `├◇ *🔄 .update*  → Update bot\n` +
+    `├\n` +
+    `╰─┬─★─☆─♪♪─◆\n\n` +
+    `╭──◆「 *CONNECT* 」◆\n` +
+    `├\n` +
+    `├◇ 💬 Support Group\n` +
+    `├◇ 📺 YouTube Channel\n` +
+    `├◇ ⭐ GitHub Repo\n` +
+    `├◇ 🔔 Channel Updates\n` +
+    `├\n` +
+    `╰─┬─★─☆─♪♪─◆\n\n` +
+    `╭──◆「 *LINKS* 」◆\n` +
+    `├\n` +
+    `├◇ *🔗 WhatsApp Channel:* \n` +
+    `├◇ https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n` +
+    `├\n` +
+    `├◇ *💬 Support group:*\n` +
+    `├◇ https://chat.whatsapp.com/BoLlNgq9FIr1uXOguQQQEr?mode=gi_t\n` +
+    `├\n` +
+    `├◇ *📺 YouTube:* WALLY JAY TECH\n` +
+    `├\n` +
+    `├◇ *⭐ GitHub:* \n` +
+    `├◇  https://github.com/wallyjaytechh\n` +
+    `├\n` +
+    `╰─┬─★─☆─♪♪─◆\n\n` +
+    `╭──◆「 *COPYRIGHT* 」◆\n` +
+    `├\n` +
+    `├◇ ©️ 2025-2026\n` +
+    `├◇ WALLYJAYTECH-MD\n` +
+    `├◇ All Rights Reserved.\n` +
+    `├\n` +
+    `╰───★─☆─♪♪─◆`;
+                    
                     let img; const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
                     if (fs.existsSync(ip)) img = fs.readFileSync(ip); else { try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {} }
                     if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: activationMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
