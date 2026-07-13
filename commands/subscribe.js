@@ -1,3 +1,5 @@
+const { proto, generateWAMessageFromContent } = require('@whiskeysockets/baileys');
+
 async function subscribeCommand(sock, chatId, message) {
     const caption = '╭──◆「 *PREMIUM SUB* 」◆\n' +
         '├\n' +
@@ -21,10 +23,28 @@ async function subscribeCommand(sock, chatId, message) {
         '├\n' +
         '╰─┬─★─☆─♪♪─◆\n\n' +
         '╭──◆「 *WALLYJAYTECH-MD* 」◆\n' +
-        '╰──★─☆─♪♪─◆\n\n' +
-        'https://selar.com/b32x1354lk';
+        '╰──★─☆─♪♪─◆';
 
-    await sock.sendMessage(chatId, { text: caption }, { quoted: message });
+    const buttonMessage = {
+        interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+            body: { text: caption },
+            footer: { text: 'WALLYJAYTECH-MD' },
+            nativeFlowMessage: {
+                buttons: [
+                    {
+                        name: 'cta_url',
+                        buttonParamsJson: JSON.stringify({
+                            display_text: '💎 Subscribe Now',
+                            url: 'https://selar.com/b32x1354lk'
+                        })
+                    }
+                ]
+            }
+        })
+    };
+
+    const msgData = await generateWAMessageFromContent(chatId, buttonMessage, { quoted: message });
+    await sock.relayMessage(chatId, msgData.message, { messageId: msgData.key.id });
 }
 
 module.exports = subscribeCommand;
