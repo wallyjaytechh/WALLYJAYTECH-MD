@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
 
 async function subscribeCommand(sock, chatId, message) {
@@ -29,6 +31,10 @@ async function subscribeCommand(sock, chatId, message) {
 
         log('📤 Sending subscribe message with card...');
 
+        // Read the bot's own image as a local buffer instead of a remote URL
+        const thumbPath = path.join(__dirname, '../assets/bot_image.jpg');
+        const thumbBuffer = fs.existsSync(thumbPath) ? fs.readFileSync(thumbPath) : null;
+
         await sock.sendMessage(chatId, {
             text: caption,
             contextInfo: {
@@ -37,7 +43,7 @@ async function subscribeCommand(sock, chatId, message) {
                     body: "Secure payment via Selar",
                     sourceUrl: "https://selar.com/b32x1354lk",
                     mediaType: 1,
-                    thumbnailUrl: "https://cdn.jsdelivr.net/gh/wallyjaytechh/WALLYJAYTECH-MD@main/assets/bot_image.jpg",
+                    thumbnail: thumbBuffer, // 👈 raw buffer instead of URL
                     renderLargerThumbnail: true,
                     showAdAttribution: true
                 }
