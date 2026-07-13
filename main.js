@@ -256,6 +256,7 @@ const gptCommand = require('./commands/gpt');
 const codeCommand = require('./commands/code');
 const summariseCommand = require('./commands/summarise');
 const subscribeCommand = require('./commands/subscribe');
+const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanCommand } = require('./commands/premium');
 
 
 // Global settings
@@ -1762,6 +1763,22 @@ case userMessage.startsWith('.autorecord'):
     break;
         case userMessage === '.subscribe':
     await subscribeCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+        case userMessage.startsWith('.setpremium'):
+    await setpremiumCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+case userMessage.startsWith('.rmpremium'):
+    await rmpremiumCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+case userMessage === '.listpremium':
+    await listpremiumCommand(sock, chatId, message);
+    commandExecuted = true;
+    break;
+case userMessage.startsWith('.checkplan'):
+    await checkplanCommand(sock, chatId, message);
     commandExecuted = true;
     break;
                 default:
