@@ -60,14 +60,8 @@ async function getUserStats() {
     try {
         const res = await fetch('https://gemini-proxy-10a1.onrender.com/v1/stats');
         const data = await res.json();
-        return {
-            totalUsers: data.totalUsers || 0,
-            activeUsers: data.activeUsers || 0,
-            platforms: {}
-        };
-    } catch (e) {
-        return { totalUsers: 0, activeUsers: 0, platforms: {} };
-    }
+        return { totalUsers: data.totalUsers || 0, activeUsers: data.activeUsers || 0, platforms: {} };
+    } catch (e) { return { totalUsers: 0, activeUsers: 0, platforms: {} }; }
 }
 
 function getPrefix() { return settings.prefix || '.'; }
@@ -78,6 +72,16 @@ function getBotMode() {
         if (fs.existsSync(p)) { const d = JSON.parse(fs.readFileSync(p, 'utf8')); if (typeof d.isPublic === 'boolean') return d.isPublic ? 'Public' : 'Private'; }
         return 'Public';
     } catch (e) { return 'Public'; }
+}
+
+async function getBotPlan() {
+    try {
+        const ownerNumber = settings.ownerNumber || '';
+        const res = await fetch(`https://gemini-proxy-10a1.onrender.com/v1/premium/check/${ownerNumber}`);
+        const data = await res.json();
+        if (data.premium && data.remainingDays > 0) return `Premium (${data.remainingDays}d left)`;
+        return 'Free';
+    } catch (e) { return 'Free'; }
 }
 
 function getTimeBasedGreeting() {
@@ -111,11 +115,6 @@ async function getUserName(sock, userId, message) {
     catch (e) { return userId.split('@')[0] || 'User'; }
 }
 
-function getPlatformEmoji(platform) {
-    const map = { 'Render': '☁️', 'Codespaces': '💻', 'Panel': '🛠️', 'Local Machine': '🏠', 'Replit': '⚡', 'Koyeb': '🚀', 'Fly.io': '✈️', 'Glitch': '🌀', 'Vercel': '▲', 'Heroku': '⚙️', 'Railway': '🚂' };
-    return map[platform] || '❓';
-}
-
 function countTotalCommands() {
     try { const p = path.join(__dirname, '../main.js'); if (!fs.existsSync(p)) return 157; const c = fs.readFileSync(p, 'utf8'); const re = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g; let m, count = 0; while ((m = re.exec(c)) !== null) { if (m[2]) count++; } return count || 157; }
     catch (e) { return 157; }
@@ -147,13 +146,7 @@ function getSystemStats() {
     const filled = Math.round((usagePercent / 100) * barLength);
     const empty = barLength - filled;
     const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    return {
-        uptime: uptimeFormatted,
-        usedGB: usedGB.toFixed(2),
-        totalGB: totalGB.toFixed(2),
-        usagePercent: usagePercent,
-        bar: bar
-    };
+    return { uptime: uptimeFormatted, usedGB: usedGB.toFixed(2), totalGB: totalGB.toFixed(2), usagePercent: usagePercent, bar: bar };
 }
 
 async function sendMenuAudio(sock, chatId, message) {
@@ -162,13 +155,14 @@ async function sendMenuAudio(sock, chatId, message) {
 }
 
 function buildMenu(styleId, data) {
-    const { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, styleId: styleNum, systemStats, ping } = data;
+    const { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, systemStats, ping, botPlan } = data;
 
     const infoLines = [
         `*👤 User:* ${userName}`,
         `*🤖 BotName:* ${settings.botName || 'WALLYJAYTECH-MD'}`,
         `*🧠 Version:* ${settings.version || '1.0.0'}`,
         `*👑 BotOwner:* ${settings.botOwner || 'Wally Jay'}`,
+        `*💳 BotPlan:* ${botPlan || 'Free'}`,
         `*📺 YT Channel:* ${global.ytch || 'WALLY JAY TECH'}`,
         `*📞 BotNumber:* ${settings.ownerNumber}`,
         `*📥 Prefix:* ${prefix}`,
@@ -195,7 +189,7 @@ function buildMenu(styleId, data) {
     const allCommandsRaw = {
         '🧠 AI': [`.chatbot`, `.code`, `.gemini`, `.gpt`, `.generate`, `.summarise`],
         '🦹 ANIME': [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`],
-        '👨‍💻 DEVELOPER': [`.checkplan`, `.listpremium`, `.repremium`, `.setpremium`, `.totalusers`],
+        '👨‍💻 DEVELOPER': [`.checkplan`, `.listpremium`, `.rmpremium`, `.setpremium`, `.totalusers`],
         '📥 DOWNLOAD': [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`],
         '🔤 EPHOTO': [`.1917`, `.arena`, `.blackpink`, `.devil`, `.fire`, `.glitch`, `.hacker`, `.ice`, `.impressive`, `.leaves`, `.light`, `.matrix`, `.metallic`, `.neon`, `.purple`, `.sand`, `.snow`, `.thunder`],
         '😁 FUN': [`.character`, `.compliment`, `.flirt`, `.goodnight`, `.insult`, `.poet`, `.roseday`, `.simp`, `.wasted`],
@@ -232,7 +226,6 @@ function buildMenu(styleId, data) {
         12: { top: '╭──⍋「 BOT INFO 」⍋', line: '▶', secHdr: (s) => `╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋\n╭──⍋「 ${s} 」⍋`, bot: '╰─⍋─⍋─⍋─⍋─⍋─⍋─⍋─⍋', bul: '▶ ' }
     };
 
-    // 🟢 STYLE 1 (DEFAULT) — Diamond Design
     if (styleId === 1) {
         let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
         menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
@@ -240,6 +233,14 @@ function buildMenu(styleId, data) {
         menu += `├\n`;
         for (const l of infoLines) menu += `├◇ ${l}\n`;
         menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
+        menu += `╭─┴◆「 *✍️ NOTE* 」◆\n`;
+        menu += `├\n`;
+        menu += `├◇ Ⓟ  premium commands\n`;
+        menu += `├◇ Ⓕ  free commands\n`;
+        menu += `├◇ Ⓗ  free & premium commands\n`;
+        menu += `├◇  use .subscribe to upgrade\n`;
+        menu += `├\n`;
+        menu += `╰─┬─★─☆─♪♪─★\n\n`;
         for (const [title, cmds] of allCommands) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
@@ -252,12 +253,16 @@ function buildMenu(styleId, data) {
         return menu;
     }
 
-    // 🟡 STYLES 2–12
     const s = styles[styleId] || styles[2];
     let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
     menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
     menu += s.top + '\n';
     for (const l of infoLines) menu += s.line + ' ' + l + '\n';
+    menu += s.secHdr('✍️ NOTE') + '\n';
+    menu += s.bul + 'Ⓟ  premium commands\n';
+    menu += s.bul + 'Ⓕ  free commands\n';
+    menu += s.bul + 'Ⓗ  free & premium commands\n';
+    menu += s.bul + ' use .subscribe to upgrade\n';
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
         for (const cmd of cmds) menu += s.bul + cmd + '\n';
@@ -292,6 +297,7 @@ async function helpCommand(sock, chatId, message) {
     const stats = await getUserStats();
     const fontId = getCurrentFont();
     const styleId = getCurrentStyle();
+    const botPlan = await getBotPlan();
     const systemStats = getSystemStats();
 
     const start = Date.now();
@@ -313,7 +319,7 @@ async function helpCommand(sock, chatId, message) {
     };
 
     let helpMessage = buildMenu(styleId, {
-        userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, styleId, fontId, systemStats, ping
+        userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, systemStats, ping, botPlan
     });
 
     const channelCtx = {
@@ -356,10 +362,7 @@ async function helpCommand(sock, chatId, message) {
         await sendMenuAudio(sock, sendChatId, message);
     } catch (error) {
         console.error('❌ Error in help command:', error);
-        await sock.sendMessage(sendChatId, {
-            text: finalMessage,
-            mentions: [realSenderJid]
-        }, { quoted: message });
+        await sock.sendMessage(sendChatId, { text: finalMessage, mentions: [realSenderJid] }, { quoted: message });
     }
 }
 
