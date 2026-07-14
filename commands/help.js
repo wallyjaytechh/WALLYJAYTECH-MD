@@ -149,20 +149,19 @@ async function sendMenuAudio(sock, chatId, message) {
     catch (e) { return false; }
 }
 
-// ═══ COMMAND LIST (global for counting) ═══
 const allCommandsRaw = {
-    '🧠 AI': [`Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`, `Ⓟ .aivideo`],
-    '🦹 ANIME': [`Ⓕ .anime`, `Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
-    '👨‍💻 DEVELOPER': [`Ⓓ .checkplan`, `Ⓓ .listpremium`, `Ⓓ .rmpremium`, `Ⓓ .setpremium`, `Ⓓ .totalusers`],
-    '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`],
+    '🧠 AI': [`Ⓟ .aivideo`, `Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`],
+    '🦹 ANIME': [`Ⓕ .animu`, `Ⓕ .animuquote`, `Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
+    '👨‍💻 DEVELOPER': [`Ⓓ .checkplan`, `Ⓓ .listpremium`, `Ⓓ .rmpremium`, `Ⓓ .setpremium`, `Ⓓ .totalusers`, `Ⓓ .userinfo`],
+    '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .igsc`, `Ⓕ .music`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`],
     '🔤 EPHOTO': [`Ⓕ .1917`, `Ⓕ .arena`, `Ⓕ .blackpink`, `Ⓕ .devil`, `Ⓕ .fire`, `Ⓕ .glitch`, `Ⓕ .hacker`, `Ⓕ .ice`, `Ⓕ .impressive`, `Ⓕ .leaves`, `Ⓕ .light`, `Ⓕ .matrix`, `Ⓕ .metallic`, `Ⓕ .neon`, `Ⓕ .purple`, `Ⓕ .sand`, `Ⓕ .snow`, `Ⓕ .thunder`],
-    '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .simpmeter`, `Ⓕ .stupid`, `Ⓕ .stupidmeter`, `Ⓕ .wasted`],
-    '🎮 GAMES': [`Ⓕ .answer`, `Ⓕ .buychips`, `Ⓕ .coindaily`, `Ⓕ .coinflip`, `Ⓕ .coinhelp`, `Ⓕ .coinleaderboard`, `Ⓕ .coinstats`, `Ⓕ .dare`, `Ⓕ .guess`, `Ⓕ .hangman`, `Ⓕ .tictactoe`, `Ⓕ .trivia`, `Ⓕ .truth`],
-    '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .takeout`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
+    '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .stupid`, `Ⓕ .waste`],
+    '🎮 GAMES': [`Ⓟ .addchips`, `Ⓕ .answer`, `Ⓟ .buychips`, `Ⓟ .checkbalance`, `Ⓕ .coindaily`, `Ⓕ .coinflip`, `Ⓕ .coinhelp`, `Ⓕ .coinleaderboard`, `Ⓕ .coinstats`, `Ⓕ .dare`, `Ⓕ .guess`, `Ⓕ .hangman`, `Ⓟ .resetchips`, `Ⓕ .surrender`, `Ⓟ .checktruth`, `Ⓕ .takeout`, `Ⓕ .tictactoe`, `Ⓟ .transactions`, `Ⓕ .trivia`, `Ⓕ .truth`, `Ⓟ .unlimitedchips`],
+    '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
     '💻 GITHUB': [`Ⓕ .script`],
     '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .staff`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
-    '🧩 MISC': [`Ⓕ .china`, `Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .hijab`, `Ⓕ .horny`, `Ⓕ .indonesia`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .japan`, `Ⓕ .korea`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .passed`, `Ⓕ .pies`, `Ⓕ .simpcard`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
-    '🔒 OWNER': [`Ⓕ .anticall`, `Ⓕ .antidelete`, `Ⓕ .antiforeign`, `Ⓕ .autoreact`, `Ⓕ .autoread`, `Ⓕ .autorecord`, `Ⓕ .autorecordtype`, `Ⓕ .autostatus`, `Ⓕ .autotyping`, `Ⓕ .block`, `Ⓕ .botinfo`, `Ⓕ .checkupdate`, `Ⓕ .clearsession`, `Ⓕ .cleartmp`, `Ⓕ .confighelp`, `Ⓕ .getpp`, `Ⓕ .join`, `Ⓕ .leave`, `Ⓕ .mention`, `Ⓕ .menufont`, `Ⓕ .menustyle`, `Ⓕ .mode`, `Ⓕ .pmblocker`, `Ⓕ .poll`, `Ⓕ .restart`, `Ⓕ .setauthor`, `Ⓕ .setbotname`, `Ⓕ .setbotowner`, `Ⓕ .setmention`, `Ⓕ .setownernumber`, `Ⓕ .setpackname`, `Ⓕ .setpp`, `Ⓕ .setprefix`, `Ⓕ .settings`, `Ⓕ .settimezone`, `Ⓕ .setytchannel`, `Ⓕ .sudo`, `Ⓕ .tempfile`, `Ⓕ .unavailable`, `Ⓕ .unblock`, `Ⓕ .update`, `Ⓕ .userinfo`, `Ⓕ .vote`],
+    '🧩 MISC': [`Ⓕ .china`, `Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .hijab`, `Ⓕ .horny`, `Ⓕ .indonesia`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .japan`, `Ⓕ .korea`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .oogway2`, `Ⓕ .passed`, `Ⓕ .pies`, `Ⓕ .simpcard`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
+    '🔒 OWNER': [`Ⓓ .anticall`, `Ⓓ .antidelete`, `Ⓓ .antiforeign`, `Ⓓ .autoreact`, `Ⓓ .autoread`, `Ⓓ .autorecord`, `Ⓓ .autorecordtype`, `Ⓓ .autostatus`, `Ⓓ .autotyping`, `Ⓓ .block`, `Ⓓ .botinfo`, `Ⓓ .checkupdate`, `Ⓓ .clearsession`, `Ⓓ .cleartmp`, `Ⓓ .confighelp`, `Ⓓ .getpp`, `Ⓓ .join`, `Ⓓ .leave`, `Ⓓ .mention`, `Ⓓ .menufont`, `Ⓓ .menustyle`, `Ⓓ .mode`, `Ⓓ .pmblocker`, `Ⓓ .poll`, `Ⓓ .restart`, `Ⓓ .setauthor`, `Ⓓ .setbotname`, `Ⓓ .setbotowner`, `Ⓓ .setmention`, `Ⓓ .setownernumber`, `Ⓓ .setpackname`, `Ⓓ .setpp`, `Ⓓ .setprefix`, `Ⓓ .settimezone`, `Ⓓ .settings`, `Ⓓ .setytchannel`, `Ⓓ .sudo`, `Ⓓ .tempfile`, `Ⓓ .unavailable`, `Ⓓ .unblock`, `Ⓓ .update`, `Ⓓ .vote`],
     '💎 PREMIUM SUB': [`Ⓕ .subscribe`],
     '🎨 STICKER': [`Ⓕ .blur`, `Ⓕ .crop`, `Ⓕ .emojimix`, `Ⓕ .igsc`, `Ⓕ .igs`, `Ⓕ .meme`, `Ⓕ .remini`, `Ⓕ .simage`, `Ⓕ .sticker`, `Ⓕ .take`, `Ⓕ .tgsticker`],
     '⚙️ TOOLS': [`Ⓕ .removebg`],
