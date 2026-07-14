@@ -178,7 +178,7 @@ const allCommandsRaw = {
 function countTotalCommands() {
     let count = 0;
     for (const cmds of Object.values(allCommandsRaw)) {
-        if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+        if (!Array.isArray(cmds) && typeof cmds[0] === 'object' && cmds[0].sub) {
             for (const sub of cmds) count += sub.cmds.length;
         } else {
             count += cmds.length;
@@ -260,7 +260,7 @@ function buildMenu(styleId, data) {
         for (const [title, cmds] of allCommands) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
-            if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+            if (!Array.isArray(cmds) && typeof cmds[0] === 'object' && cmds[0].sub) {
                 for (const sub of cmds) {
                     menu += `├◇     *${sub.sub}*\n`;
                     for (const cmd of sub.cmds.sort((a, b) => {
@@ -297,7 +297,7 @@ function buildMenu(styleId, data) {
     menu += s.bul + ' use .subscribe to upgrade\n';
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
-        if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+        if (!Array.isArray(cmds) && typeof cmds[0] === 'object' && cmds[0].sub) {
             for (const sub of cmds) {
                 menu += s.bul + '    *' + sub.sub + '*\n';
                 for (const cmd of sub.cmds.sort((a, b) => {
