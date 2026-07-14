@@ -104,33 +104,51 @@ async function codeCommand(sock, chatId, message) {
     let loadingMsg;
 
     try {
-        // 🔒 PREMIUM CHECK
         const senderNumber = getSenderNumber(message);
         const isPremium = await checkPremium(senderNumber);
-        if (!isPremium) {
-            return sock.sendMessage(chatId, {
-                text: '╭──◆「 *PREMIUM ONLY* 」◆\n├\n├◇ 💎 This command is premium\n├◇ 🔓 Use .subscribe to upgrade\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆'
-            }, { quoted: message });
+        
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+        const args = text.split(' ').slice(1);
+        const typedQuery = args.join(' ').trim();
+
+        // Get quoted message text for reply
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        let quotedText = '';
+        if (quotedMessage) {
+            quotedText = quotedMessage.conversation || 
+                        quotedMessage.extendedTextMessage?.text || 
+                        quotedMessage.imageMessage?.caption || 
+                        quotedMessage.videoMessage?.caption || '';
         }
 
-        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-        const query = text.split(' ').slice(1).join(' ').trim();
+        // Determine prompt: typed wins over quoted
+        let query;
+        if (typedQuery) {
+            query = typedQuery;
+        } else if (quotedText) {
+            query = quotedText;
+        }
 
+        // No query → show menu (everyone can see)
         if (!query) {
             return sock.sendMessage(chatId, {
                 text: `╭──◆「 *AI CODE GENERATOR* 」◆\n` +
                     `├\n` +
                     `├◇ 💻 Generate code with AI\n` +
                     `├◇ 🤖 GPT-4o + Llama + Pollinations\n` +
-                    `├◇ 🆓 Free via GitHub Models\n` +
+                    `├◇ 💎 Premium feature\n` +
                     `├\n` +
                     `├◇ *📖 Usage:*\n` +
                     `├  └ .code <prompt>\n` +
+                    `├  └ Reply to a message with .code\n` +
+                    `├  └ .code <prompt> + reply overrides\n` +
                     `├\n` +
                     `├◇ *✨ Examples:*\n` +
                     `├  └ .code login form in html\n` +
                     `├  └ .code python fibonacci function\n` +
-                    `├  └ .code discord bot in js\n` +
+                    `├  └ Reply to text with .code\n` +
+                    `├\n` +
+                    `${!isPremium ? `├◇ *🔒 Status:* Premium locked\n├  └ Use .subscribe to unlock\n` : `├◇ *✅ Status:* Premium active\n`}` +
                     `├\n` +
                     `╰─┬─★─☆─♪♪─◆\n\n` +
                     `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
@@ -138,6 +156,14 @@ async function codeCommand(sock, chatId, message) {
             }, { quoted: message });
         }
 
+        // Has prompt but not premium → block
+        if (!isPremium) {
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *PREMIUM ONLY* 」◆\n├\n├◇ 💎 This command is premium\n├◇ 🔓 Use .subscribe to upgrade\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+            }, { quoted: message });
+        }
+
+        // Premium user with prompt → generate code
         loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
 
         let frame = 0;
@@ -149,12 +175,29 @@ async function codeCommand(sock, chatId, message) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD'
+                'x-bot-repo': 'wallyjaytechh/WALLYJAYTECH-MD',
+                'x-user-number': senderNumber
             },
             body: JSON.stringify({ prompt: query })
         });
 
         const data = await response.json();
+
+        // Handle proxy error responses
+        if (response.status === 426) {
+            clearInterval(interval);
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *UPDATE REQUIRED* 」◆\n├\n├◇ ⚠️ Old version detected\n├◇ 📥 Use .update to upgrade\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+            }, { quoted: message });
+        }
+
+        if (response.status === 402) {
+            clearInterval(interval);
+            return sock.sendMessage(chatId, {
+                text: `╭──◆「 *PREMIUM REQUIRED* 」◆\n├\n├◇ 💎 Premium expired or not found\n├◇ 🔓 Use .subscribe to renew\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+            }, { quoted: message });
+        }
+
         const answer = data.reply;
         const usedModel = data.model || 'AI';
 
