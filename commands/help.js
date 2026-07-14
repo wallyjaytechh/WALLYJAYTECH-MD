@@ -261,7 +261,9 @@ function buildMenu(styleId, data) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
             if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (const sub of cmds) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `├\n`;
                     menu += `├◇     *${sub.sub}*\n`;
                     for (const cmd of sub.cmds.sort((a, b) => {
                         const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
@@ -298,7 +300,9 @@ function buildMenu(styleId, data) {
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
         if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-            for (const sub of cmds) {
+            for (let i = 0; i < cmds.length; i++) {
+                const sub = cmds[i];
+                if (i > 0) menu += s.bul + '\n';
                 menu += s.bul + '    *' + sub.sub + '*\n';
                 for (const cmd of sub.cmds.sort((a, b) => {
                     const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
