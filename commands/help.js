@@ -187,18 +187,18 @@ function buildMenu(styleId, data) {
     ];
 
     const allCommandsRaw = {
-        '🧠 AI': [`Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`],
-        '🦹 ANIME': [`Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
+        '🧠 AI': [`Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`, `Ⓕ .aivideo`],
+        '🦹 ANIME': [`Ⓕ .anime`, `Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
         '👨‍💻 DEVELOPER': [`Ⓟ .checkplan`, `Ⓟ .listpremium`, `Ⓟ .rmpremium`, `Ⓟ .setpremium`, `Ⓟ .totalusers`],
-        '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`, `Ⓕ .ytmp4`],
+        '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`],
         '🔤 EPHOTO': [`Ⓕ .1917`, `Ⓕ .arena`, `Ⓕ .blackpink`, `Ⓕ .devil`, `Ⓕ .fire`, `Ⓕ .glitch`, `Ⓕ .hacker`, `Ⓕ .ice`, `Ⓕ .impressive`, `Ⓕ .leaves`, `Ⓕ .light`, `Ⓕ .matrix`, `Ⓕ .metallic`, `Ⓕ .neon`, `Ⓕ .purple`, `Ⓕ .sand`, `Ⓕ .snow`, `Ⓕ .thunder`],
-        '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .wasted`],
+        '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .simpmeter`, `Ⓕ .stupid`, `Ⓕ .stupidmeter`, `Ⓕ .wasted`],
         '🎮 GAMES': [`Ⓕ .answer`, `Ⓕ .buychips`, `Ⓕ .coindaily`, `Ⓕ .coinflip`, `Ⓕ .coinhelp`, `Ⓕ .coinleaderboard`, `Ⓕ .coinstats`, `Ⓕ .dare`, `Ⓕ .guess`, `Ⓕ .hangman`, `Ⓕ .tictactoe`, `Ⓕ .trivia`, `Ⓕ .truth`],
-        '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .ss`, `Ⓕ .trt`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
+        '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .takeout`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
         '💻 GITHUB': [`Ⓕ .script`],
-        '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .chatbot`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .stupid`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
-        '🧩 MISC': [`Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .horny`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .oogway2`, `Ⓕ .passed`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
-        '🔒 OWNER': [`Ⓕ .anticall`, `Ⓕ .antidelete`, `Ⓕ .antiforeign`, `Ⓕ .autoreact`, `Ⓕ .autoread`, `Ⓕ .autorecord`, `Ⓕ .autorecordtype`, `Ⓕ .autostatus`, `Ⓕ .autotyping`, `Ⓕ .block`, `Ⓕ .botinfo`, `Ⓕ .checkupdate`, `Ⓕ .clearsession`, `Ⓕ .cleartmp`, `Ⓕ .confighelp`, `Ⓕ .getpp`, `Ⓕ .join`, `Ⓕ .leave`, `Ⓕ .mention`, `Ⓕ .menufont`, `Ⓕ .menustyle`, `Ⓕ .mode`, `Ⓕ .pmblocker`, `Ⓕ .poll`, `Ⓕ .restart`, `Ⓕ .setauthor`, `Ⓕ .setbotname`, `Ⓕ .setbotowner`, `Ⓕ .setmention`, `Ⓕ .setownernumber`, `Ⓕ .setpackname`, `Ⓕ .setpp`, `Ⓕ .setprefix`, `Ⓕ .settings`, `Ⓕ .settimezone`, `Ⓕ .setytchannel`, `Ⓕ .sudo`, `Ⓕ .tempfile`, `Ⓕ .unblock`, `Ⓕ .update`, `Ⓕ .userinfo`, `Ⓕ .vote`],
+        '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .staff`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
+        '🧩 MISC': [`Ⓕ .china`, `Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .hijab`, `Ⓕ .horny`, `Ⓕ .indonesia`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .japan`, `Ⓕ .korea`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .passed`, `Ⓕ .pies`, `Ⓕ .simpcard`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
+        '🔒 OWNER': [`Ⓕ .anticall`, `Ⓕ .antidelete`, `Ⓕ .antiforeign`, `Ⓕ .autoreact`, `Ⓕ .autoread`, `Ⓕ .autorecord`, `Ⓕ .autorecordtype`, `Ⓕ .autostatus`, `Ⓕ .autotyping`, `Ⓕ .block`, `Ⓕ .botinfo`, `Ⓕ .checkupdate`, `Ⓕ .clearsession`, `Ⓕ .cleartmp`, `Ⓕ .confighelp`, `Ⓕ .getpp`, `Ⓕ .join`, `Ⓕ .leave`, `Ⓕ .mention`, `Ⓕ .menufont`, `Ⓕ .menustyle`, `Ⓕ .mode`, `Ⓕ .pmblocker`, `Ⓕ .poll`, `Ⓕ .restart`, `Ⓕ .setauthor`, `Ⓕ .setbotname`, `Ⓕ .setbotowner`, `Ⓕ .setmention`, `Ⓕ .setownernumber`, `Ⓕ .setpackname`, `Ⓕ .setpp`, `Ⓕ .setprefix`, `Ⓕ .settings`, `Ⓕ .settimezone`, `Ⓕ .setytchannel`, `Ⓕ .sudo`, `Ⓕ .tempfile`, `Ⓕ .unavailable`, `Ⓕ .unblock`, `Ⓕ .update`, `Ⓕ .userinfo`, `Ⓕ .vote`],
         '💎 PREMIUM SUB': [`Ⓕ .subscribe`],
         '🎨 STICKER': [`Ⓕ .blur`, `Ⓕ .crop`, `Ⓕ .emojimix`, `Ⓕ .igsc`, `Ⓕ .igs`, `Ⓕ .meme`, `Ⓕ .remini`, `Ⓕ .simage`, `Ⓕ .sticker`, `Ⓕ .take`, `Ⓕ .tgsticker`],
         '⚙️ TOOLS': [`Ⓕ .removebg`],
@@ -244,7 +244,11 @@ function buildMenu(styleId, data) {
         for (const [title, cmds] of allCommands) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
-            for (const cmd of cmds.sort()) menu += `├${cmd}\n`;
+            for (const cmd of cmds.sort((a, b) => {
+                const nameA = a.replace(/^[ⓅⒻⒽ] /, '');
+                const nameB = b.replace(/^[ⓅⒻⒽ] /, '');
+                return nameA.localeCompare(nameB);
+            })) menu += `├${cmd}\n`;
             menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
         }
         menu += `              *© 2025-2026*\n\n`;
@@ -265,7 +269,11 @@ function buildMenu(styleId, data) {
     menu += s.bul + ' use .subscribe to upgrade\n';
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
-        for (const cmd of cmds) menu += s.bul + cmd.replace(/^[ⓅⒻⒽ] /, '') + '\n';
+        for (const cmd of cmds.sort((a, b) => {
+            const nameA = a.replace(/^[ⓅⒻⒽ] /, '');
+            const nameB = b.replace(/^[ⓅⒻⒽ] /, '');
+            return nameA.localeCompare(nameB);
+        })) menu += s.bul + cmd.replace(/^[ⓅⒻⒽ] /, '') + '\n';
     }
     menu += s.bot + '\n\n';
     menu += `📊 Total Commands: ${totalCommands}\n\n`;
