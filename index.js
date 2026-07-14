@@ -200,8 +200,7 @@ async function startXeonBotInc() {
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const activationMessage = `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆\n\n` +
-    `╭──◆「 *BOT CONNECTED* 」◆\n` +
+             const activationMessage = `╭──◆「 *BOT CONNECTED* 」◆\n` +
     `├\n` +
     `├◇ *📅 Date:* ${time.split(',')[0] || time}\n` +
     `├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n` +
@@ -252,7 +251,9 @@ async function startXeonBotInc() {
     `├◇ WALLYJAYTECH-MD\n` +
     `├◇ All Rights Reserved.\n` +
     `├\n` +
-    `╰───★─☆─♪♪─◆`;
+    `╰───★─☆─♪♪─◆\n\n` +
+    `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n` +
+    `╰───★─☆─♪♪─◆`;       
                     
                     let img; const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
                     if (fs.existsSync(ip)) img = fs.readFileSync(ip); else { try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {} }
