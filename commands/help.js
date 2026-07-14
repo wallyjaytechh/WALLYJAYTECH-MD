@@ -79,7 +79,7 @@ async function getBotPlan() {
         const ownerNumber = settings.ownerNumber || '';
         const res = await fetch(`https://gemini-proxy-10a1.onrender.com/v1/premium/check/${ownerNumber}`);
         const data = await res.json();
-        if (data.premium && data.remainingDays > 0) return `Premium (${data.remainingDays}d left)`;
+        if (data.premium && data.remainingDays > 0) return 'Premium';
         return 'Free';
     } catch (e) { return 'Free'; }
 }
@@ -187,21 +187,21 @@ function buildMenu(styleId, data) {
     ];
 
     const allCommandsRaw = {
-        '🧠 AI': [`.chatbot`, `.code`, `.gemini`, `.gpt`, `.generate`, `.summarise`],
-        '🦹 ANIME': [`.cry`, `.facepalm`, `.hug`, `.kiss`, `.nom`, `.pat`, `.poke`, `.wink`],
-        '👨‍💻 DEVELOPER': [`.checkplan`, `.listpremium`, `.rmpremium`, `.setpremium`, `.totalusers`],
-        '📥 DOWNLOAD': [`.facebook`, `.instagram`, `.play`, `.song`, `.spotify`, `.tiktok`, `.video`, `.ytmp4`],
-        '🔤 EPHOTO': [`.1917`, `.arena`, `.blackpink`, `.devil`, `.fire`, `.glitch`, `.hacker`, `.ice`, `.impressive`, `.leaves`, `.light`, `.matrix`, `.metallic`, `.neon`, `.purple`, `.sand`, `.snow`, `.thunder`],
-        '😁 FUN': [`.character`, `.compliment`, `.flirt`, `.goodnight`, `.insult`, `.poet`, `.roseday`, `.simp`, `.wasted`],
-        '🎮 GAMES': [`.answer`, `.buychips`, `.coindaily`, `.coinflip`, `.coinhelp`, `.coinleaderboard`, `.coinstats`, `.dare`, `.guess`, `.hangman`, `.tictactoe`, `.trivia`, `.truth`],
-        '🌐 GENERAL': [`.8ball`, `.alive`, `.attp`, `.clear`, `.fact`, `.getjid`, `.help`, `.joke`, `.lyrics`, `.menu`, `.news`, `.owner`, `.ping`, `.quote`, `.ss`, `.trt`, `.tts`, `.url`, `.vv`, `.weather`],
-        '💻 GITHUB': [`.script`],
-        '👥 GROUP': [`.admins`, `.antibadword`, `.antibot`, `.antilink`, `.antitag`, `.ban`, `.chatbot`, `.delete`, `.demote`, `.goodbye`, `.groupinfo`, `.hidetag`, `.jid`, `.kick`, `.mute`, `.promote`, `.resetlink`, `.setgdesc`, `.setgname`, `.setgpp`, `.ship`, `.stupid`, `.tag`, `.tagall`, `.tagnotadmin`, `.unban`, `.unmute`, `.warn`, `.warnings`, `.welcome`],
-        '🧩 MISC': [`.circle`, `.comrade`, `.gay`, `.glass`, `.heart`, `.horny`, `.its-so-stupid`, `.jail`, `.lgbt`, `.lolice`, `.namecard`, `.oogway`, `.oogway2`, `.passed`, `.tonikawa`, `.triggered`, `.tweet`, `.ytcomment`],
-        '🔒 OWNER': [`.anticall`, `.antidelete`, `.antiforeign`, `.autoreact`, `.autoread`, `.autorecord`, `.autorecordtype`, `.autostatus`, `.autotyping`, `.block`, `.botinfo`, `.checkupdate`, `.clearsession`, `.cleartmp`, `.confighelp`, `.getpp`, `.join`, `.leave`, `.mention`, `.menufont`, `.menustyle`, `.mode`, `.pmblocker`, `.poll`, `.restart`, `.setauthor`, `.setbotname`, `.setbotowner`, `.setmention`, `.setownernumber`, `.setpackname`, `.setpp`, `.setprefix`, `.settings`, `.settimezone`, `.setytchannel`, `.sudo`, `.tempfile`, `.unblock`, `.update`, `.userinfo`, `.vote`],
-        '💎 PREMIUM SUB': [`.subscribe`],
-        '🎨 STICKER': [`.blur`, `.crop`, `.emojimix`, `.igsc`, `.igs`, `.meme`, `.remini`, `.simage`, `.sticker`, `.take`, `.tgsticker`],
-        '⚙️ TOOLS': [`.removebg`],
+        '🧠 AI': [`Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`],
+        '🦹 ANIME': [`Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
+        '👨‍💻 DEVELOPER': [`Ⓟ .checkplan`, `Ⓟ .listpremium`, `Ⓟ .rmpremium`, `Ⓟ .setpremium`, `Ⓟ .totalusers`],
+        '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`, `Ⓕ .ytmp4`],
+        '🔤 EPHOTO': [`Ⓕ .1917`, `Ⓕ .arena`, `Ⓕ .blackpink`, `Ⓕ .devil`, `Ⓕ .fire`, `Ⓕ .glitch`, `Ⓕ .hacker`, `Ⓕ .ice`, `Ⓕ .impressive`, `Ⓕ .leaves`, `Ⓕ .light`, `Ⓕ .matrix`, `Ⓕ .metallic`, `Ⓕ .neon`, `Ⓕ .purple`, `Ⓕ .sand`, `Ⓕ .snow`, `Ⓕ .thunder`],
+        '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .wasted`],
+        '🎮 GAMES': [`Ⓕ .answer`, `Ⓕ .buychips`, `Ⓕ .coindaily`, `Ⓕ .coinflip`, `Ⓕ .coinhelp`, `Ⓕ .coinleaderboard`, `Ⓕ .coinstats`, `Ⓕ .dare`, `Ⓕ .guess`, `Ⓕ .hangman`, `Ⓕ .tictactoe`, `Ⓕ .trivia`, `Ⓕ .truth`],
+        '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .ss`, `Ⓕ .trt`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
+        '💻 GITHUB': [`Ⓕ .script`],
+        '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .chatbot`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .stupid`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
+        '🧩 MISC': [`Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .horny`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .oogway2`, `Ⓕ .passed`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
+        '🔒 OWNER': [`Ⓕ .anticall`, `Ⓕ .antidelete`, `Ⓕ .antiforeign`, `Ⓕ .autoreact`, `Ⓕ .autoread`, `Ⓕ .autorecord`, `Ⓕ .autorecordtype`, `Ⓕ .autostatus`, `Ⓕ .autotyping`, `Ⓕ .block`, `Ⓕ .botinfo`, `Ⓕ .checkupdate`, `Ⓕ .clearsession`, `Ⓕ .cleartmp`, `Ⓕ .confighelp`, `Ⓕ .getpp`, `Ⓕ .join`, `Ⓕ .leave`, `Ⓕ .mention`, `Ⓕ .menufont`, `Ⓕ .menustyle`, `Ⓕ .mode`, `Ⓕ .pmblocker`, `Ⓕ .poll`, `Ⓕ .restart`, `Ⓕ .setauthor`, `Ⓕ .setbotname`, `Ⓕ .setbotowner`, `Ⓕ .setmention`, `Ⓕ .setownernumber`, `Ⓕ .setpackname`, `Ⓕ .setpp`, `Ⓕ .setprefix`, `Ⓕ .settings`, `Ⓕ .settimezone`, `Ⓕ .setytchannel`, `Ⓕ .sudo`, `Ⓕ .tempfile`, `Ⓕ .unblock`, `Ⓕ .update`, `Ⓕ .userinfo`, `Ⓕ .vote`],
+        '💎 PREMIUM SUB': [`Ⓕ .subscribe`],
+        '🎨 STICKER': [`Ⓕ .blur`, `Ⓕ .crop`, `Ⓕ .emojimix`, `Ⓕ .igsc`, `Ⓕ .igs`, `Ⓕ .meme`, `Ⓕ .remini`, `Ⓕ .simage`, `Ⓕ .sticker`, `Ⓕ .take`, `Ⓕ .tgsticker`],
+        '⚙️ TOOLS': [`Ⓕ .removebg`],
     };
 
     const sortedCategoryNames = Object.keys(allCommandsRaw).sort((a, b) => {
@@ -244,10 +244,10 @@ function buildMenu(styleId, data) {
         for (const [title, cmds] of allCommands) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
-            for (const cmd of cmds.sort()) menu += `├◇ ${cmd}\n`;
+            for (const cmd of cmds.sort()) menu += `├${cmd}\n`;
             menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
         }
-        menu += `              *© 2025 - 2026*\n\n`;
+        menu += `              *© 2025-2026*\n\n`;
         menu += `╭──「 *WALLYJAYTECH-MD* 」◆\n`;
         menu += `╰───★─☆─♪♪─◆`;
         return menu;
@@ -265,7 +265,7 @@ function buildMenu(styleId, data) {
     menu += s.bul + ' use .subscribe to upgrade\n';
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
-        for (const cmd of cmds) menu += s.bul + cmd + '\n';
+        for (const cmd of cmds) menu += s.bul + cmd.replace(/^[ⓅⒻⒽ] /, '') + '\n';
     }
     menu += s.bot + '\n\n';
     menu += `📊 Total Commands: ${totalCommands}\n\n`;
@@ -327,7 +327,7 @@ async function helpCommand(sock, chatId, message) {
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
             newsletterJid: '120363420618370733@newsletter',
-            newsletterName: '‎',
+            newsletterName: '\u200E',
             serverMessageId: -1
         }
     };
@@ -361,7 +361,7 @@ async function helpCommand(sock, chatId, message) {
         await new Promise(r => setTimeout(r, 1000));
         await sendMenuAudio(sock, sendChatId, message);
     } catch (error) {
-        console.error('❌ Error in help command:', error);
+        console.error('Error in help command:', error);
         await sock.sendMessage(sendChatId, { text: finalMessage, mentions: [realSenderJid] }, { quoted: message });
     }
 }
