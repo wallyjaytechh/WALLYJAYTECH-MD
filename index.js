@@ -37,7 +37,6 @@
 
 const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
 
-// ANSI color codes
 const c = {
     reset: '\x1b[0m',
     red: '\x1b[31m',
@@ -115,7 +114,14 @@ const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin
 const question = (text) => rl ? new Promise((resolve) => rl.question(text, resolve)) : Promise.resolve(settings.ownerNumber || phoneNumber);
 
 function getCommandCount() {
-    try { const c = fs.readFileSync(path.join(__dirname, 'main.js'), 'utf8'); const re = /case\s+userMessage\s*(===|\.startsWith\(|\.includes\(|\.match\()\s*['"`]\.([^'"`]+)['"`]/g; let m, count = 0; while ((m = re.exec(c)) !== null) { if (m[2]) count++; } return count || 150; } catch (e) { return 150; }
+    try {
+        const helpPath = path.join(__dirname, 'commands', 'help.js');
+        const c = fs.readFileSync(helpPath, 'utf8');
+        const match = c.match(/const allCommandsRaw = \{([\s\S]*?)\};/);
+        if (!match) return 200;
+        const commands = match[1].match(/\.\w+/g);
+        return commands ? new Set(commands).size : 200;
+    } catch (e) { return 200; }
 }
 
 async function startXeonBotInc() {
@@ -200,60 +206,60 @@ async function startXeonBotInc() {
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-             const activationMessage = `╭──◆「 *BOT CONNECTED* 」◆\n` +
-    `├\n` +
-    `├◇ *📅 Date:* ${time.split(',')[0] || time}\n` +
-    `├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n` +
-    `├◇ *✅ Status:* Online\n` +
-    `├◇ *💻 Version:* ${settings.version}\n` +
-    `├◇ *👤 Owner:* Sir Wally Jay\n` +
-    `├◇ *📞 Contact:* +2348144317152\n` +
-    `├◇ *🌐 Prefix:* ${settings.prefix}\n` +
-    `├◇ *🔒 Mode:* ${getBotMode()}\n` +
-    `├◇ *💡 Commands:* ${getCommandCount()}+\n` +
-    `├\n` +
-    `╰─┬─★─☆─♪♪─◆\n\n` +
-    `╭──◆「 *QUICK START* 」◆\n` +
-    `├\n` +
-    `├◇ *📂 .menu*    → All commands\n` +
-    `├◇ *📖 .help*    → Bot guide\n` +
-    `├◇ *📞 .owner*   → Contact owner\n` +
-    `├◇ *⚙️ .settings* → Bot settings\n` +
-    `├◇ *📶 .ping*    → Check speed\n` +
-    `├◇ *🔄 .update*  → Update bot\n` +
-    `├\n` +
-    `╰─┬─★─☆─♪♪─◆\n\n` +
-    `╭──◆「 *CONNECT* 」◆\n` +
-    `├\n` +
-    `├◇ 💬 Support Group\n` +
-    `├◇ 📺 YouTube Channel\n` +
-    `├◇ ⭐ GitHub Repo\n` +
-    `├◇ 🔔 Channel Updates\n` +
-    `├\n` +
-    `╰─┬─★─☆─♪♪─◆\n\n` +
-    `╭──◆「 *LINKS* 」◆\n` +
-    `├\n` +
-    `├◇ *🔗 WhatsApp Channel:* \n` +
-    `├◇ https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n` +
-    `├\n` +
-    `├◇ *💬 Support group:*\n` +
-    `├◇ https://chat.whatsapp.com/BoLlNgq9FIr1uXOguQQQEr?mode=gi_t\n` +
-    `├\n` +
-    `├◇ *📺 YouTube:* WALLY JAY TECH\n` +
-    `├\n` +
-    `├◇ *⭐ GitHub:* \n` +
-    `├◇  https://github.com/wallyjaytechh\n` +
-    `├\n` +
-    `╰─┬─★─☆─♪♪─◆\n\n` +
-    `╭──◆「 *COPYRIGHT* 」◆\n` +
-    `├\n` +
-    `├◇ ©️ 2025-2026\n` +
-    `├◇ WALLYJAYTECH-MD\n` +
-    `├◇ All Rights Reserved.\n` +
-    `├\n` +
-    `╰───★─☆─♪♪─◆\n\n` +
-    `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n` +
-    `╰───★─☆─♪♪─◆`;       
+                    const activationMessage = `╭──◆「 *BOT CONNECTED* 」◆\n` +
+                        `├\n` +
+                        `├◇ *📅 Date:* ${time.split(',')[0] || time}\n` +
+                        `├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n` +
+                        `├◇ *✅ Status:* Online\n` +
+                        `├◇ *💻 Version:* ${settings.version}\n` +
+                        `├◇ *👤 Owner:* Sir Wally Jay\n` +
+                        `├◇ *📞 Contact:* +2348144317152\n` +
+                        `├◇ *🌐 Prefix:* ${settings.prefix}\n` +
+                        `├◇ *🔒 Mode:* ${getBotMode()}\n` +
+                        `├◇ *💡 Commands:* ${getCommandCount()}+\n` +
+                        `├\n` +
+                        `╰─┬─★─☆─♪♪─◆\n\n` +
+                        `╭──◆「 *QUICK START* 」◆\n` +
+                        `├\n` +
+                        `├◇ *📂 .menu*    → All commands\n` +
+                        `├◇ *📖 .help*    → Bot guide\n` +
+                        `├◇ *📞 .owner*   → Contact owner\n` +
+                        `├◇ *⚙️ .settings* → Bot settings\n` +
+                        `├◇ *📶 .ping*    → Check speed\n` +
+                        `├◇ *🔄 .update*  → Update bot\n` +
+                        `├\n` +
+                        `╰─┬─★─☆─♪♪─◆\n\n` +
+                        `╭──◆「 *CONNECT* 」◆\n` +
+                        `├\n` +
+                        `├◇ 💬 Support Group\n` +
+                        `├◇ 📺 YouTube Channel\n` +
+                        `├◇ ⭐ GitHub Repo\n` +
+                        `├◇ 🔔 Channel Updates\n` +
+                        `├\n` +
+                        `╰─┬─★─☆─♪♪─◆\n\n` +
+                        `╭──◆「 *LINKS* 」◆\n` +
+                        `├\n` +
+                        `├◇ *🔗 WhatsApp Channel:* \n` +
+                        `├◇ https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n` +
+                        `├\n` +
+                        `├◇ *💬 Support group:*\n` +
+                        `├◇ https://chat.whatsapp.com/BoLlNgq9FIr1uXOguQQQEr?mode=gi_t\n` +
+                        `├\n` +
+                        `├◇ *📺 YouTube:* WALLY JAY TECH\n` +
+                        `├\n` +
+                        `├◇ *⭐ GitHub:* \n` +
+                        `├◇  https://github.com/wallyjaytechh\n` +
+                        `├\n` +
+                        `╰─┬─★─☆─♪♪─◆\n\n` +
+                        `╭──◆「 *COPYRIGHT* 」◆\n` +
+                        `├\n` +
+                        `├◇ ©️ 2025-2026\n` +
+                        `├◇ WALLYJAYTECH-MD\n` +
+                        `├◇ All Rights Reserved.\n` +
+                        `├\n` +
+                        `╰───★─☆─♪♪─◆\n\n` +
+                        `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n` +
+                        `╰───★─☆─♪♪─◆`;
                     
                     let img; const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
                     if (fs.existsSync(ip)) img = fs.readFileSync(ip); else { try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {} }
