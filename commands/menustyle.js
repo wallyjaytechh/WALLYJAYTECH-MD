@@ -1,6 +1,6 @@
 /**
  * WALLYJAYTECH-MD - A WhatsApp Bot
- * Menu Style Command - 12 Professional Menu Layouts
+ * Menu Style Command - 7 Professional Menu Layouts
  */
 
 const fs = require('fs');
@@ -21,18 +21,13 @@ const channelInfo = {
 };
 
 const STYLES = {
-    1: { name: 'Original Classic', description: 'Boxed design with bold double-line borders' },
-    2: { name: 'Archie Drop', description: 'Layered sections with arrow connectors and star dividers' },
-    3: { name: 'Starlet', description: 'Flower-star borders with elegant spacing' },
-    4: { name: 'Asterisk Ring', description: 'Circular ring markers with clean layout' },
-    5: { name: 'Deco Line', description: 'Diamond-pattern decorative lines with cross dividers' },
-    6: { name: 'Digital Glitch', description: 'Hexagonal tech-themed markers' },
-    7: { name: 'Target Dashboard', description: 'Target point markers with arrow indicators' },
-    8: { name: 'Target Point', description: 'Clean target points with play arrows' },
-    9: { name: 'Orbit System', description: 'Orbital cross markers with arrow entries' },
-    10: { name: 'Arrow Menu', description: 'Sharp arrow indicators with target headers' },
-    11: { name: 'Target Profile', description: 'Target-framed profile section' },
-    12: { name: 'APL Terminal', description: 'Up-arrow terminal style interface' }
+    1: { name: 'Diamond Classic', description: '◆ Diamond headers with star dividers' },
+    2: { name: 'Box Frame', description: '◈ Boxed sections with sleek bullets' },
+    3: { name: 'Double Line', description: '╔═╗ Double-line professional boxes' },
+    4: { name: 'Jarvis Aesthetic', description: '𓊉꧂ Decorative Jarvis-inspired layout' },
+    5: { name: 'Swirl Bloom', description: '🌀◈ Swirl headers with bloom accents' },
+    6: { name: 'Love Wing', description: '💕⃝🕊️ Winged headers with soft closers' },
+    7: { name: 'Aesthetic Bloom', description: '👹✧❥ Decorative aesthetic with flower accents' },
 };
 
 function initConfig() {
@@ -72,11 +67,11 @@ async function menuStyleCommand(sock, chatId, message, args) {
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `🟢 *Current Style:* ${STYLES[currentStyle]?.name || 'Original'} (#${currentStyle})\n\n` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
-                      `📖 *Available Styles (12):*\n\n` +
+                      `📖 *Available Styles (7):*\n\n` +
                       `${styleList}` +
                       `━━━━━━━━━━━━━━━━━━━━\n` +
                       `📖 *Commands:*\n` +
-                      `└ .menustyle <1-12> - Change menu layout\n` +
+                      `└ .menustyle <1-7> - Change menu layout\n` +
                       `└ .menustyle - Show this menu\n\n` +
                       `✨ *Example:*\n` +
                       `└ .menustyle 3\n` +
@@ -90,7 +85,7 @@ async function menuStyleCommand(sock, chatId, message, args) {
 
         if (!STYLES[styleId]) {
             await sock.sendMessage(chatId, {
-                text: `⚠️ *INVALID STYLE*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Choose a style from 1-12.\n\n💡 Use .menustyle to see all options.`,
+                text: `⚠️ *INVALID STYLE*\n\n━━━━━━━━━━━━━━━━━━━━\n📌 Choose a style from 1-7.\n\n💡 Use .menustyle to see all options.`,
                 ...channelInfo
             });
             return;
@@ -98,7 +93,7 @@ async function menuStyleCommand(sock, chatId, message, args) {
 
         if (styleId === currentStyle) {
             await sock.sendMessage(chatId, {
-                text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Style *${STYLES[styleId].name}* (#${styleId}) is already active.\n\n💡 Use .menustyle <1-12> to switch.\n\n🎨 Also try .menufont <1-12> for text fonts!`,
+                text: `⚠️ *ALREADY SET*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 Style *${STYLES[styleId].name}* (#${styleId}) is already active.\n\n💡 Use .menustyle <1-7> to switch.\n\n🎨 Also try .menufont <1-12> for text fonts!`,
                 ...channelInfo
             });
             return;
