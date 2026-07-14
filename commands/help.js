@@ -153,15 +153,23 @@ const allCommandsRaw = {
     '🧠 AI': [`Ⓟ .aivideo`, `Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`],
     '🦹 ANIME': [`Ⓕ .animu`, `Ⓕ .animuquote`, `Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
     '👨‍💻 DEVELOPER': [`Ⓓ .checkplan`, `Ⓓ .listpremium`, `Ⓓ .rmpremium`, `Ⓓ .setpremium`, `Ⓓ .totalusers`, `Ⓓ .userinfo`],
-    '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .igsc`, `Ⓕ .music`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`],
+    '📥 DOWNLOAD': [`Ⓕ .facebook`, `Ⓕ .instagram`, `Ⓕ .music`, `Ⓕ .play`, `Ⓕ .song`, `Ⓕ .spotify`, `Ⓕ .tiktok`, `Ⓕ .video`],
     '🔤 EPHOTO': [`Ⓕ .1917`, `Ⓕ .arena`, `Ⓕ .blackpink`, `Ⓕ .devil`, `Ⓕ .fire`, `Ⓕ .glitch`, `Ⓕ .hacker`, `Ⓕ .ice`, `Ⓕ .impressive`, `Ⓕ .leaves`, `Ⓕ .light`, `Ⓕ .matrix`, `Ⓕ .metallic`, `Ⓕ .neon`, `Ⓕ .purple`, `Ⓕ .sand`, `Ⓕ .snow`, `Ⓕ .thunder`],
     '😁 FUN': [`Ⓕ .character`, `Ⓕ .compliment`, `Ⓕ .flirt`, `Ⓕ .goodnight`, `Ⓕ .insult`, `Ⓕ .poet`, `Ⓕ .roseday`, `Ⓕ .simp`, `Ⓕ .stupid`, `Ⓕ .waste`],
-    '🎮 GAMES': [`Ⓟ .addchips`, `Ⓕ .answer`, `Ⓟ .buychips`, `Ⓟ .checkbalance`, `Ⓕ .coindaily`, `Ⓕ .coinflip`, `Ⓕ .coinhelp`, `Ⓕ .coinleaderboard`, `Ⓕ .coinstats`, `Ⓕ .dare`, `Ⓕ .guess`, `Ⓕ .hangman`, `Ⓟ .resetchips`, `Ⓕ .surrender`, `Ⓟ .checktruth`, `Ⓕ .takeout`, `Ⓕ .tictactoe`, `Ⓟ .transactions`, `Ⓕ .trivia`, `Ⓕ .truth`, `Ⓟ .unlimitedchips`],
+    '🎮 GAMES': [
+        { sub: '💰 CHIPS', cmds: [`Ⓟ .addchips`, `Ⓟ .buychips`, `Ⓟ .checkbalance`, `Ⓟ .resetchips`, `Ⓟ .transactions`, `Ⓟ .unlimitedchips`, `Ⓟ .coinflip`, `Ⓟ .coinhelp`, `Ⓟ .coinleaderboard`, `Ⓟ .coinstats`, `Ⓟ .coindaily`] },
+        { sub: '🔥 HOT', cmds: [`Ⓟ .checktruth`, `Ⓕ .dare`, `Ⓕ .truth`] },
+        { sub: '🎯 TTT', cmds: [`Ⓕ .surrender`, `Ⓕ .tictactoe`] },
+        { sub: '🎲 DICE', cmds: [`Ⓕ .dice`] },
+        { sub: '🧠 TRIVIA', cmds: [`Ⓕ .answer`, `Ⓕ .trivia`] },
+        { sub: '💀 HANGMAN', cmds: [`Ⓕ .guess`, `Ⓕ .hangman`] },
+        { sub: '🪦 TRAGIC', cmds: [`Ⓕ .takeout`] },
+    ],
     '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
     '💻 GITHUB': [`Ⓕ .script`],
     '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .staff`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
     '🧩 MISC': [`Ⓕ .china`, `Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .hijab`, `Ⓕ .horny`, `Ⓕ .indonesia`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .japan`, `Ⓕ .korea`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .oogway2`, `Ⓕ .passed`, `Ⓕ .pies`, `Ⓕ .simpcard`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
-    '🔒 OWNER': [`Ⓓ .anticall`, `Ⓓ .antidelete`, `Ⓓ .antiforeign`, `Ⓓ .autoreact`, `Ⓓ .autoread`, `Ⓓ .autorecord`, `Ⓓ .autorecordtype`, `Ⓓ .autostatus`, `Ⓓ .autotyping`, `Ⓓ .block`, `Ⓓ .botinfo`, `Ⓓ .checkupdate`, `Ⓓ .clearsession`, `Ⓓ .cleartmp`, `Ⓓ .confighelp`, `Ⓓ .getpp`, `Ⓓ .join`, `Ⓓ .leave`, `Ⓓ .mention`, `Ⓓ .menufont`, `Ⓓ .menustyle`, `Ⓓ .mode`, `Ⓓ .pmblocker`, `Ⓓ .poll`, `Ⓓ .restart`, `Ⓓ .setauthor`, `Ⓓ .setbotname`, `Ⓓ .setbotowner`, `Ⓓ .setmention`, `Ⓓ .setownernumber`, `Ⓓ .setpackname`, `Ⓓ .setpp`, `Ⓓ .setprefix`, `Ⓓ .settimezone`, `Ⓓ .settings`, `Ⓓ .setytchannel`, `Ⓓ .sudo`, `Ⓓ .tempfile`, `Ⓓ .unavailable`, `Ⓓ .unblock`, `Ⓓ .update`, `Ⓓ .vote`],
+    '🔒 OWNER': [`Ⓓ .anticall`, `Ⓓ .antidelete`, `Ⓓ .antiforeign`, `Ⓓ .autoreact`, `Ⓓ .autoread`, `Ⓓ .autorecord`, `Ⓓ .autorecordtype`, `Ⓓ .autostatus`, `Ⓓ .autotyping`, `Ⓓ .block`, `Ⓓ .botinfo`, `Ⓓ .checkupdate`, `Ⓓ .clearsession`, `Ⓓ .cleartmp`, `Ⓓ .confighelp`, `Ⓓ .getpp`, `Ⓓ .join`, `Ⓓ .leave`, `Ⓓ .mention`, `Ⓓ .menufont`, `Ⓓ .menustyle`, `Ⓓ .mode`, `Ⓓ .pmblocker`, `Ⓓ .poll`, `Ⓓ .restart`, `Ⓓ .setauthor`, `Ⓓ .setbotname`, `Ⓓ .setbotowner`, `Ⓓ .setmention`, `Ⓓ .setownernumber`, `Ⓓ .setpackname`, `Ⓓ .setpp`, `Ⓓ .setprefix`, `Ⓓ .settimezone`, `Ⓓ .settings`, `Ⓓ .setytchannel`, `Ⓓ .sudo`, `Ⓓ .tempfile`, `Ⓓ .unavailable`, `Ⓓ .unblock`, `Ⓓ .update`, `Ⓓ .updateinfo`, `Ⓓ .vote`],
     '💎 PREMIUM SUB': [`Ⓕ .subscribe`],
     '🎨 STICKER': [`Ⓕ .blur`, `Ⓕ .crop`, `Ⓕ .emojimix`, `Ⓕ .igsc`, `Ⓕ .igs`, `Ⓕ .meme`, `Ⓕ .remini`, `Ⓕ .simage`, `Ⓕ .sticker`, `Ⓕ .take`, `Ⓕ .tgsticker`],
     '⚙️ TOOLS': [`Ⓕ .removebg`],
@@ -169,7 +177,13 @@ const allCommandsRaw = {
 
 function countTotalCommands() {
     let count = 0;
-    for (const cmds of Object.values(allCommandsRaw)) count += cmds.length;
+    for (const cmds of Object.values(allCommandsRaw)) {
+        if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+            for (const sub of cmds) count += sub.cmds.length;
+        } else {
+            count += cmds.length;
+        }
+    }
     return count;
 }
 
@@ -246,11 +260,22 @@ function buildMenu(styleId, data) {
         for (const [title, cmds] of allCommands) {
             menu += `╭─┴◆「 *${title}* 」◆\n`;
             menu += `├\n`;
-            for (const cmd of cmds.sort((a, b) => {
-                const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
-                const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
-                return nameA.localeCompare(nameB);
-            })) menu += `├${cmd}\n`;
+            if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+                for (const sub of cmds) {
+                    menu += `├◇     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds.sort((a, b) => {
+                        const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
+                        const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
+                        return nameA.localeCompare(nameB);
+                    })) menu += `├└${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds.sort((a, b) => {
+                    const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
+                    const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
+                    return nameA.localeCompare(nameB);
+                })) menu += `├${cmd}\n`;
+            }
             menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
         }
         menu += `              *© 2025-2026*\n\n`;
@@ -272,11 +297,22 @@ function buildMenu(styleId, data) {
     menu += s.bul + ' use .subscribe to upgrade\n';
     for (const [title, cmds] of allCommands) {
         menu += s.secHdr(title) + '\n';
-        for (const cmd of cmds.sort((a, b) => {
-            const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
-            const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
-            return nameA.localeCompare(nameB);
-        })) menu += s.bul + cmd.replace(/^[ⓅⒻⒽⒹ] /, '') + '\n';
+        if (Array.isArray(cmds[0]) || (cmds[0] && cmds[0].sub)) {
+            for (const sub of cmds) {
+                menu += s.bul + '    *' + sub.sub + '*\n';
+                for (const cmd of sub.cmds.sort((a, b) => {
+                    const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
+                    const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
+                    return nameA.localeCompare(nameB);
+                })) menu += s.bul + '└' + cmd.replace(/^[ⓅⒻⒽⒹ] /, '') + '\n';
+            }
+        } else {
+            for (const cmd of cmds.sort((a, b) => {
+                const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, '');
+                const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, '');
+                return nameA.localeCompare(nameB);
+            })) menu += s.bul + cmd.replace(/^[ⓅⒻⒽⒹ] /, '') + '\n';
+        }
     }
     menu += s.bot + '\n\n';
     menu += `📊 Total Commands: ${totalCommands}\n\n`;
