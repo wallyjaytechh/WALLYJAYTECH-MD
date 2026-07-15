@@ -1781,6 +1781,11 @@ case userMessage.startsWith('.checkplan'):
     await checkplanCommand(sock, chatId, message);
     commandExecuted = true;
     break;
+        case userMessage.startsWith('.menutype'):
+    const menuTypeArgs = userMessage.split(' ').slice(1);
+    await menuTypeCommand(sock, chatId, message, menuTypeArgs);
+    commandExecuted = true;
+    break;
                 default:
     if (userMessage && chatId !== 'status@broadcast') {
         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
