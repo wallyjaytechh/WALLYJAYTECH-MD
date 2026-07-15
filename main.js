@@ -257,7 +257,7 @@ const codeCommand = require('./commands/code');
 const summariseCommand = require('./commands/summarise');
 const subscribeCommand = require('./commands/subscribe');
 const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanCommand } = require('./commands/premium');
-
+const { menuTypeCommand } = require('./commands/menutype');
 
 // Global settings
 global.packname = settings.packname;
