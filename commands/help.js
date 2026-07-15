@@ -1,39 +1,9 @@
-//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//                                                                                                                                                                                        //
-//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
-//                                                                                                                                                                                        //
-//                                                                  𝐕 : 1.0.0                                                                                                             //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
-//                                                                                                                                                                                        //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//* 
-//  * project_name : WALLYJAYTECH-MD
-//  * author : wallyjaytech
-//  * youtube : https://www.youtube.com/wallyjaytechy
-//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
-//*
-//*
-//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
-//Instagram: wallyjaytech
-//Telegram: t.me/wallyjaytech
-//GitHub: wallyjaytechh
-//WhatsApp: +2348144317152
-//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
-//   * Created By Github: wallyjaytechh.
-//   * Credit To ally jay tech
-//   * © 2025 WALLYJAYTECH-MD.
-// ⛥┌┤
-// */
+/**
+ * WALLYJAYTECH-MD - ULTIMATE HELP COMMAND
+ * Supports: Text Mode + Button Mode (Interactive)
+ * Supports: 100 Fonts + 7 Styles
+ */
+
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
@@ -41,7 +11,9 @@ const os = require('os');
 const fetch = require('node-fetch');
 const { getCurrentFont, applyFont } = require('./menufont');
 const { getCurrentStyle } = require('./menustyle');
+const { getMenuType } = require('./menutype'); // Import the switcher
 
+// ---- UTILITY FUNCTIONS ----
 function getDeploymentPlatform() {
     if (process.env.RENDER) return 'Render';
     if (process.env.CODESPACE_NAME) return 'Codespaces';
@@ -149,6 +121,7 @@ async function sendMenuAudio(sock, chatId, message) {
     catch (e) { return false; }
 }
 
+// ---- COMMAND DATA ----
 const allCommandsRaw = {
     '🧠 AI': [`Ⓟ .aivideo`, `Ⓟ .chatbot`, `Ⓟ .code`, `Ⓟ .gemini`, `Ⓗ .generate`, `Ⓟ .gpt`, `Ⓕ .summarise`],
     '🦹 ANIME': [`Ⓕ .animu`, `Ⓕ .animuquote`, `Ⓕ .cry`, `Ⓕ .facepalm`, `Ⓕ .hug`, `Ⓕ .kiss`, `Ⓕ .nom`, `Ⓕ .pat`, `Ⓕ .poke`, `Ⓕ .wink`],
@@ -187,8 +160,285 @@ function countTotalCommands() {
     return count;
 }
 
-function buildMenu(styleId, data) {
-    const { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, systemStats, ping, botPlan } = data;
+// ---- MENU BUILDERS ----
+function buildTextMenu(styleId, data, allCommands, infoLines) {
+    const { userName, greeting } = data;
+    
+    // --- STYLE 1 ---
+    if (styleId === 1) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n├\n`;
+        for (const l of infoLines) menu += `├◇ ${l}\n`;
+        menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
+        menu += `╭─┴◆「 *✍️ NOTE* 」◆\n├\n`;
+        menu += `├◇ Ⓟ  premium commands\n├◇ Ⓕ  free commands\n├◇ Ⓗ  free & premium commands\n├◇ Ⓓ  developer commands\n├◇  use .subscribe to upgrade\n├\n`;
+        menu += `╰─┬─★─☆─♪♪─★\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `╭─┴◆「 *${title}* 」◆\n├\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `├\n`;
+                    menu += `├◇     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `├└${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `├${cmd}\n`;
+            }
+            menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
+        }
+        menu += `              *© 2025-2026*\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
+    }
+
+    // --- STYLE 2 ---
+    if (styleId === 2) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `           *WALLYJAYTECH-MD*\n◈──────────────────────◈\n`;
+        for (const l of infoLines) menu += `▤ ${l}\n`;
+        menu += `◈──────────────────────◈\n\n              *✍️ NOTE*\n\n╭─────────────··◈\n`;
+        menu += `┊ Ⓟ  premium commands\n┊ Ⓕ  free commands\n┊ Ⓗ  free & premium commands\n┊ Ⓓ  developer commands\n┊  use .subscribe to upgrade\n╰─────────────··◈\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `              *${title}*\n\n╭─────────────··◈\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `┊\n`;
+                    menu += `┊     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `┊ └${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `┊ ${cmd}\n`;
+            }
+            menu += `╰─────────────··◈\n\n`;
+        }
+        menu += `              *© 2025-2026*\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
+    }
+
+    // --- STYLE 3 ---
+    if (styleId === 3) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `╔══════════════════╗\n║ ✦ *WALLYJAYTECH-MD* ✦\n║ ══════════════════\n`;
+        for (const l of infoLines) menu += `║ ${l}\n`;
+        menu += `╚══════════════════╝\n\n`;
+        menu += `╔══════════════════╗\n║ *✍️ NOTE*\n║ ══════════════════\n║ Ⓟ premium commands\n║ Ⓕ free commands\n║ Ⓗ free & premium commands\n║ Ⓓ developer commands\n║ use .subscribe to upgrade\n╚══════════════════╝\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `║\n`;
+                    menu += `║     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `║ ${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `║ ${cmd}\n`;
+            }
+            menu += `╚══════════════════╝\n\n`;
+        }
+        menu += `               *© 2025-2026*\n╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+        return menu;
+    }
+
+    // --- STYLE 4 (Jarvis) ---
+    if (styleId === 4) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `╭──〔 *WALLYJAYTECH-MD* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
+        for (const l of infoLines) menu += `║☠︎︎║ ${l}\n`;
+        menu += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
+        menu += `╭───────────────────┈𓊉꧂\n║    ╭──────────────┈❀\n║☠︎︎║ *✍️ NOTE*\n║    ╰┬─────────────┈❀\n║    ┌┤\n`;
+        menu += `║☠︎︎║ Ⓟ premium commands\n║☠︎︎║ Ⓕ free commands\n║☠︎︎║ Ⓗ free & premium commands\n║☠︎︎║ Ⓓ developer commands\n║☠︎︎║ use .subscribe to upgrade\n║    ╰──────────────┈❀\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `║\n║    ╭──────────────┈❀\n║☠︎︎║ *${title}*\n║    ╰┬─────────────┈❀\n║    ┌┤\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `║☠︎︎║\n`;
+                    menu += `║☠︎︎║     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `║☠︎︎║ ${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `║☠︎︎║ ${cmd}\n`;
+            }
+            menu += `║    ╰──────────────┈❀\n`;
+        }
+        menu += `╰───────────────────┈𓊉꧂\n               *© 2025-2026*\n\n╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+        return menu;
+    }
+
+    // --- STYLE 5 (Swirl) ---
+    if (styleId === 5) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `🌀◈── *WALLYJAYTECH-MD* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+        for (const l of infoLines) menu += `┊ ${l}\n`;
+        menu += `╰──────·••─────•────●○\n\n`;
+        menu += `  🌀◈── *✍️ NOTE* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+        menu += `┊ Ⓟ premium commands\n┊ Ⓕ free commands\n┊ Ⓗ free & premium commands\n┊ Ⓓ developer commands\n┊ use .subscribe to upgrade\n╰──────·••─────•────●○\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `┊\n`;
+                    menu += `┊     *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `┊ ${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `┊ ${cmd}\n`;
+            }
+            menu += `╰──────·••─────•────●○\n\n`;
+        }
+        menu += `               *© 2025-2026*\n\n╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+        return menu;
+    }
+
+    // --- STYLE 6 (Love Wing) ---
+    if (styleId === 6) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `╭───〈 *WALLYJAYTECH-MD* 〉───💕⃝🕊️\n`;
+        for (const l of infoLines) menu += `⚚  ${l}\n`;
+        menu += `╰────────────────✌︎㋡\n\n`;
+        menu += `╭────〈 *✍️ NOTE* 〉────💕⃝🕊️\n⚚  Ⓟ premium commands\n⚚  Ⓕ free commands\n⚚  Ⓗ free & premium commands\n⚚  Ⓓ developer commands\n⚚  use .subscribe to upgrade\n╰────────────────✌︎㋡\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `╭────〈 *${title}* 〉────💕⃝🕊️\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `⚚\n`;
+                    menu += `⚚      *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `⚚  ${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `⚚  ${cmd}\n`;
+            }
+            menu += `╰────────────✌︎㋡\n\n`;
+        }
+        menu += `               *© 2025-2026*\n\n╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+        return menu;
+    }
+
+    // --- STYLE 7 (Aesthetic Bloom) ---
+    if (styleId === 7) {
+        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
+        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
+        menu += `╔══════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════════❥❥❥\n\n`;
+        menu += `👹──────────✧✧✧✧✧\n┋  ┋  ┋  ┋  ┋  ┋\n┋  ┋  ☆  ˚ ◡̈  * ｡ ✿\n┋  ☾ ⋆ *\n✧  ୧⍤⃝💐\n`;
+        for (const l of infoLines) menu += `✧  ${l}\n`;
+        menu += `╰───────────────────⊷\n\n`;
+        menu += `╔══════════════════❥❥❥\n✧  *✍️ NOTE*\n╚══════════════════❥❥❥\n`;
+        menu += `✧  Ⓟ premium commands\n✧  Ⓕ free commands\n✧  Ⓗ free & premium commands\n✧  Ⓓ developer commands\n✧  use .subscribe to upgrade\n\n`;
+        for (const [title, cmds] of allCommands) {
+            menu += `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
+            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
+                for (let i = 0; i < cmds.length; i++) {
+                    const sub = cmds[i];
+                    if (i > 0) menu += `✧\n`;
+                    menu += `✧      *${sub.sub}*\n`;
+                    for (const cmd of sub.cmds) menu += `✧  ${cmd}\n`;
+                }
+            } else {
+                for (const cmd of cmds) menu += `✧  ${cmd}\n`;
+            }
+            menu += `\n`;
+        }
+        menu += `               *© 2025-2026*\n╔══════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════════❥❥❥`;
+        return menu;
+    }
+
+    return '';
+}
+
+// ---- BUTTON MENU BUILDER ----
+async function buildButtonMenu(sock, chatId, message, data, allCommands, infoLines) {
+    const { userName, greeting, fontId, styleId } = data;
+    
+    // Header text (formatted with font)
+    const headerText = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n*${greeting.greeting}!* Here's your menu:`;
+    
+    // Prepare categories (max 10 buttons per message)
+    const categories = allCommands.map(([title]) => title);
+    const buttonRows = [];
+    
+    // Group into chunks of 10
+    for (let i = 0; i < categories.length; i += 10) {
+        buttonRows.push(categories.slice(i, i + 10));
+    }
+
+    // Send first page
+    const buttons = buttonRows[0].map((cat, index) => ({
+        buttonId: `menu_cat_${index}`,
+        buttonText: { displayText: cat }
+    }));
+
+    // Add "Next" button if more pages exist
+    if (buttonRows.length > 1) {
+        buttons.push({
+            buttonId: `menu_next_1`,
+            buttonText: { displayText: '➡️ Next Page' }
+        });
+    }
+
+    await sock.sendMessage(chatId, {
+        text: headerText,
+        footer: '📌 Choose a category below:',
+        buttons: buttons,
+        headerType: 1,
+        contextInfo: {
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363420618370733@newsletter',
+                newsletterName: '\u200E',
+                serverMessageId: -1
+            }
+        }
+    });
+}
+
+// ---- MAIN COMMAND ----
+async function helpCommand(sock, chatId, message) {
+    const senderId = message.key.participant || message.key.remoteJid;
+    let sendChatId = chatId;
+    let realSenderJid = senderId;
+    if (chatId.endsWith('@lid')) {
+        const realJid = message.key.remoteJidAlt;
+        if (realJid?.includes('@s.whatsapp.net')) { sendChatId = realJid; realSenderJid = realJid; }
+    }
+    
+    // ---- GATHER DATA ----
+    const userName = await getUserName(sock, senderId, message);
+    const greeting = getTimeBasedGreeting();
+    const dayInfo = getDayWithEmoji();
+    const currentBotMode = getBotMode();
+    const prefix = getPrefix();
+    const userPlatform = getDeploymentPlatform();
+    const totalCommands = countTotalCommands();
+    const stats = await getUserStats();
+    const fontId = getCurrentFont();
+    const styleId = getCurrentStyle();
+    const botPlan = await getBotPlan();
+    const systemStats = getSystemStats();
+    const start = Date.now();
+    await sock.sendPresenceUpdate('composing', chatId);
+    const ping = Date.now() - start;
+    let menuType = 'Text';
+    const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
+    const gifPath = path.join(__dirname, '../assets/menu_video.mp4');
+    if (fs.existsSync(imagePath) && fs.existsSync(gifPath)) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
+    else if (fs.existsSync(imagePath)) menuType = 'Image';
+    else if (fs.existsSync(gifPath)) menuType = 'GIF';
+    const mediaDisplay = menuType === 'GIF' ? 'GIF & Audio' : menuType === 'Image' ? 'Image & Audio' : 'Text & Audio';
+    const getLocalizedTime = () => {
+        try { return new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }); }
+        catch (e) { return new Date().toLocaleString(); }
+    };
 
     const infoLines = [
         `*👤 User:* ${userName}`,
@@ -226,251 +476,30 @@ function buildMenu(styleId, data) {
     });
 
     const allCommands = sortedCategoryNames.map(name => [name, allCommandsRaw[name]]);
+    
+    const dataObj = { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, styleId, systemStats, ping, botPlan };
 
-    // ═══════════════════════════════════════════
-    // STYLE 1 — Diamond Classic
-    // ═══════════════════════════════════════════
-    if (styleId === 1) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n`;
-        menu += `├\n`;
-        for (const l of infoLines) menu += `├◇ ${l}\n`;
-        menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
-        menu += `╭─┴◆「 *✍️ NOTE* 」◆\n├\n`;
-        menu += `├◇ Ⓟ  premium commands\n├◇ Ⓕ  free commands\n├◇ Ⓗ  free & premium commands\n├◇ Ⓓ  developer commands\n├◇  use .subscribe to upgrade\n├\n`;
-        menu += `╰─┬─★─☆─♪♪─★\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `╭─┴◆「 *${title}* 」◆\n├\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `├\n`;
-                    menu += `├◇     *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `├└${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `├${cmd}\n`;
-            }
-            menu += `├\n╰─┬─★─☆─♪♪─★\n\n`;
-        }
-        menu += `              *© 2025-2026*\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        return menu;
-    }
+    // ---- DETERMINE MENU TYPE ----
+    const currentMenuType = getMenuType(); // 'text' or 'button'
 
-    // ═══════════════════════════════════════════
-    // STYLE 2 — Box Frame (◈)
-    // ═══════════════════════════════════════════
-    if (styleId === 2) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `           *WALLYJAYTECH-MD*\n◈──────────────────────◈\n`;
-        for (const l of infoLines) menu += `▤ ${l}\n`;
-        menu += `◈──────────────────────◈\n\n              *✍️ NOTE*\n\n╭─────────────··◈\n`;
-        menu += `┊ Ⓟ  premium commands\n┊ Ⓕ  free commands\n┊ Ⓗ  free & premium commands\n┊ Ⓓ  developer commands\n┊  use .subscribe to upgrade\n╰─────────────··◈\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `              *${title}*\n\n╭─────────────··◈\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `┊\n`;
-                    menu += `┊     *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `┊ └${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `┊ ${cmd}\n`;
-            }
-            menu += `╰─────────────··◈\n\n`;
-        }
-        menu += `              *© 2025-2026*\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        return menu;
-    }
-
-    // ═══════════════════════════════════════════
-    // STYLE 3 — Double Line (╔═╗)
-    // ═══════════════════════════════════════════
-    if (styleId === 3) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `╔══════════════════╗\n║ ✦ *WALLYJAYTECH-MD* ✦\n║ ══════════════════\n`;
-        for (const l of infoLines) menu += `║ ${l}\n`;
-        menu += `╚══════════════════╝\n\n`;
-        menu += `╔══════════════════╗\n║ *✍️ NOTE*\n║ ══════════════════\n║ Ⓟ premium commands\n║ Ⓕ free commands\n║ Ⓗ free & premium commands\n║ Ⓓ developer commands\n║ use .subscribe to upgrade\n╚══════════════════╝\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `║\n`;
-                    menu += `║     *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `║ ${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `║ ${cmd}\n`;
-            }
-            menu += `╚══════════════════╝\n\n`;
-        }
-        menu += `               *© 2025-2026*\n╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
-        return menu;
-    }
-
-    // ═══════════════════════════════════════════
-    // STYLE 4 — Jarvis Aesthetic (𓊉꧂) - FULL VERSION
-    // ═══════════════════════════════════════════
-    if (styleId === 4) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `╭──〔 *WALLYJAYTECH-MD* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
-        for (const l of infoLines) menu += `║☠︎︎║ ${l}\n`;
-        menu += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
-        menu += `╭───────────────────┈𓊉꧂\n║    ╭──────────────┈❀\n║☠︎︎║ *✍️ NOTE*\n║    ╰┬─────────────┈❀\n║    ┌┤\n`;
-        menu += `║☠︎︎║ Ⓟ premium commands\n║☠︎︎║ Ⓕ free commands\n║☠︎︎║ Ⓗ free & premium commands\n║☠︎︎║ Ⓓ developer commands\n║☠︎︎║ use .subscribe to upgrade\n║    ╰──────────────┈❀\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `║\n║    ╭──────────────┈❀\n║☠︎︎║ *${title}*\n║    ╰┬─────────────┈❀\n║    ┌┤\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `║☠︎︎║\n`;
-                    menu += `║☠︎︎║     *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `║☠︎︎║ ${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `║☠︎︎║ ${cmd}\n`;
-            }
-            menu += `║    ╰──────────────┈❀\n`;
-        }
-        menu += `╰───────────────────┈𓊉꧂\n               *© 2025-2026*\n\n╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
-        return menu;
-    }
-
-    // ═══════════════════════════════════════════
-    // STYLE 5 — Swirl Bloom (🌀◈) - FULL VERSION
-    // ═══════════════════════════════════════════
-    if (styleId === 5) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `🌀◈── *WALLYJAYTECH-MD* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
-        for (const l of infoLines) menu += `┊ ${l}\n`;
-        menu += `╰──────·••─────•────●○\n\n`;
-        menu += `  🌀◈── *✍️ NOTE* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
-        menu += `┊ Ⓟ premium commands\n┊ Ⓕ free commands\n┊ Ⓗ free & premium commands\n┊ Ⓓ developer commands\n┊ use .subscribe to upgrade\n╰──────·••─────•────●○\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `┊\n`;
-                    menu += `┊     *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `┊ ${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `┊ ${cmd}\n`;
-            }
-            menu += `╰──────·••─────•────●○\n\n`;
-        }
-        menu += `               *© 2025-2026*\n\n╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
-        return menu;
-    }
-
-    // ═══════════════════════════════════════════
-    // STYLE 6 — Love Wing (💕⃝🕊️) - FULL VERSION
-    // ═══════════════════════════════════════════
-    if (styleId === 6) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `╭───〈 *WALLYJAYTECH-MD* 〉───💕⃝🕊️\n`;
-        for (const l of infoLines) menu += `⚚  ${l}\n`;
-        menu += `╰────────────────✌︎㋡\n\n`;
-        menu += `╭────〈 *✍️ NOTE* 〉────💕⃝🕊️\n⚚  Ⓟ premium commands\n⚚  Ⓕ free commands\n⚚  Ⓗ free & premium commands\n⚚  Ⓓ developer commands\n⚚  use .subscribe to upgrade\n╰────────────────✌︎㋡\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `╭────〈 *${title}* 〉────💕⃝🕊️\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `⚚\n`;
-                    menu += `⚚      *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `⚚  ${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `⚚  ${cmd}\n`;
-            }
-            menu += `╰────────────✌︎㋡\n\n`;
-        }
-        menu += `               *© 2025-2026*\n\n╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
-        return menu;
-    }
-
-    // ═══════════════════════════════════════════
-    // STYLE 7 — Aesthetic Bloom (👹✧❥) - FULL VERSION with Fixed Art
-    // ═══════════════════════════════════════════
-    if (styleId === 7) {
-        let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
-        menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
-        menu += `╔════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚════════════════════❥❥❥\n\n`;
-        menu += `👹──────────✧✧✧✧✧\n┋  ┋  ┋  ┋  ┋  ┋\n┋  ┋  ☆  ˚ ◡̈  * ｡ ✿\n┋  ☾ ⋆ *\n✧  ୧⍤⃝💐\n`;
-        for (const l of infoLines) menu += `✧  ${l}\n`;
-        menu += `╰───────────────────⊷\n\n`;
-        menu += `╔══════════════════❥❥❥\n✧  *✍️ NOTE*\n╚══════════════════❥❥❥\n`;
-        menu += `✧  Ⓟ premium commands\n✧  Ⓕ free commands\n✧  Ⓗ free & premium commands\n✧  Ⓓ developer commands\n✧  use .subscribe to upgrade\n\n`;
-        for (const [title, cmds] of allCommands) {
-            menu += `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
-            if (cmds.length > 0 && typeof cmds[0] === 'object' && cmds[0].sub) {
-                for (let i = 0; i < cmds.length; i++) {
-                    const sub = cmds[i];
-                    if (i > 0) menu += `✧\n`;
-                    menu += `✧      *${sub.sub}*\n`;
-                    for (const cmd of sub.cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `✧  ${cmd}\n`;
-                }
-            } else {
-                for (const cmd of cmds.sort((a, b) => { const nameA = a.replace(/^[ⓅⒻⒽⒹ] /, ''); const nameB = b.replace(/^[ⓅⒻⒽⒹ] /, ''); return nameA.localeCompare(nameB); })) menu += `✧  ${cmd}\n`;
-            }
-            menu += `\n`;
-        }
-        menu += `               *© 2025-2026*\n╔════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚════════════════════❥❥❥`;
-        return menu;
-    }
-
-    return '';
-}
-
-async function helpCommand(sock, chatId, message) {
-    const senderId = message.key.participant || message.key.remoteJid;
-    let sendChatId = chatId;
-    let realSenderJid = senderId;
-    if (chatId.endsWith('@lid')) {
-        const realJid = message.key.remoteJidAlt;
-        if (realJid?.includes('@s.whatsapp.net')) { sendChatId = realJid; realSenderJid = realJid; }
-    }
-    const userName = await getUserName(sock, senderId, message);
-    const greeting = getTimeBasedGreeting();
-    const dayInfo = getDayWithEmoji();
-    const currentBotMode = getBotMode();
-    const prefix = getPrefix();
-    const userPlatform = getDeploymentPlatform();
-    const totalCommands = countTotalCommands();
-    const stats = await getUserStats();
-    const fontId = getCurrentFont();
-    const styleId = getCurrentStyle();
-    const botPlan = await getBotPlan();
-    const systemStats = getSystemStats();
-    const start = Date.now();
-    await sock.sendPresenceUpdate('composing', chatId);
-    const ping = Date.now() - start;
-    let menuType = 'Text';
-    const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
-    const gifPath = path.join(__dirname, '../assets/menu_video.mp4');
-    if (fs.existsSync(imagePath) && fs.existsSync(gifPath)) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
-    else if (fs.existsSync(imagePath)) menuType = 'Image';
-    else if (fs.existsSync(gifPath)) menuType = 'GIF';
-    const mediaDisplay = menuType === 'GIF' ? 'GIF & Audio' : menuType === 'Image' ? 'Image & Audio' : 'Text & Audio';
-    const getLocalizedTime = () => {
-        try { return new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }); }
-        catch (e) { return new Date().toLocaleString(); }
-    };
-    let helpMessage = buildMenu(styleId, { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, systemStats, ping, botPlan });
-    const channelCtx = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } };
-    const finalMessage = applyFont(helpMessage, fontId);
+    // ---- SEND MENU ----
     try {
+        let finalMessage;
+        if (currentMenuType === 'button') {
+            // Send Button Menu
+            await buildButtonMenu(sock, sendChatId, message, dataObj, allCommands, infoLines);
+            await new Promise(r => setTimeout(r, 1000));
+            await sendMenuAudio(sock, sendChatId, message);
+            return; // Stop here, buttons are sent
+        } else {
+            // Send Text Menu
+            const helpMessage = buildTextMenu(styleId, dataObj, allCommands, infoLines);
+            finalMessage = applyFont(helpMessage, fontId);
+        }
+
+        // Send Text/Image/GIF version
+        const channelCtx = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } };
+        
         if (menuType === 'Image') {
             await sock.sendMessage(sendChatId, { image: fs.readFileSync(imagePath), caption: finalMessage, mentions: [realSenderJid], contextInfo: channelCtx }, { quoted: message });
         } else if (menuType === 'GIF') {
@@ -482,7 +511,9 @@ async function helpCommand(sock, chatId, message) {
         await sendMenuAudio(sock, sendChatId, message);
     } catch (error) {
         console.error('Error in help command:', error);
-        await sock.sendMessage(sendChatId, { text: finalMessage, mentions: [realSenderJid] }, { quoted: message });
+        // Fallback to plain text
+        const fallback = buildTextMenu(styleId, dataObj, allCommands, infoLines);
+        await sock.sendMessage(sendChatId, { text: applyFont(fallback, fontId), mentions: [realSenderJid] }, { quoted: message });
     }
 }
 
