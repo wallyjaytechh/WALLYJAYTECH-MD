@@ -315,13 +315,13 @@ function buildMenu(styleId, data) {
     }
 
     // ═══════════════════════════════════════════
-    // STYLE 4 — Jarvis Aesthetic (𓊉꧂)
+    // STYLE 4 — Jarvis Aesthetic (𓊉꧂) - FULL VERSION
     // ═══════════════════════════════════════════
     if (styleId === 4) {
         let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
         menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
         menu += `╭──〔 *WALLYJAYTECH-MD* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
-        for (const l of infoLines.slice(0, 11)) menu += `║☠︎︎║ ${l}\n`;
+        for (const l of infoLines) menu += `║☠︎︎║ ${l}\n`;
         menu += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
         menu += `╭───────────────────┈𓊉꧂\n║    ╭──────────────┈❀\n║☠︎︎║ *✍️ NOTE*\n║    ╰┬─────────────┈❀\n║    ┌┤\n`;
         menu += `║☠︎︎║ Ⓟ premium commands\n║☠︎︎║ Ⓕ free commands\n║☠︎︎║ Ⓗ free & premium commands\n║☠︎︎║ Ⓓ developer commands\n║☠︎︎║ use .subscribe to upgrade\n║    ╰──────────────┈❀\n`;
@@ -344,13 +344,13 @@ function buildMenu(styleId, data) {
     }
 
     // ═══════════════════════════════════════════
-    // STYLE 5 — Swirl Bloom (🌀◈)
+    // STYLE 5 — Swirl Bloom (🌀◈) - FULL VERSION
     // ═══════════════════════════════════════════
     if (styleId === 5) {
         let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
         menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
         menu += `🌀◈── *WALLYJAYTECH-MD* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
-        for (const l of infoLines.slice(0, 10)) menu += `┊ ${l}\n`;
+        for (const l of infoLines) menu += `┊ ${l}\n`;
         menu += `╰──────·••─────•────●○\n\n`;
         menu += `  🌀◈── *✍️ NOTE* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
         menu += `┊ Ⓟ premium commands\n┊ Ⓕ free commands\n┊ Ⓗ free & premium commands\n┊ Ⓓ developer commands\n┊ use .subscribe to upgrade\n╰──────·••─────•────●○\n\n`;
@@ -373,13 +373,13 @@ function buildMenu(styleId, data) {
     }
 
     // ═══════════════════════════════════════════
-    // STYLE 6 — Love Wing (💕⃝🕊️)
+    // STYLE 6 — Love Wing (💕⃝🕊️) - FULL VERSION
     // ═══════════════════════════════════════════
     if (styleId === 6) {
         let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
         menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
         menu += `╭───〈 *WALLYJAYTECH-MD* 〉───💕⃝🕊️\n`;
-        for (const l of infoLines.slice(0, 11)) menu += `⚚  ${l}\n`;
+        for (const l of infoLines) menu += `⚚  ${l}\n`;
         menu += `╰────────────────✌︎㋡\n\n`;
         menu += `╭────〈 *✍️ NOTE* 〉────💕⃝🕊️\n⚚  Ⓟ premium commands\n⚚  Ⓕ free commands\n⚚  Ⓗ free & premium commands\n⚚  Ⓓ developer commands\n⚚  use .subscribe to upgrade\n╰────────────────✌︎㋡\n\n`;
         for (const [title, cmds] of allCommands) {
@@ -401,14 +401,14 @@ function buildMenu(styleId, data) {
     }
 
     // ═══════════════════════════════════════════
-    // STYLE 7 — Aesthetic Bloom (👹✧❥)
+    // STYLE 7 — Aesthetic Bloom (👹✧❥) - FULL VERSION with Fixed Art
     // ═══════════════════════════════════════════
     if (styleId === 7) {
         let menu = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n`;
         menu += `*${greeting.greeting}!* Here's your menu:\n\n`;
         menu += `╔══════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════════❥❥❥\n\n`;
         menu += `👹──────────✧✧✧✧✧\n┋  ┋  ┋  ┋  ┋  ┋\n┋  ┋  ☆  ˚ ◡̈  * ｡ ✿\n┋  ☾ ⋆ *\n✧  ୧⍤⃝💐\n`;
-        for (const l of infoLines.slice(0, 11)) menu += `✧  ${l}\n`;
+        for (const l of infoLines) menu += `✧  ${l}\n`;
         menu += `╰───────────────────⊷\n\n`;
         menu += `╔══════════════════❥❥❥\n✧  *✍️ NOTE*\n╚══════════════════❥❥❥\n`;
         menu += `✧  Ⓟ premium commands\n✧  Ⓕ free commands\n✧  Ⓗ free & premium commands\n✧  Ⓓ developer commands\n✧  use .subscribe to upgrade\n\n`;
