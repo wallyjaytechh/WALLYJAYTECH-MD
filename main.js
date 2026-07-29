@@ -257,7 +257,7 @@ const codeCommand = require('./commands/code');
 const summariseCommand = require('./commands/summarise');
 const subscribeCommand = require('./commands/subscribe');
 const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanCommand } = require('./commands/premium');
-const { menuTypeCommand } = require('./commands/menutype');
+
 
 // Global settings
 global.packname = settings.packname;
@@ -1781,11 +1781,7 @@ case userMessage.startsWith('.checkplan'):
     await checkplanCommand(sock, chatId, message);
     commandExecuted = true;
     break;
-        case userMessage.startsWith('.menutype'):
-    const menuTypeArgs = userMessage.split(' ').slice(1);
-    await menuTypeCommand(sock, chatId, message, menuTypeArgs);
-    commandExecuted = true;
-    break;
+        
                 default:
     if (userMessage && chatId !== 'status@broadcast') {
         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
