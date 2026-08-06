@@ -11,7 +11,7 @@ const os = require('os');
 const fetch = require('node-fetch');
 const { getCurrentFont, applyFont } = require('./menufont');
 const { getCurrentStyle } = require('./menustyle');
-const { getMenuType } = require('./menutype'); // Import the switcher
+
 
 // ---- UTILITY FUNCTIONS ----
 function getDeploymentPlatform() {
