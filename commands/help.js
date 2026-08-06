@@ -1,7 +1,6 @@
 /**
  * WALLYJAYTECH-MD - ULTIMATE HELP COMMAND
- * Supports: Text Mode + Button Mode (Interactive)
- * Supports: 100 Fonts + 7 Styles
+ * Supports: Text Mode Only (Simplified)
  */
 
 const settings = require('../settings');
@@ -355,53 +354,6 @@ function buildTextMenu(styleId, data, allCommands, infoLines) {
     return '';
 }
 
-// ---- BUTTON MENU BUILDER ----
-async function buildButtonMenu(sock, chatId, message, data, allCommands, infoLines) {
-    const { userName, greeting, fontId, styleId } = data;
-    
-    // Header text (formatted with font)
-    const headerText = `👋 Hello *${userName.split('@')[0]}*! ${greeting.message}\n\n*${greeting.greeting}!* Here's your menu:`;
-    
-    // Prepare categories (max 10 buttons per message)
-    const categories = allCommands.map(([title]) => title);
-    const buttonRows = [];
-    
-    // Group into chunks of 10
-    for (let i = 0; i < categories.length; i += 10) {
-        buttonRows.push(categories.slice(i, i + 10));
-    }
-
-    // Send first page
-    const buttons = buttonRows[0].map((cat, index) => ({
-        buttonId: `menu_cat_${index}`,
-        buttonText: { displayText: cat }
-    }));
-
-    // Add "Next" button if more pages exist
-    if (buttonRows.length > 1) {
-        buttons.push({
-            buttonId: `menu_next_1`,
-            buttonText: { displayText: '➡️ Next Page' }
-        });
-    }
-
-    await sock.sendMessage(chatId, {
-        text: headerText,
-        footer: '📌 Choose a category below:',
-        buttons: buttons,
-        headerType: 1,
-        contextInfo: {
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363420618370733@newsletter',
-                newsletterName: '\u200E',
-                serverMessageId: -1
-            }
-        }
-    });
-}
-
 // ---- MAIN COMMAND ----
 async function helpCommand(sock, chatId, message) {
     const senderId = message.key.participant || message.key.remoteJid;
@@ -479,25 +431,11 @@ async function helpCommand(sock, chatId, message) {
     
     const dataObj = { userName, greeting, prefix, totalCommands, stats, dayInfo, currentBotMode, mediaDisplay, userPlatform, getLocalizedTime, fontId, styleId, systemStats, ping, botPlan };
 
-    // ---- DETERMINE MENU TYPE ----
-    const currentMenuType = getMenuType(); // 'text' or 'button'
-
-    // ---- SEND MENU ----
+    // ---- SEND MENU (TEXT ONLY) ----
     try {
-        let finalMessage;
-        if (currentMenuType === 'button') {
-            // Send Button Menu
-            await buildButtonMenu(sock, sendChatId, message, dataObj, allCommands, infoLines);
-            await new Promise(r => setTimeout(r, 1000));
-            await sendMenuAudio(sock, sendChatId, message);
-            return; // Stop here, buttons are sent
-        } else {
-            // Send Text Menu
-            const helpMessage = buildTextMenu(styleId, dataObj, allCommands, infoLines);
-            finalMessage = applyFont(helpMessage, fontId);
-        }
+        const helpMessage = buildTextMenu(styleId, dataObj, allCommands, infoLines);
+        const finalMessage = applyFont(helpMessage, fontId);
 
-        // Send Text/Image/GIF version
         const channelCtx = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } };
         
         if (menuType === 'Image') {
