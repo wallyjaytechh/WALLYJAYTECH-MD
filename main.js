@@ -259,6 +259,20 @@ const subscribeCommand = require('./commands/subscribe');
 const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanCommand } = require('./commands/premium');
 
 
+// ---- COMMAND ALIASES ----
+const commandAliases = {
+    'code': ['code', 'código', 'codice', 'код', 'كود', '代码', '코드', 'コード', 'कोड', 'کوڈ', 'কোড', 'koodu', 'kóòdù', 'kode', 'kod', 'mã', 'குறியீடு']
+};
+
+function resolveCommand(input) {
+    const cmd = input.toLowerCase().replace(/^\./, '');
+    for (const [command, aliases] of Object.entries(commandAliases)) {
+        if (aliases.includes(cmd)) return command;
+    }
+    return cmd;
+}
+
+
 // Global settings
 global.packname = settings.packname;
 global.author = settings.author;
