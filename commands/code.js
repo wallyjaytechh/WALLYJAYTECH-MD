@@ -44,7 +44,7 @@ const langManager = require('../language/manager');
 
 const PROXY_URL = 'https://gemini-proxy-5t1s.onrender.com';
 
-// ---- TRANSLATIONS (All 23 Languages) ----
+// ---- TRANSLATIONS (All 23 Languages - CORRECT) ----
 const translations = {
     'en': {
         title: "AI CODE GENERATOR",
@@ -65,7 +65,10 @@ const translations = {
         model: "Model",
         failed: "CODE FAILED",
         unable: "Unable to generate code",
-        try_different: "Try a different prompt"
+        try_different: "Try a different prompt",
+        reply_message: "Reply to a message with .code",
+        reply_text: "Reply to text with .code",
+        prompt: "prompt"
     },
     'ha': {
         title: "MAI TSARA CODE NA AI",
@@ -86,18 +89,21 @@ const translations = {
         model: "Model",
         failed: "CODE YA GASA",
         unable: "Ba a iya tsara code ba",
-        try_different: "Gwada wata hanya daban"
+        try_different: "Gwada wata hanya daban",
+        reply_message: "Amsa saƙo da .code",
+        reply_text: "Amsa rubutu da .code",
+        prompt: "umurni"
     },
     'yo': {
-        title: "KÓÒDÙ KÓÒDÙ AI",
+        title: "AṢÈMÚLÒ KÓÒDÙ AI",
         generate: "Ṣe kóòdù pẹlu AI",
         models: "GPT-4o + Llama + Pollinations",
-        premium: "Ẹ̀ya Premium",
+        premium: "Àǹfààní",
         usage: "Àmúlò",
         examples: "Àwọn àpẹẹrẹ",
         status: "Ipò",
-        premium_locked: "Premium ti tì",
-        premium_active: "Premium n ṣiṣẹ",
+        premium_locked: "Àǹfààní ti tì",
+        premium_active: "Àǹfààní n ṣiṣẹ",
         unlock: "Lo .subscribe lati ṣí",
         raw_code: "KÓÒDÙ AISE",
         live_preview: "ÌWÒRAN LAAYE",
@@ -107,7 +113,10 @@ const translations = {
         model: "Model",
         failed: "KÓÒDÙ KÙNÀ",
         unable: "Ko ṣe ṣe lati ṣe kóòdù",
-        try_different: "Gbiyanju ọna miiran"
+        try_different: "Gbiyanju ìtọ́ni míràn",
+        reply_message: "Ṣe ìdáhùn sí ifọ́rọ́ránṣẹ́ pẹlu .kóòdù",
+        reply_text: "Ṣe ìdáhùn sí ọ̀rọ̀ pẹlu .kóòdù",
+        prompt: "ìtọ́ni"
     },
     'ig': {
         title: "ỌRỤ Koodu AI",
@@ -128,7 +137,10 @@ const translations = {
         model: "Model",
         failed: "KOODU DARA",
         unable: "Enweghị ike ịmepụta koodu",
-        try_different: "Nwaa ụzọ ọzọ"
+        try_different: "Nwaa ụzọ ọzọ",
+        reply_message: "Zaa ozi na .koodu",
+        reply_text: "Zaa ederede na .koodu",
+        prompt: "ntụziaka"
     },
     'fr': {
         title: "GÉNÉRATEUR DE CODE IA",
@@ -149,7 +161,10 @@ const translations = {
         model: "Modèle",
         failed: "CODE ÉCHOUÉ",
         unable: "Impossible de générer le code",
-        try_different: "Essayez une autre demande"
+        try_different: "Essayez une autre demande",
+        reply_message: "Répondre à un message avec .code",
+        reply_text: "Répondre au texte avec .code",
+        prompt: "invite"
     },
     'de': {
         title: "KI-CODE-GENERATOR",
@@ -170,7 +185,10 @@ const translations = {
         model: "Modell",
         failed: "CODE FEHLGESCHLAGEN",
         unable: "Code konnte nicht generiert werden",
-        try_different: "Versuchen Sie eine andere Eingabeaufforderung"
+        try_different: "Versuchen Sie eine andere Eingabeaufforderung",
+        reply_message: "Auf eine Nachricht mit .code antworten",
+        reply_text: "Auf Text mit .code antworten",
+        prompt: "Eingabeaufforderung"
     },
     'ar': {
         title: "مولد الكود بالذكاء الاصطناعي",
@@ -191,7 +209,10 @@ const translations = {
         model: "النموذج",
         failed: "فشل الكود",
         unable: "تعذر إنشاء الكود",
-        try_different: "جرب طلبًا مختلفًا"
+        try_different: "جرب طلبًا مختلفًا",
+        reply_message: "الرد على رسالة باستخدام .code",
+        reply_text: "الرد على النص باستخدام .code",
+        prompt: "موجه"
     },
     'zh': {
         title: "AI 代码生成器",
@@ -212,7 +233,10 @@ const translations = {
         model: "模型",
         failed: "代码生成失败",
         unable: "无法生成代码",
-        try_different: "尝试不同的提示"
+        try_different: "尝试不同的提示",
+        reply_message: "回复消息使用 .code",
+        reply_text: "回复文本使用 .code",
+        prompt: "提示"
     },
     'hi': {
         title: "AI कोड जनरेटर",
@@ -233,7 +257,10 @@ const translations = {
         model: "मॉडल",
         failed: "कोड विफल",
         unable: "कोड जनरेट करने में असमर्थ",
-        try_different: "एक अलग प्रॉम्प्ट आज़माएं"
+        try_different: "एक अलग प्रॉम्प्ट आज़माएं",
+        reply_message: ".code के साथ संदेश का उत्तर दें",
+        reply_text: ".code के साथ पाठ का उत्तर दें",
+        prompt: "प्रॉम्प्ट"
     },
     'es': {
         title: "GENERADOR DE CÓDIGO IA",
@@ -254,7 +281,10 @@ const translations = {
         model: "Modelo",
         failed: "CÓDIGO FALLIDO",
         unable: "No se pudo generar el código",
-        try_different: "Prueba con otro mensaje"
+        try_different: "Prueba con otro mensaje",
+        reply_message: "Responder a un mensaje con .code",
+        reply_text: "Responder al texto con .code",
+        prompt: "mensaje"
     },
     'pt': {
         title: "GERADOR DE CÓDIGO IA",
@@ -275,7 +305,10 @@ const translations = {
         model: "Modelo",
         failed: "CÓDIGO FALHOU",
         unable: "Não foi possível gerar o código",
-        try_different: "Tente um prompt diferente"
+        try_different: "Tente um prompt diferente",
+        reply_message: "Responder a uma mensagem com .code",
+        reply_text: "Responder ao texto com .code",
+        prompt: "prompt"
     },
     'ru': {
         title: "ГЕНЕРАТОР КОДА ИИ",
@@ -296,7 +329,10 @@ const translations = {
         model: "Модель",
         failed: "КОД НЕ УДАЛСЯ",
         unable: "Не удалось сгенерировать код",
-        try_different: "Попробуйте другой запрос"
+        try_different: "Попробуйте другой запрос",
+        reply_message: "Ответить на сообщение с .code",
+        reply_text: "Ответить на текст с .code",
+        prompt: "запрос"
     },
     'ur': {
         title: "اے آئی کوڈ جنریٹر",
@@ -317,7 +353,10 @@ const translations = {
         model: "ماڈل",
         failed: "کوڈ ناکام",
         unable: "کوڈ بنانے میں ناکام",
-        try_different: "مختلف پرامپٹ آزمائیں"
+        try_different: "مختلف پرامپٹ آزمائیں",
+        reply_message: ".code کے ساتھ پیغام کا جواب دیں",
+        reply_text: ".code کے ساتھ متن کا جواب دیں",
+        prompt: "پرامپٹ"
     },
     'bn': {
         title: "এআই কোড জেনারেটর",
@@ -338,7 +377,10 @@ const translations = {
         model: "মডেল",
         failed: "কোড ব্যর্থ",
         unable: "কোড তৈরি করা সম্ভব হয়নি",
-        try_different: "ভিন্ন প্রম্পট চেষ্টা করুন"
+        try_different: "ভিন্ন প্রম্পট চেষ্টা করুন",
+        reply_message: ".code দিয়ে বার্তার উত্তর দিন",
+        reply_text: ".code দিয়ে টেক্সটের উত্তর দিন",
+        prompt: "প্রম্পট"
     },
     'pcm': {
         title: "AI CODE GENERATOR",
@@ -359,7 +401,10 @@ const translations = {
         model: "Model",
         failed: "CODE FAIL",
         unable: "No fit generate code",
-        try_different: "Try different prompt"
+        try_different: "Try different prompt",
+        reply_message: "Reply message with .code",
+        reply_text: "Reply text with .code",
+        prompt: "prompt"
     },
     'it': {
         title: "GENERATORE DI CODICE IA",
@@ -380,7 +425,10 @@ const translations = {
         model: "Modello",
         failed: "CODICE FALLITO",
         unable: "Impossibile generare il codice",
-        try_different: "Prova un prompt diverso"
+        try_different: "Prova un prompt diverso",
+        reply_message: "Rispondi a un messaggio con .code",
+        reply_text: "Rispondi al testo con .code",
+        prompt: "prompt"
     },
     'id': {
         title: "PEMBUAT KODE AI",
@@ -401,7 +449,10 @@ const translations = {
         model: "Model",
         failed: "KODE GAGAL",
         unable: "Tidak dapat membuat kode",
-        try_different: "Coba prompt yang berbeda"
+        try_different: "Coba prompt yang berbeda",
+        reply_message: "Balas pesan dengan .code",
+        reply_text: "Balas teks dengan .code",
+        prompt: "prompt"
     },
     'ja': {
         title: "AIコードジェネレーター",
@@ -422,7 +473,10 @@ const translations = {
         model: "モデル",
         failed: "コード失敗",
         unable: "コードを生成できません",
-        try_different: "別のプロンプトを試してください"
+        try_different: "別のプロンプトを試してください",
+        reply_message: ".codeでメッセージに返信",
+        reply_text: ".codeでテキストに返信",
+        prompt: "プロンプト"
     },
     'sw': {
         title: "JENERETA YA KODI YA AI",
@@ -443,7 +497,10 @@ const translations = {
         model: "Model",
         failed: "KODI IMESHINDWA",
         unable: "Haikuweza kutengeneza kodi",
-        try_different: "Jaribu ombi tofauti"
+        try_different: "Jaribu ombi tofauti",
+        reply_message: "Jibu ujumbe kwa .code",
+        reply_text: "Jibu maandishi kwa .code",
+        prompt: "ombi"
     },
     'tr': {
         title: "YAPAY ZEKA KOD ÜRETİCİ",
@@ -464,7 +521,10 @@ const translations = {
         model: "Model",
         failed: "KOD BAŞARISIZ",
         unable: "Kod oluşturulamadı",
-        try_different: "Farklı bir komut deneyin"
+        try_different: "Farklı bir komut deneyin",
+        reply_message: ".code ile mesaja yanıt verin",
+        reply_text: ".code ile metne yanıt verin",
+        prompt: "komut"
     },
     'ko': {
         title: "AI 코드 생성기",
@@ -485,7 +545,10 @@ const translations = {
         model: "모델",
         failed: "코드 실패",
         unable: "코드를 생성할 수 없음",
-        try_different: "다른 프롬프트 시도"
+        try_different: "다른 프롬프트 시도",
+        reply_message: ".code로 메시지에 답장",
+        reply_text: ".code로 텍스트에 답장",
+        prompt: "프롬프트"
     },
     'vi': {
         title: "TRÌNH TẠO MÃ AI",
@@ -506,7 +569,10 @@ const translations = {
         model: "Mô hình",
         failed: "MÃ THẤT BẠI",
         unable: "Không thể tạo mã",
-        try_different: "Thử lệnh khác"
+        try_different: "Thử lệnh khác",
+        reply_message: "Trả lời tin nhắn với .code",
+        reply_text: "Trả lời văn bản với .code",
+        prompt: "lệnh"
     },
     'ta': {
         title: "AI குறியீடு உருவாக்கி",
@@ -527,7 +593,10 @@ const translations = {
         model: "மாதிரி",
         failed: "குறியீடு தோல்வி",
         unable: "குறியீடு உருவாக்க முடியவில்லை",
-        try_different: "வேறு கட்டளையை முயற்சிக்கவும்"
+        try_different: "வேறு கட்டளையை முயற்சிக்கவும்",
+        reply_message: ".code உடன் செய்திக்கு பதிலளிக்கவும்",
+        reply_text: ".code உடன் உரைக்கு பதிலளிக்கவும்",
+        prompt: "கட்டளை"
     }
 };
 
@@ -724,10 +793,21 @@ async function codeCommand(sock, chatId, message) {
         const fontId = getCurrentFont();
         const styleId = getCurrentStyle();
         
+        // ---- FIX: Get command and arguments properly ----
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-        const args = text.split(' ').slice(1);
-        const typedQuery = args.join(' ').trim();
-
+        
+        // Get the command without the dot and resolve it
+        const rawCommand = text.split(' ')[0].toLowerCase().replace(/^\./, '');
+        const resolvedCommand = resolveCommand(rawCommand);
+        
+        // Get arguments after the command (everything after the command name)
+        const args = text.replace(/^[^\s]*\s?/, '').trim();
+        const typedQuery = args;  // This is the user's prompt
+        
+        // ---- DEBUG ----
+        console.log('📝 Command:', resolvedCommand);
+        console.log('📝 Query:', typedQuery);
+        
         // Get quoted message text for reply
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         let quotedText = '';
@@ -746,7 +826,7 @@ async function codeCommand(sock, chatId, message) {
             query = quotedText;
         }
 
-        // No query → show menu (everyone can see)
+        // No query → show menu
         if (!query) {
             const menuContent = [
                 `💻 ${t('generate')}`,
@@ -754,14 +834,14 @@ async function codeCommand(sock, chatId, message) {
                 `💎 ${t('premium')}`,
                 '',
                 `*${t('usage')}:*`,
-                '  └ .code <prompt>',
-                '  └ Reply to a message with .code',
-                '  └ .code <prompt> + reply overrides',
+                `  └ .${resolvedCommand} <${t('prompt')}>`,
+                `  └ ${t('reply_message')}`,
+                `  └ .${resolvedCommand} <${t('prompt')}> + ${t('reply_text').toLowerCase()}`,
                 '',
                 `*${t('examples')}:*`,
-                '  └ .code login form in html',
-                '  └ .code python fibonacci function',
-                '  └ Reply to text with .code',
+                `  └ .${resolvedCommand} login form in html`,
+                `  └ .${resolvedCommand} python fibonacci function`,
+                `  └ ${t('reply_text')}`,
                 '',
                 `${!isPremium ? `*🔒 ${t('premium_locked')}*\n  └ ${t('unlock')}` : `*✅ ${t('premium_active')}*`}`
             ];
@@ -957,6 +1037,13 @@ async function codeCommand(sock, chatId, message) {
             text: errorMessage
         }, { quoted: message });
     }
+}
+
+// ---- Resolve Command Helper ----
+function resolveCommand(input) {
+    const cmd = input.toLowerCase().replace(/^\./, '');
+    // Add your command aliases resolution here
+    return cmd;
 }
 
 module.exports = codeCommand;
