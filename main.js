@@ -460,19 +460,21 @@ if (!isCommand) {
     return;
 }
 
-        // If we get here, it's a command
-        const userMessage = '.' + commandWithoutPrefix.toLowerCase().replace(/\.\s+/g, '.').trim();
+    // If we get here, it's a command
         const rawText = commandWithoutPrefix;
+        const resolvedCommand = resolveCommand(rawText);
+        const userMessage = '.' + resolvedCommand;
 
         // 🔥 COMMAND DEBUG
         log('═══════════════════════════════════════');
         log('🔧 COMMAND PARSED');
         log('├ userMessage:', userMessage);
         log('├ rawText:', rawText);
+        log('├ resolvedCommand:', resolvedCommand);
         log('├ chatId (for reply):', chatId);
         log('═══════════════════════════════════════');
 
-        log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${commandWithoutPrefix} (prefix: ${currentPrefix || 'none'})`);
+        log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${resolvedCommand} (prefix: ${currentPrefix || 'none'})`);
 
         // Read bot mode once
         let isPublic = true;
