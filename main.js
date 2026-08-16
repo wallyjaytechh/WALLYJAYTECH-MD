@@ -262,9 +262,9 @@ const languageCommand = require('./commands/language');
 
 // ---- COMMAND ALIASES ----
 const commandAliases = {
-    'code': ['code', 'kóòdù', 'koodu', 'code', 'code', 'code', 'كود', '代码', 'कोड', 'código', 'código', 'код', 'کوڈ', 'কোড', 'code', 'codice', 'kode', 'コード', 'code', 'kod', '코드', 'mã', 'குறியீடு'],
-    
-    'menu': ['menu', 'àtòjọ', 'ndepụta', 'menu', 'menu', 'menü', 'القائمة', '菜单', 'मेनू', 'menú', 'menu', 'меню', 'مینو', 'মেনু', 'menu', 'menu', 'menu', 'メニュー', 'menu', 'menü', '메뉴', 'thực đơn', 'பட்டியல்']
+    'code': ['code', 'código', 'codice', 'код', 'كود', '代码', '코드', 'コード', 'कोड', 'کوڈ', 'কোড', 'koodu', 'kóòdù', 'kode', 'kod', 'mã', 'குறியீடு'],
+    'menu': ['menu', 'menü', 'menú', 'ndepụta', 'àtòjọ', 'القائمة', '菜单', 'मेनू', 'menú', 'меню', 'مینو', 'মেনু', 'menu', 'menù', 'menu', 'メニュー', 'menu', 'menü', '메뉴', 'thựcđơn', 'பட்டியல்'],
+    'language': ['language', 'sprache', 'harshe', 'asụsụ', 'èdè', 'langue', 'اللغة', '语言', 'भाषा', 'idioma', 'язык', 'زبان', 'ভাষা', 'langue', 'lingua', 'bahasa', '言語', 'lugha', 'dil', '언어', 'ngônngữ', 'மொழி']
 };
 
 function resolveCommand(input) {
