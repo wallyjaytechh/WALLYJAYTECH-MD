@@ -463,23 +463,25 @@ if (!isCommand) {
     return;
 }
 
-    // If we get here, it's a command
-        const rawText = commandWithoutPrefix;
-        const resolvedCommand = resolveCommand(rawText);
-        const userMessage = '.' + resolvedCommand;
+  // If we get here, it's a command
+const rawText = commandWithoutPrefix;
+const resolvedCommand = resolveCommand(rawText);
+const args = rawText.replace(/^[^\s]*\s?/, '');
+const userMessage = '.' + resolvedCommand + (args ? ' ' + args : '');
 
-        // 🔥 COMMAND DEBUG
-        log('═══════════════════════════════════════');
-        log('🔧 COMMAND PARSED');
-        log('├ userMessage:', userMessage);
-        log('├ rawText:', rawText);
-        log('├ resolvedCommand:', resolvedCommand);
-        log('├ chatId (for reply):', chatId);
-        log('═══════════════════════════════════════');
+// 🔥 COMMAND DEBUG
+log('═══════════════════════════════════════');
+log('🔧 COMMAND PARSED');
+log('├ userMessage:', userMessage);
+log('├ rawText:', rawText);
+log('├ resolvedCommand:', resolvedCommand);
+log('├ args:', args);
+log('├ chatId (for reply):', chatId);
+log('═══════════════════════════════════════');
 
-        log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${resolvedCommand} (prefix: ${currentPrefix || 'none'})`);
+log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${resolvedCommand} (prefix: ${currentPrefix || 'none'})`);
 
-        // Read bot mode once
+// Read bot mode once
         let isPublic = true;
         try {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
