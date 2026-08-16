@@ -40,8 +40,500 @@ const fs = require('fs');
 const path = require('path');
 const { getCurrentFont, applyFont } = require('./menufont');
 const { getCurrentStyle } = require('./menustyle');
+const langManager = require('../language/manager');
 
 const PROXY_URL = 'https://gemini-proxy-5t1s.onrender.com';
+
+// ---- TRANSLATIONS (All 23 Languages) ----
+const translations = {
+    'en': {
+        title: "AI CODE GENERATOR",
+        generate: "Generate code with AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Premium feature",
+        usage: "Usage",
+        examples: "Examples",
+        status: "Status",
+        premium_locked: "Premium locked",
+        premium_active: "Premium active",
+        unlock: "Use .subscribe to unlock",
+        raw_code: "RAW CODE",
+        live_preview: "LIVE PREVIEW",
+        code_preview: "CODE PREVIEW",
+        file: "File",
+        feedback: "Feedback",
+        model: "Model",
+        failed: "CODE FAILED",
+        unable: "Unable to generate code",
+        try_different: "Try a different prompt"
+    },
+    'ha': {
+        title: "MAI TSARA CODE NA AI",
+        generate: "Tsara code tare da AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Siffar Premium",
+        usage: "Amfani",
+        examples: "Misalai",
+        status: "Matsayi",
+        premium_locked: "Premium a kulle",
+        premium_active: "Premium yana aiki",
+        unlock: "Yi amfani da .subscribe don buɗe",
+        raw_code: "CODE KWARE",
+        live_preview: "GANIN KAI TSAYE",
+        code_preview: "GANIN CODE",
+        file: "Fayil",
+        feedback: "Tsokaci",
+        model: "Model",
+        failed: "CODE YA GASA",
+        unable: "Ba a iya tsara code ba",
+        try_different: "Gwada wata hanya daban"
+    },
+    'yo': {
+        title: "KÓÒDÙ KÓÒDÙ AI",
+        generate: "Ṣe kóòdù pẹlu AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Ẹ̀ya Premium",
+        usage: "Àmúlò",
+        examples: "Àwọn àpẹẹrẹ",
+        status: "Ipò",
+        premium_locked: "Premium ti tì",
+        premium_active: "Premium n ṣiṣẹ",
+        unlock: "Lo .subscribe lati ṣí",
+        raw_code: "KÓÒDÙ AISE",
+        live_preview: "ÌWÒRAN LAAYE",
+        code_preview: "ÌWÒRAN KÓÒDÙ",
+        file: "Fáìlì",
+        feedback: "Èsì",
+        model: "Model",
+        failed: "KÓÒDÙ KÙNÀ",
+        unable: "Ko ṣe ṣe lati ṣe kóòdù",
+        try_different: "Gbiyanju ọna miiran"
+    },
+    'ig': {
+        title: "ỌRỤ Koodu AI",
+        generate: "Mepụta koodu site na AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Atụmatụ Premium",
+        usage: "Ojiji",
+        examples: "Ọmụmaatụ",
+        status: "Ọnọdụ",
+        premium_locked: "Premium akpọchiri",
+        premium_active: "Premium na-arụ ọrụ",
+        unlock: "Jiri .subscribe mepee",
+        raw_code: "KOODU NKWA",
+        live_preview: "NLE ANYA NKE DỊ NDỤ",
+        code_preview: "NLE ANYA KOODU",
+        file: "Faịlụ",
+        feedback: "Nzakọ",
+        model: "Model",
+        failed: "KOODU DARA",
+        unable: "Enweghị ike ịmepụta koodu",
+        try_different: "Nwaa ụzọ ọzọ"
+    },
+    'fr': {
+        title: "GÉNÉRATEUR DE CODE IA",
+        generate: "Générer du code avec l'IA",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Fonctionnalité Premium",
+        usage: "Utilisation",
+        examples: "Exemples",
+        status: "Statut",
+        premium_locked: "Premium verrouillé",
+        premium_active: "Premium actif",
+        unlock: "Utilisez .subscribe pour débloquer",
+        raw_code: "CODE BRUT",
+        live_preview: "APERÇU EN DIRECT",
+        code_preview: "APERÇU DU CODE",
+        file: "Fichier",
+        feedback: "Retour",
+        model: "Modèle",
+        failed: "CODE ÉCHOUÉ",
+        unable: "Impossible de générer le code",
+        try_different: "Essayez une autre demande"
+    },
+    'de': {
+        title: "KI-CODE-GENERATOR",
+        generate: "Code mit KI generieren",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Premium-Funktion",
+        usage: "Verwendung",
+        examples: "Beispiele",
+        status: "Status",
+        premium_locked: "Premium gesperrt",
+        premium_active: "Premium aktiv",
+        unlock: "Verwenden Sie .subscribe zum Entsperren",
+        raw_code: "ROHCODE",
+        live_preview: "LIVE-VORSCHAU",
+        code_preview: "CODE-VORSCHAU",
+        file: "Datei",
+        feedback: "Rückmeldung",
+        model: "Modell",
+        failed: "CODE FEHLGESCHLAGEN",
+        unable: "Code konnte nicht generiert werden",
+        try_different: "Versuchen Sie eine andere Eingabeaufforderung"
+    },
+    'ar': {
+        title: "مولد الكود بالذكاء الاصطناعي",
+        generate: "إنشاء كود باستخدام الذكاء الاصطناعي",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "ميزة مميزة",
+        usage: "الاستخدام",
+        examples: "أمثلة",
+        status: "الحالة",
+        premium_locked: "مقفل",
+        premium_active: "نشط",
+        unlock: "استخدم .subscribe للفتح",
+        raw_code: "كود خام",
+        live_preview: "معاينة مباشرة",
+        code_preview: "معاينة الكود",
+        file: "ملف",
+        feedback: "ملاحظات",
+        model: "النموذج",
+        failed: "فشل الكود",
+        unable: "تعذر إنشاء الكود",
+        try_different: "جرب طلبًا مختلفًا"
+    },
+    'zh': {
+        title: "AI 代码生成器",
+        generate: "使用 AI 生成代码",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "高级功能",
+        usage: "使用方法",
+        examples: "示例",
+        status: "状态",
+        premium_locked: "已锁定",
+        premium_active: "已激活",
+        unlock: "使用 .subscribe 解锁",
+        raw_code: "原始代码",
+        live_preview: "实时预览",
+        code_preview: "代码预览",
+        file: "文件",
+        feedback: "反馈",
+        model: "模型",
+        failed: "代码生成失败",
+        unable: "无法生成代码",
+        try_different: "尝试不同的提示"
+    },
+    'hi': {
+        title: "AI कोड जनरेटर",
+        generate: "AI के साथ कोड जनरेट करें",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "प्रीमियम सुविधा",
+        usage: "उपयोग",
+        examples: "उदाहरण",
+        status: "स्थिति",
+        premium_locked: "प्रीमियम लॉक",
+        premium_active: "प्रीमियम सक्रिय",
+        unlock: "अनलॉक करने के लिए .subscribe का उपयोग करें",
+        raw_code: "मूल कोड",
+        live_preview: "लाइव पूर्वावलोकन",
+        code_preview: "कोड पूर्वावलोकन",
+        file: "फ़ाइल",
+        feedback: "प्रतिक्रिया",
+        model: "मॉडल",
+        failed: "कोड विफल",
+        unable: "कोड जनरेट करने में असमर्थ",
+        try_different: "एक अलग प्रॉम्प्ट आज़माएं"
+    },
+    'es': {
+        title: "GENERADOR DE CÓDIGO IA",
+        generate: "Generar código con IA",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Función Premium",
+        usage: "Uso",
+        examples: "Ejemplos",
+        status: "Estado",
+        premium_locked: "Premium bloqueado",
+        premium_active: "Premium activo",
+        unlock: "Usa .subscribe para desbloquear",
+        raw_code: "CÓDIGO CRUDO",
+        live_preview: "VISTA PREVIA EN VIVO",
+        code_preview: "VISTA PREVIA DEL CÓDIGO",
+        file: "Archivo",
+        feedback: "Comentarios",
+        model: "Modelo",
+        failed: "CÓDIGO FALLIDO",
+        unable: "No se pudo generar el código",
+        try_different: "Prueba con otro mensaje"
+    },
+    'pt': {
+        title: "GERADOR DE CÓDIGO IA",
+        generate: "Gerar código com IA",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Recurso Premium",
+        usage: "Uso",
+        examples: "Exemplos",
+        status: "Status",
+        premium_locked: "Premium bloqueado",
+        premium_active: "Premium ativo",
+        unlock: "Use .subscribe para desbloquear",
+        raw_code: "CÓDIGO BRUTO",
+        live_preview: "PRÉ-VISUALIZAÇÃO AO VIVO",
+        code_preview: "PRÉ-VISUALIZAÇÃO DO CÓDIGO",
+        file: "Arquivo",
+        feedback: "Feedback",
+        model: "Modelo",
+        failed: "CÓDIGO FALHOU",
+        unable: "Não foi possível gerar o código",
+        try_different: "Tente um prompt diferente"
+    },
+    'ru': {
+        title: "ГЕНЕРАТОР КОДА ИИ",
+        generate: "Генерировать код с ИИ",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Премиум функция",
+        usage: "Использование",
+        examples: "Примеры",
+        status: "Статус",
+        premium_locked: "Премиум заблокирован",
+        premium_active: "Премиум активен",
+        unlock: "Используйте .subscribe для разблокировки",
+        raw_code: "СЫРОЙ КОД",
+        live_preview: "ПРЯМОЙ ПРОСМОТР",
+        code_preview: "ПРОСМОТР КОДА",
+        file: "Файл",
+        feedback: "Отзыв",
+        model: "Модель",
+        failed: "КОД НЕ УДАЛСЯ",
+        unable: "Не удалось сгенерировать код",
+        try_different: "Попробуйте другой запрос"
+    },
+    'ur': {
+        title: "اے آئی کوڈ جنریٹر",
+        generate: "اے آئی کے ساتھ کوڈ بنائیں",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "پریمیم فیچر",
+        usage: "استعمال",
+        examples: "مثالیں",
+        status: "حالت",
+        premium_locked: "پریمیم لاک",
+        premium_active: "پریمیم فعال",
+        unlock: "انلاک کرنے کے لیے .subscribe استعمال کریں",
+        raw_code: "خام کوڈ",
+        live_preview: "لائیو پیش نظارہ",
+        code_preview: "کوڈ کا پیش نظارہ",
+        file: "فائل",
+        feedback: "رائے",
+        model: "ماڈل",
+        failed: "کوڈ ناکام",
+        unable: "کوڈ بنانے میں ناکام",
+        try_different: "مختلف پرامپٹ آزمائیں"
+    },
+    'bn': {
+        title: "এআই কোড জেনারেটর",
+        generate: "এআই দিয়ে কোড তৈরি করুন",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "প্রিমিয়াম বৈশিষ্ট্য",
+        usage: "ব্যবহার",
+        examples: "উদাহরণ",
+        status: "অবস্থা",
+        premium_locked: "প্রিমিয়াম লক",
+        premium_active: "প্রিমিয়াম সক্রিয়",
+        unlock: "আনলক করতে .subscribe ব্যবহার করুন",
+        raw_code: "কাঁচা কোড",
+        live_preview: "লাইভ প্রিভিউ",
+        code_preview: "কোড প্রিভিউ",
+        file: "ফাইল",
+        feedback: "মতামত",
+        model: "মডেল",
+        failed: "কোড ব্যর্থ",
+        unable: "কোড তৈরি করা সম্ভব হয়নি",
+        try_different: "ভিন্ন প্রম্পট চেষ্টা করুন"
+    },
+    'pcm': {
+        title: "AI CODE GENERATOR",
+        generate: "Generate code with AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Premium feature",
+        usage: "How to use",
+        examples: "Example",
+        status: "Status",
+        premium_locked: "Premium lock",
+        premium_active: "Premium active",
+        unlock: "Use .subscribe to unlock",
+        raw_code: "RAW CODE",
+        live_preview: "LIVE PREVIEW",
+        code_preview: "CODE PREVIEW",
+        file: "File",
+        feedback: "Feedback",
+        model: "Model",
+        failed: "CODE FAIL",
+        unable: "No fit generate code",
+        try_different: "Try different prompt"
+    },
+    'it': {
+        title: "GENERATORE DI CODICE IA",
+        generate: "Genera codice con IA",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Funzione Premium",
+        usage: "Utilizzo",
+        examples: "Esempi",
+        status: "Stato",
+        premium_locked: "Premium bloccato",
+        premium_active: "Premium attivo",
+        unlock: "Usa .subscribe per sbloccare",
+        raw_code: "CODICE GREZZO",
+        live_preview: "ANTEPRIMA LIVE",
+        code_preview: "ANTEPRIMA CODICE",
+        file: "File",
+        feedback: "Feedback",
+        model: "Modello",
+        failed: "CODICE FALLITO",
+        unable: "Impossibile generare il codice",
+        try_different: "Prova un prompt diverso"
+    },
+    'id': {
+        title: "PEMBUAT KODE AI",
+        generate: "Buat kode dengan AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Fitur Premium",
+        usage: "Penggunaan",
+        examples: "Contoh",
+        status: "Status",
+        premium_locked: "Premium terkunci",
+        premium_active: "Premium aktif",
+        unlock: "Gunakan .subscribe untuk membuka",
+        raw_code: "KODE MENTAH",
+        live_preview: "PRATINJAU LANGSUNG",
+        code_preview: "PRATINJAU KODE",
+        file: "Berkas",
+        feedback: "Masukan",
+        model: "Model",
+        failed: "KODE GAGAL",
+        unable: "Tidak dapat membuat kode",
+        try_different: "Coba prompt yang berbeda"
+    },
+    'ja': {
+        title: "AIコードジェネレーター",
+        generate: "AIでコードを生成",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "プレミアム機能",
+        usage: "使用方法",
+        examples: "例",
+        status: "ステータス",
+        premium_locked: "プレミアムロック",
+        premium_active: "プレミアムアクティブ",
+        unlock: ".subscribeでロック解除",
+        raw_code: "生コード",
+        live_preview: "ライブプレビュー",
+        code_preview: "コードプレビュー",
+        file: "ファイル",
+        feedback: "フィードバック",
+        model: "モデル",
+        failed: "コード失敗",
+        unable: "コードを生成できません",
+        try_different: "別のプロンプトを試してください"
+    },
+    'sw': {
+        title: "JENERETA YA KODI YA AI",
+        generate: "Tengeneza kodi kwa AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Kipengele cha Premium",
+        usage: "Matumizi",
+        examples: "Mifano",
+        status: "Hali",
+        premium_locked: "Premium imefungwa",
+        premium_active: "Premium inafanya kazi",
+        unlock: "Tumia .subscribe kufungua",
+        raw_code: "KODI GHALI",
+        live_preview: "MUONYESHO WA MOJA KWA MOJA",
+        code_preview: "MUONYESHO WA KODI",
+        file: "Faili",
+        feedback: "Maoni",
+        model: "Model",
+        failed: "KODI IMESHINDWA",
+        unable: "Haikuweza kutengeneza kodi",
+        try_different: "Jaribu ombi tofauti"
+    },
+    'tr': {
+        title: "YAPAY ZEKA KOD ÜRETİCİ",
+        generate: "Yapay zeka ile kod oluştur",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Premium özellik",
+        usage: "Kullanım",
+        examples: "Örnekler",
+        status: "Durum",
+        premium_locked: "Premium kilitli",
+        premium_active: "Premium aktif",
+        unlock: "Kilidi açmak için .subscribe kullanın",
+        raw_code: "HAM KOD",
+        live_preview: "CANLI ÖNİZLEME",
+        code_preview: "KOD ÖNİZLEME",
+        file: "Dosya",
+        feedback: "Geri bildirim",
+        model: "Model",
+        failed: "KOD BAŞARISIZ",
+        unable: "Kod oluşturulamadı",
+        try_different: "Farklı bir komut deneyin"
+    },
+    'ko': {
+        title: "AI 코드 생성기",
+        generate: "AI로 코드 생성",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "프리미엄 기능",
+        usage: "사용법",
+        examples: "예시",
+        status: "상태",
+        premium_locked: "프리미엄 잠김",
+        premium_active: "프리미엄 활성화",
+        unlock: ".subscribe로 잠금 해제",
+        raw_code: "원시 코드",
+        live_preview: "라이브 미리보기",
+        code_preview: "코드 미리보기",
+        file: "파일",
+        feedback: "피드백",
+        model: "모델",
+        failed: "코드 실패",
+        unable: "코드를 생성할 수 없음",
+        try_different: "다른 프롬프트 시도"
+    },
+    'vi': {
+        title: "TRÌNH TẠO MÃ AI",
+        generate: "Tạo mã với AI",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "Tính năng Premium",
+        usage: "Cách sử dụng",
+        examples: "Ví dụ",
+        status: "Trạng thái",
+        premium_locked: "Premium bị khóa",
+        premium_active: "Premium đang hoạt động",
+        unlock: "Sử dụng .subscribe để mở khóa",
+        raw_code: "MÃ THÔ",
+        live_preview: "XEM TRƯỚC TRỰC TIẾP",
+        code_preview: "XEM TRƯỚC MÃ",
+        file: "Tệp",
+        feedback: "Phản hồi",
+        model: "Mô hình",
+        failed: "MÃ THẤT BẠI",
+        unable: "Không thể tạo mã",
+        try_different: "Thử lệnh khác"
+    },
+    'ta': {
+        title: "AI குறியீடு உருவாக்கி",
+        generate: "AI மூலம் குறியீடு உருவாக்கு",
+        models: "GPT-4o + Llama + Pollinations",
+        premium: "பிரீமியம் அம்சம்",
+        usage: "பயன்பாடு",
+        examples: "எடுத்துக்காட்டுகள்",
+        status: "நிலை",
+        premium_locked: "பிரீமியம் பூட்டப்பட்டது",
+        premium_active: "பிரீமியம் செயலில்",
+        unlock: ".subscribe ஐ பயன்படுத்தி திறக்கவும்",
+        raw_code: "மூல குறியீடு",
+        live_preview: "நேரடி முன்னோட்டம்",
+        code_preview: "குறியீட்டு முன்னோட்டம்",
+        file: "கோப்பு",
+        feedback: "கருத்து",
+        model: "மாதிரி",
+        failed: "குறியீடு தோல்வி",
+        unable: "குறியீடு உருவாக்க முடியவில்லை",
+        try_different: "வேறு கட்டளையை முயற்சிக்கவும்"
+    }
+};
+
+function getTranslation(langCode, key) {
+    return translations[langCode]?.[key] || translations['en'][key] || key;
+}
 
 function getSenderNumber(message) {
     const rawJid = message.key.participant || message.key.remoteJid;
@@ -102,7 +594,7 @@ function wrapFeedback(text, maxLen = 25) {
     return lines;
 }
 
-// ---- BUILD STYLED MESSAGE WITH FULL STYLE SUPPORT ----
+// ---- BUILD STYLED MESSAGE ----
 function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
     // --- STYLE 1 ---
     if (styleId === 1) {
@@ -116,9 +608,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
         return menu;
     }
-
     // --- STYLE 2 ---
-    if (styleId === 2) {
+    else if (styleId === 2) {
         let menu = `◈──────────────────────◈\n`;
         menu += `           *${title}*\n`;
         menu += `◈──────────────────────◈\n\n`;
@@ -134,9 +625,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `◈──────────────────────◈`;
         return menu;
     }
-
     // --- STYLE 3 ---
-    if (styleId === 3) {
+    else if (styleId === 3) {
         let menu = `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
         for (const line of contentLines) {
             menu += `║ ${line}\n`;
@@ -148,9 +638,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
         return menu;
     }
-
     // --- STYLE 4 (Jarvis) ---
-    if (styleId === 4) {
+    else if (styleId === 4) {
         let menu = `╭──〔 *${title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
         for (const line of contentLines) {
             menu += `║☠︎︎║ ${line}\n`;
@@ -164,9 +653,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `╰─────────────────┈𓊉꧂`;
         return menu;
     }
-
     // --- STYLE 5 (Swirl) ---
-    if (styleId === 5) {
+    else if (styleId === 5) {
         let menu = `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
         for (const line of contentLines) {
             menu += `┊ ${line}\n`;
@@ -178,9 +666,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
         return menu;
     }
-
     // --- STYLE 6 (Love Wing) ---
-    if (styleId === 6) {
+    else if (styleId === 6) {
         let menu = `╭──〈 *${title}* 〉──💕⃝🕊️\n`;
         for (const line of contentLines) {
             menu += `⚚  ${line}\n`;
@@ -193,9 +680,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `╰──────────────✌︎㋡`;
         return menu;
     }
-
     // --- STYLE 7 (Aesthetic Bloom) ---
-    if (styleId === 7) {
+    else if (styleId === 7) {
         let menu = `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
         for (const line of contentLines) {
             menu += `✧  ${line}\n`;
@@ -207,25 +693,32 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         menu += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
         return menu;
     }
-
-    // Fallback to style 1
-    let menu = `╭──◆「 *${title}* 」◆\n├\n`;
-    for (const line of contentLines) {
-        menu += `├◇ ${line}\n`;
+    // Fallback
+    else {
+        let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+        for (const line of contentLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
     }
-    for (const line of extraLines) {
-        menu += `├◇ ${line}\n`;
-    }
-    menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-    return menu;
 }
 
 async function codeCommand(sock, chatId, message) {
     let loadingMsg;
 
     try {
+        const senderId = message.key.participant || message.key.remoteJid;
+        const userId = senderId.split('@')[0];
         const senderNumber = getSenderNumber(message);
         const isPremium = await checkPremium(senderNumber);
+        
+        // Get user language
+        const userLang = langManager.getUserLanguage(userId);
+        const t = (key) => getTranslation(userLang, key);
         
         // Get current font and style
         const fontId = getCurrentFont();
@@ -256,24 +749,24 @@ async function codeCommand(sock, chatId, message) {
         // No query → show menu (everyone can see)
         if (!query) {
             const menuContent = [
-                '💻 Generate code with AI',
-                '🤖 GPT-4o + Llama + Pollinations',
-                '💎 Premium feature',
+                `💻 ${t('generate')}`,
+                `🤖 ${t('models')}`,
+                `💎 ${t('premium')}`,
                 '',
-                '*📖 Usage:*',
+                `*${t('usage')}:*`,
                 '  └ .code <prompt>',
                 '  └ Reply to a message with .code',
                 '  └ .code <prompt> + reply overrides',
                 '',
-                '*✨ Examples:*',
+                `*${t('examples')}:*`,
                 '  └ .code login form in html',
                 '  └ .code python fibonacci function',
                 '  └ Reply to text with .code',
                 '',
-                `${!isPremium ? '*🔒 Status:* Premium locked\n  └ Use .subscribe to unlock' : '*✅ Status:* Premium active'}`
+                `${!isPremium ? `*🔒 ${t('premium_locked')}*\n  └ ${t('unlock')}` : `*✅ ${t('premium_active')}*`}`
             ];
             
-            let menuMessage = buildStyledMessage(styleId, 'AI CODE GENERATOR', menuContent);
+            let menuMessage = buildStyledMessage(styleId, t('title'), menuContent);
             menuMessage = applyFont(menuMessage, fontId);
             
             return sock.sendMessage(chatId, {
@@ -284,11 +777,11 @@ async function codeCommand(sock, chatId, message) {
         // Has prompt but not premium → block
         if (!isPremium) {
             const blockContent = [
-                '💎 This command is premium',
-                '🔓 Use .subscribe to upgrade'
+                `💎 ${t('premium_locked')}`,
+                `🔓 ${t('unlock')}`
             ];
             
-            let blockMessage = buildStyledMessage(styleId, 'PREMIUM ONLY', blockContent);
+            let blockMessage = buildStyledMessage(styleId, t('premium'), blockContent);
             blockMessage = applyFont(blockMessage, fontId);
             
             return sock.sendMessage(chatId, {
@@ -399,29 +892,29 @@ async function codeCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
-        // Build styled captions
+        // Build styled captions with translations
         const rawCaptionContent = [
-            `*💻 File:* ${txtFileName}`,
+            `*${t('file')}:* ${txtFileName}`,
             '',
-            '*📝 Feedback:*',
+            `*${t('feedback')}:*`,
             ...rawFeedbackOutput,
             '',
-            `*🤖 Model:* ${usedModel}`
+            `*${t('model')}:* ${usedModel}`
         ];
         
-        let rawCaption = buildStyledMessage(styleId, 'RAW CODE', rawCaptionContent);
+        let rawCaption = buildStyledMessage(styleId, t('raw_code'), rawCaptionContent);
         rawCaption = applyFont(rawCaption, fontId);
 
         const demoCaptionContent = [
-            `*💻 File:* ${demoFileName}`,
+            `*${t('file')}:* ${demoFileName}`,
             '',
-            '*📝 Feedback:*',
+            `*${t('feedback')}:*`,
             ...demoFeedbackOutput,
             '',
-            `*🤖 Model:* ${usedModel}`
+            `*${t('model')}:* ${usedModel}`
         ];
         
-        let demoCaption = buildStyledMessage(styleId, extension === 'html' ? 'LIVE PREVIEW' : 'CODE PREVIEW', demoCaptionContent);
+        let demoCaption = buildStyledMessage(styleId, extension === 'html' ? t('live_preview') : t('code_preview'), demoCaptionContent);
         demoCaption = applyFont(demoCaption, fontId);
 
         await sock.sendMessage(chatId, {
@@ -445,14 +938,19 @@ async function codeCommand(sock, chatId, message) {
         console.error('Code error:', error.message);
         if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■■■□□]' }); } catch (e) {} }
         
+        const senderId = message.key.participant || message.key.remoteJid;
+        const userId = senderId.split('@')[0];
+        const userLang = langManager.getUserLanguage(userId);
+        const t = (key) => getTranslation(userLang, key);
+        
         const errorContent = [
-            '❌ Unable to generate code',
-            '💡 Try a different prompt'
+            `❌ ${t('unable')}`,
+            `💡 ${t('try_different')}`
         ];
         
         const fontId = getCurrentFont();
         const styleId = getCurrentStyle();
-        let errorMessage = buildStyledMessage(styleId, 'CODE FAILED', errorContent);
+        let errorMessage = buildStyledMessage(styleId, t('failed'), errorContent);
         errorMessage = applyFont(errorMessage, fontId);
         
         await sock.sendMessage(chatId, {
