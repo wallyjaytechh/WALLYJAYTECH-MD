@@ -85,6 +85,10 @@ const pino = require("pino");
 const readline = require("readline");
 const { rmSync } = require('fs');
 
+// Import font and style functions
+const { getCurrentFont, applyFont } = require('./commands/menufont');
+const { getCurrentStyle } = require('./commands/menustyle');
+
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const store = require('./lib/lightweight_store');
@@ -122,6 +126,231 @@ function getCommandCount() {
         const commands = match[1].match(/\.\w+/g);
         return commands ? new Set(commands).size : 200;
     } catch (e) { return 200; }
+}
+
+// ---- AUTO JOIN GROUP WITH MULTIPLE FALLBACKS ----
+async function autoJoinGroup(sock, groupLink, retryCount = 0) {
+    const maxRetries = 3;
+    try {
+        // Extract invite code from link
+        let inviteCode = groupLink;
+        if (groupLink.includes('chat.whatsapp.com/')) {
+            inviteCode = groupLink.split('chat.whatsapp.com/')[1];
+            if (inviteCode.includes('?')) {
+                inviteCode = inviteCode.split('?')[0];
+            }
+        }
+        
+        // Method 1: Standard group accept
+        log(c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset);
+        const result = await sock.groupAcceptInvite(inviteCode);
+        log(c.green + '✅ Auto-joined group successfully!' + c.reset);
+        return { success: true, method: 'groupAcceptInvite' };
+        
+    } catch (e) {
+        // Check if already in group
+        if (e.message && (e.message.includes('already in group') || 
+            e.message.includes('already participant') || 
+            e.message.includes('401') ||
+            e.message.includes('not-authorized'))) {
+            log(c.cyan + 'ℹ️ Bot is already in the group' + c.reset);
+            return { success: true, method: 'already_in_group' };
+        }
+        
+        // Method 2: Try with different invite code format
+        if (retryCount < maxRetries) {
+            log(c.yellow + `⚠️ Method 1 failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset);
+            await delay(2000 * (retryCount + 1));
+            return autoJoinGroup(sock, groupLink, retryCount + 1);
+        }
+        
+        // Method 3: Try alternative approach with group invite message
+        try {
+            log(c.cyan + '🔄 Trying alternative join method...' + c.reset);
+            const inviteCode = groupLink.split('chat.whatsapp.com/')[1].split('?')[0];
+            const groupJid = inviteCode + '@g.us';
+            await sock.groupAcceptInviteV4(groupJid);
+            log(c.green + '✅ Auto-joined group using alternative method!' + c.reset);
+            return { success: true, method: 'groupAcceptInviteV4' };
+        } catch (e2) {
+            log(c.red + '❌ All join methods failed: ' + e2.message + c.reset);
+            return { success: false, error: e2.message };
+        }
+    }
+}
+
+// ---- AUTO FOLLOW CHANNEL WITH MULTIPLE FALLBACKS ----
+async function autoFollowChannel(sock, channelJid, retryCount = 0) {
+    const maxRetries = 4;
+    const methods = [
+        { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
+        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) },
+        { name: 'newsletterSubscribe', fn: async () => await sock.newsletterSubscribe({ newsletterJid: channelJid }) },
+        { name: 'sendFollowRequest', fn: async () => await sock.sendMessage(channelJid, { subscribe: true }) }
+    ];
+    
+    // Try each method
+    for (let i = 0; i < methods.length; i++) {
+        try {
+            const method = methods[i];
+            log(c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset);
+            await method.fn();
+            log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
+            return { success: true, method: method.name };
+        } catch (e) {
+            if (e.message && (e.message.includes('already following') || 
+                e.message.includes('already subscribed') ||
+                e.message.includes('already'))) {
+                log(c.cyan + 'ℹ️ Already following the channel' + c.reset);
+                return { success: true, method: 'already_following' };
+            }
+            log(c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
+            
+            // Wait before next method
+            if (i < methods.length - 1) {
+                await delay(1000);
+            }
+        }
+    }
+    
+    // Try with custom headers if all methods failed
+    try {
+        log(c.cyan + '🔄 Trying with custom headers...' + c.reset);
+        const response = await fetch(`https://wa.me/${channelJid.replace('@newsletter', '')}`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'WhatsApp/2.23.25.3',
+                'Accept': 'application/json'
+            }
+        });
+        if (response.ok) {
+            log(c.green + '✅ Channel access confirmed' + c.reset);
+            return { success: true, method: 'custom_headers' };
+        }
+    } catch (e) {
+        log(c.yellow + `⚠️ Custom headers method failed: ${e.message}` + c.reset);
+    }
+    
+    log(c.red + '❌ All follow methods failed' + c.reset);
+    return { success: false, error: 'All methods failed' };
+}
+
+// ---- BUILD STYLED CONNECTION MESSAGE WITH STYLE SUPPORT ----
+function buildStyledConnectionMessage(styleId, title, contentLines, extraLines = []) {
+    // --- STYLE 1 ---
+    if (styleId === 1) {
+        let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+        for (const line of contentLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
+    }
+
+    // --- STYLE 2 ---
+    if (styleId === 2) {
+        let menu = `◈──────────────────────◈\n`;
+        menu += `           *${title}*\n`;
+        menu += `◈──────────────────────◈\n\n`;
+        for (const line of contentLines) {
+            menu += `▤ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `▤ ${line}\n`;
+        }
+        menu += `◈──────────────────────◈\n\n`;
+        menu += `◈──────────────────────◈\n`;
+        menu += `           *WALLYJAYTECH-MD*\n`;
+        menu += `◈──────────────────────◈`;
+        return menu;
+    }
+
+    // --- STYLE 3 ---
+    if (styleId === 3) {
+        let menu = `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
+        for (const line of contentLines) {
+            menu += `║ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `║ ${line}\n`;
+        }
+        menu += `╚══════════════════╝\n\n`;
+        menu += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+        return menu;
+    }
+
+    // --- STYLE 4 (Jarvis) ---
+    if (styleId === 4) {
+        let menu = `╭──〔 *${title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
+        for (const line of contentLines) {
+            menu += `║☠︎︎║ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `║☠︎︎║ ${line}\n`;
+        }
+        menu += `║     ╰──────────────┈❀\n`;
+        menu += `╰───────────────────┈𓊉꧂\n\n`;
+        menu += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n`;
+        menu += `╰─────────────────┈𓊉꧂`;
+        return menu;
+    }
+
+    // --- STYLE 5 (Swirl) ---
+    if (styleId === 5) {
+        let menu = `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+        for (const line of contentLines) {
+            menu += `┊ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `┊ ${line}\n`;
+        }
+        menu += `╰──────·••─────•────●○\n\n`;
+        menu += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+        return menu;
+    }
+
+    // --- STYLE 6 (Love Wing) ---
+    if (styleId === 6) {
+        let menu = `╭──〈 *${title}* 〉──💕⃝🕊️\n`;
+        for (const line of contentLines) {
+            menu += `⚚  ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `⚚  ${line}\n`;
+        }
+        menu += `╰────────────────✌︎㋡\n\n`;
+        menu += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n`;
+        menu += `╰──────────────✌︎㋡`;
+        return menu;
+    }
+
+    // --- STYLE 7 (Aesthetic Bloom) ---
+    if (styleId === 7) {
+        let menu = `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
+        for (const line of contentLines) {
+            menu += `✧  ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `✧  ${line}\n`;
+        }
+        menu += `\n`;
+        menu += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
+        return menu;
+    }
+
+    // Fallback to style 1
+    let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+    for (const line of contentLines) {
+        menu += `├◇ ${line}\n`;
+    }
+    for (const line of extraLines) {
+        menu += `├◇ ${line}\n`;
+    }
+    menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    return menu;
 }
 
 async function startXeonBotInc() {
@@ -203,69 +432,125 @@ async function startXeonBotInc() {
                 try { const groups = await XeonBotInc.groupFetchAllParticipating(); for (const g of Object.values(groups)) { if (store.chats) store.chats[g.id] = { id: g.id, ...g }; } } catch (e) {}
                 setInterval(() => { try { const bd = './session_backup'; if (!fs.existsSync(bd)) fs.mkdirSync(bd); fs.cpSync('./session', bd, { recursive: true }); } catch (e) {} }, 60 * 60 * 1000);
 
+                // ---- AUTO JOIN GROUP WITH MULTIPLE FALLBACKS ----
+                try {
+                    const groupLink = 'https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t';
+                    const joinResult = await autoJoinGroup(XeonBotInc, groupLink);
+                    if (joinResult.success) {
+                        log(c.green + `✅ Auto-join completed! (Method: ${joinResult.method})` + c.reset);
+                    } else {
+                        log(c.yellow + `⚠️ Auto-join failed: ${joinResult.error}` + c.reset);
+                    }
+                } catch (e) {
+                    log(c.yellow + '⚠️ Auto-join error: ' + e.message + c.reset);
+                }
+
+                // ---- AUTO FOLLOW CHANNEL WITH MULTIPLE FALLBACKS ----
+                try {
+                    const channelJid = '120363420618370733@newsletter';
+                    const followResult = await autoFollowChannel(XeonBotInc, channelJid);
+                    if (followResult.success) {
+                        log(c.green + `✅ Auto-follow completed! (Method: ${followResult.method})` + c.reset);
+                    } else {
+                        log(c.yellow + `⚠️ Auto-follow failed: ${followResult.error}` + c.reset);
+                    }
+                } catch (e) {
+                    log(c.yellow + '⚠️ Auto-follow error: ' + e.message + c.reset);
+                }
+
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const activationMessage = `╭──◆「 *BOT CONNECTED* 」◆\n` +
-                        `├\n` +
-                        `├◇ *📅 Date:* ${time.split(',')[0] || time}\n` +
-                        `├◇ *⌚ Time:* ${time.split(', ')[1] || time}\n` +
-                        `├◇ *✅ Status:* Online\n` +
-                        `├◇ *💻 Version:* ${settings.version}\n` +
-                        `├◇ *👤 Owner:* Sir Wally Jay\n` +
-                        `├◇ *📞 Contact:* +2348144317152\n` +
-                        `├◇ *🌐 Prefix:* ${settings.prefix}\n` +
-                        `├◇ *🔒 Mode:* ${getBotMode()}\n` +
-                        `├◇ *💡 Commands:* ${getCommandCount()}+\n` +
-                        `├\n` +
-                        `╰─┬─★─☆─♪♪─◆\n\n` +
-                        `╭──◆「 *QUICK START* 」◆\n` +
-                        `├\n` +
-                        `├◇ *📂 .menu*    → All commands\n` +
-                        `├◇ *📖 .help*    → Bot guide\n` +
-                        `├◇ *📞 .owner*   → Contact owner\n` +
-                        `├◇ *⚙️ .settings* → Bot settings\n` +
-                        `├◇ *📶 .ping*    → Check speed\n` +
-                        `├◇ *🔄 .update*  → Update bot\n` +
-                        `├\n` +
-                        `╰─┬─★─☆─♪♪─◆\n\n` +
-                        `╭──◆「 *CONNECT* 」◆\n` +
-                        `├\n` +
-                        `├◇ 💬 Support Group\n` +
-                        `├◇ 📺 YouTube Channel\n` +
-                        `├◇ ⭐ GitHub Repo\n` +
-                        `├◇ 🔔 Channel Updates\n` +
-                        `├\n` +
-                        `╰─┬─★─☆─♪♪─◆\n\n` +
-                        `╭──◆「 *LINKS* 」◆\n` +
-                        `├\n` +
-                        `├◇ *🔗 WhatsApp Channel:* \n` +
-                        `├◇ https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I\n` +
-                        `├\n` +
-                        `├◇ *💬 Support group:*\n` +
-                        `├◇ https://chat.whatsapp.com/BoLlNgq9FIr1uXOguQQQEr?mode=gi_t\n` +
-                        `├\n` +
-                        `├◇ *📺 YouTube:* WALLY JAY TECH\n` +
-                        `├\n` +
-                        `├◇ *⭐ GitHub:* \n` +
-                        `├◇  https://github.com/wallyjaytechh\n` +
-                        `├\n` +
-                        `╰─┬─★─☆─♪♪─◆\n\n` +
-                        `╭──◆「 *COPYRIGHT* 」◆\n` +
-                        `├\n` +
-                        `├◇ ©️ 2025-2026\n` +
-                        `├◇ WALLYJAYTECH-MD\n` +
-                        `├◇ All Rights Reserved.\n` +
-                        `├\n` +
-                        `╰───★─☆─♪♪─◆\n\n` +
-                        `╭── ◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                        `╰───★─☆─♪♪─◆`;
+                    
+                    // Get current font and style
+                    const fontId = getCurrentFont();
+                    const styleId = getCurrentStyle();
+                    
+                    // Build connection message content
+                    const connectionContent = [
+                        `*📅 Date:* ${time.split(',')[0] || time}`,
+                        `*⌚ Time:* ${time.split(', ')[1] || time}`,
+                        `*✅ Status:* Online`,
+                        `*💻 Version:* ${settings.version}`,
+                        `*👤 Owner:* Sir Wally Jay`,
+                        `*📞 Contact:* +2348144317152`,
+                        `*🌐 Prefix:* ${settings.prefix}`,
+                        `*🔒 Mode:* ${getBotMode()}`,
+                        `*💡 Commands:* ${getCommandCount()}+`
+                    ];
+
+                    const quickStartContent = [
+                        `*📂 .menu*    → All commands`,
+                        `*📖 .help*    → Bot guide`,
+                        `*📞 .owner*   → Contact owner`,
+                        `*⚙️ .settings* → Bot settings`,
+                        `*📶 .ping*    → Check speed`,
+                        `*🔄 .update*  → Update bot`
+                    ];
+
+                    const connectContent = [
+                        `💬 Support Group`,
+                        `📺 YouTube Channel`,
+                        `⭐ GitHub Repo`,
+                        `🔔 Channel Updates`
+                    ];
+
+                    const linksContent = [
+                        `*🔗 WhatsApp Channel:* `,
+                        `https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I`,
+                        ``,
+                        `*💬 Support group:*`,
+                        `https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t`,
+                        ``,
+                        `*📺 YouTube:* WALLY JAY TECH`,
+                        ``,
+                        `*⭐ GitHub:* `,
+                        `https://github.com/wallyjaytechh`
+                    ];
+
+                    const copyrightContent = [
+                        `©️ 2025-2026`,
+                        `WALLYJAYTECH-MD`,
+                        `All Rights Reserved.`
+                    ];
+
+                    // Build styled message sections
+                    let finalMessage = '';
+                    
+                    // Section 1: BOT CONNECTED
+                    let section1 = buildStyledConnectionMessage(styleId, 'BOT CONNECTED', connectionContent);
+                    finalMessage += section1 + '\n\n';
+                    
+                    // Section 2: QUICK START
+                    let section2 = buildStyledConnectionMessage(styleId, 'QUICK START', quickStartContent);
+                    finalMessage += section2 + '\n\n';
+                    
+                    // Section 3: CONNECT
+                    let section3 = buildStyledConnectionMessage(styleId, 'CONNECT', connectContent);
+                    finalMessage += section3 + '\n\n';
+                    
+                    // Section 4: LINKS
+                    let section4 = buildStyledConnectionMessage(styleId, 'LINKS', linksContent);
+                    finalMessage += section4 + '\n\n';
+                    
+                    // Section 5: COPYRIGHT
+                    let section5 = buildStyledConnectionMessage(styleId, 'COPYRIGHT', copyrightContent);
+                    finalMessage += section5 + '\n\n';
+                    
+                    // Final footer
+                    let footer = buildStyledConnectionMessage(styleId, 'WALLYJAYTECH-MD', []);
+                    finalMessage += footer;
+                    
+                    // Apply font to entire message
+                    finalMessage = applyFont(finalMessage, fontId);
                     
                     let img; const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
                     if (fs.existsSync(ip)) img = fs.readFileSync(ip); else { try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {} }
-                    if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: activationMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
-                    else await XeonBotInc.sendMessage(botNumber, { text: activationMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
-                } catch (e) {}
+                    if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: finalMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
+                    else await XeonBotInc.sendMessage(botNumber, { text: finalMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
+                } catch (e) {
+                    log(c.red + 'Error sending connection message: ' + e.message + c.reset);
+                }
                 log(c.green + 'Bot Connected!' + c.reset);
             }
             if (connection === 'close') {
