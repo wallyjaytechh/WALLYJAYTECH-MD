@@ -1419,9 +1419,10 @@ case userMessage.startsWith('.autorecord'):
                 await stickerTelegramCommand(sock, chatId, message);
                 break;
 
-            case userMessage.startsWith('.vv'):
-                await viewOnceCommand(sock, chatId, message);
-                break;
+            case '.vv':
+case userMessage.startsWith('.vv '):
+    await viewOnceCommand(sock, chatId, message);
+    break;
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
                 await clearSessionCommand(sock, chatId, message);
                 break;
