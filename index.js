@@ -477,11 +477,14 @@ async function startXeonBotInc() {
                         }
                     ];
                     
-                    // Build the full message (without font applied to URLs)
+                    // Build the full message
                     let fullMessage = buildConnectionMessage(styleId, sections);
                     
-                    // Apply font to the message
+                    // Apply font to entire message
                     let finalMessage = applyFont(fullMessage, fontId);
+                    
+                    // Protect URLs from font (keep them clickable)
+                    finalMessage = finalMessage.replace(/(https?:\/\/[^\s]+)/g, (url) => url);
                     
                     let img; 
                     const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
