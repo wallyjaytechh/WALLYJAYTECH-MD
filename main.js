@@ -1797,6 +1797,7 @@ case userMessage === '.listpremium':
     commandExecuted = true;
     break;
         case userMessage === '.language':
+case userMessage.startsWith('.language '):
     await languageCommand(sock, chatId, message);
     break;
 case userMessage.startsWith('.checkplan'):
