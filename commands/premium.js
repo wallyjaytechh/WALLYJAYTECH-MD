@@ -37,7 +37,7 @@
 
 const fetch = require('node-fetch');
 
-const PROXY_URL = 'https://gemini-proxy-10a1.onrender.com';
+const PROXY_URL = 'https://gemini-proxy-5t1s.onrender.com';
 
 function getSenderNumber(message) {
     const rawJid = message.key.participant || message.key.remoteJid;
