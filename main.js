@@ -257,6 +257,7 @@ const codeCommand = require('./commands/code');
 const summariseCommand = require('./commands/summarise');
 const subscribeCommand = require('./commands/subscribe');
 const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanCommand } = require('./commands/premium');
+const languageCommand = require('./commands/language');
 
 
 // ---- COMMAND ALIASES ----
@@ -1794,6 +1795,9 @@ case userMessage.startsWith('.rmpremium'):
 case userMessage === '.listpremium':
     await listpremiumCommand(sock, chatId, message);
     commandExecuted = true;
+    break;
+        case userMessage === '.language':
+    await languageCommand(sock, chatId, message);
     break;
 case userMessage.startsWith('.checkplan'):
     await checkplanCommand(sock, chatId, message);
