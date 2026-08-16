@@ -128,7 +128,10 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         for (const line of extraLines) {
             menu += `▤ ${line}\n`;
         }
-        menu += `◈──────────────────────◈\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        menu += `◈──────────────────────◈\n\n`;
+        menu += `◈──────────────────────◈\n`;
+        menu += `           *WALLYJAYTECH-MD*\n`;
+        menu += `◈──────────────────────◈`;
         return menu;
     }
 
@@ -141,7 +144,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         for (const line of extraLines) {
             menu += `║ ${line}\n`;
         }
-        menu += `╚══════════════════╝\n\n╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+        menu += `╚══════════════════╝\n\n`;
+        menu += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
         return menu;
     }
 
@@ -154,7 +158,10 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         for (const line of extraLines) {
             menu += `║☠︎︎║ ${line}\n`;
         }
-        menu += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+        menu += `║     ╰──────────────┈❀\n`;
+        menu += `╰───────────────────┈𓊉꧂\n\n`;
+        menu += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n`;
+        menu += `╰─────────────────┈𓊉꧂`;
         return menu;
     }
 
@@ -167,20 +174,23 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         for (const line of extraLines) {
             menu += `┊ ${line}\n`;
         }
-        menu += `╰──────·••─────•────●○\n\n╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+        menu += `╰──────·••─────•────●○\n\n`;
+        menu += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
         return menu;
     }
 
     // --- STYLE 6 (Love Wing) ---
     if (styleId === 6) {
-        let menu = `╭────〈 *${title}* 〉────💕⃝🕊️\n`;
+        let menu = `╭──〈 *${title}* 〉──💕⃝🕊️\n`;
         for (const line of contentLines) {
             menu += `⚚  ${line}\n`;
         }
         for (const line of extraLines) {
             menu += `⚚  ${line}\n`;
         }
-        menu += `╰────────────────✌︎㋡\n\n╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+        menu += `╰────────────────✌︎㋡\n\n`;
+        menu += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n`;
+        menu += `╰──────────────✌︎㋡`;
         return menu;
     }
 
@@ -193,7 +203,8 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
         for (const line of extraLines) {
             menu += `✧  ${line}\n`;
         }
-        menu += `\n╔══════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════════❥❥❥`;
+        menu += `\n`;
+        menu += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
         return menu;
     }
 
