@@ -44,7 +44,7 @@ const langManager = require('../language/manager');
 
 const PROXY_URL = 'https://gemini-proxy-5t1s.onrender.com';
 
-// ---- TRANSLATIONS (All 23 Languages - CORRECT) ----
+// ---- TRANSLATIONS (All 23 Languages) ----
 const translations = {
     'en': {
         title: "AI CODE GENERATOR",
@@ -68,7 +68,9 @@ const translations = {
         try_different: "Try a different prompt",
         reply_message: "Reply to a message with .code",
         reply_text: "Reply to text with .code",
-        prompt: "prompt"
+        prompt: "prompt",
+        example1: ".code login form in html",
+        example2: ".code python fibonacci function"
     },
     'ha': {
         title: "MAI TSARA CODE NA AI",
@@ -92,7 +94,9 @@ const translations = {
         try_different: "Gwada wata hanya daban",
         reply_message: "Amsa saƙo da .code",
         reply_text: "Amsa rubutu da .code",
-        prompt: "umurni"
+        prompt: "umurni",
+        example1: ".code login form in html",
+        example2: ".code python fibonacci function"
     },
     'yo': {
         title: "AṢÈMÚLÒ KÓÒDÙ AI",
@@ -116,7 +120,9 @@ const translations = {
         try_different: "Gbiyanju ìtọ́ni míràn",
         reply_message: "Ṣe ìdáhùn sí ifọ́rọ́ránṣẹ́ pẹlu .kóòdù",
         reply_text: "Ṣe ìdáhùn sí ọ̀rọ̀ pẹlu .kóòdù",
-        prompt: "ìtọ́ni"
+        prompt: "ìtọ́ni",
+        example1: ".kóòdù fọ́ọ̀mù ìwọlé ní HTML",
+        example2: ".kóòdù iṣẹ́ Fibonacci ní Python"
     },
     'ig': {
         title: "ỌRỤ Koodu AI",
@@ -140,7 +146,9 @@ const translations = {
         try_different: "Nwaa ụzọ ọzọ",
         reply_message: "Zaa ozi na .koodu",
         reply_text: "Zaa ederede na .koodu",
-        prompt: "ntụziaka"
+        prompt: "ntụziaka",
+        example1: ".koodu ụdị nbanye na HTML",
+        example2: ".koodu ọrụ Fibonacci na Python"
     },
     'fr': {
         title: "GÉNÉRATEUR DE CODE IA",
@@ -164,7 +172,9 @@ const translations = {
         try_different: "Essayez une autre demande",
         reply_message: "Répondre à un message avec .code",
         reply_text: "Répondre au texte avec .code",
-        prompt: "invite"
+        prompt: "invite",
+        example1: ".code formulaire de connexion en HTML",
+        example2: ".code fonction fibonacci en Python"
     },
     'de': {
         title: "KI-CODE-GENERATOR",
@@ -188,7 +198,9 @@ const translations = {
         try_different: "Versuchen Sie eine andere Eingabeaufforderung",
         reply_message: "Auf eine Nachricht mit .code antworten",
         reply_text: "Auf Text mit .code antworten",
-        prompt: "Eingabeaufforderung"
+        prompt: "Eingabeaufforderung",
+        example1: ".code Anmeldeformular in HTML",
+        example2: ".code Fibonacci-Funktion in Python"
     },
     'ar': {
         title: "مولد الكود بالذكاء الاصطناعي",
@@ -212,7 +224,9 @@ const translations = {
         try_different: "جرب طلبًا مختلفًا",
         reply_message: "الرد على رسالة باستخدام .code",
         reply_text: "الرد على النص باستخدام .code",
-        prompt: "موجه"
+        prompt: "موجه",
+        example1: ".code نموذج تسجيل الدخول في HTML",
+        example2: ".code دالة فيبوناتشي في Python"
     },
     'zh': {
         title: "AI 代码生成器",
@@ -236,7 +250,9 @@ const translations = {
         try_different: "尝试不同的提示",
         reply_message: "回复消息使用 .code",
         reply_text: "回复文本使用 .code",
-        prompt: "提示"
+        prompt: "提示",
+        example1: ".code HTML登录表单",
+        example2: ".code Python斐波那契函数"
     },
     'hi': {
         title: "AI कोड जनरेटर",
@@ -260,7 +276,9 @@ const translations = {
         try_different: "एक अलग प्रॉम्प्ट आज़माएं",
         reply_message: ".code के साथ संदेश का उत्तर दें",
         reply_text: ".code के साथ पाठ का उत्तर दें",
-        prompt: "प्रॉम्प्ट"
+        prompt: "प्रॉम्प्ट",
+        example1: ".code HTML में लॉगिन फॉर्म",
+        example2: ".code Python में फिबोनाची फ़ंक्शन"
     },
     'es': {
         title: "GENERADOR DE CÓDIGO IA",
@@ -284,7 +302,9 @@ const translations = {
         try_different: "Prueba con otro mensaje",
         reply_message: "Responder a un mensaje con .code",
         reply_text: "Responder al texto con .code",
-        prompt: "mensaje"
+        prompt: "mensaje",
+        example1: ".code formulario de inicio de sesión en HTML",
+        example2: ".code función fibonacci en Python"
     },
     'pt': {
         title: "GERADOR DE CÓDIGO IA",
@@ -308,7 +328,9 @@ const translations = {
         try_different: "Tente um prompt diferente",
         reply_message: "Responder a uma mensagem com .code",
         reply_text: "Responder ao texto com .code",
-        prompt: "prompt"
+        prompt: "prompt",
+        example1: ".code formulário de login em HTML",
+        example2: ".code função fibonacci em Python"
     },
     'ru': {
         title: "ГЕНЕРАТОР КОДА ИИ",
@@ -332,7 +354,9 @@ const translations = {
         try_different: "Попробуйте другой запрос",
         reply_message: "Ответить на сообщение с .code",
         reply_text: "Ответить на текст с .code",
-        prompt: "запрос"
+        prompt: "запрос",
+        example1: ".code форма входа в HTML",
+        example2: ".code функция Фибоначчи в Python"
     },
     'ur': {
         title: "اے آئی کوڈ جنریٹر",
@@ -356,7 +380,9 @@ const translations = {
         try_different: "مختلف پرامپٹ آزمائیں",
         reply_message: ".code کے ساتھ پیغام کا جواب دیں",
         reply_text: ".code کے ساتھ متن کا جواب دیں",
-        prompt: "پرامپٹ"
+        prompt: "پرامپٹ",
+        example1: ".code HTML میں لاگ ان فارم",
+        example2: ".code Python میں فبونیکی فنکشن"
     },
     'bn': {
         title: "এআই কোড জেনারেটর",
@@ -380,7 +406,9 @@ const translations = {
         try_different: "ভিন্ন প্রম্পট চেষ্টা করুন",
         reply_message: ".code দিয়ে বার্তার উত্তর দিন",
         reply_text: ".code দিয়ে টেক্সটের উত্তর দিন",
-        prompt: "প্রম্পট"
+        prompt: "প্রম্পট",
+        example1: ".code HTML-এ লগইন ফর্ম",
+        example2: ".code Python-এ ফিবোনাচি ফাংশন"
     },
     'pcm': {
         title: "AI CODE GENERATOR",
@@ -404,7 +432,9 @@ const translations = {
         try_different: "Try different prompt",
         reply_message: "Reply message with .code",
         reply_text: "Reply text with .code",
-        prompt: "prompt"
+        prompt: "prompt",
+        example1: ".code login form in HTML",
+        example2: ".code python fibonacci function"
     },
     'it': {
         title: "GENERATORE DI CODICE IA",
@@ -428,7 +458,9 @@ const translations = {
         try_different: "Prova un prompt diverso",
         reply_message: "Rispondi a un messaggio con .code",
         reply_text: "Rispondi al testo con .code",
-        prompt: "prompt"
+        prompt: "prompt",
+        example1: ".code modulo di accesso in HTML",
+        example2: ".code funzione fibonacci in Python"
     },
     'id': {
         title: "PEMBUAT KODE AI",
@@ -452,7 +484,9 @@ const translations = {
         try_different: "Coba prompt yang berbeda",
         reply_message: "Balas pesan dengan .code",
         reply_text: "Balas teks dengan .code",
-        prompt: "prompt"
+        prompt: "prompt",
+        example1: ".code formulir login dalam HTML",
+        example2: ".code fungsi fibonacci dalam Python"
     },
     'ja': {
         title: "AIコードジェネレーター",
@@ -476,7 +510,9 @@ const translations = {
         try_different: "別のプロンプトを試してください",
         reply_message: ".codeでメッセージに返信",
         reply_text: ".codeでテキストに返信",
-        prompt: "プロンプト"
+        prompt: "プロンプト",
+        example1: ".code HTMLのログインフォーム",
+        example2: ".code Pythonのフィボナッチ関数"
     },
     'sw': {
         title: "JENERETA YA KODI YA AI",
@@ -500,7 +536,9 @@ const translations = {
         try_different: "Jaribu ombi tofauti",
         reply_message: "Jibu ujumbe kwa .code",
         reply_text: "Jibu maandishi kwa .code",
-        prompt: "ombi"
+        prompt: "ombi",
+        example1: ".code fomu ya kuingia katika HTML",
+        example2: ".code kazi ya Fibonacci katika Python"
     },
     'tr': {
         title: "YAPAY ZEKA KOD ÜRETİCİ",
@@ -524,7 +562,9 @@ const translations = {
         try_different: "Farklı bir komut deneyin",
         reply_message: ".code ile mesaja yanıt verin",
         reply_text: ".code ile metne yanıt verin",
-        prompt: "komut"
+        prompt: "komut",
+        example1: ".code HTML'de giriş formu",
+        example2: ".code Python'da fibonacci fonksiyonu"
     },
     'ko': {
         title: "AI 코드 생성기",
@@ -548,7 +588,9 @@ const translations = {
         try_different: "다른 프롬프트 시도",
         reply_message: ".code로 메시지에 답장",
         reply_text: ".code로 텍스트에 답장",
-        prompt: "프롬프트"
+        prompt: "프롬프트",
+        example1: ".code HTML 로그인 양식",
+        example2: ".code Python 피보나치 함수"
     },
     'vi': {
         title: "TRÌNH TẠO MÃ AI",
@@ -572,7 +614,9 @@ const translations = {
         try_different: "Thử lệnh khác",
         reply_message: "Trả lời tin nhắn với .code",
         reply_text: "Trả lời văn bản với .code",
-        prompt: "lệnh"
+        prompt: "lệnh",
+        example1: ".code biểu mẫu đăng nhập trong HTML",
+        example2: ".code hàm Fibonacci trong Python"
     },
     'ta': {
         title: "AI குறியீடு உருவாக்கி",
@@ -596,12 +640,298 @@ const translations = {
         try_different: "வேறு கட்டளையை முயற்சிக்கவும்",
         reply_message: ".code உடன் செய்திக்கு பதிலளிக்கவும்",
         reply_text: ".code உடன் உரைக்கு பதிலளிக்கவும்",
-        prompt: "கட்டளை"
+        prompt: "கட்டளை",
+        example1: ".code HTML-இல் உள்நுழைவு படிவம்",
+        example2: ".code Python-இல் பைபோனச்சி செயல்பாடு"
     }
+};
+
+// ---- LOADING FRAMES TRANSLATIONS (All 23 Languages) ----
+const loadingTranslations = {
+    'en': [
+        'Coding [■□□□□□□□□□]',
+        'Coding [■■□□□□□□□□]',
+        'Coding [■■■□□□□□□□]',
+        'Coding [■■■■□□□□□□]',
+        'Coding [■■■■■□□□□□]',
+        'Coding [■■■■■■□□□□]',
+        'Coding [■■■■■■■□□□]',
+        'Coding [■■■■■■■■□□]',
+        'Coding [■■■■■■■■■□]',
+        'Done [■■■■■■■■■■]'
+    ],
+    'ha': [
+        'Ana tsara [■□□□□□□□□□]',
+        'Ana tsara [■■□□□□□□□□]',
+        'Ana tsara [■■■□□□□□□□]',
+        'Ana tsara [■■■■□□□□□□]',
+        'Ana tsara [■■■■■□□□□□]',
+        'Ana tsara [■■■■■■□□□□]',
+        'Ana tsara [■■■■■■■□□□]',
+        'Ana tsara [■■■■■■■■□□]',
+        'Ana tsara [■■■■■■■■■□]',
+        'An yi [■■■■■■■■■■]'
+    ],
+    'yo': [
+        'Kódù kíkọ [■□□□□□□□□□]',
+        'Kódù kíkọ [■■□□□□□□□□]',
+        'Kódù kíkọ [■■■□□□□□□□]',
+        'Kódù kíkọ [■■■■□□□□□□]',
+        'Kódù kíkọ [■■■■■□□□□□]',
+        'Kódù kíkọ [■■■■■■□□□□]',
+        'Kódù kíkọ [■■■■■■■□□□]',
+        'Kódù kíkọ [■■■■■■■■□□]',
+        'Kódù kíkọ [■■■■■■■■■□]',
+        'O ti ṣe [■■■■■■■■■■]'
+    ],
+    'ig': [
+        'Na-ede koodu [■□□□□□□□□□]',
+        'Na-ede koodu [■■□□□□□□□□]',
+        'Na-ede koodu [■■■□□□□□□□]',
+        'Na-ede koodu [■■■■□□□□□□]',
+        'Na-ede koodu [■■■■■□□□□□]',
+        'Na-ede koodu [■■■■■■□□□□]',
+        'Na-ede koodu [■■■■■■■□□□]',
+        'Na-ede koodu [■■■■■■■■□□]',
+        'Na-ede koodu [■■■■■■■■■□]',
+        'Emechara [■■■■■■■■■■]'
+    ],
+    'fr': [
+        'Codage [■□□□□□□□□□]',
+        'Codage [■■□□□□□□□□]',
+        'Codage [■■■□□□□□□□]',
+        'Codage [■■■■□□□□□□]',
+        'Codage [■■■■■□□□□□]',
+        'Codage [■■■■■■□□□□]',
+        'Codage [■■■■■■■□□□]',
+        'Codage [■■■■■■■■□□]',
+        'Codage [■■■■■■■■■□]',
+        'Terminé [■■■■■■■■■■]'
+    ],
+    'de': [
+        'Codieren [■□□□□□□□□□]',
+        'Codieren [■■□□□□□□□□]',
+        'Codieren [■■■□□□□□□□]',
+        'Codieren [■■■■□□□□□□]',
+        'Codieren [■■■■■□□□□□]',
+        'Codieren [■■■■■■□□□□]',
+        'Codieren [■■■■■■■□□□]',
+        'Codieren [■■■■■■■■□□]',
+        'Codieren [■■■■■■■■■□]',
+        'Fertig [■■■■■■■■■■]'
+    ],
+    'ar': [
+        'تشفير [■□□□□□□□□□]',
+        'تشفير [■■□□□□□□□□]',
+        'تشفير [■■■□□□□□□□]',
+        'تشفير [■■■■□□□□□□]',
+        'تشفير [■■■■■□□□□□]',
+        'تشفير [■■■■■■□□□□]',
+        'تشفير [■■■■■■■□□□]',
+        'تشفير [■■■■■■■■□□]',
+        'تشفير [■■■■■■■■■□]',
+        'تم [■■■■■■■■■■]'
+    ],
+    'zh': [
+        '编码中 [■□□□□□□□□□]',
+        '编码中 [■■□□□□□□□□]',
+        '编码中 [■■■□□□□□□□]',
+        '编码中 [■■■■□□□□□□]',
+        '编码中 [■■■■■□□□□□]',
+        '编码中 [■■■■■■□□□□]',
+        '编码中 [■■■■■■■□□□]',
+        '编码中 [■■■■■■■■□□]',
+        '编码中 [■■■■■■■■■□]',
+        '完成 [■■■■■■■■■■]'
+    ],
+    'hi': [
+        'कोडिंग [■□□□□□□□□□]',
+        'कोडिंग [■■□□□□□□□□]',
+        'कोडिंग [■■■□□□□□□□]',
+        'कोडिंग [■■■■□□□□□□]',
+        'कोडिंग [■■■■■□□□□□]',
+        'कोडिंग [■■■■■■□□□□]',
+        'कोडिंग [■■■■■■■□□□]',
+        'कोडिंग [■■■■■■■■□□]',
+        'कोडिंग [■■■■■■■■■□]',
+        'हो गया [■■■■■■■■■■]'
+    ],
+    'es': [
+        'Codificando [■□□□□□□□□□]',
+        'Codificando [■■□□□□□□□□]',
+        'Codificando [■■■□□□□□□□]',
+        'Codificando [■■■■□□□□□□]',
+        'Codificando [■■■■■□□□□□]',
+        'Codificando [■■■■■■□□□□]',
+        'Codificando [■■■■■■■□□□]',
+        'Codificando [■■■■■■■■□□]',
+        'Codificando [■■■■■■■■■□]',
+        'Hecho [■■■■■■■■■■]'
+    ],
+    'pt': [
+        'Codificando [■□□□□□□□□□]',
+        'Codificando [■■□□□□□□□□]',
+        'Codificando [■■■□□□□□□□]',
+        'Codificando [■■■■□□□□□□]',
+        'Codificando [■■■■■□□□□□]',
+        'Codificando [■■■■■■□□□□]',
+        'Codificando [■■■■■■■□□□]',
+        'Codificando [■■■■■■■■□□]',
+        'Codificando [■■■■■■■■■□]',
+        'Pronto [■■■■■■■■■■]'
+    ],
+    'ru': [
+        'Кодирование [■□□□□□□□□□]',
+        'Кодирование [■■□□□□□□□□]',
+        'Кодирование [■■■□□□□□□□]',
+        'Кодирование [■■■■□□□□□□]',
+        'Кодирование [■■■■■□□□□□]',
+        'Кодирование [■■■■■■□□□□]',
+        'Кодирование [■■■■■■■□□□]',
+        'Кодирование [■■■■■■■■□□]',
+        'Кодирование [■■■■■■■■■□]',
+        'Готово [■■■■■■■■■■]'
+    ],
+    'ur': [
+        'کوڈنگ [■□□□□□□□□□]',
+        'کوڈنگ [■■□□□□□□□□]',
+        'کوڈنگ [■■■□□□□□□□]',
+        'کوڈنگ [■■■■□□□□□□]',
+        'کوڈنگ [■■■■■□□□□□]',
+        'کوڈنگ [■■■■■■□□□□]',
+        'کوڈنگ [■■■■■■■□□□]',
+        'کوڈنگ [■■■■■■■■□□]',
+        'کوڈنگ [■■■■■■■■■□]',
+        'ہو گیا [■■■■■■■■■■]'
+    ],
+    'bn': [
+        'কোডিং [■□□□□□□□□□]',
+        'কোডিং [■■□□□□□□□□]',
+        'কোডিং [■■■□□□□□□□]',
+        'কোডিং [■■■■□□□□□□]',
+        'কোডিং [■■■■■□□□□□]',
+        'কোডিং [■■■■■■□□□□]',
+        'কোডিং [■■■■■■■□□□]',
+        'কোডিং [■■■■■■■■□□]',
+        'কোডিং [■■■■■■■■■□]',
+        'সম্পন্ন [■■■■■■■■■■]'
+    ],
+    'pcm': [
+        'De code am [■□□□□□□□□□]',
+        'De code am [■■□□□□□□□□]',
+        'De code am [■■■□□□□□□□]',
+        'De code am [■■■■□□□□□□]',
+        'De code am [■■■■■□□□□□]',
+        'De code am [■■■■■■□□□□]',
+        'De code am [■■■■■■■□□□]',
+        'De code am [■■■■■■■■□□]',
+        'De code am [■■■■■■■■■□]',
+        'Done [■■■■■■■■■■]'
+    ],
+    'it': [
+        'Codifica [■□□□□□□□□□]',
+        'Codifica [■■□□□□□□□□]',
+        'Codifica [■■■□□□□□□□]',
+        'Codifica [■■■■□□□□□□]',
+        'Codifica [■■■■■□□□□□]',
+        'Codifica [■■■■■■□□□□]',
+        'Codifica [■■■■■■■□□□]',
+        'Codifica [■■■■■■■■□□]',
+        'Codifica [■■■■■■■■■□]',
+        'Fatto [■■■■■■■■■■]'
+    ],
+    'id': [
+        'Mengode [■□□□□□□□□□]',
+        'Mengode [■■□□□□□□□□]',
+        'Mengode [■■■□□□□□□□]',
+        'Mengode [■■■■□□□□□□]',
+        'Mengode [■■■■■□□□□□]',
+        'Mengode [■■■■■■□□□□]',
+        'Mengode [■■■■■■■□□□]',
+        'Mengode [■■■■■■■■□□]',
+        'Mengode [■■■■■■■■■□]',
+        'Selesai [■■■■■■■■■■]'
+    ],
+    'ja': [
+        'コーディング中 [■□□□□□□□□□]',
+        'コーディング中 [■■□□□□□□□□]',
+        'コーディング中 [■■■□□□□□□□]',
+        'コーディング中 [■■■■□□□□□□]',
+        'コーディング中 [■■■■■□□□□□]',
+        'コーディング中 [■■■■■■□□□□]',
+        'コーディング中 [■■■■■■■□□□]',
+        'コーディング中 [■■■■■■■■□□]',
+        'コーディング中 [■■■■■■■■■□]',
+        '完了 [■■■■■■■■■■]'
+    ],
+    'sw': [
+        'Ina kodi [■□□□□□□□□□]',
+        'Ina kodi [■■□□□□□□□□]',
+        'Ina kodi [■■■□□□□□□□]',
+        'Ina kodi [■■■■□□□□□□]',
+        'Ina kodi [■■■■■□□□□□]',
+        'Ina kodi [■■■■■■□□□□]',
+        'Ina kodi [■■■■■■■□□□]',
+        'Ina kodi [■■■■■■■■□□]',
+        'Ina kodi [■■■■■■■■■□]',
+        'Imekamilika [■■■■■■■■■■]'
+    ],
+    'tr': [
+        'Kodlanıyor [■□□□□□□□□□]',
+        'Kodlanıyor [■■□□□□□□□□]',
+        'Kodlanıyor [■■■□□□□□□□]',
+        'Kodlanıyor [■■■■□□□□□□]',
+        'Kodlanıyor [■■■■■□□□□□]',
+        'Kodlanıyor [■■■■■■□□□□]',
+        'Kodlanıyor [■■■■■■■□□□]',
+        'Kodlanıyor [■■■■■■■■□□]',
+        'Kodlanıyor [■■■■■■■■■□]',
+        'Tamam [■■■■■■■■■■]'
+    ],
+    'ko': [
+        '코딩 중 [■□□□□□□□□□]',
+        '코딩 중 [■■□□□□□□□□]',
+        '코딩 중 [■■■□□□□□□□]',
+        '코딩 중 [■■■■□□□□□□]',
+        '코딩 중 [■■■■■□□□□□]',
+        '코딩 중 [■■■■■■□□□□]',
+        '코딩 중 [■■■■■■■□□□]',
+        '코딩 중 [■■■■■■■■□□]',
+        '코딩 중 [■■■■■■■■■□]',
+        '완료 [■■■■■■■■■■]'
+    ],
+    'vi': [
+        'Đang mã hóa [■□□□□□□□□□]',
+        'Đang mã hóa [■■□□□□□□□□]',
+        'Đang mã hóa [■■■□□□□□□□]',
+        'Đang mã hóa [■■■■□□□□□□]',
+        'Đang mã hóa [■■■■■□□□□□]',
+        'Đang mã hóa [■■■■■■□□□□]',
+        'Đang mã hóa [■■■■■■■□□□]',
+        'Đang mã hóa [■■■■■■■■□□]',
+        'Đang mã hóa [■■■■■■■■■□]',
+        'Hoàn thành [■■■■■■■■■■]'
+    ],
+    'ta': [
+        'குறியீடு செய்தல் [■□□□□□□□□□]',
+        'குறியீடு செய்தல் [■■□□□□□□□□]',
+        'குறியீடு செய்தல் [■■■□□□□□□□]',
+        'குறியீடு செய்தல் [■■■■□□□□□□]',
+        'குறியீடு செய்தல் [■■■■■□□□□□]',
+        'குறியீடு செய்தல் [■■■■■■□□□□]',
+        'குறியீடு செய்தல் [■■■■■■■□□□]',
+        'குறியீடு செய்தல் [■■■■■■■■□□]',
+        'குறியீடு செய்தல் [■■■■■■■■■□]',
+        'முடிந்தது [■■■■■■■■■■]'
+    ]
 };
 
 function getTranslation(langCode, key) {
     return translations[langCode]?.[key] || translations['en'][key] || key;
+}
+
+function getLoadingFrames(langCode) {
+    return loadingTranslations[langCode] || loadingTranslations['en'];
 }
 
 function getSenderNumber(message) {
@@ -619,18 +949,6 @@ async function checkPremium(number) {
         return false;
     }
 }
-
-const LOADING_FRAMES = [
-    'Coding [■□□□□□□□□□]',
-    'Coding [■■□□□□□□□□]',
-    'Coding [■■■□□□□□□□]',
-    'Coding [■■■■□□□□□□]',
-    'Coding [■■■■■□□□□□]',
-    'Coding [■■■■■■□□□□]',
-    'Coding [■■■■■■■□□□]',
-    'Coding [■■■■■■■■□□]',
-    'Coding [■■■■■■■■■□]'
-];
 
 const EXT_MAP = {
     'javascript': 'js', 'js': 'js', 'typescript': 'ts', 'ts': 'ts',
@@ -776,6 +1094,14 @@ function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
     }
 }
 
+// ---- RESOLVE COMMAND HELPER ----
+function resolveCommand(input) {
+    const cmd = input.toLowerCase().replace(/^\./, '');
+    // Add your command aliases resolution here
+    return cmd;
+}
+
+// ---- MAIN CODE COMMAND ----
 async function codeCommand(sock, chatId, message) {
     let loadingMsg;
 
@@ -788,12 +1114,13 @@ async function codeCommand(sock, chatId, message) {
         // Get user language
         const userLang = langManager.getUserLanguage(userId);
         const t = (key) => getTranslation(userLang, key);
+        const loadingFrames = getLoadingFrames(userLang);
         
         // Get current font and style
         const fontId = getCurrentFont();
         const styleId = getCurrentStyle();
         
-        // ---- FIX: Get command and arguments properly ----
+        // ---- Get command and arguments properly ----
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         
         // Get the command without the dot and resolve it
@@ -802,11 +1129,7 @@ async function codeCommand(sock, chatId, message) {
         
         // Get arguments after the command (everything after the command name)
         const args = text.replace(/^[^\s]*\s?/, '').trim();
-        const typedQuery = args;  // This is the user's prompt
-        
-        // ---- DEBUG ----
-        console.log('📝 Command:', resolvedCommand);
-        console.log('📝 Query:', typedQuery);
+        const typedQuery = args;
         
         // Get quoted message text for reply
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
@@ -839,8 +1162,8 @@ async function codeCommand(sock, chatId, message) {
                 `  └ .${resolvedCommand} <${t('prompt')}> + ${t('reply_text').toLowerCase()}`,
                 '',
                 `*${t('examples')}:*`,
-                `  └ .${resolvedCommand} login form in html`,
-                `  └ .${resolvedCommand} python fibonacci function`,
+                `  └ ${t('example1')}`,
+                `  └ ${t('example2')}`,
                 `  └ ${t('reply_text')}`,
                 '',
                 `${!isPremium ? `*🔒 ${t('premium_locked')}*\n  └ ${t('unlock')}` : `*✅ ${t('premium_active')}*`}`
@@ -870,11 +1193,16 @@ async function codeCommand(sock, chatId, message) {
         }
 
         // Premium user with prompt → generate code
-        loadingMsg = await sock.sendMessage(chatId, { text: LOADING_FRAMES[0] });
+        loadingMsg = await sock.sendMessage(chatId, { text: loadingFrames[0] });
 
         let frame = 0;
         const interval = setInterval(async () => {
-            try { if (frame < LOADING_FRAMES.length - 1) { frame++; await sock.sendMessage(chatId, { edit: loadingMsg.key, text: LOADING_FRAMES[frame] }); } } catch (e) {}
+            try { 
+                if (frame < loadingFrames.length - 2) { 
+                    frame++; 
+                    await sock.sendMessage(chatId, { edit: loadingMsg.key, text: loadingFrames[frame] }); 
+                } 
+            } catch (e) {}
         }, 600);
 
         const response = await fetch(`${PROXY_URL}/v1/code`, {
@@ -925,6 +1253,9 @@ async function codeCommand(sock, chatId, message) {
 
         if (!answer || answer.length < 10) throw new Error('NO_RESPONSE');
 
+        // Send done message
+        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: loadingFrames[loadingFrames.length - 1] });
+
         const codeBlockMatch = answer.match(/```[\s\S]*?```/);
         const cleanCode = codeBlockMatch
             ? codeBlockMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim()
@@ -970,8 +1301,6 @@ async function codeCommand(sock, chatId, message) {
         const demoPath = path.join(outputDir, demoFileName);
         fs.writeFileSync(demoPath, demoContent);
 
-        await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
-
         // Build styled captions with translations
         const rawCaptionContent = [
             `*${t('file')}:* ${txtFileName}`,
@@ -1016,7 +1345,13 @@ async function codeCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Code error:', error.message);
-        if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■■■□□]' }); } catch (e) {} }
+        if (loadingMsg) { 
+            try { 
+                const userLang = langManager.getUserLanguage(message.key.participant?.split('@')[0] || '');
+                const loadingFrames = getLoadingFrames(userLang);
+                await sock.sendMessage(chatId, { edit: loadingMsg.key, text: loadingFrames[loadingFrames.length - 1] }); 
+            } catch (e) {} 
+        }
         
         const senderId = message.key.participant || message.key.remoteJid;
         const userId = senderId.split('@')[0];
@@ -1037,13 +1372,6 @@ async function codeCommand(sock, chatId, message) {
             text: errorMessage
         }, { quoted: message });
     }
-}
-
-// ---- Resolve Command Helper ----
-function resolveCommand(input) {
-    const cmd = input.toLowerCase().replace(/^\./, '');
-    // Add your command aliases resolution here
-    return cmd;
 }
 
 module.exports = codeCommand;
