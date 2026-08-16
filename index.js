@@ -89,6 +89,9 @@ const { rmSync } = require('fs');
 const { getCurrentFont, applyFont } = require('./commands/menufont');
 const { getCurrentStyle } = require('./commands/menustyle');
 
+// Import language manager
+const langManager = require('./language/manager');
+
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const store = require('./lib/lightweight_store');
@@ -941,76 +944,6 @@ function getConnectionTranslation(langCode, key) {
     return connectionTranslations[langCode]?.[key] || connectionTranslations['en'][key] || key;
 }
 
-// ---- AUTO JOIN GROUP ----
-async function autoJoinGroup(sock, groupLink, retryCount = 0) {
-    const maxRetries = 3;
-    try {
-        let inviteCode = groupLink;
-        if (groupLink.includes('chat.whatsapp.com/')) {
-            inviteCode = groupLink.split('chat.whatsapp.com/')[1];
-            if (inviteCode.includes('?')) {
-                inviteCode = inviteCode.split('?')[0];
-            }
-        }
-        
-        log(c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset);
-        const result = await sock.groupAcceptInvite(inviteCode);
-        log(c.green + '✅ Auto-joined group successfully!' + c.reset);
-        return { success: true, method: 'groupAcceptInvite' };
-        
-    } catch (e) {
-        if (e.message && (e.message.includes('already in group') || 
-            e.message.includes('already participant') || 
-            e.message.includes('401') ||
-            e.message.includes('not-authorized'))) {
-            log(c.cyan + 'ℹ️ Bot is already in the group' + c.reset);
-            return { success: true, method: 'already_in_group' };
-        }
-        
-        if (retryCount < maxRetries) {
-            log(c.yellow + `⚠️ Method 1 failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset);
-            await delay(2000 * (retryCount + 1));
-            return autoJoinGroup(sock, groupLink, retryCount + 1);
-        }
-        
-        log(c.red + '❌ All join methods failed: ' + e.message + c.reset);
-        return { success: false, error: e.message };
-    }
-}
-
-// ---- AUTO FOLLOW CHANNEL ----
-async function autoFollowChannel(sock, channelJid, retryCount = 0) {
-    const maxRetries = 3;
-    const methods = [
-        { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
-        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) }
-    ];
-    
-    for (let i = 0; i < methods.length; i++) {
-        try {
-            const method = methods[i];
-            log(c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset);
-            await method.fn();
-            log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
-            return { success: true, method: method.name };
-        } catch (e) {
-            if (e.message && (e.message.includes('already following') || 
-                e.message.includes('already subscribed') ||
-                e.message.includes('already'))) {
-                log(c.cyan + 'ℹ️ Already following the channel' + c.reset);
-                return { success: true, method: 'already_following' };
-            }
-            log(c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
-            if (i < methods.length - 1) {
-                await delay(1000);
-            }
-        }
-    }
-    
-    log(c.red + '❌ All follow methods failed' + c.reset);
-    return { success: false, error: 'All methods failed' };
-}
-
 // ---- BUILD CONNECTION MESSAGE (Compact Version with NO repeated footers) ----
 function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
@@ -1104,6 +1037,76 @@ function buildConnectionMessage(styleId, sections) {
     }
     
     return fullMessage;
+}
+
+// ---- AUTO JOIN GROUP ----
+async function autoJoinGroup(sock, groupLink, retryCount = 0) {
+    const maxRetries = 3;
+    try {
+        let inviteCode = groupLink;
+        if (groupLink.includes('chat.whatsapp.com/')) {
+            inviteCode = groupLink.split('chat.whatsapp.com/')[1];
+            if (inviteCode.includes('?')) {
+                inviteCode = inviteCode.split('?')[0];
+            }
+        }
+        
+        log(c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset);
+        const result = await sock.groupAcceptInvite(inviteCode);
+        log(c.green + '✅ Auto-joined group successfully!' + c.reset);
+        return { success: true, method: 'groupAcceptInvite' };
+        
+    } catch (e) {
+        if (e.message && (e.message.includes('already in group') || 
+            e.message.includes('already participant') || 
+            e.message.includes('401') ||
+            e.message.includes('not-authorized'))) {
+            log(c.cyan + 'ℹ️ Bot is already in the group' + c.reset);
+            return { success: true, method: 'already_in_group' };
+        }
+        
+        if (retryCount < maxRetries) {
+            log(c.yellow + `⚠️ Method 1 failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset);
+            await delay(2000 * (retryCount + 1));
+            return autoJoinGroup(sock, groupLink, retryCount + 1);
+        }
+        
+        log(c.red + '❌ All join methods failed: ' + e.message + c.reset);
+        return { success: false, error: e.message };
+    }
+}
+
+// ---- AUTO FOLLOW CHANNEL ----
+async function autoFollowChannel(sock, channelJid, retryCount = 0) {
+    const maxRetries = 3;
+    const methods = [
+        { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
+        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) }
+    ];
+    
+    for (let i = 0; i < methods.length; i++) {
+        try {
+            const method = methods[i];
+            log(c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset);
+            await method.fn();
+            log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
+            return { success: true, method: method.name };
+        } catch (e) {
+            if (e.message && (e.message.includes('already following') || 
+                e.message.includes('already subscribed') ||
+                e.message.includes('already'))) {
+                log(c.cyan + 'ℹ️ Already following the channel' + c.reset);
+                return { success: true, method: 'already_following' };
+            }
+            log(c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
+            if (i < methods.length - 1) {
+                await delay(1000);
+            }
+        }
+    }
+    
+    log(c.red + '❌ All follow methods failed' + c.reset);
+    return { success: false, error: 'All methods failed' };
 }
 
 async function startXeonBotInc() {
@@ -1229,8 +1232,9 @@ async function startXeonBotInc() {
                     const fontId = getCurrentFont();
                     const styleId = getCurrentStyle();
                     
-                    // Get user language (for connection message, use bot default or English)
-                    const userLang = settings.botLanguage || 'en';
+                    // ---- FIX: Get user's actual language from langManager ----
+                    const userId = botNumber.split('@')[0];
+                    const userLang = langManager.getUserLanguage(userId) || settings.botLanguage || 'en';
                     const t = (key) => getConnectionTranslation(userLang, key);
                     
                     // Get translated mode
