@@ -29,7 +29,7 @@ function getDeploymentPlatform() {
 
 async function getUserStats() {
     try {
-        const res = await fetch('https://gemini-proxy-10a1.onrender.com/v1/stats');
+        const res = await fetch('https://gemini-proxy-5t1s.onrender.com/v1/stats');
         const data = await res.json();
         return { totalUsers: data.totalUsers || 0, activeUsers: data.activeUsers || 0, platforms: {} };
     } catch (e) { return { totalUsers: 0, activeUsers: 0, platforms: {} }; }
@@ -48,7 +48,7 @@ function getBotMode() {
 async function getBotPlan() {
     try {
         const ownerNumber = settings.ownerNumber || '';
-        const res = await fetch(`https://gemini-proxy-10a1.onrender.com/v1/premium/check/${ownerNumber}`);
+        const res = await fetch(`https://gemini-proxy-5t1s.onrender.com/v1/premium/check/${ownerNumber}`);
         const data = await res.json();
         if (data.premium && data.remainingDays > 0) return 'Premium';
         return 'Free';
