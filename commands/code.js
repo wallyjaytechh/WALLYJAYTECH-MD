@@ -38,6 +38,8 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+const { getCurrentFont, applyFont } = require('./menufont');
+const { getCurrentStyle } = require('./menustyle');
 
 const PROXY_URL = 'https://gemini-proxy-5t1s.onrender.com';
 
@@ -100,12 +102,37 @@ function wrapFeedback(text, maxLen = 25) {
     return lines;
 }
 
+// ---- BUILD STYLED MESSAGE ----
+function buildStyledMessage(styleId, title, content, extraLines = []) {
+    const topBorder = '╭──◆「 *' + title + '* 」◆\n├\n';
+    const bottomBorder = '\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆';
+    
+    let message = topBorder;
+    
+    // Add content lines
+    for (const line of content) {
+        message += `├◇ ${line}\n`;
+    }
+    
+    // Add extra lines
+    for (const line of extraLines) {
+        message += `├◇ ${line}\n`;
+    }
+    
+    message += bottomBorder;
+    return message;
+}
+
 async function codeCommand(sock, chatId, message) {
     let loadingMsg;
 
     try {
         const senderNumber = getSenderNumber(message);
         const isPremium = await checkPremium(senderNumber);
+        
+        // Get current font and style
+        const fontId = getCurrentFont();
+        const styleId = getCurrentStyle();
         
         const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
         const args = text.split(' ').slice(1);
@@ -131,35 +158,44 @@ async function codeCommand(sock, chatId, message) {
 
         // No query → show menu (everyone can see)
         if (!query) {
+            const menuContent = [
+                '💻 Generate code with AI',
+                '🤖 GPT-4o + Llama + Pollinations',
+                '💎 Premium feature',
+                '',
+                '*📖 Usage:*',
+                '  └ .code <prompt>',
+                '  └ Reply to a message with .code',
+                '  └ .code <prompt> + reply overrides',
+                '',
+                '*✨ Examples:*',
+                '  └ .code login form in html',
+                '  └ .code python fibonacci function',
+                '  └ Reply to text with .code',
+                '',
+                `${!isPremium ? '*🔒 Status:* Premium locked\n  └ Use .subscribe to unlock' : '*✅ Status:* Premium active'}`
+            ];
+            
+            let menuMessage = buildStyledMessage(styleId, 'AI CODE GENERATOR', menuContent);
+            menuMessage = applyFont(menuMessage, fontId);
+            
             return sock.sendMessage(chatId, {
-                text: `╭──◆「 *AI CODE GENERATOR* 」◆\n` +
-                    `├\n` +
-                    `├◇ 💻 Generate code with AI\n` +
-                    `├◇ 🤖 GPT-4o + Llama + Pollinations\n` +
-                    `├◇ 💎 Premium feature\n` +
-                    `├\n` +
-                    `├◇ *📖 Usage:*\n` +
-                    `├  └ .code <prompt>\n` +
-                    `├  └ Reply to a message with .code\n` +
-                    `├  └ .code <prompt> + reply overrides\n` +
-                    `├\n` +
-                    `├◇ *✨ Examples:*\n` +
-                    `├  └ .code login form in html\n` +
-                    `├  └ .code python fibonacci function\n` +
-                    `├  └ Reply to text with .code\n` +
-                    `├\n` +
-                    `${!isPremium ? `├◇ *🔒 Status:* Premium locked\n├  └ Use .subscribe to unlock\n` : `├◇ *✅ Status:* Premium active\n`}` +
-                    `├\n` +
-                    `╰─┬─★─☆─♪♪─◆\n\n` +
-                    `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                    `╰───★─☆─♪♪─◆`
+                text: menuMessage
             }, { quoted: message });
         }
 
         // Has prompt but not premium → block
         if (!isPremium) {
+            const blockContent = [
+                '💎 This command is premium',
+                '🔓 Use .subscribe to upgrade'
+            ];
+            
+            let blockMessage = buildStyledMessage(styleId, 'PREMIUM ONLY', blockContent);
+            blockMessage = applyFont(blockMessage, fontId);
+            
             return sock.sendMessage(chatId, {
-                text: `╭──◆「 *PREMIUM ONLY* 」◆\n├\n├◇ 💎 This command is premium\n├◇ 🔓 Use .subscribe to upgrade\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+                text: blockMessage
             }, { quoted: message });
         }
 
@@ -186,15 +222,29 @@ async function codeCommand(sock, chatId, message) {
         // Handle proxy error responses
         if (response.status === 426) {
             clearInterval(interval);
+            const updateContent = [
+                '⚠️ Old version detected',
+                '📥 Use .update to upgrade'
+            ];
+            let updateMessage = buildStyledMessage(styleId, 'UPDATE REQUIRED', updateContent);
+            updateMessage = applyFont(updateMessage, fontId);
+            
             return sock.sendMessage(chatId, {
-                text: `╭──◆「 *UPDATE REQUIRED* 」◆\n├\n├◇ ⚠️ Old version detected\n├◇ 📥 Use .update to upgrade\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+                text: updateMessage
             }, { quoted: message });
         }
 
         if (response.status === 402) {
             clearInterval(interval);
+            const premiumContent = [
+                '💎 Premium expired or not found',
+                '🔓 Use .subscribe to renew'
+            ];
+            let premiumMessage = buildStyledMessage(styleId, 'PREMIUM REQUIRED', premiumContent);
+            premiumMessage = applyFont(premiumMessage, fontId);
+            
             return sock.sendMessage(chatId, {
-                text: `╭──◆「 *PREMIUM REQUIRED* 」◆\n├\n├◇ 💎 Premium expired or not found\n├◇ 🔓 Use .subscribe to renew\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰──★─☆─♪♪─◆`
+                text: premiumMessage
             }, { quoted: message });
         }
 
@@ -225,12 +275,12 @@ async function codeCommand(sock, chatId, message) {
         const rawFeedbackLines = allFeedbackLines.slice(0, mid);
         const demoFeedbackLines = allFeedbackLines.slice(mid);
 
-        let rawFeedbackOutput = '';
-        for (const line of rawFeedbackLines) rawFeedbackOutput += `├◇ ${line.toLowerCase()}\n`;
+        let rawFeedbackOutput = [];
+        for (const line of rawFeedbackLines) rawFeedbackOutput.push(`${line.toLowerCase()}`);
 
-        let demoFeedbackOutput = '';
+        let demoFeedbackOutput = [];
         const demoLinesToUse = demoFeedbackLines.length > 0 ? demoFeedbackLines : rawFeedbackLines;
-        for (const line of demoLinesToUse) demoFeedbackOutput += `├◇ ${line.toLowerCase()}\n`;
+        for (const line of demoLinesToUse) demoFeedbackOutput.push(`${line.toLowerCase()}`);
 
         const outputDir = './output';
         if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
@@ -252,40 +302,43 @@ async function codeCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Done [■■■■■■■■■■]' });
 
+        // Build styled captions
+        const rawCaptionContent = [
+            `*💻 File:* ${txtFileName}`,
+            '',
+            '*📝 Feedback:*',
+            ...rawFeedbackOutput,
+            '',
+            `*🤖 Model:* ${usedModel}`
+        ];
+        
+        let rawCaption = buildStyledMessage(styleId, 'RAW CODE', rawCaptionContent);
+        rawCaption = applyFont(rawCaption, fontId);
+
+        const demoCaptionContent = [
+            `*💻 File:* ${demoFileName}`,
+            '',
+            '*📝 Feedback:*',
+            ...demoFeedbackOutput,
+            '',
+            `*🤖 Model:* ${usedModel}`
+        ];
+        
+        let demoCaption = buildStyledMessage(styleId, extension === 'html' ? 'LIVE PREVIEW' : 'CODE PREVIEW', demoCaptionContent);
+        demoCaption = applyFont(demoCaption, fontId);
+
         await sock.sendMessage(chatId, {
             document: fs.readFileSync(txtPath),
             fileName: txtFileName,
             mimetype: 'text/plain',
-            caption: `╭──◆「 *RAW CODE* 」◆\n` +
-                `├\n` +
-                `├◇ *💻 File:* ${txtFileName}\n` +
-                `├\n` +
-                `├◇ *📝 Feedback:*\n` +
-                rawFeedbackOutput +
-                `├\n` +
-                `├◇ *🤖 Model:* ${usedModel}\n` +
-                `├\n` +
-                `╰─┬─★─☆─♪♪─◆\n\n` +
-                `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                `╰───★─☆─♪♪─◆`
+            caption: rawCaption
         }, { quoted: message });
 
         await sock.sendMessage(chatId, {
             document: fs.readFileSync(demoPath),
             fileName: demoFileName,
             mimetype: 'text/html',
-            caption: `╭──◆「 *${extension === 'html' ? 'LIVE PREVIEW' : 'CODE PREVIEW'}* 」◆\n` +
-                `├\n` +
-                `├◇ *💻 File:* ${demoFileName}\n` +
-                `├\n` +
-                `├◇ *📝 Feedback:*\n` +
-                demoFeedbackOutput +
-                `├\n` +
-                `├◇ *🤖 Model:* ${usedModel}\n` +
-                `├\n` +
-                `╰─┬─★─☆─♪♪─◆\n\n` +
-                `╭──◆「 *WALLYJAYTECH-MD* 」◆\n` +
-                `╰───★─☆─♪♪─◆`
+            caption: demoCaption
         }, { quoted: message });
 
         fs.unlinkSync(txtPath);
@@ -293,9 +346,18 @@ async function codeCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Code error:', error.message);
-        if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■□□□□]' }); } catch (e) {} }
+        if (loadingMsg) { try { await sock.sendMessage(chatId, { edit: loadingMsg.key, text: 'Failed [■■■■■■■■□□]' }); } catch (e) {} }
+        
+        const errorContent = [
+            '❌ Unable to generate code',
+            '💡 Try a different prompt'
+        ];
+        
+        let errorMessage = buildStyledMessage(styleId, 'CODE FAILED', errorContent);
+        errorMessage = applyFont(errorMessage, getCurrentFont());
+        
         await sock.sendMessage(chatId, {
-            text: `╭──◆「 *CODE FAILED* 」◆\n├\n├◇ ❌ Unable to generate code\n├◇ 💡 Try a different prompt\n├\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`
+            text: errorMessage
         }, { quoted: message });
     }
 }
