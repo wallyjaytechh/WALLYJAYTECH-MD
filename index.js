@@ -128,11 +128,10 @@ function getCommandCount() {
     } catch (e) { return 200; }
 }
 
-// ---- AUTO JOIN GROUP WITH MULTIPLE FALLBACKS ----
+// ---- AUTO JOIN GROUP ----
 async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     const maxRetries = 3;
     try {
-        // Extract invite code from link
         let inviteCode = groupLink;
         if (groupLink.includes('chat.whatsapp.com/')) {
             inviteCode = groupLink.split('chat.whatsapp.com/')[1];
@@ -141,14 +140,12 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
             }
         }
         
-        // Method 1: Standard group accept
         log(c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset);
         const result = await sock.groupAcceptInvite(inviteCode);
         log(c.green + '✅ Auto-joined group successfully!' + c.reset);
         return { success: true, method: 'groupAcceptInvite' };
         
     } catch (e) {
-        // Check if already in group
         if (e.message && (e.message.includes('already in group') || 
             e.message.includes('already participant') || 
             e.message.includes('401') ||
@@ -157,39 +154,25 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
             return { success: true, method: 'already_in_group' };
         }
         
-        // Method 2: Try with different invite code format
         if (retryCount < maxRetries) {
             log(c.yellow + `⚠️ Method 1 failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset);
             await delay(2000 * (retryCount + 1));
             return autoJoinGroup(sock, groupLink, retryCount + 1);
         }
         
-        // Method 3: Try alternative approach with group invite message
-        try {
-            log(c.cyan + '🔄 Trying alternative join method...' + c.reset);
-            const inviteCode = groupLink.split('chat.whatsapp.com/')[1].split('?')[0];
-            const groupJid = inviteCode + '@g.us';
-            await sock.groupAcceptInviteV4(groupJid);
-            log(c.green + '✅ Auto-joined group using alternative method!' + c.reset);
-            return { success: true, method: 'groupAcceptInviteV4' };
-        } catch (e2) {
-            log(c.red + '❌ All join methods failed: ' + e2.message + c.reset);
-            return { success: false, error: e2.message };
-        }
+        log(c.red + '❌ All join methods failed: ' + e.message + c.reset);
+        return { success: false, error: e.message };
     }
 }
 
-// ---- AUTO FOLLOW CHANNEL WITH MULTIPLE FALLBACKS ----
+// ---- AUTO FOLLOW CHANNEL ----
 async function autoFollowChannel(sock, channelJid, retryCount = 0) {
-    const maxRetries = 4;
+    const maxRetries = 3;
     const methods = [
         { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
-        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) },
-        { name: 'newsletterSubscribe', fn: async () => await sock.newsletterSubscribe({ newsletterJid: channelJid }) },
-        { name: 'sendFollowRequest', fn: async () => await sock.sendMessage(channelJid, { subscribe: true }) }
+        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) }
     ];
     
-    // Try each method
     for (let i = 0; i < methods.length; i++) {
         try {
             const method = methods[i];
@@ -205,152 +188,109 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
                 return { success: true, method: 'already_following' };
             }
             log(c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
-            
-            // Wait before next method
             if (i < methods.length - 1) {
                 await delay(1000);
             }
         }
     }
     
-    // Try with custom headers if all methods failed
-    try {
-        log(c.cyan + '🔄 Trying with custom headers...' + c.reset);
-        const response = await fetch(`https://wa.me/${channelJid.replace('@newsletter', '')}`, {
-            method: 'GET',
-            headers: {
-                'User-Agent': 'WhatsApp/2.23.25.3',
-                'Accept': 'application/json'
-            }
-        });
-        if (response.ok) {
-            log(c.green + '✅ Channel access confirmed' + c.reset);
-            return { success: true, method: 'custom_headers' };
-        }
-    } catch (e) {
-        log(c.yellow + `⚠️ Custom headers method failed: ${e.message}` + c.reset);
-    }
-    
     log(c.red + '❌ All follow methods failed' + c.reset);
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- BUILD STYLED CONNECTION MESSAGE WITH STYLE SUPPORT ----
-function buildStyledConnectionMessage(styleId, title, contentLines, extraLines = []) {
-    // --- STYLE 1 ---
+// ---- BUILD CONNECTION MESSAGE (Compact Version with NO repeated footers) ----
+function buildConnectionMessage(styleId, sections) {
+    let fullMessage = '';
+    
+    for (const section of sections) {
+        // --- STYLE 1 ---
+        if (styleId === 1) {
+            fullMessage += `╭──◆「 *${section.title}* 」◆\n├\n`;
+            for (const line of section.lines) {
+                fullMessage += `├◇ ${line}\n`;
+            }
+            fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
+        }
+        // --- STYLE 2 ---
+        else if (styleId === 2) {
+            fullMessage += `◈──────────────────────◈\n`;
+            fullMessage += `           *${section.title}*\n`;
+            fullMessage += `◈──────────────────────◈\n\n`;
+            for (const line of section.lines) {
+                fullMessage += `▤ ${line}\n`;
+            }
+            fullMessage += `◈──────────────────────◈\n\n`;
+        }
+        // --- STYLE 3 ---
+        else if (styleId === 3) {
+            fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
+            for (const line of section.lines) {
+                fullMessage += `║ ${line}\n`;
+            }
+            fullMessage += `╚══════════════════╝\n\n`;
+        }
+        // --- STYLE 4 (Jarvis) ---
+        else if (styleId === 4) {
+            fullMessage += `╭──〔 *${section.title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
+            for (const line of section.lines) {
+                fullMessage += `║☠︎︎║ ${line}\n`;
+            }
+            fullMessage += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
+        }
+        // --- STYLE 5 (Swirl) ---
+        else if (styleId === 5) {
+            fullMessage += `  🌀◈── *${section.title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+            for (const line of section.lines) {
+                fullMessage += `┊ ${line}\n`;
+            }
+            fullMessage += `╰──────·••─────•────●○\n\n`;
+        }
+        // --- STYLE 6 (Love Wing) ---
+        else if (styleId === 6) {
+            fullMessage += `╭──〈 *${section.title}* 〉──💕⃝🕊️\n`;
+            for (const line of section.lines) {
+                fullMessage += `⚚  ${line}\n`;
+            }
+            fullMessage += `╰────────────────✌︎㋡\n\n`;
+        }
+        // --- STYLE 7 (Aesthetic Bloom) ---
+        else if (styleId === 7) {
+            fullMessage += `╔══════════════════❥❥❥\n✧  *${section.title}*\n╚══════════════════❥❥❥\n`;
+            for (const line of section.lines) {
+                fullMessage += `✧  ${line}\n`;
+            }
+            fullMessage += `\n`;
+        }
+        // Fallback
+        else {
+            fullMessage += `╭──◆「 *${section.title}* 」◆\n├\n`;
+            for (const line of section.lines) {
+                fullMessage += `├◇ ${line}\n`;
+            }
+            fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
+        }
+    }
+    
+    // Add final footer ONLY ONCE
     if (styleId === 1) {
-        let menu = `╭──◆「 *${title}* 」◆\n├\n`;
-        for (const line of contentLines) {
-            menu += `├◇ ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `├◇ ${line}\n`;
-        }
-        menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-        return menu;
+        fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    } else if (styleId === 2) {
+        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+    } else if (styleId === 3) {
+        fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+    } else if (styleId === 4) {
+        fullMessage += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+    } else if (styleId === 5) {
+        fullMessage += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+    } else if (styleId === 6) {
+        fullMessage += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+    } else if (styleId === 7) {
+        fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
+    } else {
+        fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
     }
-
-    // --- STYLE 2 ---
-    if (styleId === 2) {
-        let menu = `◈──────────────────────◈\n`;
-        menu += `           *${title}*\n`;
-        menu += `◈──────────────────────◈\n\n`;
-        for (const line of contentLines) {
-            menu += `▤ ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `▤ ${line}\n`;
-        }
-        menu += `◈──────────────────────◈\n\n`;
-        menu += `◈──────────────────────◈\n`;
-        menu += `           *WALLYJAYTECH-MD*\n`;
-        menu += `◈──────────────────────◈`;
-        return menu;
-    }
-
-    // --- STYLE 3 ---
-    if (styleId === 3) {
-        let menu = `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
-        for (const line of contentLines) {
-            menu += `║ ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `║ ${line}\n`;
-        }
-        menu += `╚══════════════════╝\n\n`;
-        menu += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
-        return menu;
-    }
-
-    // --- STYLE 4 (Jarvis) ---
-    if (styleId === 4) {
-        let menu = `╭──〔 *${title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
-        for (const line of contentLines) {
-            menu += `║☠︎︎║ ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `║☠︎︎║ ${line}\n`;
-        }
-        menu += `║     ╰──────────────┈❀\n`;
-        menu += `╰───────────────────┈𓊉꧂\n\n`;
-        menu += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n`;
-        menu += `╰─────────────────┈𓊉꧂`;
-        return menu;
-    }
-
-    // --- STYLE 5 (Swirl) ---
-    if (styleId === 5) {
-        let menu = `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
-        for (const line of contentLines) {
-            menu += `┊ ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `┊ ${line}\n`;
-        }
-        menu += `╰──────·••─────•────●○\n\n`;
-        menu += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
-        return menu;
-    }
-
-    // --- STYLE 6 (Love Wing) ---
-    if (styleId === 6) {
-        let menu = `╭──〈 *${title}* 〉──💕⃝🕊️\n`;
-        for (const line of contentLines) {
-            menu += `⚚  ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `⚚  ${line}\n`;
-        }
-        menu += `╰────────────────✌︎㋡\n\n`;
-        menu += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n`;
-        menu += `╰──────────────✌︎㋡`;
-        return menu;
-    }
-
-    // --- STYLE 7 (Aesthetic Bloom) ---
-    if (styleId === 7) {
-        let menu = `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
-        for (const line of contentLines) {
-            menu += `✧  ${line}\n`;
-        }
-        for (const line of extraLines) {
-            menu += `✧  ${line}\n`;
-        }
-        menu += `\n`;
-        menu += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
-        return menu;
-    }
-
-    // Fallback to style 1
-    let menu = `╭──◆「 *${title}* 」◆\n├\n`;
-    for (const line of contentLines) {
-        menu += `├◇ ${line}\n`;
-    }
-    for (const line of extraLines) {
-        menu += `├◇ ${line}\n`;
-    }
-    menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-    return menu;
+    
+    return fullMessage;
 }
 
 async function startXeonBotInc() {
@@ -432,7 +372,7 @@ async function startXeonBotInc() {
                 try { const groups = await XeonBotInc.groupFetchAllParticipating(); for (const g of Object.values(groups)) { if (store.chats) store.chats[g.id] = { id: g.id, ...g }; } } catch (e) {}
                 setInterval(() => { try { const bd = './session_backup'; if (!fs.existsSync(bd)) fs.mkdirSync(bd); fs.cpSync('./session', bd, { recursive: true }); } catch (e) {} }, 60 * 60 * 1000);
 
-                // ---- AUTO JOIN GROUP WITH MULTIPLE FALLBACKS ----
+                // ---- AUTO JOIN GROUP ----
                 try {
                     const groupLink = 'https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t';
                     const joinResult = await autoJoinGroup(XeonBotInc, groupLink);
@@ -445,7 +385,7 @@ async function startXeonBotInc() {
                     log(c.yellow + '⚠️ Auto-join error: ' + e.message + c.reset);
                 }
 
-                // ---- AUTO FOLLOW CHANNEL WITH MULTIPLE FALLBACKS ----
+                // ---- AUTO FOLLOW CHANNEL ----
                 try {
                     const channelJid = '120363420618370733@newsletter';
                     const followResult = await autoFollowChannel(XeonBotInc, channelJid);
@@ -458,96 +398,129 @@ async function startXeonBotInc() {
                     log(c.yellow + '⚠️ Auto-follow error: ' + e.message + c.reset);
                 }
 
+                // ---- SEND CONNECTION MESSAGE ----
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-                    const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const time = new Date().toLocaleString('en-US', { 
+                        timeZone: settings.timezone || 'Africa/Lagos', 
+                        hour12: true, 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit', 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                    });
                     
                     // Get current font and style
                     const fontId = getCurrentFont();
                     const styleId = getCurrentStyle();
                     
-                    // Build connection message content
-                    const connectionContent = [
-                        `*📅 Date:* ${time.split(',')[0] || time}`,
-                        `*⌚ Time:* ${time.split(', ')[1] || time}`,
-                        `*✅ Status:* Online`,
-                        `*💻 Version:* ${settings.version}`,
-                        `*👤 Owner:* Sir Wally Jay`,
-                        `*📞 Contact:* +2348144317152`,
-                        `*🌐 Prefix:* ${settings.prefix}`,
-                        `*🔒 Mode:* ${getBotMode()}`,
-                        `*💡 Commands:* ${getCommandCount()}+`
+                    // Define sections
+                    const sections = [
+                        {
+                            title: 'BOT CONNECTED',
+                            lines: [
+                                `📅 Date: ${time.split(',')[0] || time}`,
+                                `⌚ Time: ${time.split(', ')[1] || time}`,
+                                `✅ Status: Online`,
+                                `💻 Version: ${settings.version}`,
+                                `👤 Owner: Sir Wally Jay`,
+                                `📞 Contact: +2348144317152`,
+                                `🌐 Prefix: ${settings.prefix}`,
+                                `🔒 Mode: ${getBotMode()}`,
+                                `💡 Commands: ${getCommandCount()}+`
+                            ]
+                        },
+                        {
+                            title: 'QUICK START',
+                            lines: [
+                                `📂 .menu    → All commands`,
+                                `📖 .help    → Bot guide`,
+                                `📞 .owner   → Contact owner`,
+                                `⚙️ .settings → Bot settings`,
+                                `📶 .ping    → Check speed`,
+                                `🔄 .update  → Update bot`
+                            ]
+                        },
+                        {
+                            title: 'CONNECT',
+                            lines: [
+                                `💬 Support Group`,
+                                `📺 YouTube Channel`,
+                                `⭐ GitHub Repo`,
+                                `🔔 Channel Updates`
+                            ]
+                        },
+                        {
+                            title: 'LINKS',
+                            lines: [
+                                `🔗 WhatsApp Channel:`,
+                                `https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I`,
+                                ``,
+                                `💬 Support group:`,
+                                `https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t`,
+                                ``,
+                                `📺 YouTube: WALLY JAY TECH`,
+                                ``,
+                                `⭐ GitHub:`,
+                                `https://github.com/wallyjaytechh`
+                            ]
+                        },
+                        {
+                            title: 'COPYRIGHT',
+                            lines: [
+                                `©️ 2025-2026`,
+                                `WALLYJAYTECH-MD`,
+                                `All Rights Reserved.`
+                            ]
+                        }
                     ];
-
-                    const quickStartContent = [
-                        `*📂 .menu*    → All commands`,
-                        `*📖 .help*    → Bot guide`,
-                        `*📞 .owner*   → Contact owner`,
-                        `*⚙️ .settings* → Bot settings`,
-                        `*📶 .ping*    → Check speed`,
-                        `*🔄 .update*  → Update bot`
-                    ];
-
-                    const connectContent = [
-                        `💬 Support Group`,
-                        `📺 YouTube Channel`,
-                        `⭐ GitHub Repo`,
-                        `🔔 Channel Updates`
-                    ];
-
-                    const linksContent = [
-                        `*🔗 WhatsApp Channel:* `,
-                        `https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I`,
-                        ``,
-                        `*💬 Support group:*`,
-                        `https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t`,
-                        ``,
-                        `*📺 YouTube:* WALLY JAY TECH`,
-                        ``,
-                        `*⭐ GitHub:* `,
-                        `https://github.com/wallyjaytechh`
-                    ];
-
-                    const copyrightContent = [
-                        `©️ 2025-2026`,
-                        `WALLYJAYTECH-MD`,
-                        `All Rights Reserved.`
-                    ];
-
-                    // Build styled message sections
-                    let finalMessage = '';
                     
-                    // Section 1: BOT CONNECTED
-                    let section1 = buildStyledConnectionMessage(styleId, 'BOT CONNECTED', connectionContent);
-                    finalMessage += section1 + '\n\n';
+                    // Build the full message (without font applied to URLs)
+                    let fullMessage = buildConnectionMessage(styleId, sections);
                     
-                    // Section 2: QUICK START
-                    let section2 = buildStyledConnectionMessage(styleId, 'QUICK START', quickStartContent);
-                    finalMessage += section2 + '\n\n';
+                    // Apply font to the message
+                    let finalMessage = applyFont(fullMessage, fontId);
                     
-                    // Section 3: CONNECT
-                    let section3 = buildStyledConnectionMessage(styleId, 'CONNECT', connectContent);
-                    finalMessage += section3 + '\n\n';
+                    let img; 
+                    const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
+                    if (fs.existsSync(ip)) img = fs.readFileSync(ip); 
+                    else { 
+                        try { 
+                            const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); 
+                            if (r.ok) img = await r.buffer(); 
+                        } catch (e) {} 
+                    }
                     
-                    // Section 4: LINKS
-                    let section4 = buildStyledConnectionMessage(styleId, 'LINKS', linksContent);
-                    finalMessage += section4 + '\n\n';
-                    
-                    // Section 5: COPYRIGHT
-                    let section5 = buildStyledConnectionMessage(styleId, 'COPYRIGHT', copyrightContent);
-                    finalMessage += section5 + '\n\n';
-                    
-                    // Final footer
-                    let footer = buildStyledConnectionMessage(styleId, 'WALLYJAYTECH-MD', []);
-                    finalMessage += footer;
-                    
-                    // Apply font to entire message
-                    finalMessage = applyFont(finalMessage, fontId);
-                    
-                    let img; const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
-                    if (fs.existsSync(ip)) img = fs.readFileSync(ip); else { try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {} }
-                    if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: finalMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
-                    else await XeonBotInc.sendMessage(botNumber, { text: finalMessage, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } } });
+                    if (img) {
+                        await XeonBotInc.sendMessage(botNumber, { 
+                            image: img, 
+                            caption: finalMessage,
+                            contextInfo: { 
+                                forwardingScore: 999, 
+                                isForwarded: true, 
+                                forwardedNewsletterMessageInfo: { 
+                                    newsletterJid: '120363420618370733@newsletter', 
+                                    newsletterName: '\u200E', 
+                                    serverMessageId: -1 
+                                } 
+                            } 
+                        });
+                    } else {
+                        await XeonBotInc.sendMessage(botNumber, { 
+                            text: finalMessage,
+                            contextInfo: { 
+                                forwardingScore: 999, 
+                                isForwarded: true, 
+                                forwardedNewsletterMessageInfo: { 
+                                    newsletterJid: '120363420618370733@newsletter', 
+                                    newsletterName: '\u200E', 
+                                    serverMessageId: -1 
+                                } 
+                            } 
+                        });
+                    }
                 } catch (e) {
                     log(c.red + 'Error sending connection message: ' + e.message + c.reset);
                 }
