@@ -102,25 +102,111 @@ function wrapFeedback(text, maxLen = 25) {
     return lines;
 }
 
-// ---- BUILD STYLED MESSAGE ----
-function buildStyledMessage(styleId, title, content, extraLines = []) {
-    const topBorder = '╭──◆「 *' + title + '* 」◆\n├\n';
-    const bottomBorder = '\n╰─┬─★─☆─♪♪─◆\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆';
-    
-    let message = topBorder;
-    
-    // Add content lines
-    for (const line of content) {
-        message += `├◇ ${line}\n`;
+// ---- BUILD STYLED MESSAGE WITH FULL STYLE SUPPORT ----
+function buildStyledMessage(styleId, title, contentLines, extraLines = []) {
+    // --- STYLE 1 ---
+    if (styleId === 1) {
+        let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+        for (const line of contentLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `├◇ ${line}\n`;
+        }
+        menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
     }
-    
-    // Add extra lines
+
+    // --- STYLE 2 ---
+    if (styleId === 2) {
+        let menu = `◈──────────────────────◈\n`;
+        menu += `           *${title}*\n`;
+        menu += `◈──────────────────────◈\n\n`;
+        for (const line of contentLines) {
+            menu += `▤ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `▤ ${line}\n`;
+        }
+        menu += `◈──────────────────────◈\n\n╭──「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+        return menu;
+    }
+
+    // --- STYLE 3 ---
+    if (styleId === 3) {
+        let menu = `╔══════════════════╗\n║ *${title}*\n║ ══════════════════\n`;
+        for (const line of contentLines) {
+            menu += `║ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `║ ${line}\n`;
+        }
+        menu += `╚══════════════════╝\n\n╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+        return menu;
+    }
+
+    // --- STYLE 4 (Jarvis) ---
+    if (styleId === 4) {
+        let menu = `╭──〔 *${title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
+        for (const line of contentLines) {
+            menu += `║☠︎︎║ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `║☠︎︎║ ${line}\n`;
+        }
+        menu += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+        return menu;
+    }
+
+    // --- STYLE 5 (Swirl) ---
+    if (styleId === 5) {
+        let menu = `  🌀◈── *${title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+        for (const line of contentLines) {
+            menu += `┊ ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `┊ ${line}\n`;
+        }
+        menu += `╰──────·••─────•────●○\n\n╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+        return menu;
+    }
+
+    // --- STYLE 6 (Love Wing) ---
+    if (styleId === 6) {
+        let menu = `╭────〈 *${title}* 〉────💕⃝🕊️\n`;
+        for (const line of contentLines) {
+            menu += `⚚  ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `⚚  ${line}\n`;
+        }
+        menu += `╰────────────────✌︎㋡\n\n╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+        return menu;
+    }
+
+    // --- STYLE 7 (Aesthetic Bloom) ---
+    if (styleId === 7) {
+        let menu = `╔══════════════════❥❥❥\n✧  *${title}*\n╚══════════════════❥❥❥\n`;
+        for (const line of contentLines) {
+            menu += `✧  ${line}\n`;
+        }
+        for (const line of extraLines) {
+            menu += `✧  ${line}\n`;
+        }
+        menu += `\n╔══════════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════════❥❥❥`;
+        return menu;
+    }
+
+    // Fallback to style 1
+    let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+    for (const line of contentLines) {
+        menu += `├◇ ${line}\n`;
+    }
     for (const line of extraLines) {
-        message += `├◇ ${line}\n`;
+        menu += `├◇ ${line}\n`;
     }
-    
-    message += bottomBorder;
-    return message;
+    menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    return menu;
 }
 
 async function codeCommand(sock, chatId, message) {
@@ -353,8 +439,10 @@ async function codeCommand(sock, chatId, message) {
             '💡 Try a different prompt'
         ];
         
+        const fontId = getCurrentFont();
+        const styleId = getCurrentStyle();
         let errorMessage = buildStyledMessage(styleId, 'CODE FAILED', errorContent);
-        errorMessage = applyFont(errorMessage, getCurrentFont());
+        errorMessage = applyFont(errorMessage, fontId);
         
         await sock.sendMessage(chatId, {
             text: errorMessage
