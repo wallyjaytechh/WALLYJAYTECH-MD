@@ -137,7 +137,7 @@ const allCommandsRaw = {
         { sub: '💀 HANGMAN', cmds: [`Ⓕ .guess`, `Ⓕ .hangman`] },
         { sub: '🪦 TRAGIC', cmds: [`Ⓕ .takeout`] },
     ],
-    '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
+    '🌐 GENERAL': [`Ⓕ .8ball`, `Ⓕ .alive`, `Ⓕ .attp`, `Ⓕ .clear`, `Ⓕ .fact`, `Ⓕ .getjid`, `Ⓕ .help`, `Ⓕ .joke`, `Ⓕ .language`, `Ⓕ .lyrics`, `Ⓕ .menu`, `Ⓕ .news`, `Ⓕ .owner`, `Ⓕ .ping`, `Ⓕ .quote`, `Ⓕ .save`, `Ⓕ .ss`, `Ⓕ .topmembers`, `Ⓕ .translate`, `Ⓕ .tts`, `Ⓕ .url`, `Ⓕ .vv`, `Ⓕ .weather`],
     '💻 GITHUB': [`Ⓕ .script`],
     '👥 GROUP': [`Ⓕ .admins`, `Ⓕ .antibadword`, `Ⓕ .antibot`, `Ⓕ .antilink`, `Ⓕ .antitag`, `Ⓕ .ban`, `Ⓕ .delete`, `Ⓕ .demote`, `Ⓕ .goodbye`, `Ⓕ .groupinfo`, `Ⓕ .hidetag`, `Ⓕ .jid`, `Ⓕ .kick`, `Ⓕ .mute`, `Ⓕ .promote`, `Ⓕ .resetlink`, `Ⓕ .setgdesc`, `Ⓕ .setgname`, `Ⓕ .setgpp`, `Ⓕ .ship`, `Ⓕ .staff`, `Ⓕ .tag`, `Ⓕ .tagall`, `Ⓕ .tagnotadmin`, `Ⓕ .unban`, `Ⓕ .unmute`, `Ⓕ .warn`, `Ⓕ .warnings`, `Ⓕ .welcome`],
     '🧩 MISC': [`Ⓕ .china`, `Ⓕ .circle`, `Ⓕ .comrade`, `Ⓕ .gay`, `Ⓕ .glass`, `Ⓕ .heart`, `Ⓕ .hijab`, `Ⓕ .horny`, `Ⓕ .indonesia`, `Ⓕ .its-so-stupid`, `Ⓕ .jail`, `Ⓕ .japan`, `Ⓕ .korea`, `Ⓕ .lgbt`, `Ⓕ .lolice`, `Ⓕ .namecard`, `Ⓕ .oogway`, `Ⓕ .oogway2`, `Ⓕ .passed`, `Ⓕ .pies`, `Ⓕ .simpcard`, `Ⓕ .tonikawa`, `Ⓕ .triggered`, `Ⓕ .tweet`, `Ⓕ .ytcomment`],
