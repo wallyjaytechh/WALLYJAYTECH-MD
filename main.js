@@ -261,7 +261,9 @@ const { setpremiumCommand, rmpremiumCommand, listpremiumCommand, checkplanComman
 
 // ---- COMMAND ALIASES ----
 const commandAliases = {
-    'code': ['code', 'código', 'codice', 'код', 'كود', '代码', '코드', 'コード', 'कोड', 'کوڈ', 'কোড', 'koodu', 'kóòdù', 'kode', 'kod', 'mã', 'குறியீடு']
+    'code': ['code', 'kóòdù', 'koodu', 'code', 'code', 'code', 'كود', '代码', 'कोड', 'código', 'código', 'код', 'کوڈ', 'কোড', 'code', 'codice', 'kode', 'コード', 'code', 'kod', '코드', 'mã', 'குறியீடு'],
+    
+    'menu': ['menu', 'àtòjọ', 'ndepụta', 'menu', 'menu', 'menü', 'القائمة', '菜单', 'मेनू', 'menú', 'menu', 'меню', 'مینو', 'মেনু', 'menu', 'menu', 'menu', 'メニュー', 'menu', 'menü', '메뉴', 'thực đơn', 'பட்டியல்']
 };
 
 function resolveCommand(input) {
