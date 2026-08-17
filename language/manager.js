@@ -7,6 +7,7 @@ class LanguageManager {
     constructor() {
         this.defaultLanguage = settings.botLanguage || 'en';
         this.userLangFile = path.join(__dirname, '../data/user_langs.json');
+        this.settingsPath = path.join(__dirname, '../settings.js');
         this.ownerNumber = settings.ownerNumber || '2348144317152';
         this.ensureUserLangFile();
     }
@@ -18,7 +19,6 @@ class LanguageManager {
                 if (!fs.existsSync(dir)) {
                     fs.mkdirSync(dir, { recursive: true });
                 }
-                // Pre-set owner language to default
                 const defaultData = {};
                 defaultData[this.ownerNumber] = this.defaultLanguage;
                 fs.writeFileSync(this.userLangFile, JSON.stringify(defaultData, null, 2));
@@ -41,9 +41,50 @@ class LanguageManager {
         return this.defaultLanguage;
     }
 
-    // Get owner's language
     getOwnerLanguage() {
         return this.getUserLanguage(this.ownerNumber);
+    }
+
+    // ---- UPDATE SETTINGS.JS WITH NEW LANGUAGE ----
+    updateSettingsLanguage(langCode) {
+        try {
+            let settingsContent = fs.readFileSync(this.settingsPath, 'utf8');
+            
+            // Find and replace botLanguage value
+            const regex = /(botLanguage:\s*)['"]([^'"]*)['"]/;
+            const match = settingsContent.match(regex);
+            
+            if (match) {
+                settingsContent = settingsContent.replace(regex, `$1'${langCode}'`);
+                fs.writeFileSync(this.settingsPath, settingsContent, 'utf8');
+                console.log(`✅ Updated settings.js botLanguage to: ${langCode}`);
+                
+                // Also update the loaded settings object
+                settings.botLanguage = langCode;
+                this.defaultLanguage = langCode;
+                
+                return true;
+            } else {
+                // If botLanguage doesn't exist, add it
+                const insertRegex = /(module\.exports\s*=\s*\{[\s\S]*?)(\n\s*\};)/;
+                const insertMatch = settingsContent.match(insertRegex);
+                if (insertMatch) {
+                    settingsContent = settingsContent.replace(
+                        insertRegex,
+                        `$1,\n  botLanguage: '${langCode}'\n$2`
+                    );
+                    fs.writeFileSync(this.settingsPath, settingsContent, 'utf8');
+                    console.log(`✅ Added botLanguage: ${langCode} to settings.js`);
+                    settings.botLanguage = langCode;
+                    this.defaultLanguage = langCode;
+                    return true;
+                }
+                return false;
+            }
+        } catch (e) {
+            console.error('Error updating settings.js:', e);
+            return false;
+        }
     }
 
     setUserLanguage(userId, langCode) {
@@ -54,15 +95,16 @@ class LanguageManager {
             }
             data[userId] = langCode;
             fs.writeFileSync(this.userLangFile, JSON.stringify(data, null, 2));
+            
+            // If the user is the owner, also update settings.js
+            if (userId === this.ownerNumber || userId.includes(this.ownerNumber)) {
+                this.updateSettingsLanguage(langCode);
+            }
+            
             return true;
         } catch (e) {
             return false;
         }
-    }
-
-    // Get all available languages
-    getAvailableLanguages() {
-        return Object.keys(this.languages || {});
     }
 }
 
