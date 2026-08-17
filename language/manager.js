@@ -1,16 +1,16 @@
+// language/manager.js
 const fs = require('fs');
 const path = require('path');
-const settings = require('../settings');  // ← ADD THIS
+const settings = require('../settings');
 
 class LanguageManager {
     constructor() {
-        // Read default language from settings.js
-        this.defaultLanguage = settings.botLanguage || 'en';  // ← USE SETTINGS
+        this.defaultLanguage = settings.botLanguage || 'en';
         this.userLangFile = path.join(__dirname, '../data/user_langs.json');
-        this.ensureUserLangFile();  // ← ADD THIS
+        this.ownerNumber = settings.ownerNumber || '2348144317152';
+        this.ensureUserLangFile();
     }
 
-    // Create user_langs.json if it doesn't exist
     ensureUserLangFile() {
         try {
             if (!fs.existsSync(this.userLangFile)) {
@@ -18,8 +18,11 @@ class LanguageManager {
                 if (!fs.existsSync(dir)) {
                     fs.mkdirSync(dir, { recursive: true });
                 }
-                fs.writeFileSync(this.userLangFile, JSON.stringify({}, null, 2));
-                console.log(`✅ Created: ${this.userLangFile}`);
+                // Pre-set owner language to default
+                const defaultData = {};
+                defaultData[this.ownerNumber] = this.defaultLanguage;
+                fs.writeFileSync(this.userLangFile, JSON.stringify(defaultData, null, 2));
+                console.log(`✅ Created: ${this.userLangFile} with owner language: ${this.defaultLanguage}`);
             }
         } catch (e) {
             console.error('Error creating user_langs.json:', e);
@@ -30,14 +33,17 @@ class LanguageManager {
         try {
             if (fs.existsSync(this.userLangFile)) {
                 const data = JSON.parse(fs.readFileSync(this.userLangFile, 'utf8'));
-                // If user has saved preference, use it
                 if (data[userId]) {
                     return data[userId];
                 }
             }
         } catch (e) {}
-        // If no saved preference, use default from settings
         return this.defaultLanguage;
+    }
+
+    // Get owner's language
+    getOwnerLanguage() {
+        return this.getUserLanguage(this.ownerNumber);
     }
 
     setUserLanguage(userId, langCode) {
@@ -52,6 +58,11 @@ class LanguageManager {
         } catch (e) {
             return false;
         }
+    }
+
+    // Get all available languages
+    getAvailableLanguages() {
+        return Object.keys(this.languages || {});
     }
 }
 
