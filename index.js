@@ -1232,10 +1232,9 @@ async function startXeonBotInc() {
                     const fontId = getCurrentFont();
                     const styleId = getCurrentStyle();
                     
-                    // ---- FIX: Get user's actual language from langManager ----
-                    const userId = botNumber.split('@')[0];
-                    const userLang = langManager.getUserLanguage(userId) || settings.botLanguage || 'en';
-                    const t = (key) => getConnectionTranslation(userLang, key);
+                    // ---- FIX: Get owner's language from langManager ----
+                    const ownerLang = langManager.getOwnerLanguage();
+                    const t = (key) => getConnectionTranslation(ownerLang, key);
                     
                     // Get translated mode
                     const modeText = getBotMode() === 'Public' ? t('public') : t('private');
