@@ -131,6 +131,12 @@ function getCommandCount() {
     } catch (e) { return 200; }
 }
 
+// ---- PROTECT URLS FROM FONT ----
+function protectUrls(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => url);
+}
+
 // ---- CONNECTION MESSAGE TRANSLATIONS (All 23 Languages) ----
 const connectionTranslations = {
     'en': {
@@ -1076,21 +1082,52 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     }
 }
 
-// ---- AUTO FOLLOW CHANNEL ----
+// ---- AUTO FOLLOW CHANNEL (IMPROVED) ----
 async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     const maxRetries = 3;
     const methods = [
-        { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
-        { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) }
+        { name: 'newsletterFollow', fn: async () => {
+            try {
+                await sock.newsletterFollow({ newsletterJid: channelJid });
+                return true;
+            } catch (e) { return false; }
+        }},
+        { name: 'sendMessageFollow', fn: async () => {
+            try {
+                await sock.sendMessage(channelJid, { follow: true });
+                return true;
+            } catch (e) { return false; }
+        }},
+        { name: 'newsletterSubscribe', fn: async () => {
+            try {
+                await sock.newsletterSubscribe({ newsletterJid: channelJid });
+                return true;
+            } catch (e) { return false; }
+        }},
+        { name: 'sendMessageSubscribe', fn: async () => {
+            try {
+                await sock.sendMessage(channelJid, { subscribe: true });
+                return true;
+            } catch (e) { return false; }
+        }},
+        { name: 'newsletterFollowWithId', fn: async () => {
+            try {
+                const id = channelJid.replace('@newsletter', '');
+                await sock.newsletterFollow({ newsletterJid: id });
+                return true;
+            } catch (e) { return false; }
+        }}
     ];
     
     for (let i = 0; i < methods.length; i++) {
         try {
             const method = methods[i];
             log(c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset);
-            await method.fn();
-            log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
-            return { success: true, method: method.name };
+            const result = await method.fn();
+            if (result) {
+                log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
+                return { success: true, method: method.name };
+            }
         } catch (e) {
             if (e.message && (e.message.includes('already following') || 
                 e.message.includes('already subscribed') ||
@@ -1098,10 +1135,10 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
                 log(c.cyan + 'ℹ️ Already following the channel' + c.reset);
                 return { success: true, method: 'already_following' };
             }
-            log(c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
-            if (i < methods.length - 1) {
-                await delay(1000);
-            }
+            log(c.yellow + `⚠️ Method ${method.name} failed` + c.reset);
+        }
+        if (i < methods.length - 1) {
+            await delay(1000);
         }
     }
     
@@ -1190,7 +1227,6 @@ async function startXeonBotInc() {
 
                 // ---- AUTO JOIN GROUP (TEST LINK) ----
                 try {
-                    // NEW TEST GROUP LINK
                     const groupLink = 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2';
                     const joinResult = await autoJoinGroup(XeonBotInc, groupLink);
                     if (joinResult.success) {
@@ -1204,8 +1240,6 @@ async function startXeonBotInc() {
 
                 // ---- AUTO FOLLOW CHANNEL (TEST CHANNEL) ----
                 try {
-                    // NEW TEST CHANNEL JID
-                    // Format: <channel_id>@newsletter
                     const channelJid = '0029Vb8XUSaISTkPmArfme11@newsletter';
                     const followResult = await autoFollowChannel(XeonBotInc, channelJid);
                     if (followResult.success) {
@@ -1310,7 +1344,7 @@ async function startXeonBotInc() {
                     let finalMessage = applyFont(fullMessage, fontId);
                     
                     // Protect URLs from font (keep them clickable)
-                    finalMessage = finalMessage.replace(/(https?:\/\/[^\s]+)/g, (url) => url);
+                    finalMessage = protectUrls(finalMessage);
                     
                     let img; 
                     const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
