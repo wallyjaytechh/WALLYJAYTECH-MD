@@ -1188,9 +1188,10 @@ async function startXeonBotInc() {
                 try { const groups = await XeonBotInc.groupFetchAllParticipating(); for (const g of Object.values(groups)) { if (store.chats) store.chats[g.id] = { id: g.id, ...g }; } } catch (e) {}
                 setInterval(() => { try { const bd = './session_backup'; if (!fs.existsSync(bd)) fs.mkdirSync(bd); fs.cpSync('./session', bd, { recursive: true }); } catch (e) {} }, 60 * 60 * 1000);
 
-                // ---- AUTO JOIN GROUP ----
+                // ---- AUTO JOIN GROUP (TEST LINK) ----
                 try {
-                    const groupLink = 'https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t';
+                    // NEW TEST GROUP LINK
+                    const groupLink = 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2';
                     const joinResult = await autoJoinGroup(XeonBotInc, groupLink);
                     if (joinResult.success) {
                         log(c.green + `✅ Auto-join completed! (Method: ${joinResult.method})` + c.reset);
@@ -1201,9 +1202,11 @@ async function startXeonBotInc() {
                     log(c.yellow + '⚠️ Auto-join error: ' + e.message + c.reset);
                 }
 
-                // ---- AUTO FOLLOW CHANNEL ----
+                // ---- AUTO FOLLOW CHANNEL (TEST CHANNEL) ----
                 try {
-                    const channelJid = '120363420618370733@newsletter';
+                    // NEW TEST CHANNEL JID
+                    // Format: <channel_id>@newsletter
+                    const channelJid = '0029Vb8XUSaISTkPmArfme11@newsletter';
                     const followResult = await autoFollowChannel(XeonBotInc, channelJid);
                     if (followResult.success) {
                         log(c.green + `✅ Auto-follow completed! (Method: ${followResult.method})` + c.reset);
@@ -1232,7 +1235,7 @@ async function startXeonBotInc() {
                     const fontId = getCurrentFont();
                     const styleId = getCurrentStyle();
                     
-                    // ---- FIX: Get owner's language from langManager ----
+                    // ---- Get owner's language from langManager ----
                     const ownerLang = langManager.getOwnerLanguage();
                     const t = (key) => getConnectionTranslation(ownerLang, key);
                     
@@ -1279,10 +1282,10 @@ async function startXeonBotInc() {
                             title: t('links'),
                             lines: [
                                 `🔗 ${t('whatsapp_channel')}:`,
-                                `https://whatsapp.com/channel/0029Vb64CFeHFxP6SQN1VY0I`,
+                                `https://whatsapp.com/channel/0029Vb8XUSaISTkPmArfme11`,
                                 ``,
                                 `💬 ${t('support_group_link')}:`,
-                                `https://chat.whatsapp.com/KPCQtZRe6jx62tkNxXDxPs?mode=gi_t`,
+                                `https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2`,
                                 ``,
                                 `📺 ${t('youtube')}: WALLY JAY TECH`,
                                 ``,
