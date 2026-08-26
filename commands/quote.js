@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 module.exports = async function quoteCommand(sock, chatId, message) {
     try {
-        const shizokeys = 'shizo';
+        const shizokeys = process.env.SHIZO_API_KEY;
         const res = await fetch(`https://shizoapi.onrender.com/api/texts/quotes?apikey=${shizokeys}`);
         
         if (!res.ok) {
