@@ -1420,7 +1420,6 @@ case userMessage.startsWith('.autorecord'):
                 break;
 
             case '.vv':
-case userMessage.startsWith('.vv '):
     await viewOnceCommand(sock, chatId, message);
     break;
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
