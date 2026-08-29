@@ -1,5 +1,46 @@
-// commands/viewonce.js - FIXED VERSION
+// commands/viewonce.js - FULL FIXED VERSION
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+const { getCurrentFont, applyFont } = require('./menufont');
+const { getCurrentStyle } = require('./menustyle');
+const langManager = require('../language/manager');
+
+// ---- TRANSLATIONS ----
+const translations = {
+    'en': {
+        title: "VIEW ONCE REVEALER",
+        processing: "Processing view-once media...",
+        not_view_once: "This is not a view-once message!",
+        reply_prompt: "📸 Reply to a view-once message with .vv",
+        revealed: "🔓 Media revealed in this chat",
+        sent_owner: "✅ View-once media sent to owner DM! 🔒",
+        only_owner: "Only the bot owner can see it.",
+        stealth: "🔒 Media revealed stealthily 🎭",
+        unsupported: "Unsupported view-once type!",
+        image_revealed: "📸 View Once Image Revealed! 🔓",
+        video_revealed: "🎥 View Once Video Revealed! 🔓",
+        voice_revealed: "🎵 View Once Voice Revealed! 🔓",
+        from: "From",
+        time: "Time",
+        powered_by: "Powered by WALLYJAYTECH-MD",
+        owner_dm_issue: "Owner DM Issue: Make sure the bot is in your contacts!",
+        recovery_failed: "Recovery failed!",
+        error: "Error"
+    },
+    // ... other languages ...
+};
+
+function getTranslation(langCode, key) {
+    return translations[langCode]?.[key] || translations['en'][key] || key;
+}
+
+function buildStyledMessage(styleId, title, contentLines) {
+    let menu = `╭──◆「 *${title}* 」◆\n├\n`;
+    for (const line of contentLines) {
+        menu += `├◇ ${line}\n`;
+    }
+    menu += `├\n╰─┬─★─☆─♪♪─★\n\n╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    return menu;
+}
 
 function streamToBuffer(stream) {
     return new Promise((resolve, reject) => {
@@ -12,173 +53,137 @@ function streamToBuffer(stream) {
 
 async function viewOnceCommand(sock, chatId, message) {
     try {
+        const senderId = message.key.participant || message.key.remoteJid;
+        const userId = senderId.split('@')[0];
+        const userLang = langManager.getUserLanguage(userId);
+        const t = (key) => getTranslation(userLang, key);
+
+        const fontId = getCurrentFont();
+        const styleId = getCurrentStyle();
+
+        // ---- CHECK IF REPLIED TO A MESSAGE ----
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         
         if (!quotedMessage) {
-            return await sock.sendMessage(chatId, { 
-                text: '❌ Reply to a view-once message with .vv' 
-            }, { quoted: message });
+            const content = [
+                '📸 Reply to a view-once message with .vv',
+                '',
+                '*Usage:* .vv',
+                '*Options:*',
+                '  └ .vv       → Reveal in chat',
+                '  └ .vv dm    → Send to owner DM',
+                '  └ .vv silent → Reveal stealthily'
+            ];
+            let msg = buildStyledMessage(styleId, t('title'), content);
+            msg = applyFont(msg, fontId);
+            return await sock.sendMessage(chatId, { text: msg }, { quoted: message });
         }
 
-        // ---- CHECK ALL POSSIBLE PATHS (Updated) ----
+        // ---- FIND VIEW-ONCE CONTENT ----
         let viewOnceContent = null;
         let foundPath = '';
-        let mediaType = '';
 
-        // Path 1: Direct viewOnceMessageV2
+        // Check all possible paths
         if (quotedMessage.viewOnceMessageV2) {
             viewOnceContent = quotedMessage.viewOnceMessageV2;
             foundPath = 'viewOnceMessageV2';
-        } 
-        // Path 2: Direct viewOnceMessageV2Extension
-        else if (quotedMessage.viewOnceMessageV2Extension) {
+        } else if (quotedMessage.viewOnceMessageV2Extension) {
             viewOnceContent = quotedMessage.viewOnceMessageV2Extension;
             foundPath = 'viewOnceMessageV2Extension';
-        }
-        // Path 3: Old viewOnceMessage
-        else if (quotedMessage.viewOnceMessage) {
+        } else if (quotedMessage.viewOnceMessage) {
             viewOnceContent = quotedMessage.viewOnceMessage;
             foundPath = 'viewOnceMessage';
-        }
-        // Path 4: Inside message object
-        else if (quotedMessage.message?.viewOnceMessageV2) {
+        } else if (quotedMessage.message?.viewOnceMessageV2) {
             viewOnceContent = quotedMessage.message.viewOnceMessageV2;
             foundPath = 'message.viewOnceMessageV2';
-        }
-        else if (quotedMessage.message?.viewOnceMessageV2Extension) {
+        } else if (quotedMessage.message?.viewOnceMessageV2Extension) {
             viewOnceContent = quotedMessage.message.viewOnceMessageV2Extension;
             foundPath = 'message.viewOnceMessageV2Extension';
-        }
-        else if (quotedMessage.message?.viewOnceMessage) {
+        } else if (quotedMessage.message?.viewOnceMessage) {
             viewOnceContent = quotedMessage.message.viewOnceMessage;
             foundPath = 'message.viewOnceMessage';
-        }
-        // Path 5: Inside ephemeral message
-        else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessageV2) {
+        } else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessageV2) {
             viewOnceContent = quotedMessage.ephemeralMessage.message.viewOnceMessageV2;
             foundPath = 'ephemeralMessage.message.viewOnceMessageV2';
-        }
-        else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessageV2Extension) {
+        } else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessageV2Extension) {
             viewOnceContent = quotedMessage.ephemeralMessage.message.viewOnceMessageV2Extension;
             foundPath = 'ephemeralMessage.message.viewOnceMessageV2Extension';
-        }
-        else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessage) {
+        } else if (quotedMessage.ephemeralMessage?.message?.viewOnceMessage) {
             viewOnceContent = quotedMessage.ephemeralMessage.message.viewOnceMessage;
             foundPath = 'ephemeralMessage.message.viewOnceMessage';
         }
-        // Path 6: NEW - Check for viewOnce flag on media directly
-        else if (quotedMessage.imageMessage) {
-            // Check if image has viewOnce property
-            if (quotedMessage.imageMessage.viewOnce === true || 
-                quotedMessage.imageMessage.isViewOnce === true) {
+
+        // ---- CHECK FOR viewOnce FLAG ON DIRECT MEDIA ----
+        if (!viewOnceContent) {
+            if (quotedMessage.imageMessage?.viewOnce === true || quotedMessage.imageMessage?.isViewOnce === true) {
                 viewOnceContent = { message: { imageMessage: quotedMessage.imageMessage } };
                 foundPath = 'imageMessage (viewOnce: true)';
-                mediaType = 'image';
-            }
-        }
-        else if (quotedMessage.videoMessage) {
-            if (quotedMessage.videoMessage.viewOnce === true || 
-                quotedMessage.videoMessage.isViewOnce === true) {
+            } else if (quotedMessage.videoMessage?.viewOnce === true || quotedMessage.videoMessage?.isViewOnce === true) {
                 viewOnceContent = { message: { videoMessage: quotedMessage.videoMessage } };
                 foundPath = 'videoMessage (viewOnce: true)';
-                mediaType = 'video';
-            }
-        }
-        else if (quotedMessage.audioMessage) {
-            if (quotedMessage.audioMessage.viewOnce === true || 
-                quotedMessage.audioMessage.isViewOnce === true) {
+            } else if (quotedMessage.audioMessage?.viewOnce === true || quotedMessage.audioMessage?.isViewOnce === true) {
                 viewOnceContent = { message: { audioMessage: quotedMessage.audioMessage } };
                 foundPath = 'audioMessage (viewOnce: true)';
-                mediaType = 'audio';
             }
-        }
-        // Path 7: Check inside message container (new format)
-        else if (quotedMessage.message?.imageMessage?.viewOnce === true) {
-            viewOnceContent = { message: { imageMessage: quotedMessage.message.imageMessage } };
-            foundPath = 'message.imageMessage (viewOnce: true)';
-            mediaType = 'image';
-        }
-        else if (quotedMessage.message?.videoMessage?.viewOnce === true) {
-            viewOnceContent = { message: { videoMessage: quotedMessage.message.videoMessage } };
-            foundPath = 'message.videoMessage (viewOnce: true)';
-            mediaType = 'video';
-        }
-        else if (quotedMessage.message?.audioMessage?.viewOnce === true) {
-            viewOnceContent = { message: { audioMessage: quotedMessage.message.audioMessage } };
-            foundPath = 'message.audioMessage (viewOnce: true)';
-            mediaType = 'audio';
         }
 
         console.log('🔍 FOUND PATH:', foundPath);
-        console.log('📦 VIEW ONCE CONTENT:', viewOnceContent ? 'YES' : 'NO');
 
         if (!viewOnceContent) {
-            return await sock.sendMessage(chatId, { 
-                text: `❌ Not a view-once message!\n\nFound keys: ${Object.keys(quotedMessage).join(', ')}`
-            }, { quoted: message });
+            const content = ['❌ This is not a view-once message!'];
+            let msg = buildStyledMessage(styleId, t('error'), content);
+            msg = applyFont(msg, fontId);
+            return await sock.sendMessage(chatId, { text: msg }, { quoted: message });
         }
 
+        // ---- PROCESS VIEW-ONCE MEDIA ----
         await sock.sendMessage(chatId, { 
-            text: `⏳ Processing view-once media...`
+            text: '⏳ ' + t('processing')
         }, { quoted: message });
 
-        // Get the media message
         const mediaMsg = viewOnceContent.message || viewOnceContent;
         let mediaMessage = null;
 
-        // Image
         if (mediaMsg?.imageMessage) {
             const stream = await downloadContentFromMessage(mediaMsg.imageMessage, 'image');
             const buffer = await streamToBuffer(stream);
-            mediaMessage = { 
-                image: buffer, 
-                caption: '📸 View Once Image Revealed! 🔓\n\n*Powered by WALLYJAYTECH-MD*' 
-            };
-        } 
-        // Video
-        else if (mediaMsg?.videoMessage) {
+            const caption = `${t('image_revealed')}\n\n*${t('powered_by')}*`;
+            mediaMessage = { image: buffer, caption: caption };
+        } else if (mediaMsg?.videoMessage) {
             const stream = await downloadContentFromMessage(mediaMsg.videoMessage, 'video');
             const buffer = await streamToBuffer(stream);
-            mediaMessage = { 
-                video: buffer, 
-                caption: '🎥 View Once Video Revealed! 🔓\n\n*Powered by WALLYJAYTECH-MD*' 
-            };
-        }
-        // Audio/Voice
-        else if (mediaMsg?.audioMessage) {
+            const caption = `${t('video_revealed')}\n\n*${t('powered_by')}*`;
+            mediaMessage = { video: buffer, caption: caption };
+        } else if (mediaMsg?.audioMessage) {
             const stream = await downloadContentFromMessage(mediaMsg.audioMessage, 'audio');
             const buffer = await streamToBuffer(stream);
+            const caption = `${t('voice_revealed')}\n\n*${t('powered_by')}*`;
             mediaMessage = {
                 audio: buffer,
                 ptt: mediaMsg.audioMessage.ptt === true,
                 mimetype: mediaMsg.audioMessage.mimetype || 'audio/ogg; codecs=opus',
-                caption: '🎵 View Once Voice Revealed! 🔓\n\n*Powered by WALLYJAYTECH-MD*'
+                caption: caption
             };
-        }
-        else {
-            return await sock.sendMessage(chatId, { 
-                text: '❌ Unsupported media type in view-once message!'
-            }, { quoted: message });
-        }
-
-        if (!mediaMessage) {
-            return await sock.sendMessage(chatId, { 
-                text: '❌ Failed to extract media from view-once message!'
-            }, { quoted: message });
+        } else {
+            const content = ['❌ ' + t('unsupported')];
+            let msg = buildStyledMessage(styleId, t('error'), content);
+            msg = applyFont(msg, fontId);
+            await sock.sendMessage(chatId, { text: msg }, { quoted: message });
+            return;
         }
 
-        // Send the revealed media
+        // ---- SEND REVEALED MEDIA ----
         await sock.sendMessage(chatId, mediaMessage, { quoted: message });
-        
-        // Send success confirmation
-        await sock.sendMessage(chatId, { 
-            text: '✅ View-once media revealed successfully! 🔓'
-        }, { quoted: message });
+
+        const content = ['🔓 ' + t('revealed')];
+        let msg = buildStyledMessage(styleId, t('title'), content);
+        msg = applyFont(msg, fontId);
+        await sock.sendMessage(chatId, { text: msg }, { quoted: message });
 
     } catch (error) {
         console.error('ViewOnce Error:', error);
         await sock.sendMessage(chatId, { 
-            text: `❌ Error: ${error.message}\n\n💡 Make sure you replied to a view-once message.`
+            text: `❌ Error: ${error.message}`
         }, { quoted: message });
     }
 }
