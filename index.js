@@ -4,36 +4,7 @@
 //                                                                                                                                                                                        //
 //                                                                  𝐕 : 1.0.0                                                                                                             //
 //                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
-//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
-//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
-//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
-//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
-//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
-//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
-//                                                                                                                                                                                        //
-//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
-//                                                                                                                                                                                        //
-//                                                                                                                                                                                        //
 //════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
-//* 
-//  * project_name : WALLYJAYTECH-MD
-//  * author : wallyjaytech
-//  * youtube : https://www.youtube.com/wallyjaytechy
-//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
-//*
-//*
-//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
-//Instagram: wallyjaytech
-//Telegram: t.me/wallyjaytech
-//GitHub: wallyjaytechh
-//WhatsApp: +2348144317152
-//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
-//   * Created By Github: wallyjaytechh.
-//   * Credit To ally jay tech
-//   * © 2025 WALLYJAYTECH-MD.
-// ⛥┌┤
-// */
 
 const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
 
@@ -71,6 +42,9 @@ require('./settings');
 require('dotenv').config();
 const { Boom } = require('@hapi/boom');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
+
+// Import style functions
+const { getCurrentStyle } = require('./commands/menustyle');
 
 try { const autorecord = require('./commands/autorecord'); autorecord.stopAllInfiniteRecordings(); } catch (e) {}
 try { const autotyping = require('./commands/autotyping'); autotyping.stopAllInfiniteTyping(); } catch (e) {}
@@ -194,24 +168,79 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- BUILD CONNECTION MESSAGE ----
-function buildConnectionMessage(sections) {
+// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES) ----
+function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
-    const line = '◈──────────────────────◈';
     
     for (const section of sections) {
-        fullMessage += line + '\n';
-        fullMessage += `           *${section.title}*\n`;
-        fullMessage += line + '\n\n';
-        for (const lineText of section.lines) {
-            fullMessage += `▤ ${lineText}\n`;
+        // --- STYLE 1 ---
+        if (styleId === 1) {
+            fullMessage += `╭──◆「 *${section.title}* 」◆\n├\n`;
+            for (const line of section.lines) fullMessage += `├◇ ${line}\n`;
+            fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
         }
-        fullMessage += line + '\n\n';
+        // --- STYLE 2 ---
+        else if (styleId === 2) {
+            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
+            for (const line of section.lines) fullMessage += `▤ ${line}\n`;
+            fullMessage += `◈──────────────────────◈\n\n`;
+        }
+        // --- STYLE 3 ---
+        else if (styleId === 3) {
+            fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
+            for (const line of section.lines) fullMessage += `║ ${line}\n`;
+            fullMessage += `╚══════════════════╝\n\n`;
+        }
+        // --- STYLE 4 (Jarvis) ---
+        else if (styleId === 4) {
+            fullMessage += `╭──〔 *${section.title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
+            for (const line of section.lines) fullMessage += `║☠︎︎║ ${line}\n`;
+            fullMessage += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
+        }
+        // --- STYLE 5 (Swirl) ---
+        else if (styleId === 5) {
+            fullMessage += `  🌀◈── *${section.title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
+            for (const line of section.lines) fullMessage += `┊ ${line}\n`;
+            fullMessage += `╰──────·••─────•────●○\n\n`;
+        }
+        // --- STYLE 6 (Love Wing) ---
+        else if (styleId === 6) {
+            fullMessage += `╭──〈 *${section.title}* 〉──💕⃝🕊️\n`;
+            for (const line of section.lines) fullMessage += `⚚  ${line}\n`;
+            fullMessage += `╰────────────────✌︎㋡\n\n`;
+        }
+        // --- STYLE 7 (Aesthetic Bloom) ---
+        else if (styleId === 7) {
+            fullMessage += `╔══════════════════❥❥❥\n✧  *${section.title}*\n╚══════════════════❥❥❥\n`;
+            for (const line of section.lines) fullMessage += `✧  ${line}\n`;
+            fullMessage += `\n`;
+        }
+        // Fallback (Default)
+        else {
+            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
+            for (const line of section.lines) fullMessage += `▤ ${line}\n`;
+            fullMessage += `◈──────────────────────◈\n\n`;
+        }
     }
     
-    fullMessage += line + '\n';
-    fullMessage += `           *WALLYJAYTECH-MD*\n`;
-    fullMessage += line;
+    // Add final footer based on style
+    if (styleId === 1) {
+        fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    } else if (styleId === 2 || !styleId) {
+        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+    } else if (styleId === 3) {
+        fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+    } else if (styleId === 4) {
+        fullMessage += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+    } else if (styleId === 5) {
+        fullMessage += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+    } else if (styleId === 6) {
+        fullMessage += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+    } else if (styleId === 7) {
+        fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
+    } else {
+        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+    }
     
     return fullMessage;
 }
@@ -336,6 +365,7 @@ async function startXeonBotInc() {
                     });
                     
                     const modeText = getBotMode();
+                    const currentStyle = getCurrentStyle() || 2; // Default to 2 if not set
 
                     const sections = [
                         {
@@ -397,7 +427,7 @@ async function startXeonBotInc() {
                         }
                     ];
 
-                    let fullMessage = buildConnectionMessage(sections);
+                    let fullMessage = buildConnectionMessage(currentStyle, sections);
 
                     let img; 
                     const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
