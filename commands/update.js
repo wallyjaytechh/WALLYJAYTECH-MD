@@ -16,42 +16,24 @@ function run(cmd) {
 async function hasGitRepo() {
     const gitDir = path.join(process.cwd(), '.git');
     if (!fs.existsSync(gitDir)) return false;
-    try {
-        await run('git --version');
-        return true;
-    } catch {
-        return false;
-    }
+    try { await run('git --version'); return true; } catch { return false; }
 }
 
 async function updateViaGit() {
-    const oldRev = (await run('git rev-parse HEAD').catch(() => 'unknown')).trim();
     await run('git fetch --all --prune');
     const newRev = (await run('git rev-parse origin/main')).trim();
-    const alreadyUpToDate = oldRev === newRev;
-    const commits = alreadyUpToDate ? '' : await run(`git log --pretty=format:"%h %s (%an)" ${oldRev}..${newRev}`).catch(() => '');
-    const files = alreadyUpToDate ? '' : await run(`git diff --name-status ${oldRev} ${newRev}`).catch(() => '');
     await run(`git reset --hard ${newRev}`);
     await run('git clean -fd');
-    return { oldRev, newRev, alreadyUpToDate, commits, files };
 }
 
 function downloadFile(url, dest, visited = new Set()) {
     return new Promise((resolve, reject) => {
         try {
-            if (visited.has(url) || visited.size > 5) {
-                return reject(new Error('Too many redirects'));
-            }
+            if (visited.has(url) || visited.size > 5) return reject(new Error('Too many redirects'));
             visited.add(url);
-
             const useHttps = url.startsWith('https://');
             const client = useHttps ? require('https') : require('http');
-            const req = client.get(url, {
-                headers: {
-                    'User-Agent': 'WALLYJAYTECH-MD-Updater/1.0',
-                    'Accept': '*/*'
-                }
-            }, res => {
+            const req = client.get(url, { headers: { 'User-Agent': 'Bot-Updater', 'Accept': '*/*' } }, res => {
                 if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
                     const location = res.headers.location;
                     if (!location) return reject(new Error(`HTTP ${res.statusCode} without Location`));
@@ -59,11 +41,7 @@ function downloadFile(url, dest, visited = new Set()) {
                     res.resume();
                     return downloadFile(nextUrl, dest, visited).then(resolve).catch(reject);
                 }
-
-                if (res.statusCode !== 200) {
-                    return reject(new Error(`HTTP ${res.statusCode}`));
-                }
-
+                if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
                 const file = fs.createWriteStream(dest);
                 res.pipe(file);
                 file.on('finish', () => file.close(resolve));
@@ -72,37 +50,20 @@ function downloadFile(url, dest, visited = new Set()) {
                     fs.unlink(dest, () => reject(err));
                 });
             });
-            req.on('error', err => {
-                fs.unlink(dest, () => reject(err));
-            });
-        } catch (e) {
-            reject(e);
-        }
+            req.on('error', err => { fs.unlink(dest, () => reject(err)); });
+        } catch (e) { reject(e); }
     });
 }
 
 async function extractZip(zipPath, outDir) {
     if (process.platform === 'win32') {
-        const cmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir.replace(/\\/g, '/')}' -Force"`;
-        await run(cmd);
+        await run(`powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${outDir.replace(/\\/g, '/')}' -Force"`);
         return;
     }
-    try {
-        await run('command -v unzip');
-        await run(`unzip -o '${zipPath}' -d '${outDir}'`);
-        return;
-    } catch {}
-    try {
-        await run('command -v 7z');
-        await run(`7z x -y '${zipPath}' -o'${outDir}'`);
-        return;
-    } catch {}
-    try {
-        await run('busybox unzip -h');
-        await run(`busybox unzip -o '${zipPath}' -d '${outDir}'`);
-        return;
-    } catch {}
-    throw new Error("No system unzip tool found (unzip/7z/busybox). Git mode is recommended on this panel.");
+    try { await run('command -v unzip'); await run(`unzip -o '${zipPath}' -d '${outDir}'`); return; } catch {}
+    try { await run('command -v 7z'); await run(`7z x -y '${zipPath}' -o'${outDir}'`); return; } catch {}
+    try { await run('busybox unzip -h'); await run(`busybox unzip -o '${zipPath}' -d '${outDir}'`); return; } catch {}
+    throw new Error("No system unzip tool found.");
 }
 
 function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
@@ -123,9 +84,7 @@ function copyRecursive(src, dest, ignore = [], relative = '', outList = []) {
 
 async function updateViaZip(sock, chatId, message, zipOverride) {
     const zipUrl = (zipOverride || settings.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
-    if (!zipUrl) {
-        throw new Error('No ZIP URL configured. Set settings.updateZipUrl or UPDATE_ZIP_URL env.');
-    }
+    if (!zipUrl) throw new Error('No ZIP URL configured.');
     const tmpDir = path.join(process.cwd(), 'tmp');
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
     const zipPath = path.join(tmpDir, 'update.zip');
@@ -173,36 +132,23 @@ async function updateCommand(sock, chatId, message, zipOverride) {
         await sock.sendMessage(chatId, { text: 'Only bot owner or sudo can use .update' }, { quoted: message });
         return;
     }
+    
     try {
-        // STOP FILE WATCHER FROM CRASHING THE BOT
-        global.IS_UPDATING = true;
-        
         await sock.sendMessage(chatId, { text: '🔄 Updating the bot, please wait…' }, { quoted: message });
         
         if (await hasGitRepo()) {
-            const { oldRev, newRev, alreadyUpToDate } = await updateViaGit();
+            await updateViaGit();
             await run('npm install --no-audit --no-fund');
         } else {
             await updateViaZip(sock, chatId, message, zipOverride);
         }
         
-        await sock.sendMessage(chatId, { text: `✅ Update done. Restarting internally...` }, { quoted: message });
+        await sock.sendMessage(chatId, { text: `✅ Update done. Restarting…` }, { quoted: message });
         
-        // WAIT 3 SECONDS THEN RESTART INTERNALLY
-        setTimeout(() => {
-            global.IS_UPDATING = false; // Reset flag
-            
-            // Use the internal restart function we added to index.js
-            if (global.restartBot) {
-                global.restartBot();
-            } else {
-                // Fallback if index.js wasn't updated
-                process.exit(0);
-            }
-        }, 3000);
+        // Wait 2 seconds for the message to send, then trigger the start.js auto-restart
+        setTimeout(() => process.exit(0), 2000);
 
     } catch (err) {
-        global.IS_UPDATING = false; // Reset flag on error
         console.error('Update failed:', err);
         await sock.sendMessage(chatId, { text: `❌ Update failed:\n${String(err.message || err)}` }, { quoted: message });
     }
