@@ -232,10 +232,6 @@ async function startXeonBotInc() {
             msgRetryCounterCache, defaultQueryTimeoutMs: 60000, connectTimeoutMs: 60000, keepAliveIntervalMs: 10000,
         });
 
-        // 👇 SAVE SOCKET GLOBALLY FOR INTERNAL RESTART 👇
-        global.XeonBotInc = XeonBotInc;
-        // ☝️ SAVE SOCKET GLOBALLY FOR INTERNAL RESTART ☝️
-
         XeonBotInc.ev.on('creds.update', saveCreds);
         store.bind(XeonBotInc.ev);
 
@@ -485,31 +481,3 @@ process.on('SIGTERM', async () => {
 
 process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
 process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
-
-// ---- INTERNAL RESTART SYSTEM ----
-global.restartBot = () => {
-    log(c.yellow + '🔄 Restarting bot internally...' + c.reset);
-    try {
-        if (global.XeonBotInc) {
-            global.XeonBotInc.ev.removeAllListeners();
-            if (global.XeonBotInc.ws) global.XeonBotInc.ws.close(); // Close old connection
-        }
-    } catch (e) { console.log(e); }
-    
-    setTimeout(() => {
-        // Clear the cache and reload the bot
-        delete require.cache[require.resolve(__filename)];
-        require(__filename);
-    }, 1000);
-};
-
-let file = require.resolve(__filename);
-fs.watchFile(file, () => { 
-    // If .update is running, do NOT restart automatically.
-    if (global.IS_UPDATING) return; 
-    
-    fs.unwatchFile(file); 
-    log(c.red + 'Update ' + __filename + c.reset); 
-    delete require.cache[file]; 
-    require(file); 
-});
