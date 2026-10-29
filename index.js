@@ -194,7 +194,7 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- BUILD CONNECTION MESSAGE (Original Single Box) ----
+// ---- BUILD CONNECTION MESSAGE ----
 function buildConnectionMessage(sections) {
     let fullMessage = '';
     const line = '◈──────────────────────◈';
@@ -321,7 +321,7 @@ async function startXeonBotInc() {
                     log(c.yellow + '⚠️ Auto-follow error: ' + e.message + c.reset);
                 }
 
-                // ---- SEND CONNECTION MESSAGE (SINGLE BOX) ----
+                // ---- SEND CONNECTION MESSAGE ----
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { 
@@ -465,8 +465,20 @@ async function startXeonBotInc() {
 log(c.cyan + 'Starting WALLYJAYTECH-MD Bot...' + c.reset);
 startXeonBotInc().catch(error => { log(c.red + 'Fatal error: ' + error.message + c.reset); process.exit(1); });
 
-process.on('SIGINT', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
-process.on('SIGTERM', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
+process.on('SIGINT', async () => { 
+    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} 
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} 
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} 
+    process.exit(0); 
+});
+
+process.on('SIGTERM', async () => { 
+    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} 
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} 
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} 
+    process.exit(0); 
+});
+
 process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
 process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
 
