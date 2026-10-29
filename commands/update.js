@@ -166,20 +166,6 @@ async function updateViaZip(sock, chatId, message, zipOverride) {
     return { copiedFiles: copied };
 }
 
-// ---- FIXED RESTART FUNCTION ----
-async function restartProcess(sock, chatId, message) {
-    try {
-        await sock.sendMessage(chatId, { text: '✅ Update complete! Restarting…' }, { quoted: message });
-    } catch {}
-    
-    // Give time for message to send
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // For Katabump and other panels - just exit, panel will restart
-    console.log('🔄 Bot restarting...');
-    process.exit(0);
-}
-
 async function updateCommand(sock, chatId, message, zipOverride) {
     const senderId = message.key.participant || message.key.remoteJid;
     const isOwner = await isOwnerOrSudo(senderId, sock, chatId);
@@ -190,21 +176,27 @@ async function updateCommand(sock, chatId, message, zipOverride) {
     }
     try {
         await sock.sendMessage(chatId, { text: '🔄 Updating the bot, please wait…' }, { quoted: message });
+        
+        // --- FIX: Exit cleanly if using Git so panel restarts without crashing ---
         if (await hasGitRepo()) {
             const { oldRev, newRev, alreadyUpToDate, commits, files } = await updateViaGit();
-            const summary = alreadyUpToDate ? `✅ Already up to date: ${newRev}` : `✅ Updated to ${newRev}`;
-            console.log('[update] summary generated');
             await run('npm install --no-audit --no-fund');
         } else {
-            const { copiedFiles } = await updateViaZip(sock, chatId, message, zipOverride);
+            await updateViaZip(sock, chatId, message, zipOverride);
         }
+        
         try {
-            const v = require('../settings').version || '';
             await sock.sendMessage(chatId, { text: `✅ Update done. Restarting…` }, { quoted: message });
         } catch {
             await sock.sendMessage(chatId, { text: '✅ Restarted Successfully\nType .ping to check latest version.' }, { quoted: message });
         }
-        await restartProcess(sock, chatId, message);
+        
+        // Wait 3 seconds so the WhatsApp message can send before the bot shuts down
+        setTimeout(() => {
+            console.log('🔄 Update complete, exiting cleanly for panel restart...');
+            process.exit(0);
+        }, 3000);
+
     } catch (err) {
         console.error('Update failed:', err);
         await sock.sendMessage(chatId, { text: `❌ Update failed:\n${String(err.message || err)}` }, { quoted: message });
