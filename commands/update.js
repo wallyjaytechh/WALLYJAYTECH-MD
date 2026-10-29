@@ -16,10 +16,7 @@ function run(cmd) {
 async function hasGitRepo() {
     const gitDir = path.join(process.cwd(), '.git');
     if (!fs.existsSync(gitDir)) return false;
-    try {
-        await run('git --version');
-        return true;
-    } catch { return false; }
+    try { await run('git --version'); return true; } catch { return false; }
 }
 
 async function updateViaGit() {
@@ -35,15 +32,13 @@ function downloadFile(url, dest, visited = new Set()) {
         try {
             if (visited.has(url) || visited.size > 5) return reject(new Error('Too many redirects'));
             visited.add(url);
-            const useHttps = url.startsWith('https://');
-            const client = useHttps ? require('https') : require('http');
+            const client = url.startsWith('https://') ? require('https') : require('http');
             const req = client.get(url, { headers: { 'User-Agent': 'Bot-Updater', 'Accept': '*/*' } }, res => {
                 if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
                     const location = res.headers.location;
                     if (!location) return reject(new Error(`HTTP ${res.statusCode}`));
-                    const nextUrl = new URL(location, url).toString();
                     res.resume();
-                    return downloadFile(nextUrl, dest, visited).then(resolve).catch(reject);
+                    return downloadFile(new URL(location, url).toString(), dest, visited).then(resolve).catch(reject);
                 }
                 if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
                 const file = fs.createWriteStream(dest);
@@ -107,7 +102,7 @@ async function updateCommand(sock, chatId, message, zipOverride) {
     }
     
     try {
-        // 1. TELL THE BOT TO STOP WATCHING FILES
+        // STOP FILE WATCHER RESTARTS
         global.IS_UPDATING = true; 
         
         await sock.sendMessage(chatId, { text: '🔄 Updating the bot, please wait…' }, { quoted: message });
@@ -119,15 +114,15 @@ async function updateCommand(sock, chatId, message, zipOverride) {
             await updateViaZip(sock, chatId, message, zipOverride);
         }
         
-        await sock.sendMessage(chatId, { text: `✅ Update done. Shutting down for panel to restart…` }, { quoted: message });
+        await sock.sendMessage(chatId, { text: `✅ Update done. The panel will restart the bot shortly...` }, { quoted: message });
         
-        // 2. WAIT 3 SECONDS THEN EXIT CLEANLY
+        // Wait for message to send, then force a clean exit
         setTimeout(() => {
-            process.exit(0);
+            process.kill(process.pid, 'SIGTERM'); // Clean shutdown signal for Katabump
         }, 3000);
 
     } catch (err) {
-        global.IS_UPDATING = false; // Reset flag if it fails
+        global.IS_UPDATING = false; 
         await sock.sendMessage(chatId, { text: `❌ Update failed:\n${err.message}` }, { quoted: message });
     }
 }
