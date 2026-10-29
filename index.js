@@ -1,4 +1,39 @@
-// index.js - Simple Version (No Font, No Style, No Language)
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//                                                                                                                                                                                        //
+//                                                             𝐖𝐀𝐋𝐋𝐘𝐉𝐀𝐘𝐓𝐄𝐂𝐇-𝐌𝐃 𝐁𝐎𝐓                                                                                                     //
+//                                                                                                                                                                                        //
+//                                                                  𝐕 : 1.0.0                                                                                                             //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//                ██╗    ██╗ █████╗ ██╗     ██╗  ██╗   ██╗   ██╗ █████╗ ██╗   ██╗████████╗███████╗ ██████╗██╗  ██╗      ███╗   ███╗██████╗                                 //
+//                ██║    ██║██╔══██╗██║     ██║  ╚██╗ ██╔╝   ██║██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝██║  ██║      ████╗ ████║██╔══██╗                              //
+//                ██║ █╗ ██║███████║██║     ██║   ╚████╔╝    ██║███████║ ╚████╔╝    ██║   █████╗  ██║     ███████║█████╗██╔████╔██║██║  ██║                               //
+//                ██║███╗██║██╔══██║██║     ██║    ╚██╔╝██   ██║██╔══██║  ╚██╔╝     ██║   ██╔══╝  ██║     ██╔══██║╚════╝██║╚██╔╝██║██║  ██║                               //
+//                ╚███╔███╔╝██║  ██║███████╗███████╗██║ ╚█████╔╝██║  ██║   ██║      ██║   ███████╗╚██████╗██║  ██║      ██║ ╚═╝ ██║██████╔╝                              //
+//                 ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝      ╚═╝     ╚═╝╚═════╝                                 //
+//                                                                                                                                                                                        //
+//                                                                 𝐂𝐎𝐏𝐘𝐑𝐈𝐆𝐇𝐓 2025                                                                                                        //
+//                                                                                                                                                                                        //
+//                                                                                                                                                                                        //
+//════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════//
+//* 
+//  * project_name : WALLYJAYTECH-MD
+//  * author : wallyjaytech
+//  * youtube : https://www.youtube.com/wallyjaytechy
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//*
+//*
+//re-upload? recode? copy code? give credit to wallyjaytech 2025:)
+//Instagram: wallyjaytech
+//Telegram: t.me/wallyjaytech
+//GitHub: wallyjaytechh
+//WhatsApp: +2348144317152
+//want more free bot scripts? subscribe to my youtube channel: https://youtube.com/@wallyjaytechy
+//   * Created By Github: wallyjaytechh.
+//   * Credit To ally jay tech
+//   * © 2025 WALLYJAYTECH-MD.
+// ⛥┌┤
+// */
 
 const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
 
@@ -89,6 +124,7 @@ function getCommandCount() {
     } catch (e) { return 200; }
 }
 
+// ---- AUTO JOIN GROUP ----
 async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     const maxRetries = 3;
     try {
@@ -125,6 +161,7 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     }
 }
 
+// ---- AUTO FOLLOW CHANNEL ----
 async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     const maxRetries = 3;
     const methods = [
@@ -157,6 +194,7 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
+// ---- BUILD CONNECTION MESSAGE (Original Single Box) ----
 function buildConnectionMessage(sections) {
     let fullMessage = '';
     const line = '◈──────────────────────◈';
@@ -283,7 +321,7 @@ async function startXeonBotInc() {
                     log(c.yellow + '⚠️ Auto-follow error: ' + e.message + c.reset);
                 }
 
-                // ---- SEND CONNECTION MESSAGE ----
+                // ---- SEND CONNECTION MESSAGE (SINGLE BOX) ----
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
                     const time = new Date().toLocaleString('en-US', { 
@@ -335,6 +373,21 @@ async function startXeonBotInc() {
                             ]
                         },
                         {
+                            title: 'LINKS',
+                            lines: [
+                                `🔗 WhatsApp Channel:`,
+                                `https://whatsapp.com/channel/0029Vb8XUSaISTkPmArfme11`,
+                                ``,
+                                `💬 Support group:`,
+                                `https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2`,
+                                ``,
+                                `📺 YouTube: WALLY JAY TECH`,
+                                ``,
+                                `⭐ GitHub:`,
+                                `https://github.com/wallyjaytechh`
+                            ]
+                        },
+                        {
                             title: 'COPYRIGHT',
                             lines: [
                                 `©️ 2025-2026`,
@@ -383,25 +436,6 @@ async function startXeonBotInc() {
                                 } 
                             } 
                         });
-                    }
-
-                    // ---- SEND CLICKABLE CARDS ----
-                    try {
-                        const cards = [
-                            { label: '🔗 View WhatsApp Channel', url: 'https://whatsapp.com/channel/0029Vb8XUSaISTkPmArfme11' },
-                            { label: '💬 Join Support Group', url: 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2' },
-                            { label: '📺 Watch on YouTube', url: 'https://youtube.com/@wallyjaytechy' },
-                            { label: '⭐ View on GitHub', url: 'https://github.com/wallyjaytechh' }
-                        ];
-
-                        for (const card of cards) {
-                            await XeonBotInc.sendMessage(botNumber, { 
-                                text: `${card.label}\n${card.url}`
-                            });
-                            await delay(500);
-                        }
-                    } catch (e) {
-                        log(c.yellow + '⚠️ Could not send link cards: ' + e.message + c.reset);
                     }
 
                 } catch (e) {
