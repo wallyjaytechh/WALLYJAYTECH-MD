@@ -470,5 +470,14 @@ process.on('SIGTERM', async () => { try { await fetch('https://gemini-proxy-5t1s
 process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
 process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
 
+// ---- FIX: PREVENT CRASHING DURING UPDATES ----
 let file = require.resolve(__filename);
-fs.watchFile(file, () => { fs.unwatchFile(file); log(c.red + 'Update ' + __filename + c.reset); delete require.cache[file]; require(file); });
+fs.watchFile(file, () => { 
+    // If .update is running, do NOT restart automatically.
+    if (global.IS_UPDATING) return; 
+    
+    fs.unwatchFile(file); 
+    log(c.red + 'Update ' + __filename + c.reset); 
+    delete require.cache[file]; 
+    require(file); 
+});
