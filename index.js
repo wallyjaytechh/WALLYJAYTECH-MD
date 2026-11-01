@@ -43,8 +43,9 @@ require('dotenv').config();
 const { Boom } = require('@hapi/boom');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
 
-// Import style functions
+// Import style + font functions
 const { getCurrentStyle } = require('./commands/menustyle');
+const { getCurrentFont, applyFont } = require('./commands/menufont');
 
 try { const autorecord = require('./commands/autorecord'); autorecord.stopAllInfiniteRecordings(); } catch (e) {}
 try { const autotyping = require('./commands/autotyping'); autotyping.stopAllInfiniteTyping(); } catch (e) {}
@@ -60,7 +61,7 @@ const readline = require("readline");
 const { rmSync } = require('fs');
 
 let reconnectAttempts = 0;
-let startupTasksDone = false; // 👈 ADDED HERE
+let startupTasksDone = false;
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 const store = require('./lib/lightweight_store');
@@ -170,7 +171,7 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES) ----
+// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + FONT) ----
 function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
     
@@ -233,6 +234,15 @@ function buildConnectionMessage(styleId, sections) {
         fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
     } else {
         fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+    }
+    
+    // Apply the current menu font to the whole connection message
+    try {
+        const fontId = getCurrentFont();
+        fullMessage = applyFont(fullMessage, fontId);
+    } catch (e) {
+        // If font module fails for any reason, just send the plain text
+        log(c.yellow + '⚠️ Font apply failed for connection message: ' + e.message + c.reset);
     }
     
     return fullMessage;
@@ -304,13 +314,11 @@ async function startXeonBotInc() {
                 log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
                 
-                // 👇 PREVENT MULTIPLE STARTUP MESSAGES 👇
                 if (startupTasksDone) {
                     log(c.green + 'Reconnected (startup tasks skipped)' + c.reset);
                     return;
                 }
                 startupTasksDone = true;
-                // 👆 PREVENT MULTIPLE STARTUP MESSAGES 👆
 
                 const BOT_ID = settings.ownerNumber;
                 setInterval(async () => {
@@ -367,6 +375,7 @@ async function startXeonBotInc() {
                     
                     const modeText = getBotMode();
                     const currentStyle = getCurrentStyle() || 2; 
+                    const currentFont = getCurrentFont() || 1;
 
                     const sections = [
                         {
@@ -380,6 +389,8 @@ async function startXeonBotInc() {
                                 `📞 Contact: +2348144317152`,
                                 `🌐 Prefix: ${settings.prefix}`,
                                 `🔒 Mode: ${modeText}`,
+                                `🎨 Style: ${currentStyle}`,
+                                `🖋️ Font: ${currentFont}`,
                                 `💡 Commands: ${getCommandCount()}+`
                             ]
                         },
@@ -428,7 +439,8 @@ async function startXeonBotInc() {
                         }
                     ];
 
-                    let fullMessage = buildConnectionMessage(currentStyle, sections);
+                    // buildConnectionMessage now applies the current font automatically
+                    const fullMessage = buildConnectionMessage(currentStyle, sections);
 
                     let img; 
                     const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
