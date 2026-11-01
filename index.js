@@ -171,7 +171,7 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + FONT) ----
+// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + LINK-SAFE FONT) ----
 function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
     
@@ -236,12 +236,14 @@ function buildConnectionMessage(styleId, sections) {
         fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
     }
     
-    // Apply the current menu font to the whole connection message
+    // Apply font to everything EXCEPT links (keeps URLs clickable)
     try {
         const fontId = getCurrentFont();
-        fullMessage = applyFont(fullMessage, fontId);
+        fullMessage = fullMessage
+            .split(/(https?:\/\/\S+)/g)
+            .map((part, i) => (i % 2 === 1 ? part : applyFont(part, fontId)))
+            .join('');
     } catch (e) {
-        // If font module fails for any reason, just send the plain text
         log(c.yellow + '⚠️ Font apply failed for connection message: ' + e.message + c.reset);
     }
     
@@ -439,7 +441,7 @@ async function startXeonBotInc() {
                         }
                     ];
 
-                    // buildConnectionMessage now applies the current font automatically
+                    // buildConnectionMessage now applies font but keeps links intact
                     const fullMessage = buildConnectionMessage(currentStyle, sections);
 
                     let img; 
