@@ -182,9 +182,9 @@ function buildConnectionMessage(styleId, sections) {
             fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
         }
         else if (styleId === 2) {
-            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
+            fullMessage += `◈────────────────────◈\n           *${section.title}*\n◈────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
-            fullMessage += `◈──────────────────────◈\n\n`;
+            fullMessage += `◈────────────────────◈\n\n`;
         }
         else if (styleId === 3) {
             fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
@@ -212,16 +212,16 @@ function buildConnectionMessage(styleId, sections) {
             fullMessage += `\n`;
         }
         else {
-            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
+            fullMessage += `◈────────────────────◈\n           *${section.title}*\n◈────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
-            fullMessage += `◈──────────────────────◈\n\n`;
+            fullMessage += `◈────────────────────◈\n\n`;
         }
     }
     
     if (styleId === 1) {
         fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
     } else if (styleId === 2 || !styleId) {
-        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+        fullMessage += `◈────────────────────◈\n           *WALLYJAYTECH-MD*\n◈────────────────────◈`;
     } else if (styleId === 3) {
         fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
     } else if (styleId === 4) {
@@ -233,7 +233,7 @@ function buildConnectionMessage(styleId, sections) {
     } else if (styleId === 7) {
         fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
     } else {
-        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+        fullMessage += `◈────────────────────◈\n           *WALLYJAYTECH-MD*\n◈────────────────────◈`;
     }
     
     // Apply font to everything EXCEPT links (keeps URLs clickable)
