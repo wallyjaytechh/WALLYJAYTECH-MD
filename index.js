@@ -60,6 +60,8 @@ const readline = require("readline");
 const { rmSync } = require('fs');
 
 let reconnectAttempts = 0;
+let startupTasksDone = false; // 👈 ADDED HERE
+
 const MAX_RECONNECT_ATTEMPTS = 5;
 const store = require('./lib/lightweight_store');
 store.readFromFile();
@@ -173,49 +175,41 @@ function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
     
     for (const section of sections) {
-        // --- STYLE 1 ---
         if (styleId === 1) {
             fullMessage += `╭──◆「 *${section.title}* 」◆\n├\n`;
             for (const line of section.lines) fullMessage += `├◇ ${line}\n`;
             fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
         }
-        // --- STYLE 2 ---
         else if (styleId === 2) {
             fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
             fullMessage += `◈──────────────────────◈\n\n`;
         }
-        // --- STYLE 3 ---
         else if (styleId === 3) {
             fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
             for (const line of section.lines) fullMessage += `║ ${line}\n`;
             fullMessage += `╚══════════════════╝\n\n`;
         }
-        // --- STYLE 4 (Jarvis) ---
         else if (styleId === 4) {
             fullMessage += `╭──〔 *${section.title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
             for (const line of section.lines) fullMessage += `║☠︎︎║ ${line}\n`;
             fullMessage += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
         }
-        // --- STYLE 5 (Swirl) ---
         else if (styleId === 5) {
             fullMessage += `  🌀◈── *${section.title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
             for (const line of section.lines) fullMessage += `┊ ${line}\n`;
             fullMessage += `╰──────·••─────•────●○\n\n`;
         }
-        // --- STYLE 6 (Love Wing) ---
         else if (styleId === 6) {
             fullMessage += `╭──〈 *${section.title}* 〉──💕⃝🕊️\n`;
             for (const line of section.lines) fullMessage += `⚚  ${line}\n`;
             fullMessage += `╰────────────────✌︎㋡\n\n`;
         }
-        // --- STYLE 7 (Aesthetic Bloom) ---
         else if (styleId === 7) {
             fullMessage += `╔══════════════════❥❥❥\n✧  *${section.title}*\n╚══════════════════❥❥❥\n`;
             for (const line of section.lines) fullMessage += `✧  ${line}\n`;
             fullMessage += `\n`;
         }
-        // Fallback (Default)
         else {
             fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
@@ -223,7 +217,6 @@ function buildConnectionMessage(styleId, sections) {
         }
     }
     
-    // Add final footer based on style
     if (styleId === 1) {
         fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
     } else if (styleId === 2 || !styleId) {
@@ -310,6 +303,14 @@ async function startXeonBotInc() {
             if (connection == "open") {
                 log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
+                
+                // 👇 PREVENT MULTIPLE STARTUP MESSAGES 👇
+                if (startupTasksDone) {
+                    log(c.green + 'Reconnected (startup tasks skipped)' + c.reset);
+                    return;
+                }
+                startupTasksDone = true;
+                // 👆 PREVENT MULTIPLE STARTUP MESSAGES 👆
 
                 const BOT_ID = settings.ownerNumber;
                 setInterval(async () => {
@@ -365,7 +366,7 @@ async function startXeonBotInc() {
                     });
                     
                     const modeText = getBotMode();
-                    const currentStyle = getCurrentStyle() || 2; // Default to 2 if not set
+                    const currentStyle = getCurrentStyle() || 2; 
 
                     const sections = [
                         {
