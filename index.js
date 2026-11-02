@@ -101,6 +101,26 @@ function getCommandCount() {
     } catch (e) { return 200; }
 }
 
+// ---- SEND MENU AUDIO (same as help.js) ----
+async function sendMenuAudio(sock, chatId, message) {
+    try {
+        const audioPath = path.join(__dirname, 'assets', 'menu_audio.mp3');
+        if (fs.existsSync(audioPath)) {
+            const opts = message ? { quoted: message } : {};
+            await sock.sendMessage(chatId, {
+                audio: fs.readFileSync(audioPath),
+                mimetype: 'audio/mpeg',
+                ptt: false
+            }, opts);
+            return true;
+        }
+        return false;
+    } catch (e) {
+        log(c.yellow + '⚠️ Menu audio send failed: ' + e.message + c.reset);
+        return false;
+    }
+}
+
 // ---- AUTO JOIN GROUP ----
 async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     const maxRetries = 3;
@@ -182,9 +202,9 @@ function buildConnectionMessage(styleId, sections) {
             fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
         }
         else if (styleId === 2) {
-            fullMessage += `◈────────────────────◈\n           *${section.title}*\n◈────────────────────◈\n\n`;
+            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
-            fullMessage += `◈────────────────────◈\n\n`;
+            fullMessage += `◈──────────────────────◈\n\n`;
         }
         else if (styleId === 3) {
             fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
@@ -212,16 +232,16 @@ function buildConnectionMessage(styleId, sections) {
             fullMessage += `\n`;
         }
         else {
-            fullMessage += `◈────────────────────◈\n           *${section.title}*\n◈────────────────────◈\n\n`;
+            fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
-            fullMessage += `◈────────────────────◈\n\n`;
+            fullMessage += `◈──────────────────────◈\n\n`;
         }
     }
     
     if (styleId === 1) {
         fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
     } else if (styleId === 2 || !styleId) {
-        fullMessage += `◈────────────────────◈\n           *WALLYJAYTECH-MD*\n◈────────────────────◈`;
+        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
     } else if (styleId === 3) {
         fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
     } else if (styleId === 4) {
@@ -233,7 +253,7 @@ function buildConnectionMessage(styleId, sections) {
     } else if (styleId === 7) {
         fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
     } else {
-        fullMessage += `◈────────────────────◈\n           *WALLYJAYTECH-MD*\n◈────────────────────◈`;
+        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
     }
     
     // Apply font to everything EXCEPT links (keeps URLs clickable)
@@ -441,47 +461,67 @@ async function startXeonBotInc() {
                         }
                     ];
 
-                    // buildConnectionMessage now applies font but keeps links intact
+                    // buildConnectionMessage applies font but keeps links intact
                     const fullMessage = buildConnectionMessage(currentStyle, sections);
 
-                    let img; 
-                    const ip = path.join(__dirname, 'assets', 'bot_image.jpg');
-                    if (fs.existsSync(ip)) img = fs.readFileSync(ip); 
-                    else { 
-                        try { 
-                            const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); 
-                            if (r.ok) img = await r.buffer(); 
-                        } catch (e) {} 
-                    }
+                    const channelCtx = { 
+                        forwardingScore: 999, 
+                        isForwarded: true, 
+                        forwardedNewsletterMessageInfo: { 
+                            newsletterJid: '120363420618370733@newsletter', 
+                            newsletterName: '\u200E', 
+                            serverMessageId: -1 
+                        } 
+                    };
 
-                    if (img) {
-                        await XeonBotInc.sendMessage(botNumber, { 
-                            image: img, 
+                    // ---- Pick media: GIF > Image > Text (same priority as help.js) ----
+                    const imagePath = path.join(__dirname, 'assets', 'bot_image.jpg');
+                    const gifPath = path.join(__dirname, 'assets', 'menu_video.mp4');
+                    let menuType = 'Text';
+                    if (fs.existsSync(imagePath) && fs.existsSync(gifPath)) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
+                    else if (fs.existsSync(imagePath)) menuType = 'Image';
+                    else if (fs.existsSync(gifPath)) menuType = 'GIF';
+
+                    // ---- Send message ----
+                    if (menuType === 'GIF') {
+                        await XeonBotInc.sendMessage(botNumber, {
+                            video: fs.readFileSync(gifPath),
+                            mimetype: 'video/mp4',
+                            gifPlayback: true,
                             caption: fullMessage,
-                            contextInfo: { 
-                                forwardingScore: 999, 
-                                isForwarded: true, 
-                                forwardedNewsletterMessageInfo: { 
-                                    newsletterJid: '120363420618370733@newsletter', 
-                                    newsletterName: '\u200E', 
-                                    serverMessageId: -1 
-                                } 
-                            } 
+                            contextInfo: channelCtx
+                        });
+                    } else if (menuType === 'Image') {
+                        let img = fs.readFileSync(imagePath);
+                        await XeonBotInc.sendMessage(botNumber, {
+                            image: img,
+                            caption: fullMessage,
+                            contextInfo: channelCtx
                         });
                     } else {
-                        await XeonBotInc.sendMessage(botNumber, { 
-                            text: fullMessage,
-                            contextInfo: { 
-                                forwardingScore: 999, 
-                                isForwarded: true, 
-                                forwardedNewsletterMessageInfo: { 
-                                    newsletterJid: '120363420618370733@newsletter', 
-                                    newsletterName: '\u200E', 
-                                    serverMessageId: -1 
-                                } 
-                            } 
-                        });
+                        // Try to fetch remote fallback image
+                        let img;
+                        try {
+                            const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg');
+                            if (r.ok) img = await r.buffer();
+                        } catch (e) {}
+                        if (img) {
+                            await XeonBotInc.sendMessage(botNumber, {
+                                image: img,
+                                caption: fullMessage,
+                                contextInfo: channelCtx
+                            });
+                        } else {
+                            await XeonBotInc.sendMessage(botNumber, {
+                                text: fullMessage,
+                                contextInfo: channelCtx
+                            });
+                        }
                     }
+
+                    // ---- Send menu audio AFTER the message (same as help.js) ----
+                    await new Promise(r => setTimeout(r, 1000));
+                    await sendMenuAudio(XeonBotInc, botNumber, null);
 
                 } catch (e) {
                     log(c.red + 'Error sending connection message: ' + e.message + c.reset);
