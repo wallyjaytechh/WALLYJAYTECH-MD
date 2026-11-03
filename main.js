@@ -146,6 +146,8 @@ const { autoStatusCommand, handleStatusUpdate, handleBulkStatusUpdate } = requir
 const { execute: antibotCommand, handleMessage: handleAntibotDetection } = require('./commands/antibot');
 const tagAllCommand = require('./commands/tagall');
 const helpCommand = require('./commands/help');
+const menuCommand = require('./commands/menu');
+const { handleMenuNumberReply } = require('./commands/menu');
 const banCommand = require('./commands/ban');
 const { promoteCommand } = require('./commands/promote');
 const { demoteCommand } = require('./commands/demote');
@@ -420,6 +422,22 @@ if (!isGroup && !isStatus && message.key.addressingMode === 'lid' && message.key
                 return;
             }
         }
+// ================================================================
+// MENU NUMBER REPLY INTERCEPTOR
+// If user quote-replied a bot menu message with a number 1–15,
+// handle it here and skip the rest of the command pipeline.
+// ================================================================
+try {
+    const handled = await handleMenuNumberReply(sock, message, chatId);
+    if (handled) {
+        log('✅ Menu number reply handled');
+        return;
+    }
+} catch (e) {
+    log('⚠️ Menu number reply error:', e.message);
+}
+// ================================================================
+
 
         const rawMessageText = (
             message.message?.conversation?.trim() ||
@@ -635,10 +653,14 @@ switch (true) {
                 }
                 await unbanCommand(sock, chatId, message);
                 break;
-            case userMessage === '.help' || userMessage === '.menu' || userMessage === '.bot' || userMessage === '.list':
+            case userMessage === '.help' || userMessage === '.fullmenu' || userMessage === '.bot' || userMessage === '.list':
                 await helpCommand(sock, chatId, message, global.channelLink);
                 commandExecuted = true;
                 break;
+        case userMessage === '.menu':
+    await menuCommand(sock, chatId, message, []);
+    commandExecuted = true;
+    break;
             case userMessage === '.sticker' || userMessage === '.s':
                 await stickerCommand(sock, chatId, message);
                 commandExecuted = true;
