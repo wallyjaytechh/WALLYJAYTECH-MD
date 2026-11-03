@@ -1,4 +1,3 @@
-
 /**
  * WALLYJAYTECH-MD - MENU COMMAND (FINAL)
  * - `.menu` : numbered picker (❶–⓯), reply-to-quote opens category sub-menu
@@ -591,7 +590,6 @@ async function handleMenuNumberReply(sock, message, chatId) {
         const media = pickMedia();
 
         // Send sub-menu WITHOUT registering a new session
-        // (session stays pointing to the .menu message)
         await sendWithMediaType(
             sock, chatId, finalMessage, message, [senderJid],
             media.mediaType, media.imagePath, media.gifPath
