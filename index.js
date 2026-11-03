@@ -399,6 +399,26 @@ async function startXeonBotInc() {
                     const currentStyle = getCurrentStyle() || 2; 
                     const currentFont = getCurrentFont() || 1;
 
+                    // ---- Detect media files ----
+                    const imagePath = path.join(__dirname, 'assets', 'bot_image.jpg');
+                    const gifPath = path.join(__dirname, 'assets', 'menu_video.mp4');
+                    const audioPath = path.join(__dirname, 'assets', 'menu_audio.mp3');
+                    const hasImage = fs.existsSync(imagePath);
+                    const hasGif = fs.existsSync(gifPath);
+                    const hasAudio = fs.existsSync(audioPath);
+
+                    // ---- Pick the ACTUAL menu type FIRST (this is what will be sent) ----
+                    let menuType = 'Text';
+                    if (hasImage && hasGif) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
+                    else if (hasImage) menuType = 'Image';
+                    else if (hasGif) menuType = 'GIF';
+
+                    // ---- The Media line reflects the ACTUAL menuType just chosen ----
+                    let mediaDisplay;
+                    if (menuType === 'GIF') mediaDisplay = hasAudio ? 'GIF & Audio' : 'GIF';
+                    else if (menuType === 'Image') mediaDisplay = hasAudio ? 'Image & Audio' : 'Image';
+                    else mediaDisplay = hasAudio ? 'Text & Audio' : 'Text';
+
                     const sections = [
                         {
                             title: 'BOT CONNECTED',
@@ -407,20 +427,20 @@ async function startXeonBotInc() {
                                 `⌚ Time: ${time.split(', ')[1] || time}`,
                                 `✅ Status: Online`,
                                 `💻 Version: ${settings.version}`,
-                                `👤 Owner: Sir Wally Jay`,
+                                `👤 Owner: Wally Jay`,
                                 `📞 Contact: +2348144317152`,
                                 `🌐 Prefix: ${settings.prefix}`,
                                 `🔒 Mode: ${modeText}`,
                                 `🎨 Style: ${currentStyle}`,
                                 `🖋️ Font: ${currentFont}`,
+                                `🎬 Media: ${mediaDisplay}`,
                                 `💡 Commands: ${getCommandCount()}+`
                             ]
                         },
                         {
                             title: 'QUICK START',
                             lines: [
-                                `📂 .menu    → All commands`,
-                                `📖 .help    → Bot guide`,
+                                `📂 .fullmenu    → All commands`,
                                 `📞 .owner   → Contact owner`,
                                 `⚙️ .settings → Bot settings`,
                                 `📶 .ping    → Check speed`,
@@ -454,7 +474,7 @@ async function startXeonBotInc() {
                         {
                             title: 'COPYRIGHT',
                             lines: [
-                                `©️ 2025-2026`,
+                                `© 2025-2026`,
                                 `WALLYJAYTECH-MD`,
                                 `All Rights Reserved.`
                             ]
@@ -474,15 +494,7 @@ async function startXeonBotInc() {
                         } 
                     };
 
-                    // ---- Pick media: GIF > Image > Text (same priority as help.js) ----
-                    const imagePath = path.join(__dirname, 'assets', 'bot_image.jpg');
-                    const gifPath = path.join(__dirname, 'assets', 'menu_video.mp4');
-                    let menuType = 'Text';
-                    if (fs.existsSync(imagePath) && fs.existsSync(gifPath)) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
-                    else if (fs.existsSync(imagePath)) menuType = 'Image';
-                    else if (fs.existsSync(gifPath)) menuType = 'GIF';
-
-                    // ---- Send message ----
+                    // ---- Send based on the SAME menuType that Media line reported ----
                     if (menuType === 'GIF') {
                         await XeonBotInc.sendMessage(botNumber, {
                             video: fs.readFileSync(gifPath),
