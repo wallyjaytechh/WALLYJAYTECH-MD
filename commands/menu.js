@@ -2,7 +2,8 @@
  * WALLYJAYTECH-MD - MENU COMMAND (FINAL)
  * - `.menu` : numbered picker (❶–⓯), reply-to-quote opens category sub-menu
  * - `.fullmenu` : full command list
- * - All 7 styles, user's current font, media random (image/video, no audio)
+ * - All 7 styles, user's current font
+ * - Main `.menu` has random media (Image/Video), Sub-menus (1-15) are TEXT ONLY.
  * - Only the LATEST `.menu` message per chat is valid — old ones expire
  * - Sub-menus do NOT become active sessions
  * - Total commands read directly from help.js so they always match
@@ -17,15 +18,13 @@ const { getCurrentFont, applyFont } = require('./menufont');
 const { getCurrentStyle } = require('./menustyle');
 
 // ---- MENU SESSIONS STORE ----
-// Key: chatId → { menuMessageId, senderJid, styleId, fontId, timestamp }
-// ONLY the .menu message is registered. Sub-menus are NOT registered.
 if (!global.__menuSessions) global.__menuSessions = new Map();
 const menuSessions = global.__menuSessions;
 
 // ---- CIRCLED NUMBERS ----
 const CIRCLED = ['❶','❷','❸','❹','❺','❻','❼','❽','❾','❿','⓫','⓬','⓭','⓮','⓯'];
 
-// ---- CATEGORY ORDER (must match allCommandsRaw keys) ----
+// ---- CATEGORY ORDER ----
 const CATEGORY_ORDER = [
     '🧠 AI',
     '🦹 ANIME',
@@ -44,14 +43,14 @@ const CATEGORY_ORDER = [
     '⚙️ TOOLS'
 ];
 
-// ---- Title-case: first letter of first word only ("AI" → "Ai", "ANIME" → "Anime") ----
+// ---- Title-case ----
 function titleCase(name) {
     const cleaned = name.replace(/^[^\s]+\s/, '').trim();
     const lower = cleaned.toLowerCase();
     return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-// ---- READ TOTAL COMMANDS FROM help.js (single source of truth) ----
+// ---- READ TOTAL COMMANDS FROM help.js ----
 let cachedHelpCommandsRaw = null;
 function loadHelpCommandsRaw() {
     if (cachedHelpCommandsRaw) return cachedHelpCommandsRaw;
@@ -216,7 +215,7 @@ const allCommandsRaw = {
     '⚙️ TOOLS': [`Ⓕ .removebg`],
 };
 
-// ---- MEDIA PICKER (random image or video, NO audio) ----
+// ---- MEDIA PICKER ----
 function pickMedia() {
     const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
     const gifPath = path.join(__dirname, '../assets/menu_video.mp4');
@@ -423,7 +422,6 @@ async function gatherData(sock, senderId, message, pingMs, mediaType) {
     const dayInfo = getDayWithEmoji();
     const modeText = getBotMode();
     const prefix = getPrefix();
-    // USE help.js AS SOURCE OF TRUTH
     const totalCommands = countTotalCommandsFromHelp();
     const stats = await getUserStats();
     const fontId = getCurrentFont();
@@ -466,7 +464,6 @@ async function gatherData(sock, senderId, message, pingMs, mediaType) {
     return { userName, greeting, dayInfo, styleId, fontId, infoLines };
 }
 
-// ---- Register session (replaces any prior session for this chat) ----
 function registerMenuSession(chatId, menuMessageId, senderJid, styleId, fontId) {
     menuSessions.set(chatId, {
         menuMessageId,
@@ -512,8 +509,6 @@ async function menuCommand(sock, chatId, message, args) {
         media.mediaType, media.imagePath, media.gifPath
     );
 
-    // ONLY .menu registers a session (not .fullmenu)
-    // Each .menu REPLACES the previous session for this chat
     if (!isFull && sent && sent.key && sent.key.id) {
         registerMenuSession(sendChatId, sent.key.id, realSenderJid, data.styleId, data.fontId);
         console.log('📌 Menu session registered:', sendChatId, '→', sent.key.id);
@@ -522,11 +517,6 @@ async function menuCommand(sock, chatId, message, args) {
 
 // =============================================================
 // ---- NUMBER REPLY HANDLER ----
-// Rules:
-//   • Must quote-reply the LATEST `.menu` message in this chat
-//   • Sender must be the one who triggered `.menu`
-//   • Text must be a number 1–15
-//   • Sub-menus do NOT become sessions — you must reply to `.menu` each time
 // =============================================================
 async function handleMenuNumberReply(sock, message, chatId) {
     try {
@@ -534,7 +524,6 @@ async function handleMenuNumberReply(sock, message, chatId) {
         const msg = message.message;
         if (!msg) return false;
 
-        // Extract text
         let text = '';
         if (msg.conversation) text = msg.conversation;
         else if (msg.extendedTextMessage?.text) text = msg.extendedTextMessage.text;
@@ -542,41 +531,26 @@ async function handleMenuNumberReply(sock, message, chatId) {
         else if (msg.videoMessage?.caption) text = msg.videoMessage.caption;
         if (!text) return false;
 
-        // Must be a plain number 1–15
         const trimmed = text.trim();
         if (!/^\d{1,2}$/.test(trimmed)) return false;
         const num = parseInt(trimmed, 10);
         if (num < 1 || num > 15) return false;
 
-        // Must be a QUOTE-REPLY
         const ctx = msg.extendedTextMessage?.contextInfo
             || msg.imageMessage?.contextInfo
             || msg.videoMessage?.contextInfo;
         if (!ctx || !ctx.stanzaId) return false;
 
-        // Look up session for THIS chat
         const session = menuSessions.get(chatId);
-        if (!session) {
-            console.log('🔍 No menu session for chat:', chatId);
-            return false;
-        }
+        if (!session) return false;
 
-        // CRITICAL: must quote-reply THE .menu MESSAGE ONLY
-        if (ctx.stanzaId !== session.menuMessageId) {
-            console.log('🔍 Quoted message is not the latest .menu — ignoring');
-            return false;
-        }
+        if (ctx.stanzaId !== session.menuMessageId) return false;
 
-        // Only the sender (or bot owner) can trigger
         const senderMatches = senderJid === session.senderJid
             || senderJid === session.senderJid.replace('@s.whatsapp.net', '@lid')
             || message.key.fromMe;
-        if (!senderMatches) {
-            console.log('🔍 Not the original menu sender — ignoring');
-            return false;
-        }
+        if (!senderMatches) return false;
 
-        // Build category sub-menu
         const categoryKey = CATEGORY_ORDER[num - 1];
         if (!categoryKey) return false;
 
@@ -586,16 +560,13 @@ async function handleMenuNumberReply(sock, message, chatId) {
         const subMenu = buildCategoryMenu(styleId, categoryKey);
         const finalMessage = applyFont(subMenu, fontId);
 
-        // Fresh random media for this sub-menu
-        const media = pickMedia();
-
-        // Send sub-menu WITHOUT registering a new session
+        // Send sub-menu WITHOUT media (Text Only)!
+        // We don't need imagePath or gifPath here because we pass 'Text'
         await sendWithMediaType(
             sock, chatId, finalMessage, message, [senderJid],
-            media.mediaType, media.imagePath, media.gifPath
+            'Text', null, null 
         );
 
-        console.log('✅ Menu number reply handled — sub-menu sent, session unchanged');
         return true;
     } catch (e) {
         console.error('handleMenuNumberReply error:', e.message);
