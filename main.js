@@ -20,7 +20,7 @@
 //  * project_name : WALLYJAYTECH-MD
 //  * author : wallyjaytech
 //  * youtube : https://www.youtube.com/wallyjaytechy
-//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot.
+//  * description : WALLYJAYTECH-MD ,A Multi-Device whatsapp user bot. 
 //*
 //*
 //re-upload? recode? copy code? give credit to wallyjaytech 2025:)
