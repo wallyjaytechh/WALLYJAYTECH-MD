@@ -344,6 +344,25 @@ async function startXeonBotInc() {
             if (connection == "open") {
                 log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
+                
+                // --- TELL SUPABASE WE ARE CONNECTED ---
+                try {
+                    const fullUuid = process.env.P_SERVER_UUID;
+                    const serverId = fullUuid ? fullUuid.split('-')[0] : null;
+                    if (serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+                        await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': process.env.SUPABASE_SERVICE_KEY,
+                                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+                            },
+                            body: JSON.stringify({ bot_status: 'connected', pairing_code: null })
+                        });
+                        log(c.green + '✅ Updated database: Bot is connected!' + c.reset);
+                    }
+                } catch (e) { log(c.red + 'Failed to update DB status: ' + e.message + c.reset); }
+                
                 if (startupTasksDone) { log(c.green + 'Reconnected (startup tasks skipped)' + c.reset); return; }
                 startupTasksDone = true;
 
