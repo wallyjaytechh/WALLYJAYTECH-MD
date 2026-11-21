@@ -9,16 +9,8 @@
 const log = (...args) => process.stderr.write(args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') + '\n');
 
 const c = {
-    reset: '\x1b[0m',
-    red: '\x1b[31m',
-    green: '\x1b[32m',
-    yellow: '\x1b[33m',
-    cyan: '\x1b[36m',
-    white: '\x1b[37m',
-    bgGreen: '\x1b[42m',
-    bgBlack: '\x1b[40m',
-    bold: '\x1b[1m',
-    black: '\x1b[30m', // FIXED: Added black color
+    reset: '\x1b[0m', red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m', cyan: '\x1b[36m',
+    white: '\x1b[37m', bgGreen: '\x1b[42m', bgBlack: '\x1b[40m', bold: '\x1b[1m', black: '\x1b[30m',
 };
 
 const fs = require('fs');
@@ -44,7 +36,6 @@ require('dotenv').config();
 const { Boom } = require('@hapi/boom');
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
 
-// Import style + font functions
 const { getCurrentStyle } = require('./commands/menustyle');
 const { getCurrentFont, applyFont } = require('./commands/menufont');
 
@@ -82,7 +73,6 @@ function getBotMode() {
 setInterval(() => { const memMB = process.memoryUsage().rss / 1024 / 1024; if (memMB > 500) { if (global.gc) global.gc(); } if (memMB > 700) process.exit(1); }, 5 * 60 * 1000);
 setInterval(() => { if (global.gc) global.gc(); }, 60000);
 
-// Read connection method and phone number from Pterodactyl Environment Variables
 let phoneNumber = process.env.WHATSAPP_NUMBER || "2348155763709"; 
 let connectionMethod = process.env.CONNECTION_METHOD || "pairing";
 
@@ -105,7 +95,6 @@ function getCommandCount() {
     } catch (e) { return 200; }
 }
 
-// ---- SEND MENU AUDIO (same as help.js) ----
 async function sendMenuAudio(sock, chatId, message) {
     try {
         const audioPath = path.join(__dirname, 'assets', 'menu_audio.mp3');
@@ -125,7 +114,6 @@ async function sendMenuAudio(sock, chatId, message) {
     }
 }
 
-// ---- AUTO JOIN GROUP ----
 async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     const maxRetries = 3;
     try {
@@ -143,10 +131,7 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
         return { success: true, method: 'groupAcceptInvite' };
         
     } catch (e) {
-        if (e.message && (e.message.includes('already in group') || 
-            e.message.includes('already participant') || 
-            e.message.includes('401') ||
-            e.message.includes('not-authorized'))) {
+        if (e.message && (e.message.includes('already in group') || e.message.includes('already participant') || e.message.includes('401') || e.message.includes('not-authorized'))) {
             log(c.cyan + 'ℹ️ Bot is already in the group' + c.reset);
             return { success: true, method: 'already_in_group' };
         }
@@ -162,7 +147,6 @@ async function autoJoinGroup(sock, groupLink, retryCount = 0) {
     }
 }
 
-// ---- AUTO FOLLOW CHANNEL ----
 async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     const maxRetries = 3;
     const methods = [
@@ -178,9 +162,7 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
             log(c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
             return { success: true, method: method.name };
         } catch (e) {
-            if (e.message && (e.message.includes('already following') || 
-                e.message.includes('already subscribed') ||
-                e.message.includes('already'))) {
+            if (e.message && (e.message.includes('already following') || e.message.includes('already subscribed') || e.message.includes('already'))) {
                 log(c.cyan + 'ℹ️ Already following the channel' + c.reset);
                 return { success: true, method: 'already_following' };
             }
@@ -195,7 +177,6 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- SEND CODE TO SUPABASE (WITH RETRY LOGIC) ----
 async function sendCodeToSupabase(code, method) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
         log(c.yellow + '⚠️ Supabase credentials missing.' + c.reset);
@@ -206,7 +187,7 @@ async function sendCodeToSupabase(code, method) {
         log(c.red + '❌ P_SERVER_UUID is missing.' + c.reset);
         return;
     }
-    const serverId = fullUuid.split('-')[0]; // matches Pterodactyl "identifier"
+    const serverId = fullUuid.split('-')[0];
 
     for (let attempt = 1; attempt <= 15; attempt++) {
         try {
@@ -216,7 +197,7 @@ async function sendCodeToSupabase(code, method) {
                     'Content-Type': 'application/json',
                     'apikey': process.env.SUPABASE_SERVICE_KEY,
                     'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
-                    'Prefer': 'return=representation'   // returns updated rows
+                    'Prefer': 'return=representation'
                 },
                 body: JSON.stringify({ pairing_code: code, connection_method: method })
             });
@@ -234,81 +215,56 @@ async function sendCodeToSupabase(code, method) {
     log(c.red + '❌ Gave up: no user_settings row matched this server.' + c.reset);
 }
 
-// ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + LINK-SAFE FONT) ----
 function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
-    
     for (const section of sections) {
         if (styleId === 1) {
             fullMessage += `╭──◆「 *${section.title}* 」◆\n├\n`;
             for (const line of section.lines) fullMessage += `├◇ ${line}\n`;
             fullMessage += `├\n╰─┬─★─☆─♪♪─◆\n\n`;
-        }
-        else if (styleId === 2) {
+        } else if (styleId === 2) {
             fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
             fullMessage += `◈──────────────────────◈\n\n`;
-        }
-        else if (styleId === 3) {
+        } else if (styleId === 3) {
             fullMessage += `╔══════════════════╗\n║ *${section.title}*\n║ ══════════════════\n`;
             for (const line of section.lines) fullMessage += `║ ${line}\n`;
             fullMessage += `╚══════════════════╝\n\n`;
-        }
-        else if (styleId === 4) {
+        } else if (styleId === 4) {
             fullMessage += `╭──〔 *${section.title}* 〕─┈𓊉꧂\n║     ╭──────────────┈❀\n`;
             for (const line of section.lines) fullMessage += `║☠︎︎║ ${line}\n`;
             fullMessage += `║     ╰──────────────┈❀\n╰───────────────────┈𓊉꧂\n\n`;
-        }
-        else if (styleId === 5) {
+        } else if (styleId === 5) {
             fullMessage += `  🌀◈── *${section.title}* ──◈❃🌸❃\n\n╭──────────●●➤\n`;
             for (const line of section.lines) fullMessage += `┊ ${line}\n`;
             fullMessage += `╰──────·••─────•────●○\n\n`;
-        }
-        else if (styleId === 6) {
+        } else if (styleId === 6) {
             fullMessage += `╭──〈 *${section.title}* 〉──💕⃝🕊️\n`;
             for (const line of section.lines) fullMessage += `⚚  ${line}\n`;
             fullMessage += `╰────────────────✌︎㋡\n\n`;
-        }
-        else if (styleId === 7) {
+        } else if (styleId === 7) {
             fullMessage += `╔══════════════════❥❥❥\n✧  *${section.title}*\n╚══════════════════❥❥❥\n`;
             for (const line of section.lines) fullMessage += `✧  ${line}\n`;
             fullMessage += `\n`;
-        }
-        else {
+        } else {
             fullMessage += `◈──────────────────────◈\n           *${section.title}*\n◈──────────────────────◈\n\n`;
             for (const line of section.lines) fullMessage += `▤ ${line}\n`;
             fullMessage += `◈──────────────────────◈\n\n`;
         }
     }
-    
-    if (styleId === 1) {
-        fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
-    } else if (styleId === 2 || !styleId) {
-        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
-    } else if (styleId === 3) {
-        fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
-    } else if (styleId === 4) {
-        fullMessage += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
-    } else if (styleId === 5) {
-        fullMessage += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
-    } else if (styleId === 6) {
-        fullMessage += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
-    } else if (styleId === 7) {
-        fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
-    } else {
-        fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
-    }
+    if (styleId === 1) fullMessage += `╭──◆「 *WALLYJAYTECH-MD* 」◆\n╰───★─☆─♪♪─◆`;
+    else if (styleId === 2 || !styleId) fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
+    else if (styleId === 3) fullMessage += `╔══════════════════╗\n║ *WALLYJAYTECH-MD*\n╚══════════════════╝`;
+    else if (styleId === 4) fullMessage += `╭─〔 *WALLYJAYTECH-MD* 〕──┈𓊉꧂\n╰─────────────────┈𓊉꧂`;
+    else if (styleId === 5) fullMessage += `╭──────────●●➤\n┊ *WALLYJAYTECH-MD*\n╰──────·••─────•────●○`;
+    else if (styleId === 6) fullMessage += `╭──〈 *WALLYJAYTECH-MD* 〉──💕⃝🕊️\n╰──────────────✌︎㋡`;
+    else if (styleId === 7) fullMessage += `╔══════════════════❥❥❥\n✧  *WALLYJAYTECH-MD*\n╚══════════════════❥❥❥`;
+    else fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
     
     try {
         const fontId = getCurrentFont();
-        fullMessage = fullMessage
-            .split(/(https?:\/\/\S+)/g)
-            .map((part, i) => (i % 2 === 1 ? part : applyFont(part, fontId)))
-            .join('');
-    } catch (e) {
-        log(c.yellow + '⚠️ Font apply failed for connection message: ' + e.message + c.reset);
-    }
-    
+        fullMessage = fullMessage.split(/(https?:\/\/\S+)/g).map((part, i) => (i % 2 === 1 ? part : applyFont(part, fontId))).join('');
+    } catch (e) {}
     return fullMessage;
 }
 
@@ -378,9 +334,10 @@ async function startXeonBotInc() {
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
             
-            if (qr && !pairingCode) { // FIXED: Prevent QR from overwriting pairing code
+            if (qr && !pairingCode) {
                 log(c.cyan + 'QR Code generated.' + c.reset);
-                await sendCodeToSupabase(qr, 'qr');
+                const qrWithTime = qr + `|t=${Date.now()}`; 
+                await sendCodeToSupabase(qrWithTime, 'qr');
             }
             
             if (connection === 'connecting') log(c.cyan + 'Connecting...' + c.reset);
@@ -388,11 +345,7 @@ async function startXeonBotInc() {
             if (connection == "open") {
                 log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
-                
-                if (startupTasksDone) {
-                    log(c.green + 'Reconnected (startup tasks skipped)' + c.reset);
-                    return;
-                }
+                if (startupTasksDone) { log(c.green + 'Reconnected (startup tasks skipped)' + c.reset); return; }
                 startupTasksDone = true;
 
                 const BOT_ID = settings.ownerNumber;
@@ -408,50 +361,24 @@ async function startXeonBotInc() {
                 try { const groups = await XeonBotInc.groupFetchAllParticipating(); for (const g of Object.values(groups)) { if (store.chats) store.chats[g.id] = { id: g.id, ...g }; } } catch (e) {}
                 setInterval(() => { try { const bd = './session_backup'; if (!fs.existsSync(bd)) fs.mkdirSync(bd); fs.cpSync('./session', bd, { recursive: true }); } catch (e) {} }, 60 * 60 * 1000);
 
-                // ---- AUTO JOIN GROUP ----
                 try {
                     const groupLink = 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2';
                     const joinResult = await autoJoinGroup(XeonBotInc, groupLink);
-                    if (joinResult.success) {
-                        log(c.green + `✅ Auto-join completed! (Method: ${joinResult.method})` + c.reset);
-                    } else {
-                        log(c.yellow + `⚠️ Auto-join failed: ${joinResult.error}` + c.reset);
-                    }
-                } catch (e) {
-                    log(c.yellow + '⚠️ Auto-join error: ' + e.message + c.reset);
-                }
+                    if (joinResult.success) log(c.green + `✅ Auto-join completed!` + c.reset);
+                } catch (e) {}
 
-                // ---- AUTO FOLLOW CHANNEL ----
                 try {
                     const channelJid = '0029Vb8XUSaISTkPmArfme11@newsletter';
                     const followResult = await autoFollowChannel(XeonBotInc, channelJid);
-                    if (followResult.success) {
-                        log(c.green + `✅ Auto-follow completed! (Method: ${followResult.method})` + c.reset);
-                    } else {
-                        log(c.yellow + `⚠️ Auto-follow failed: ${followResult.error}` + c.reset);
-                    }
-                } catch (e) {
-                    log(c.yellow + '⚠️ Auto-follow error: ' + e.message + c.reset);
-                }
+                    if (followResult.success) log(c.green + `✅ Auto-follow completed!` + c.reset);
+                } catch (e) {}
 
-                // ---- SEND CONNECTION MESSAGE ----
                 try {
                     const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-                    const time = new Date().toLocaleString('en-US', { 
-                        timeZone: settings.timezone || 'Africa/Lagos', 
-                        hour12: true, 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit', 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: 'numeric' 
-                    });
-                    
+                    const time = new Date().toLocaleString('en-US', { timeZone: settings.timezone || 'Africa/Lagos', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
                     const modeText = getBotMode();
                     const currentStyle = getCurrentStyle() || 2; 
                     const currentFont = getCurrentFont() || 1;
-
                     const imagePath = path.join(__dirname, 'assets', 'bot_image.jpg');
                     const gifPath = path.join(__dirname, 'assets', 'menu_video.mp4');
                     const audioPath = path.join(__dirname, 'assets', 'menu_audio.mp3');
@@ -464,126 +391,33 @@ async function startXeonBotInc() {
                     else if (hasImage) menuType = 'Image';
                     else if (hasGif) menuType = 'GIF';
 
-                    let mediaDisplay;
-                    if (menuType === 'GIF') mediaDisplay = hasAudio ? 'GIF & Audio' : 'GIF';
-                    else if (menuType === 'Image') mediaDisplay = hasAudio ? 'Image & Audio' : 'Image';
-                    else mediaDisplay = hasAudio ? 'Text & Audio' : 'Text';
+                    let mediaDisplay = hasAudio ? `${menuType} & Audio` : menuType;
 
                     const sections = [
-                        {
-                            title: 'BOT CONNECTED',
-                            lines: [
-                                `📅 Date: ${time.split(',')[0] || time}`,
-                                `⌚ Time: ${time.split(', ')[1] || time}`,
-                                `✅ Status: Online`,
-                                `💻 Version: ${settings.version}`,
-                                `👤 Owner: Wally Jay`,
-                                `📞 Contact: +2348144317152`,
-                                `🌐 Prefix: ${settings.prefix}`,
-                                `🔒 Mode: ${modeText}`,
-                                `🎨 Style: ${currentStyle}`,
-                                `🖋️ Font: ${currentFont}`,
-                                `🎬 Media: ${mediaDisplay}`,
-                                `💡 Commands: ${getCommandCount()}+`
-                            ]
-                        },
-                        {
-                            title: 'QUICK START',
-                            lines: [
-                                `📂 .fullmenu    → All commands`,
-                                `📞 .owner   → Contact owner`,
-                                `⚙️ .settings → Bot settings`,
-                                `📶 .ping    → Check speed`,
-                                `🔄 .update  → Update bot`
-                            ]
-                        },
-                        {
-                            title: 'CONNECT',
-                            lines: [
-                                `💬 Support Group`,
-                                `📺 YouTube Channel`,
-                                `⭐ GitHub Repo`,
-                                `🔔 Channel Updates`
-                            ]
-                        },
-                        {
-                            title: 'LINKS',
-                            lines: [
-                                `🔗 WhatsApp Channel:`,
-                                `https://whatsapp.com/channel/0029Vb8XUSaISTkPmArfme11`,
-                                ``,
-                                `💬 Support group:`,
-                                `https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2`,
-                                ``,
-                                `📺 YouTube: WALLY JAY TECH`,
-                                ``,
-                                `⭐ GitHub:`,
-                                `https://github.com/wallyjaytechh`
-                            ]
-                        },
-                        {
-                            title: 'COPYRIGHT',
-                            lines: [
-                                `© 2025-2026`,
-                                `WALLYJAYTECH-MD`,
-                                `All Rights Reserved.`
-                            ]
-                        }
+                        { title: 'BOT CONNECTED', lines: [`📅 Date: ${time.split(',')[0] || time}`, `⌚ Time: ${time.split(', ')[1] || time}`, `✅ Status: Online`, `💻 Version: ${settings.version}`, `👤 Owner: Wally Jay`, `📞 Contact: +2348144317152`, `🌐 Prefix: ${settings.prefix}`, `🔒 Mode: ${modeText}`, `🎨 Style: ${currentStyle}`, `🖋️ Font: ${currentFont}`, `🎬 Media: ${mediaDisplay}`, `💡 Commands: ${getCommandCount()}+`] },
+                        { title: 'QUICK START', lines: [`📂 .fullmenu    → All commands`, `📞 .owner   → Contact owner`, `⚙️ .settings → Bot settings`, `📶 .ping    → Check speed`, `🔄 .update  → Update bot`] },
+                        { title: 'CONNECT', lines: [`💬 Support Group`, `📺 YouTube Channel`, `⭐ GitHub Repo`, `🔔 Channel Updates`] },
+                        { title: 'LINKS', lines: [`🔗 WhatsApp Channel:`, `https://whatsapp.com/channel/0029Vb8XUSaISTkPmArfme11`, ``, `💬 Support group:`, `https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2`, ``, `📺 YouTube: WALLY JAY TECH`, ``, `⭐ GitHub:`, `https://github.com/wallyjaytechh`] },
+                        { title: 'COPYRIGHT', lines: [`© 2025-2026`, `WALLYJAYTECH-MD`, `All Rights Reserved.`] }
                     ];
 
                     const fullMessage = buildConnectionMessage(currentStyle, sections);
-
-                    const channelCtx = { 
-                        forwardingScore: 999, 
-                        isForwarded: true, 
-                        forwardedNewsletterMessageInfo: { 
-                            newsletterJid: '120363420618370733@newsletter', 
-                            newsletterName: '\u200E', 
-                            serverMessageId: -1 
-                        } 
-                    };
+                    const channelCtx = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363420618370733@newsletter', newsletterName: '\u200E', serverMessageId: -1 } };
 
                     if (menuType === 'GIF') {
-                        await XeonBotInc.sendMessage(botNumber, {
-                            video: fs.readFileSync(gifPath),
-                            mimetype: 'video/mp4',
-                            gifPlayback: true,
-                            caption: fullMessage,
-                            contextInfo: channelCtx
-                        });
+                        await XeonBotInc.sendMessage(botNumber, { video: fs.readFileSync(gifPath), mimetype: 'video/mp4', gifPlayback: true, caption: fullMessage, contextInfo: channelCtx });
                     } else if (menuType === 'Image') {
-                        let img = fs.readFileSync(imagePath);
-                        await XeonBotInc.sendMessage(botNumber, {
-                            image: img,
-                            caption: fullMessage,
-                            contextInfo: channelCtx
-                        });
+                        await XeonBotInc.sendMessage(botNumber, { image: fs.readFileSync(imagePath), caption: fullMessage, contextInfo: channelCtx });
                     } else {
                         let img;
-                        try {
-                            const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg');
-                            if (r.ok) img = await r.buffer();
-                        } catch (e) {}
-                        if (img) {
-                            await XeonBotInc.sendMessage(botNumber, {
-                                image: img,
-                                caption: fullMessage,
-                                contextInfo: channelCtx
-                            });
-                        } else {
-                            await XeonBotInc.sendMessage(botNumber, {
-                                text: fullMessage,
-                                contextInfo: channelCtx
-                            });
-                        }
+                        try { const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg'); if (r.ok) img = await r.buffer(); } catch (e) {}
+                        if (img) await XeonBotInc.sendMessage(botNumber, { image: img, caption: fullMessage, contextInfo: channelCtx });
+                        else await XeonBotInc.sendMessage(botNumber, { text: fullMessage, contextInfo: channelCtx });
                     }
 
                     await new Promise(r => setTimeout(r, 1000));
                     await sendMenuAudio(XeonBotInc, botNumber, null);
-
-                } catch (e) {
-                    log(c.red + 'Error sending connection message: ' + e.message + c.reset);
-                }
+                } catch (e) { log(c.red + 'Error sending connection message: ' + e.message + c.reset); }
                 log(c.green + 'Bot Connected!' + c.reset);
             }
             if (connection === 'close') {
@@ -608,19 +442,7 @@ async function startXeonBotInc() {
 log(c.cyan + 'Starting WALLYJAYTECH-MD Bot...' + c.reset);
 startXeonBotInc().catch(error => { log(c.red + 'Fatal error: ' + error.message + c.reset); process.exit(1); });
 
-process.on('SIGINT', async () => { 
-    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} 
-    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} 
-    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} 
-    process.exit(0); 
-});
-
-process.on('SIGTERM', async () => { 
-    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} 
-    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} 
-    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} 
-    process.exit(0); 
-});
-
+process.on('SIGINT', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
+process.on('SIGTERM', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
 process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
 process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
