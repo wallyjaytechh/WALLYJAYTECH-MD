@@ -4,6 +4,43 @@ const path = require('path');
 const settings = require('../settings');
 const isOwnerOrSudo = require('../lib/isOwner');
 
+// Files/folders that must survive every update (login session, saved data, secrets).
+const PROTECTED = [
+    'session',
+    'sessions',
+    'auth_info_baileys',
+    'data',
+    '.env',
+    'baileys_store.json'
+];
+const BACKUP_DIR = path.join(process.cwd(), '.update_backup');
+
+function backupProtected() {
+    try { fs.rmSync(BACKUP_DIR, { recursive: true, force: true }); } catch {}
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    for (const name of PROTECTED) {
+        const src = path.join(process.cwd(), name);
+        if (fs.existsSync(src)) {
+            fs.cpSync(src, path.join(BACKUP_DIR, name), { recursive: true, force: true });
+        }
+    }
+}
+
+function restoreProtected() {
+    try {
+        if (!fs.existsSync(BACKUP_DIR)) return;
+        for (const name of fs.readdirSync(BACKUP_DIR)) {
+            const from = path.join(BACKUP_DIR, name);
+            const to = path.join(process.cwd(), name);
+            fs.cpSync(from, to, { recursive: true, force: true });
+        }
+    } catch (e) {
+        console.error('Restore of protected files failed:', e);
+    } finally {
+        try { fs.rmSync(BACKUP_DIR, { recursive: true, force: true }); } catch {}
+    }
+}
+
 function run(cmd) {
     return new Promise((resolve, reject) => {
         exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
@@ -23,8 +60,8 @@ async function updateViaGit() {
     await run('git fetch --all --prune');
     const newRev = (await run('git rev-parse origin/main')).trim();
     await run(`git reset --hard ${newRev}`);
-    // FIX: Exclude session and .env from being deleted by git clean
-    await run('git clean -fd -e session -e .env -e baileys_store.json');
+    // No "git clean" here: it deletes untracked folders like data/ and session/.
+    // "git reset --hard" already brings every tracked file up to date.
 }
 
 function downloadFile(url, dest, visited = new Set()) {
@@ -97,7 +134,7 @@ async function updateViaZip(sock, chatId, message, zipOverride) {
     const [root] = fs.readdirSync(extractTo).map(n => path.join(extractTo, n));
     const srcRoot = fs.existsSync(root) && fs.lstatSync(root).isDirectory() ? root : extractTo;
 
-    const ignore = ['node_modules', '.git', 'session', 'tmp', 'tmp/', 'temp', 'data', 'baileys_store.json'];
+    const ignore = ['node_modules', '.git', 'tmp', 'tmp/', 'temp', '.update_backup', ...PROTECTED];
     const copied = [];
     let preservedOwner = null;
     let preservedBotOwner = null;
@@ -136,17 +173,23 @@ async function updateCommand(sock, chatId, message, zipOverride) {
     
     try {
         await sock.sendMessage(chatId, { text: '🔄 Updating the bot, please wait…' }, { quoted: message });
-        
-        if (await hasGitRepo()) {
-            await updateViaGit();
-            await run('npm install --no-audit --no-fund');
-        } else {
-            await updateViaZip(sock, chatId, message, zipOverride);
+
+        // Save the session + data first, and ALWAYS put them back, even if the update fails
+        backupProtected();
+        try {
+            if (await hasGitRepo()) {
+                await updateViaGit();
+                await run('npm install --no-audit --no-fund');
+            } else {
+                await updateViaZip(sock, chatId, message, zipOverride);
+            }
+        } finally {
+            restoreProtected();
         }
         
         await sock.sendMessage(chatId, { text: `✅ Update done. Restarting…` }, { quoted: message });
         
-        // Wait 2 seconds for the message to send, then trigger the start.js auto-restart
+        // Wait 2 seconds for the message to send, then trigger the auto-restart
         setTimeout(() => process.exit(0), 2000);
 
     } catch (err) {
