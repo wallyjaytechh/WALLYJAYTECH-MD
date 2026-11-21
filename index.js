@@ -18,6 +18,7 @@ const c = {
     bgGreen: '\x1b[42m',
     bgBlack: '\x1b[40m',
     bold: '\x1b[1m',
+    black: '\x1b[30m', // FIXED: Added black color
 };
 
 const fs = require('fs');
@@ -377,7 +378,7 @@ async function startXeonBotInc() {
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
             
-            if (qr) {
+            if (qr && !pairingCode) { // FIXED: Prevent QR from overwriting pairing code
                 log(c.cyan + 'QR Code generated.' + c.reset);
                 await sendCodeToSupabase(qr, 'qr');
             }
