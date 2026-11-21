@@ -194,14 +194,23 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- SEND CODE TO SUPABASE ----
+// ---- SEND CODE TO SUPABASE (FIXED TO USE SERVER UUID) ----
 async function sendCodeToSupabase(code, method) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
         log(c.yellow + '⚠️ Supabase credentials missing. Cannot send code.' + c.reset);
         return;
     }
+    
+    // Pterodactyl automatically gives the container its own UUID in this env var
+    const serverId = process.env.P_SERVER_UUID; 
+    
+    if (!serverId) {
+        log(c.red + `❌ P_SERVER_UUID is missing. Cannot update database.` + c.reset);
+        return;
+    }
+
     try {
-        const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?whatsapp_number=eq.${phoneNumber}`, {
+        const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -214,8 +223,7 @@ async function sendCodeToSupabase(code, method) {
         if (res.ok) {
             log(c.green + `✅ Successfully sent ${method} code to web app!` + c.reset);
         } else {
-            const errData = await res.text();
-            log(c.red + `❌ Failed to send code. Supabase response: ${errData}` + c.reset);
+            log(c.red + `❌ Failed to send code. Supabase response: ${await res.text()}` + c.reset);
         }
     } catch (err) {
         log(c.red + `❌ Failed to fetch Supabase: ${err.message}` + c.reset);
