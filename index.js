@@ -336,8 +336,7 @@ async function startXeonBotInc() {
             
             if (qr && !pairingCode) {
                 log(c.cyan + 'QR Code generated.' + c.reset);
-                const qrWithTime = qr + `|t=${Date.now()}`; 
-                await sendCodeToSupabase(qrWithTime, 'qr');
+                await sendCodeToSupabase(qr, 'qr');
             }
             
             if (connection === 'connecting') log(c.cyan + 'Connecting...' + c.reset);
