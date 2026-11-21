@@ -194,40 +194,43 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
-// ---- SEND CODE TO SUPABASE (FIXED TO USE SERVER UUID) ----
+// ---- SEND CODE TO SUPABASE (WITH RETRY LOGIC) ----
 async function sendCodeToSupabase(code, method) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
-        log(c.yellow + '⚠️ Supabase credentials missing. Cannot send code.' + c.reset);
+        log(c.yellow + '⚠️ Supabase credentials missing.' + c.reset);
         return;
     }
-    
-    // Pterodactyl automatically gives the container its own UUID in this env var
-    const serverId = process.env.P_SERVER_UUID; 
-    
-    if (!serverId) {
-        log(c.red + `❌ P_SERVER_UUID is missing. Cannot update database.` + c.reset);
+    const fullUuid = process.env.P_SERVER_UUID;
+    if (!fullUuid) {
+        log(c.red + '❌ P_SERVER_UUID is missing.' + c.reset);
         return;
     }
+    const serverId = fullUuid.split('-')[0]; // matches Pterodactyl "identifier"
 
-    try {
-        const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': process.env.SUPABASE_SERVICE_KEY,
-                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
-            },
-            body: JSON.stringify({ pairing_code: code, connection_method: method })
-        });
-        
-        if (res.ok) {
-            log(c.green + `✅ Successfully sent ${method} code to web app!` + c.reset);
-        } else {
-            log(c.red + `❌ Failed to send code. Supabase response: ${await res.text()}` + c.reset);
+    for (let attempt = 1; attempt <= 15; attempt++) {
+        try {
+            const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': process.env.SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+                    'Prefer': 'return=representation'   // returns updated rows
+                },
+                body: JSON.stringify({ pairing_code: code, connection_method: method })
+            });
+            const rows = res.ok ? await res.json() : [];
+            if (rows.length > 0) {
+                log(c.green + `✅ ${method} code saved (attempt ${attempt})` + c.reset);
+                return;
+            }
+            log(c.yellow + `⏳ No row for ${serverId} yet (attempt ${attempt}), retrying...` + c.reset);
+        } catch (err) {
+            log(c.red + `❌ Supabase error: ${err.message}` + c.reset);
         }
-    } catch (err) {
-        log(c.red + `❌ Failed to fetch Supabase: ${err.message}` + c.reset);
+        await delay(4000);
     }
+    log(c.red + '❌ Gave up: no user_settings row matched this server.' + c.reset);
 }
 
 // ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + LINK-SAFE FONT) ----
