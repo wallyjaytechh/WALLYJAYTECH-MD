@@ -23,7 +23,8 @@ async function updateViaGit() {
     await run('git fetch --all --prune');
     const newRev = (await run('git rev-parse origin/main')).trim();
     await run(`git reset --hard ${newRev}`);
-    await run('git clean -fd');
+    // FIX: Exclude session and .env from being deleted by git clean
+    await run('git clean -fd -e session -e .env -e baileys_store.json');
 }
 
 function downloadFile(url, dest, visited = new Set()) {
