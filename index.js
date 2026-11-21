@@ -81,11 +81,14 @@ function getBotMode() {
 setInterval(() => { const memMB = process.memoryUsage().rss / 1024 / 1024; if (memMB > 500) { if (global.gc) global.gc(); } if (memMB > 700) process.exit(1); }, 5 * 60 * 1000);
 setInterval(() => { if (global.gc) global.gc(); }, 60000);
 
-let phoneNumber = "2348155763709";
+// Read connection method and phone number from Pterodactyl Environment Variables
+let phoneNumber = process.env.WHATSAPP_NUMBER || "2348155763709"; 
+let connectionMethod = process.env.CONNECTION_METHOD || "pairing";
+
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'));
 global.botname = "WALLYJAYTECH-MD";
 global.themeemoji = "🤖";
-const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
+const pairingCode = connectionMethod === 'pairing';
 const useMobile = process.argv.includes("--mobile");
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null;
 const question = (text) => rl ? new Promise((resolve) => rl.question(text, resolve)) : Promise.resolve(settings.ownerNumber || phoneNumber);
@@ -191,6 +194,34 @@ async function autoFollowChannel(sock, channelJid, retryCount = 0) {
     return { success: false, error: 'All methods failed' };
 }
 
+// ---- SEND CODE TO SUPABASE ----
+async function sendCodeToSupabase(code, method) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+        log(c.yellow + '⚠️ Supabase credentials missing. Cannot send code.' + c.reset);
+        return;
+    }
+    try {
+        const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?whatsapp_number=eq.${phoneNumber}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': process.env.SUPABASE_SERVICE_KEY,
+                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+            },
+            body: JSON.stringify({ pairing_code: code, connection_method: method })
+        });
+        
+        if (res.ok) {
+            log(c.green + `✅ Successfully sent ${method} code to web app!` + c.reset);
+        } else {
+            const errData = await res.text();
+            log(c.red + `❌ Failed to send code. Supabase response: ${errData}` + c.reset);
+        }
+    } catch (err) {
+        log(c.red + `❌ Failed to fetch Supabase: ${err.message}` + c.reset);
+    }
+}
+
 // ---- BUILD CONNECTION MESSAGE (WITH 7 STYLES + LINK-SAFE FONT) ----
 function buildConnectionMessage(styleId, sections) {
     let fullMessage = '';
@@ -256,7 +287,6 @@ function buildConnectionMessage(styleId, sections) {
         fullMessage += `◈──────────────────────◈\n           *WALLYJAYTECH-MD*\n◈──────────────────────◈`;
     }
     
-    // Apply font to everything EXCEPT links (keeps URLs clickable)
     try {
         const fontId = getCurrentFont();
         fullMessage = fullMessage
@@ -321,15 +351,26 @@ async function startXeonBotInc() {
 
         if (pairingCode && !XeonBotInc.authState.creds.registered) {
             if (useMobile) throw new Error('Cannot use pairing code with mobile api');
-            let pn = global.phoneNumber || await question(c.bgBlack + c.bgGreen + 'WhatsApp number (2348155763709): ' + c.reset);
-            pn = pn.replace(/[^0-9]/g, '');
+            let pn = phoneNumber.replace(/[^0-9]/g, '');
             if (!require('awesome-phonenumber')('+' + pn).isValid()) { log(c.red + 'Invalid number.' + c.reset); process.exit(1); }
-            setTimeout(async () => { try { let code = await XeonBotInc.requestPairingCode(pn); code = code?.match(/.{1,4}/g)?.join("-") || code; log(c.bgGreen + c.black + 'Code: ' + code + c.reset); } catch (e) {} }, 3000);
+            setTimeout(async () => { 
+                try { 
+                    let code = await XeonBotInc.requestPairingCode(pn); 
+                    code = code?.match(/.{1,4}/g)?.join("-") || code; 
+                    log(c.bgGreen + c.black + 'Code: ' + code + c.reset); 
+                    await sendCodeToSupabase(code, 'pairing');
+                } catch (e) {} 
+            }, 3000);
         }
 
         XeonBotInc.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
-            if (qr) log(c.cyan + 'QR Code generated.' + c.reset);
+            
+            if (qr) {
+                log(c.cyan + 'QR Code generated.' + c.reset);
+                await sendCodeToSupabase(qr, 'qr');
+            }
+            
             if (connection === 'connecting') log(c.cyan + 'Connecting...' + c.reset);
             
             if (connection == "open") {
@@ -399,7 +440,6 @@ async function startXeonBotInc() {
                     const currentStyle = getCurrentStyle() || 2; 
                     const currentFont = getCurrentFont() || 1;
 
-                    // ---- Detect media files ----
                     const imagePath = path.join(__dirname, 'assets', 'bot_image.jpg');
                     const gifPath = path.join(__dirname, 'assets', 'menu_video.mp4');
                     const audioPath = path.join(__dirname, 'assets', 'menu_audio.mp3');
@@ -407,13 +447,11 @@ async function startXeonBotInc() {
                     const hasGif = fs.existsSync(gifPath);
                     const hasAudio = fs.existsSync(audioPath);
 
-                    // ---- Pick the ACTUAL menu type FIRST (this is what will be sent) ----
                     let menuType = 'Text';
                     if (hasImage && hasGif) menuType = Math.random() < 0.5 ? 'Image' : 'GIF';
                     else if (hasImage) menuType = 'Image';
                     else if (hasGif) menuType = 'GIF';
 
-                    // ---- The Media line reflects the ACTUAL menuType just chosen ----
                     let mediaDisplay;
                     if (menuType === 'GIF') mediaDisplay = hasAudio ? 'GIF & Audio' : 'GIF';
                     else if (menuType === 'Image') mediaDisplay = hasAudio ? 'Image & Audio' : 'Image';
@@ -481,7 +519,6 @@ async function startXeonBotInc() {
                         }
                     ];
 
-                    // buildConnectionMessage applies font but keeps links intact
                     const fullMessage = buildConnectionMessage(currentStyle, sections);
 
                     const channelCtx = { 
@@ -494,7 +531,6 @@ async function startXeonBotInc() {
                         } 
                     };
 
-                    // ---- Send based on the SAME menuType that Media line reported ----
                     if (menuType === 'GIF') {
                         await XeonBotInc.sendMessage(botNumber, {
                             video: fs.readFileSync(gifPath),
@@ -511,7 +547,6 @@ async function startXeonBotInc() {
                             contextInfo: channelCtx
                         });
                     } else {
-                        // Try to fetch remote fallback image
                         let img;
                         try {
                             const r = await fetch('https://raw.githubusercontent.com/wallyjaytechh/WALLYJAYTECH-MD/main/assets/bot_image.jpg');
@@ -531,7 +566,6 @@ async function startXeonBotInc() {
                         }
                     }
 
-                    // ---- Send menu audio AFTER the message (same as help.js) ----
                     await new Promise(r => setTimeout(r, 1000));
                     await sendMenuAudio(XeonBotInc, botNumber, null);
 
