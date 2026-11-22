@@ -62,6 +62,26 @@ const settings = require('./settings');
 
 setInterval(() => { try { store.writeToFile(); } catch (e) {} }, settings.storeWriteInterval || 10000);
 
+// --- Helper: mark bot offline in Supabase ---
+async function markOfflineInSupabase() {
+    try {
+        const fullUuid = process.env.P_SERVER_UUID;
+        const serverId = fullUuid ? fullUuid.split('-')[0] : null;
+        if (serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+            await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': process.env.SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+                },
+                body: JSON.stringify({ bot_status: 'offline' })
+            });
+            log(c.yellow + '🛑 Updated database: Bot is offline' + c.reset);
+        }
+    } catch (e) { log(c.red + 'Failed to update DB offline status: ' + e.message + c.reset); }
+}
+
 function readStatusConfig() {
     try { const p = path.join(__dirname, 'data', 'autostatus.json'); if (fs.existsSync(p)) { const c = JSON.parse(fs.readFileSync(p, 'utf8')); return { enabled: c.enabled === true, likeOn: c.likeOn === true, selfOn: c.selfOn === true }; } } catch (e) {}
     return { enabled: false, likeOn: false, selfOn: false };
@@ -439,9 +459,17 @@ async function startXeonBotInc() {
                 log(c.green + 'Bot Connected!' + c.reset);
             }
             if (connection === 'close') {
-                if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut || lastDisconnect?.error?.output?.statusCode === 401) { try { rmSync('./session', { recursive: true, force: true }); } catch (e) {} return; }
-                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { reconnectAttempts++; setTimeout(startXeonBotInc, Math.min(5000 * reconnectAttempts, 30000)); }
-                else process.exit(1);
+                // --- TELL SUPABASE WE ARE OFFLINE (before any retry/logout logic) ---
+                await markOfflineInSupabase();
+
+                if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut || lastDisconnect?.error?.output?.statusCode === 401) {
+                    try { rmSync('./session', { recursive: true, force: true }); } catch (e) {}
+                    return;
+                }
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    setTimeout(startXeonBotInc, Math.min(5000 * reconnectAttempts, 30000));
+                } else process.exit(1);
             }
         });
 
@@ -460,7 +488,21 @@ async function startXeonBotInc() {
 log(c.cyan + 'Starting WALLYJAYTECH-MD Bot...' + c.reset);
 startXeonBotInc().catch(error => { log(c.red + 'Fatal error: ' + error.message + c.reset); process.exit(1); });
 
-process.on('SIGINT', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
-process.on('SIGTERM', async () => { try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {} try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {} try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {} process.exit(0); });
+process.on('SIGINT', async () => {
+    await markOfflineInSupabase();
+    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {}
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {}
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await markOfflineInSupabase();
+    try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {}
+    try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
+    try { require('./commands/autotyping').stopAllInfiniteTyping(); } catch (e) {}
+    process.exit(0);
+});
+
 process.on('uncaughtException', (err) => { log(c.red + 'Uncaught Exception: ' + err.message + c.reset); });
 process.on('unhandledRejection', (err) => { log(c.red + 'Unhandled Rejection: ' + err.message + c.reset); });
