@@ -82,6 +82,26 @@ async function markOfflineInSupabase() {
     } catch (e) { log(c.red + 'Failed to update DB offline status: ' + e.message + c.reset); }
 }
 
+// --- Helper: mark bot connected in Supabase ---
+async function markConnectedInSupabase() {
+    try {
+        const fullUuid = process.env.P_SERVER_UUID;
+        const serverId = fullUuid ? fullUuid.split('-')[0] : null;
+        if (serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+            await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': process.env.SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+                },
+                body: JSON.stringify({ bot_status: 'connected', pairing_code: null, restart_started_at: null })
+            });
+            log(c.green + '✅ Updated database: Bot is connected!' + c.reset);
+        }
+    } catch (e) { log(c.red + 'Failed to update DB status: ' + e.message + c.reset); }
+}
+
 function readStatusConfig() {
     try { const p = path.join(__dirname, 'data', 'autostatus.json'); if (fs.existsSync(p)) { const c = JSON.parse(fs.readFileSync(p, 'utf8')); return { enabled: c.enabled === true, likeOn: c.likeOn === true, selfOn: c.selfOn === true }; } } catch (e) {}
     return { enabled: false, likeOn: false, selfOn: false };
@@ -364,26 +384,13 @@ async function startXeonBotInc() {
             if (connection == "open") {
                 log(c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
                 reconnectAttempts = 0;
-                
-                // --- TELL SUPABASE WE ARE CONNECTED ---
-                try {
-                    const fullUuid = process.env.P_SERVER_UUID;
-                    const serverId = fullUuid ? fullUuid.split('-')[0] : null;
-                    if (serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-                        await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'apikey': process.env.SUPABASE_SERVICE_KEY,
-                                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
-                            },
-                            body: JSON.stringify({ bot_status: 'connected', pairing_code: null })
-                        });
-                        log(c.green + '✅ Updated database: Bot is connected!' + c.reset);
-                    }
-                } catch (e) { log(c.red + 'Failed to update DB status: ' + e.message + c.reset); }
-                
-                if (startupTasksDone) { log(c.green + 'Reconnected (startup tasks skipped)' + c.reset); return; }
+
+                // --- RECONNECT path: write connected immediately, skip startup tasks ---
+                if (startupTasksDone) {
+                    await markConnectedInSupabase();
+                    log(c.green + 'Reconnected (startup tasks skipped)' + c.reset);
+                    return;
+                }
                 startupTasksDone = true;
 
                 const BOT_ID = settings.ownerNumber;
@@ -456,6 +463,9 @@ async function startXeonBotInc() {
                     await new Promise(r => setTimeout(r, 1000));
                     await sendMenuAudio(XeonBotInc, botNumber, null);
                 } catch (e) { log(c.red + 'Error sending connection message: ' + e.message + c.reset); }
+
+                // --- FIRST CONNECT: mark connected AFTER startup tasks complete ---
+                await markConnectedInSupabase();
                 log(c.green + 'Bot Connected!' + c.reset);
             }
             if (connection === 'close') {
