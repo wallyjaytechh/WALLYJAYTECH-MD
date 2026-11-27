@@ -667,11 +667,14 @@ async function syncBotSlots() {
             continue;
         }
 
-        if (slotStatus === 'starting') {
+        if (slotStatus === 'restarting') {
             if (existing) {
                 await existing.runner.stop({ markOffline: false });
                 activeRunners.delete(key);
             }
+            await patchSlotRow(slot.user_id || process.env.USER_ID, slotTier, num, {
+                bot_status: 'starting',
+            });
             const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
             activeRunners.set(key, { runner, signature });
             runner.start();
