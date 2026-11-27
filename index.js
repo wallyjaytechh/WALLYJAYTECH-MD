@@ -118,14 +118,14 @@ async function patchSlotRow(userId, tier, slotNumber, patchBody) {
     }
 }
 
-async function markOfflineInSupabase(userId, tier, slotNumber) {
+async function markOfflineInSupabase(userId, tier, slotNumber, { updateSettings = false } = {}) {
     try {
         if (userId && slotNumber) {
             await patchSlotRow(userId, tier, slotNumber, { bot_status: 'offline' });
         }
 
         const serverId = getServerId();
-        if (serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+        if (updateSettings && serverId && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
             await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
                 method: 'PATCH',
                 headers: {
@@ -135,8 +135,8 @@ async function markOfflineInSupabase(userId, tier, slotNumber) {
                 },
                 body: JSON.stringify({ bot_status: 'offline' })
             }).catch(() => {});
-            await appendSlotLog(slotNumber || 1, c.yellow + '🛑 Bot marked offline in database' + c.reset, tier);
         }
+        await appendSlotLog(slotNumber || 1, c.yellow + '🛑 Bot marked offline' + c.reset, tier);
     } catch (e) { log(c.red + 'Failed to update DB offline status: ' + e.message + c.reset); }
 }
 
@@ -592,14 +592,16 @@ function createSlotRunner(slotConfig) {
 
     return {
         start: startSocket,
-        stop: async () => {
+        stop: async ({ markOffline = true } = {}) => {
             stopped = true;
             if (backupTimer) {
                 clearInterval(backupTimer);
                 backupTimer = null;
             }
             try { currentSock?.ws?.close?.(); } catch (e) {}
-            await markOfflineInSupabase(userId, tier, slotNumber);
+            if (markOffline) {
+                await markOfflineInSupabase(userId, tier, slotNumber);
+            }
         },
     };
 }
@@ -645,15 +647,35 @@ async function syncBotSlots() {
         const slotTier = String(slot.tier || 'free').toLowerCase();
         const num = Number(slot.slot_number || 1);
         const key = `${slotTier}:${num}`;
+        const slotStatus = String(slot.bot_status || 'offline').toLowerCase();
         const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}`;
         const existing = activeRunners.get(key);
+
+        if (slotStatus === 'offline') {
+            if (existing) {
+                await existing.runner.stop({ markOffline: false });
+                activeRunners.delete(key);
+            }
+            continue;
+        }
+
+        if (slotStatus === 'starting') {
+            if (existing) {
+                await existing.runner.stop({ markOffline: false });
+                activeRunners.delete(key);
+            }
+            const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
+            activeRunners.set(key, { runner, signature });
+            runner.start();
+            continue;
+        }
 
         if (!existing) {
             const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
             activeRunners.set(key, { runner, signature });
             runner.start();
         } else if (existing.signature !== signature) {
-            await existing.runner.stop();
+            await existing.runner.stop({ markOffline: false });
             const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
             activeRunners.set(key, { runner, signature });
             runner.start();
@@ -670,7 +692,7 @@ setInterval(syncBotSlots, 4000);
 
 process.on('SIGINT', async () => {
     for (const [, entry] of activeRunners.entries()) {
-        await entry.runner.stop();
+        await entry.runner.stop({ markOffline: false });
     }
     try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {}
     try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
@@ -680,7 +702,7 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
     for (const [, entry] of activeRunners.entries()) {
-        await entry.runner.stop();
+        await entry.runner.stop({ markOffline: false });
     }
     try { await fetch('https://gemini-proxy-5t1s.onrender.com/v1/offline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ botId: settings.ownerNumber }) }); } catch (e) {}
     try { require('./commands/autorecord').stopAllInfiniteRecordings(); } catch (e) {}
