@@ -91,10 +91,10 @@ async function appendSlotLog(slotNumber, message, tier = null) {
 }
 
 async function patchSlotRow(userId, tier, slotNumber, patchBody) {
-    if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return;
+    if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return false;
     const normalizedTier = String(tier || process.env.BOT_TIER || 'free').toLowerCase();
     try {
-        await fetch(
+        const res = await fetch(
             `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&tier=eq.${encodeURIComponent(normalizedTier)}&slot_number=eq.${slotNumber}`,
             {
                 method: 'PATCH',
@@ -102,6 +102,7 @@ async function patchSlotRow(userId, tier, slotNumber, patchBody) {
                     'Content-Type': 'application/json',
                     'apikey': process.env.SUPABASE_SERVICE_KEY,
                     'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+                    'Prefer': 'return=representation',
                 },
                 body: JSON.stringify({
                     ...patchBody,
@@ -109,7 +110,12 @@ async function patchSlotRow(userId, tier, slotNumber, patchBody) {
                 }),
             }
         );
-    } catch (e) {}
+        if (!res.ok) return false;
+        const rows = await res.json().catch(() => []);
+        return Array.isArray(rows) && rows.length > 0;
+    } catch (e) {
+        return false;
+    }
 }
 
 async function markOfflineInSupabase(userId, tier, slotNumber) {
@@ -128,7 +134,7 @@ async function markOfflineInSupabase(userId, tier, slotNumber) {
                     'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
                 },
                 body: JSON.stringify({ bot_status: 'offline' })
-            });
+            }).catch(() => {});
             await appendSlotLog(slotNumber || 1, c.yellow + '🛑 Bot marked offline in database' + c.reset, tier);
         }
     } catch (e) { log(c.red + 'Failed to update DB offline status: ' + e.message + c.reset); }
@@ -150,7 +156,7 @@ async function markConnectedInSupabase(userId, tier, slotNumber) {
                     'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
                 },
                 body: JSON.stringify({ bot_status: 'connected', pairing_code: null, restart_started_at: null })
-            });
+            }).catch(() => {});
             await appendSlotLog(slotNumber || 1, c.green + '✅ Bot is connected!' + c.reset, tier);
         }
     } catch (e) { log(c.red + 'Failed to update DB status: ' + e.message + c.reset); }
@@ -273,38 +279,33 @@ async function sendCodeToSupabase(code, method, userId, tier, slotNumber) {
         return;
     }
 
-    if (userId && slotNumber) {
-        await patchSlotRow(userId, tier, slotNumber, {
+    // Best-effort sync to user_settings (non-blocking if another tier owns user_settings.server_id)
+    const serverId = getServerId();
+    if (serverId) {
+        fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': process.env.SUPABASE_SERVICE_KEY,
+                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+            },
+            body: JSON.stringify({ pairing_code: code, connection_method: method })
+        }).catch(() => {});
+    }
+
+    if (!userId || !slotNumber) return;
+
+    for (let attempt = 1; attempt <= 10; attempt++) {
+        const saved = await patchSlotRow(userId, tier, slotNumber, {
             pairing_code: code,
             connection_method: method,
         });
-    }
-
-    const serverId = getServerId();
-    if (!serverId) return;
-
-    for (let attempt = 1; attempt <= 15; attempt++) {
-        try {
-            const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': process.env.SUPABASE_SERVICE_KEY,
-                    'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({ pairing_code: code, connection_method: method })
-            });
-            const rows = res.ok ? await res.json() : [];
-            if (rows.length > 0) {
-                await appendSlotLog(slotNumber, c.green + `✅ ${method} code saved (attempt ${attempt})` + c.reset, tier);
-                return;
-            }
-            await appendSlotLog(slotNumber, c.yellow + `⏳ No row for ${serverId} yet (attempt ${attempt}), retrying...` + c.reset, tier);
-        } catch (err) {
-            await appendSlotLog(slotNumber, c.red + `❌ Supabase error: ${err.message}` + c.reset, tier);
+        if (saved) {
+            await appendSlotLog(slotNumber, c.green + `✅ ${method} code saved (attempt ${attempt})` + c.reset, tier);
+            return;
         }
-        await delay(4000);
+        await appendSlotLog(slotNumber, c.yellow + `⏳ Waiting for bot_slots row (attempt ${attempt}), retrying...` + c.reset, tier);
+        await delay(3000);
     }
 }
 
@@ -608,9 +609,10 @@ const activeRunners = new Map();
 
 async function fetchUserSlotsFromSupabase(userId) {
     if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return null;
+    const botTier = String(process.env.BOT_TIER || 'free').toLowerCase();
     try {
         const res = await fetch(
-            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&order=tier.asc,slot_number.asc`,
+            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&tier=eq.${encodeURIComponent(botTier)}&order=slot_number.asc`,
             {
                 headers: {
                     'apikey': process.env.SUPABASE_SERVICE_KEY,
@@ -627,12 +629,13 @@ async function fetchUserSlotsFromSupabase(userId) {
 
 async function syncBotSlots() {
     const userId = process.env.USER_ID;
+    const botTier = String(process.env.BOT_TIER || 'free').toLowerCase();
     const rows = await fetchUserSlotsFromSupabase(userId);
 
     const desiredSlots = (Array.isArray(rows) && rows.length > 0)
         ? rows
         : [{
-            tier: String(process.env.BOT_TIER || 'free').toLowerCase(),
+            tier: botTier,
             slot_number: Number(process.env.BOT_SLOT || 1),
             user_id: userId || null,
             whatsapp_number: process.env.WHATSAPP_NUMBER || "2348155763709",
@@ -640,7 +643,7 @@ async function syncBotSlots() {
         }];
 
     const desiredKeys = new Set(
-        desiredSlots.map(s => `${String(s.tier || process.env.BOT_TIER || 'free').toLowerCase()}:${Number(s.slot_number || 1)}`)
+        desiredSlots.map(s => `${String(s.tier || botTier).toLowerCase()}:${Number(s.slot_number || 1)}`)
     );
 
     for (const [key, entry] of activeRunners.entries()) {
@@ -651,7 +654,7 @@ async function syncBotSlots() {
     }
 
     for (const slot of desiredSlots) {
-        const slotTier = String(slot.tier || process.env.BOT_TIER || 'free').toLowerCase();
+        const slotTier = String(slot.tier || botTier).toLowerCase();
         const num = Number(slot.slot_number || 1);
         const key = `${slotTier}:${num}`;
         const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}`;
