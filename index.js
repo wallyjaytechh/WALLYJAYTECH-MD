@@ -162,8 +162,12 @@ function getBotMode() {
     try { const p = path.join(__dirname, 'data', 'messageCount.json'); if (fs.existsSync(p)) { const d = JSON.parse(fs.readFileSync(p, 'utf8')); if (typeof d.isPublic === 'boolean') return d.isPublic ? 'Public' : 'Private'; } return 'Public'; } catch (e) { return 'Public'; }
 }
 
-setInterval(() => { const memMB = process.memoryUsage().rss / 1024 / 1024; if (memMB > 500) { if (global.gc) global.gc(); } if (memMB > 700) process.exit(1); }, 5 * 60 * 1000);
-setInterval(() => { if (global.gc) global.gc(); }, 60000);
+setInterval(() => {
+    const memMB = process.memoryUsage().rss / 1024 / 1024;
+    if (memMB > 500 && global.gc) {
+        global.gc();
+    }
+}, 60 * 1000);
 
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'));
 global.botname = "WALLYJAYTECH-MD";
@@ -356,7 +360,6 @@ function buildConnectionMessage(styleId, sections) {
     return fullMessage;
 }
 
-// Each slot runs its own socket & auth directory (`./session_slot_1`, `./session_slot_2`, `./session_slot_3`)
 function createSlotRunner(slotConfig) {
     const slotNumber = Number(slotConfig.slot_number || 1);
     const userId = slotConfig.user_id || process.env.USER_ID || null;
@@ -370,6 +373,7 @@ function createSlotRunner(slotConfig) {
     let reconnectAttempts = 0;
     let startupTasksDone = false;
     let currentSock = null;
+    let backupTimer = null;
     const MAX_RECONNECT_ATTEMPTS = 5;
 
     async function startSocket() {
@@ -480,12 +484,15 @@ function createSlotRunner(slotConfig) {
                     startupTasksDone = true;
 
                     try { const groups = await XeonBotInc.groupFetchAllParticipating(); for (const g of Object.values(groups)) { if (store.chats) store.chats[g.id] = { id: g.id, ...g }; } } catch (e) {}
-                    setInterval(() => {
-                        try {
-                            if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
-                            fs.cpSync(sessionDir, backupDir, { recursive: true });
-                        } catch (e) {}
-                    }, 60 * 60 * 1000);
+                    if (!backupTimer) {
+                        backupTimer = setInterval(() => {
+                            if (stopped) return;
+                            try {
+                                if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
+                                fs.cpSync(sessionDir, backupDir, { recursive: true });
+                            } catch (e) {}
+                        }, 60 * 60 * 1000);
+                    }
 
                     try {
                         const groupLink = 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2';
@@ -585,6 +592,10 @@ function createSlotRunner(slotConfig) {
         start: startSocket,
         stop: async () => {
             stopped = true;
+            if (backupTimer) {
+                clearInterval(backupTimer);
+                backupTimer = null;
+            }
             try { currentSock?.ws?.close?.(); } catch (e) {}
             await markOfflineInSupabase(userId, slotNumber);
         },
@@ -616,7 +627,6 @@ async function syncBotSlots() {
     const userId = process.env.USER_ID;
     const rows = await fetchUserSlotsFromSupabase(userId);
 
-    // Fallback when running without USER_ID or before bot_slots has rows
     const desiredSlots = (Array.isArray(rows) && rows.length > 0)
         ? rows
         : [{
@@ -624,7 +634,6 @@ async function syncBotSlots() {
             user_id: userId || null,
             whatsapp_number: process.env.WHATSAPP_NUMBER || "2348155763709",
             connection_method: process.env.CONNECTION_METHOD || "pairing",
-            updated_at: "env",
         }];
 
     const desiredNumbers = new Set(desiredSlots.map(s => Number(s.slot_number || 1)));
@@ -638,7 +647,7 @@ async function syncBotSlots() {
 
     for (const slot of desiredSlots) {
         const num = Number(slot.slot_number || 1);
-        const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}|${slot.updated_at || ''}`;
+        const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}`;
         const existing = activeRunners.get(num);
 
         if (!existing) {
