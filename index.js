@@ -279,7 +279,6 @@ async function sendCodeToSupabase(code, method, userId, tier, slotNumber) {
         return;
     }
 
-    // Best-effort sync to user_settings (non-blocking if another tier owns user_settings.server_id)
     const serverId = getServerId();
     if (serverId) {
         fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?server_id=eq.${serverId}`, {
@@ -607,12 +606,12 @@ function createSlotRunner(slotConfig) {
 
 const activeRunners = new Map();
 
-async function fetchUserSlotsFromSupabase(userId) {
-    if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return null;
-    const botTier = String(process.env.BOT_TIER || 'free').toLowerCase();
+async function fetchServerSlotsFromSupabase() {
+    const serverId = getServerId();
+    if (!serverId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return null;
     try {
         const res = await fetch(
-            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&tier=eq.${encodeURIComponent(botTier)}&order=slot_number.asc`,
+            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?server_id=eq.${encodeURIComponent(serverId)}&order=slot_number.asc`,
             {
                 headers: {
                     'apikey': process.env.SUPABASE_SERVICE_KEY,
@@ -628,22 +627,11 @@ async function fetchUserSlotsFromSupabase(userId) {
 }
 
 async function syncBotSlots() {
-    const userId = process.env.USER_ID;
-    const botTier = String(process.env.BOT_TIER || 'free').toLowerCase();
-    const rows = await fetchUserSlotsFromSupabase(userId);
-
-    const desiredSlots = (Array.isArray(rows) && rows.length > 0)
-        ? rows
-        : [{
-            tier: botTier,
-            slot_number: Number(process.env.BOT_SLOT || 1),
-            user_id: userId || null,
-            whatsapp_number: process.env.WHATSAPP_NUMBER || "2348155763709",
-            connection_method: process.env.CONNECTION_METHOD || "pairing",
-        }];
+    const rows = await fetchServerSlotsFromSupabase();
+    if (!Array.isArray(rows) || rows.length === 0) return;
 
     const desiredKeys = new Set(
-        desiredSlots.map(s => `${String(s.tier || botTier).toLowerCase()}:${Number(s.slot_number || 1)}`)
+        rows.map(s => `${String(s.tier || 'free').toLowerCase()}:${Number(s.slot_number || 1)}`)
     );
 
     for (const [key, entry] of activeRunners.entries()) {
@@ -653,8 +641,8 @@ async function syncBotSlots() {
         }
     }
 
-    for (const slot of desiredSlots) {
-        const slotTier = String(slot.tier || botTier).toLowerCase();
+    for (const slot of rows) {
+        const slotTier = String(slot.tier || 'free').toLowerCase();
         const num = Number(slot.slot_number || 1);
         const key = `${slotTier}:${num}`;
         const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}`;
