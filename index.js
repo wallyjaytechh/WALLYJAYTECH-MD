@@ -376,6 +376,9 @@ function createSlotRunner(slotConfig) {
     let startupTasksDone = false;
     let currentSock = null;
     let backupTimer = null;
+    let lastQrSentAt = 0;
+    let lastQrValue = null;
+    const QR_COOLDOWN_MS = 20000;
     const MAX_RECONNECT_ATTEMPTS = 5;
 
     async function startSocket() {
@@ -466,8 +469,13 @@ function createSlotRunner(slotConfig) {
                 const { connection, lastDisconnect, qr } = s;
 
                 if (qr && !pairingCode) {
-                    await appendSlotLog(slotNumber, c.cyan + 'QR Code generated.' + c.reset, tier);
-                    await sendCodeToSupabase(qr, 'qr', userId, tier, slotNumber);
+                    const now = Date.now();
+                    if (qr !== lastQrValue || now - lastQrSentAt >= QR_COOLDOWN_MS) {
+                        lastQrValue = qr;
+                        lastQrSentAt = now;
+                        await appendSlotLog(slotNumber, c.cyan + 'QR Code generated.' + c.reset, tier);
+                        await sendCodeToSupabase(qr, 'qr', userId, tier, slotNumber);
+                    }
                 }
 
                 if (connection === 'connecting') {
