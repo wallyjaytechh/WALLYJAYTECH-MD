@@ -63,10 +63,11 @@ function getServerId() {
     return fullUuid ? fullUuid.split('-')[0] : null;
 }
 
-async function appendSlotLog(slotNumber, message) {
+async function appendSlotLog(slotNumber, message, tier = null) {
+    const tierTag = tier ? `[${String(tier).toUpperCase()}] ` : '';
     const formatted = typeof message === 'string' && message.startsWith(`[Bot ${slotNumber}]`)
         ? message
-        : `[Bot ${slotNumber}] ${message}`;
+        : `[Bot ${slotNumber}] ${tierTag}${message}`;
     log(formatted);
 
     const serverId = getServerId();
@@ -89,11 +90,12 @@ async function appendSlotLog(slotNumber, message) {
     } catch (e) {}
 }
 
-async function patchSlotRow(userId, slotNumber, patchBody) {
+async function patchSlotRow(userId, tier, slotNumber, patchBody) {
     if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return;
+    const normalizedTier = String(tier || process.env.BOT_TIER || 'free').toLowerCase();
     try {
         await fetch(
-            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&slot_number=eq.${slotNumber}`,
+            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&tier=eq.${encodeURIComponent(normalizedTier)}&slot_number=eq.${slotNumber}`,
             {
                 method: 'PATCH',
                 headers: {
@@ -110,10 +112,10 @@ async function patchSlotRow(userId, slotNumber, patchBody) {
     } catch (e) {}
 }
 
-async function markOfflineInSupabase(userId, slotNumber) {
+async function markOfflineInSupabase(userId, tier, slotNumber) {
     try {
         if (userId && slotNumber) {
-            await patchSlotRow(userId, slotNumber, { bot_status: 'offline' });
+            await patchSlotRow(userId, tier, slotNumber, { bot_status: 'offline' });
         }
 
         const serverId = getServerId();
@@ -127,15 +129,15 @@ async function markOfflineInSupabase(userId, slotNumber) {
                 },
                 body: JSON.stringify({ bot_status: 'offline' })
             });
-            await appendSlotLog(slotNumber || 1, c.yellow + '🛑 Bot marked offline in database' + c.reset);
+            await appendSlotLog(slotNumber || 1, c.yellow + '🛑 Bot marked offline in database' + c.reset, tier);
         }
     } catch (e) { log(c.red + 'Failed to update DB offline status: ' + e.message + c.reset); }
 }
 
-async function markConnectedInSupabase(userId, slotNumber) {
+async function markConnectedInSupabase(userId, tier, slotNumber) {
     try {
         if (userId && slotNumber) {
-            await patchSlotRow(userId, slotNumber, { bot_status: 'connected', pairing_code: null });
+            await patchSlotRow(userId, tier, slotNumber, { bot_status: 'connected', pairing_code: null });
         }
 
         const serverId = getServerId();
@@ -149,7 +151,7 @@ async function markConnectedInSupabase(userId, slotNumber) {
                 },
                 body: JSON.stringify({ bot_status: 'connected', pairing_code: null, restart_started_at: null })
             });
-            await appendSlotLog(slotNumber || 1, c.green + '✅ Bot is connected!' + c.reset);
+            await appendSlotLog(slotNumber || 1, c.green + '✅ Bot is connected!' + c.reset, tier);
         }
     } catch (e) { log(c.red + 'Failed to update DB status: ' + e.message + c.reset); }
 }
@@ -204,7 +206,7 @@ async function sendMenuAudio(sock, chatId, message) {
     }
 }
 
-async function autoJoinGroup(sock, groupLink, slotNumber, retryCount = 0) {
+async function autoJoinGroup(sock, groupLink, slotNumber, tier, retryCount = 0) {
     const maxRetries = 3;
     try {
         let inviteCode = groupLink;
@@ -215,28 +217,28 @@ async function autoJoinGroup(sock, groupLink, slotNumber, retryCount = 0) {
             }
         }
 
-        await appendSlotLog(slotNumber, c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset);
+        await appendSlotLog(slotNumber, c.cyan + `🔄 Attempting to join group (attempt ${retryCount + 1})...` + c.reset, tier);
         await sock.groupAcceptInvite(inviteCode);
-        await appendSlotLog(slotNumber, c.green + '✅ Auto-joined group successfully!' + c.reset);
+        await appendSlotLog(slotNumber, c.green + '✅ Auto-joined group successfully!' + c.reset, tier);
         return { success: true, method: 'groupAcceptInvite' };
     } catch (e) {
         if (e.message && (e.message.includes('already in group') || e.message.includes('already participant') || e.message.includes('401') || e.message.includes('not-authorized'))) {
-            await appendSlotLog(slotNumber, c.cyan + 'ℹ️ Bot is already in the group' + c.reset);
+            await appendSlotLog(slotNumber, c.cyan + 'ℹ️ Bot is already in the group' + c.reset, tier);
             return { success: true, method: 'already_in_group' };
         }
 
         if (retryCount < maxRetries) {
-            await appendSlotLog(slotNumber, c.yellow + `⚠️ Join failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset);
+            await appendSlotLog(slotNumber, c.yellow + `⚠️ Join failed, retrying... (${retryCount + 1}/${maxRetries})` + c.reset, tier);
             await delay(2000 * (retryCount + 1));
-            return autoJoinGroup(sock, groupLink, slotNumber, retryCount + 1);
+            return autoJoinGroup(sock, groupLink, slotNumber, tier, retryCount + 1);
         }
 
-        await appendSlotLog(slotNumber, c.red + '❌ All join methods failed: ' + e.message + c.reset);
+        await appendSlotLog(slotNumber, c.red + '❌ All join methods failed: ' + e.message + c.reset, tier);
         return { success: false, error: e.message };
     }
 }
 
-async function autoFollowChannel(sock, channelJid, slotNumber) {
+async function autoFollowChannel(sock, channelJid, slotNumber, tier) {
     const methods = [
         { name: 'newsletterFollow', fn: async () => await sock.newsletterFollow({ newsletterJid: channelJid }) },
         { name: 'sendMessage', fn: async () => await sock.sendMessage(channelJid, { follow: true }) }
@@ -245,37 +247,36 @@ async function autoFollowChannel(sock, channelJid, slotNumber) {
     for (let i = 0; i < methods.length; i++) {
         try {
             const method = methods[i];
-            await appendSlotLog(slotNumber, c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset);
+            await appendSlotLog(slotNumber, c.cyan + `🔄 Trying to follow channel using: ${method.name}...` + c.reset, tier);
             await method.fn();
-            await appendSlotLog(slotNumber, c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset);
+            await appendSlotLog(slotNumber, c.green + `✅ Successfully followed channel using: ${method.name}` + c.reset, tier);
             return { success: true, method: method.name };
         } catch (e) {
             if (e.message && (e.message.includes('already following') || e.message.includes('already subscribed') || e.message.includes('already'))) {
-                await appendSlotLog(slotNumber, c.cyan + 'ℹ️ Already following the channel' + c.reset);
+                await appendSlotLog(slotNumber, c.cyan + 'ℹ️ Already following the channel' + c.reset, tier);
                 return { success: true, method: 'already_following' };
             }
-            await appendSlotLog(slotNumber, c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset);
+            await appendSlotLog(slotNumber, c.yellow + `⚠️ Method ${method.name} failed: ${e.message}` + c.reset, tier);
             if (i < methods.length - 1) {
                 await delay(1000);
             }
         }
     }
 
-    await appendSlotLog(slotNumber, c.red + '❌ All follow methods failed' + c.reset);
+    await appendSlotLog(slotNumber, c.red + '❌ All follow methods failed' + c.reset, tier);
     return { success: false, error: 'All methods failed' };
 }
 
-async function sendCodeToSupabase(code, method, userId, slotNumber) {
+async function sendCodeToSupabase(code, method, userId, tier, slotNumber) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
-        await appendSlotLog(slotNumber, c.yellow + '⚠️ Supabase credentials missing.' + c.reset);
+        await appendSlotLog(slotNumber, c.yellow + '⚠️ Supabase credentials missing.' + c.reset, tier);
         return;
     }
 
     if (userId && slotNumber) {
-        await patchSlotRow(userId, slotNumber, {
+        await patchSlotRow(userId, tier, slotNumber, {
             pairing_code: code,
             connection_method: method,
-            bot_status: 'starting',
         });
     }
 
@@ -296,12 +297,12 @@ async function sendCodeToSupabase(code, method, userId, slotNumber) {
             });
             const rows = res.ok ? await res.json() : [];
             if (rows.length > 0) {
-                await appendSlotLog(slotNumber, c.green + `✅ ${method} code saved (attempt ${attempt})` + c.reset);
+                await appendSlotLog(slotNumber, c.green + `✅ ${method} code saved (attempt ${attempt})` + c.reset, tier);
                 return;
             }
-            await appendSlotLog(slotNumber, c.yellow + `⏳ No row for ${serverId} yet (attempt ${attempt}), retrying...` + c.reset);
+            await appendSlotLog(slotNumber, c.yellow + `⏳ No row for ${serverId} yet (attempt ${attempt}), retrying...` + c.reset, tier);
         } catch (err) {
-            await appendSlotLog(slotNumber, c.red + `❌ Supabase error: ${err.message}` + c.reset);
+            await appendSlotLog(slotNumber, c.red + `❌ Supabase error: ${err.message}` + c.reset, tier);
         }
         await delay(4000);
     }
@@ -362,12 +363,13 @@ function buildConnectionMessage(styleId, sections) {
 
 function createSlotRunner(slotConfig) {
     const slotNumber = Number(slotConfig.slot_number || 1);
+    const tier = String(slotConfig.tier || process.env.BOT_TIER || 'free').toLowerCase();
     const userId = slotConfig.user_id || process.env.USER_ID || null;
     const phoneNumber = slotConfig.whatsapp_number || process.env.WHATSAPP_NUMBER || "2348155763709";
     const connectionMethod = slotConfig.connection_method || process.env.CONNECTION_METHOD || "pairing";
     const pairingCode = connectionMethod === 'pairing';
-    const sessionDir = `./session_slot_${slotNumber}`;
-    const backupDir = `./session_backup_slot_${slotNumber}`;
+    const sessionDir = `./session_slot_${tier}_${slotNumber}`;
+    const backupDir = `./session_backup_slot_${tier}_${slotNumber}`;
 
     let stopped = false;
     let reconnectAttempts = 0;
@@ -445,7 +447,7 @@ function createSlotRunner(slotConfig) {
                 if (useMobile) throw new Error('Cannot use pairing code with mobile api');
                 let pn = phoneNumber.replace(/[^0-9]/g, '');
                 if (!require('awesome-phonenumber')('+' + pn).isValid()) {
-                    await appendSlotLog(slotNumber, c.red + 'Invalid WhatsApp number.' + c.reset);
+                    await appendSlotLog(slotNumber, c.red + 'Invalid WhatsApp number.' + c.reset, tier);
                     return XeonBotInc;
                 }
                 setTimeout(async () => {
@@ -453,8 +455,8 @@ function createSlotRunner(slotConfig) {
                     try {
                         let code = await XeonBotInc.requestPairingCode(pn);
                         code = code?.match(/.{1,4}/g)?.join("-") || code;
-                        await appendSlotLog(slotNumber, c.bgGreen + c.black + 'Code: ' + code + c.reset);
-                        await sendCodeToSupabase(code, 'pairing', userId, slotNumber);
+                        await appendSlotLog(slotNumber, c.bgGreen + c.black + 'Code: ' + code + c.reset, tier);
+                        await sendCodeToSupabase(code, 'pairing', userId, tier, slotNumber);
                     } catch (e) {}
                 }, 3000);
             }
@@ -464,21 +466,21 @@ function createSlotRunner(slotConfig) {
                 const { connection, lastDisconnect, qr } = s;
 
                 if (qr && !pairingCode) {
-                    await appendSlotLog(slotNumber, c.cyan + 'QR Code generated.' + c.reset);
-                    await sendCodeToSupabase(qr, 'qr', userId, slotNumber);
+                    await appendSlotLog(slotNumber, c.cyan + 'QR Code generated.' + c.reset, tier);
+                    await sendCodeToSupabase(qr, 'qr', userId, tier, slotNumber);
                 }
 
                 if (connection === 'connecting') {
-                    await appendSlotLog(slotNumber, c.cyan + 'Connecting...' + c.reset);
+                    await appendSlotLog(slotNumber, c.cyan + 'Connecting...' + c.reset, tier);
                 }
 
                 if (connection == "open") {
-                    await appendSlotLog(slotNumber, c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset);
+                    await appendSlotLog(slotNumber, c.cyan + 'Connected => ' + JSON.stringify(XeonBotInc.user, null, 2) + c.reset, tier);
                     reconnectAttempts = 0;
 
                     if (startupTasksDone) {
-                        await markConnectedInSupabase(userId, slotNumber);
-                        await appendSlotLog(slotNumber, c.green + 'Reconnected (startup tasks skipped)' + c.reset);
+                        await markConnectedInSupabase(userId, tier, slotNumber);
+                        await appendSlotLog(slotNumber, c.green + 'Reconnected (startup tasks skipped)' + c.reset, tier);
                         return;
                     }
                     startupTasksDone = true;
@@ -496,12 +498,12 @@ function createSlotRunner(slotConfig) {
 
                     try {
                         const groupLink = 'https://chat.whatsapp.com/BBfGgXmLwUd7F1EinwDAOr?s=cl&p=i&ilr=2';
-                        await autoJoinGroup(XeonBotInc, groupLink, slotNumber);
+                        await autoJoinGroup(XeonBotInc, groupLink, slotNumber, tier);
                     } catch (e) {}
 
                     try {
                         const channelJid = '0029Vb8XUSaISTkPmArfme11@newsletter';
-                        await autoFollowChannel(XeonBotInc, channelJid, slotNumber);
+                        await autoFollowChannel(XeonBotInc, channelJid, slotNumber, tier);
                     } catch (e) {}
 
                     try {
@@ -548,14 +550,14 @@ function createSlotRunner(slotConfig) {
 
                         await new Promise(r => setTimeout(r, 1000));
                         await sendMenuAudio(XeonBotInc, botNumber, null);
-                    } catch (e) { await appendSlotLog(slotNumber, c.red + 'Error sending connection message: ' + e.message + c.reset); }
+                    } catch (e) { await appendSlotLog(slotNumber, c.red + 'Error sending connection message: ' + e.message + c.reset, tier); }
 
-                    await markConnectedInSupabase(userId, slotNumber);
-                    await appendSlotLog(slotNumber, c.green + 'Bot Connected!' + c.reset);
+                    await markConnectedInSupabase(userId, tier, slotNumber);
+                    await appendSlotLog(slotNumber, c.green + 'Bot Connected!' + c.reset, tier);
                 }
 
                 if (connection === 'close') {
-                    await markOfflineInSupabase(userId, slotNumber);
+                    await markOfflineInSupabase(userId, tier, slotNumber);
                     if (stopped) return;
 
                     if (lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut || lastDisconnect?.error?.output?.statusCode === 401) {
@@ -597,7 +599,7 @@ function createSlotRunner(slotConfig) {
                 backupTimer = null;
             }
             try { currentSock?.ws?.close?.(); } catch (e) {}
-            await markOfflineInSupabase(userId, slotNumber);
+            await markOfflineInSupabase(userId, tier, slotNumber);
         },
     };
 }
@@ -608,7 +610,7 @@ async function fetchUserSlotsFromSupabase(userId) {
     if (!userId || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return null;
     try {
         const res = await fetch(
-            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&order=slot_number.asc`,
+            `${process.env.SUPABASE_URL}/rest/v1/bot_slots?user_id=eq.${encodeURIComponent(userId)}&order=tier.asc,slot_number.asc`,
             {
                 headers: {
                     'apikey': process.env.SUPABASE_SERVICE_KEY,
@@ -630,34 +632,39 @@ async function syncBotSlots() {
     const desiredSlots = (Array.isArray(rows) && rows.length > 0)
         ? rows
         : [{
+            tier: String(process.env.BOT_TIER || 'free').toLowerCase(),
             slot_number: Number(process.env.BOT_SLOT || 1),
             user_id: userId || null,
             whatsapp_number: process.env.WHATSAPP_NUMBER || "2348155763709",
             connection_method: process.env.CONNECTION_METHOD || "pairing",
         }];
 
-    const desiredNumbers = new Set(desiredSlots.map(s => Number(s.slot_number || 1)));
+    const desiredKeys = new Set(
+        desiredSlots.map(s => `${String(s.tier || process.env.BOT_TIER || 'free').toLowerCase()}:${Number(s.slot_number || 1)}`)
+    );
 
-    for (const [num, entry] of activeRunners.entries()) {
-        if (!desiredNumbers.has(num)) {
+    for (const [key, entry] of activeRunners.entries()) {
+        if (!desiredKeys.has(key)) {
             await entry.runner.stop();
-            activeRunners.delete(num);
+            activeRunners.delete(key);
         }
     }
 
     for (const slot of desiredSlots) {
+        const slotTier = String(slot.tier || process.env.BOT_TIER || 'free').toLowerCase();
         const num = Number(slot.slot_number || 1);
+        const key = `${slotTier}:${num}`;
         const signature = `${slot.connection_method || 'pairing'}|${slot.whatsapp_number || ''}`;
-        const existing = activeRunners.get(num);
+        const existing = activeRunners.get(key);
 
         if (!existing) {
-            const runner = createSlotRunner(slot);
-            activeRunners.set(num, { runner, signature });
+            const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
+            activeRunners.set(key, { runner, signature });
             runner.start();
         } else if (existing.signature !== signature) {
             await existing.runner.stop();
-            const runner = createSlotRunner(slot);
-            activeRunners.set(num, { runner, signature });
+            const runner = createSlotRunner({ ...slot, tier: slotTier, slot_number: num });
+            activeRunners.set(key, { runner, signature });
             runner.start();
         }
     }
